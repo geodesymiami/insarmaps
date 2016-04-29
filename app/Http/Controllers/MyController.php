@@ -14,7 +14,7 @@ class MyController extends Controller
       //dd($request);
       //dd(storage_path());
 
-      $path = storage_path() . "\json";
+      $path = storage_path() . "/json";
       //dd($path);
 
       $fileName = $request->file('data')->getClientOriginalName();
