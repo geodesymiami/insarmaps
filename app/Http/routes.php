@@ -11,9 +11,9 @@
 |
 */
 
-Route::get('/', function () {
+/*Route::get('/', function () {
     return view('map');
-});
+});*/
 
-//Route::get('/', 'MyController@returnData')->name('returnData');
+Route::get('/', 'MyController@returnPage')->name('returnPage');
 Route::post('/data', 'MyController@convertData')->name('convertData');

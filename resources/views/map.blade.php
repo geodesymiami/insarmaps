@@ -257,13 +257,13 @@
       </div>
     </div> <!-- End side-item-box -->
   </div> <!-- End side-bar -->
-  <!--?php
+  <?php
         echo "
             <script type=\"text/javascript\">
               var fileName = \"$fileName\";
             </script>
         ";
-  ?-->
+  ?>
   <script type="text/javascript" src="js/mainMap.js"></script>
   <script>
 

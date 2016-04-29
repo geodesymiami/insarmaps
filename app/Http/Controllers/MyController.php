@@ -26,4 +26,11 @@ class MyController extends Controller
       return view('map', ["fileName" => $fileName]);
     }
 
+    public function returnPage() {
+
+      $fileName = "";
+
+      return view('map', ["fileName" => $fileName]);
+    }
+
 }

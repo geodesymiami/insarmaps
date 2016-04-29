@@ -27,7 +27,7 @@ function Map(loadJSONFunc, clustered) {
             container: containerID, // container id
             style: 'style.json', //stylesheet location
             center: [-74.50, 40], // starting position
-            zoom: 9 // starting zoom
+            zoom: 1 // starting zoom
         });
 
         that.map.once("draw.deleted", e => {
