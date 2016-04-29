@@ -1,0 +1,35 @@
+{
+    "version": 8,
+    "name": "Satellite",
+    "sources": {
+        "mapbox": {
+            "url": "mapbox://mapbox.satellite",
+            "type": "raster",
+            "tileSize": 256
+        }
+    },
+    "sprite": "/sprite/customMarkers",
+    "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+    "layers": [
+        {
+            "id": "background",
+            "type": "background",
+            "interactive": true,
+            "paint": {
+                "background-color": "rgb(4,7,14)"
+            }
+        },
+        {
+            "id": "satellite",
+            "type": "raster",
+            "source": "mapbox",
+            "source-layer": "mapbox_satellite_full",
+            "interactive": true
+        }
+    ],
+    "created": "2016-04-27T04:13:39.420Z",
+    "id": "cinicjtz2002laaktvmtb0bx7",
+    "modified": "2016-04-27T04:13:39.420Z",
+    "owner": "kjjj11223344",
+    "draft": false
+}

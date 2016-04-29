@@ -10,7 +10,7 @@
             "type": "vector"
         }
     },
-    "sprite": "sprite/customMarkers",
+    "sprite": "/sprite/customMarkers",
     "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
     "layers": [
         {
