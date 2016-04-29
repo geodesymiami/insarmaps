@@ -8,13 +8,22 @@ use App\Http\Requests;
 
 class MyController extends Controller
 {
+
     public function convertData(Request $request) {
-      dd($request->data);
-      //return view('frontend.packages.index', ["packages" => $packages]);
-      return view('map');
+      //dd($request->file('data')->getClientOriginalName());
+      //dd($request);
+      //dd(storage_path());
+
+      $path = storage_path() . "\json";
+      //dd($path);
+
+      $fileName = $request->file('data')->getClientOriginalName();
+
+      $request->file('data')->move(
+        $path, $fileName
+      );
+
+      return view('map', ["fileName" => $fileName]);
     }
 
-    public function returnData() {
-
-    }
 }

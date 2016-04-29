@@ -16,4 +16,4 @@ Route::get('/', function () {
 });
 
 //Route::get('/', 'MyController@returnData')->name('returnData');
-Route::post('/', 'MyController@convertData')->name('convertData');
+Route::post('/data', 'MyController@convertData')->name('convertData');

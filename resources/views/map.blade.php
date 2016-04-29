@@ -235,7 +235,6 @@
             <li>Xavier Aballa</li>
             <li>Zishi Wu</li>
             <li>Alfredo Terrero</li>
-            <li>Alex Jean-Baptiste</li>
             </ul>
 
       </p>
@@ -258,6 +257,13 @@
       </div>
     </div> <!-- End side-item-box -->
   </div> <!-- End side-bar -->
+  <!--?php
+        echo "
+            <script type=\"text/javascript\">
+              var fileName = \"$fileName\";
+            </script>
+        ";
+  ?-->
   <script type="text/javascript" src="js/mainMap.js"></script>
   <script>
 
