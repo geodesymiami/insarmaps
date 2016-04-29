@@ -13,6 +13,11 @@ class MyController extends Controller
       //dd($request->file('data')->getClientOriginalName());
       //dd($request);
       //dd(storage_path());
+      $return = exec("/usr/bin/python /home/vagrant/code/Converter.py hi.h5 timeseries");
+
+      if ($return) {
+        throw new \Exception("KappaRoss" . $return);
+      }
 
       $path = storage_path() . "/json";
       //dd($path);

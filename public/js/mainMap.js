@@ -9,7 +9,7 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={
 }).addTo(map);*/
 
 var currentPoint = 1;
-var filename = "/data/test_chunk_";
+var file = "/test_chunk_";
 
 function Map(loadJSONFunc) {
     // my mapbox api key
@@ -47,10 +47,14 @@ function Map(loadJSONFunc) {
 
             var displacementsForCurrentPoint = geodata.features[i].properties.displacement;
             var displacement = 0;
+            var numPoints = 0;
 
             for (var disp in displacementsForCurrentPoint) {
                 displacement += displacementsForCurrentPoint[disp];
+                numPoints++;
             }
+            // get the average
+            displacement /= numPoints;
 
             // set colors
             geodata.features[i].properties.myData = randomArray();
@@ -90,11 +94,11 @@ function Map(loadJSONFunc) {
                 "icon-size": 0.1 // size of the icon
             }
         });
-        // currentPoint++;
-        // var fileToLoad = filename + currentPoint + ".json";
+        currentPoint++;
+        var fileToLoad = file + currentPoint + ".json";
 
-        if (currentPoint <= 0) {
-            loadJSONFunc(that.JSONCallback);
+        if (currentPoint <= 5) {
+            loadJSONFunc(fileToLoad, that.JSONCallback);
         } else {
             that.enableInteractivity();
         }
@@ -106,8 +110,8 @@ function Map(loadJSONFunc) {
         that.map = new mapboxgl.Map({
             container: containerID, // container id
             style: 'basicStyle.json', //stylesheet location
-            center: [-74.50, 40], // starting position
-            zoom: 1 // starting zoom
+            center: [130.89, 31.89], // starting position
+            zoom: 7 // starting zoom
         });
 
         that.map.addControl(new mapboxgl.Navigation());
@@ -116,10 +120,10 @@ function Map(loadJSONFunc) {
             // that.drawer = mapboxgl.Draw();
             // that.map.addControl(that.drawer);
             // drawer to draw a square and select points
-            var fileToLoad = filename + currentPoint + ".json";
+            var fileToLoad = file + currentPoint + ".json";
             // load in our sample json
             //that.disableInteractivity();
-            loadJSONFunc(that.JSONCallback);
+            loadJSONFunc(fileToLoad, that.JSONCallback);
         });
 
         // When a click event occurs near a marker icon, open a popup at the location of
@@ -276,11 +280,11 @@ function randomArray() {
 
 // function to use AJAX to load json from that same website - I looked online and AJAX is basically just used
 // to asynchronously load data using javascript from a server, in our case, our local website
-function loadJSON(callback) {
-    console.log(fileName);
+function loadJSON(fileToLoad, callback) {
+    console.log(fileToLoad);
     var xobj = new XMLHttpRequest();
     xobj.overrideMimeType("application/json");
-    xobj.open('GET', 'http://localhost/insar_map_mvc/storage/json/' + fileName, true); // Replace 'my_data' with the path to your file
+    xobj.open('GET', 'http://insar.app/json/' + fileToLoad, true); // Replace 'my_data' with the path to your file
     xobj.onreadystatechange = function() {
         if (xobj.readyState == 4 && xobj.status == "200") {
             // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
