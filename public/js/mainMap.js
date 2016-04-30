@@ -9,7 +9,7 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={
 }).addTo(map);*/
 
 var currentPoint = 1;
-var file = "/home/vagrant/code/insar_map_mvc/public/json/test_chunk_";
+var file = "/home/vagrant/code/insar_map_mvc/public/json/geo_timeseries_masked.h5test_chunk_";
 
 function Map(loadJSONFunc) {
     // my mapbox api key

@@ -13,20 +13,16 @@ class MyController extends Controller
       //dd($request->file('data')->getClientOriginalName());
       //dd($request);
       //dd(storage_path());
-      $return = exec("/usr/bin/python /home/vagrant/code/Converter.py hi.h5 timeseries");
-
-      if ($return) {
-        throw new \Exception("KappaRoss" . $return);
-      }
-
       $path = storage_path() . "/json";
       //dd($path);
-
       $fileName = $request->file('data')->getClientOriginalName();
-
       $request->file('data')->move(
         $path, $fileName
       );
+
+      $execString = "/usr/bin/python " . $path . "/Converter.py " . $path . "/" . $fileName . " timeseries";
+
+      $return = exec($execString, $out);          
 
       return view('map', ["fileName" => $fileName]);
     }
