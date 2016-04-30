@@ -41,6 +41,7 @@
         width: 33%;
         background-color: rgb(4,53,101);
         z-index: 10;
+        overflow: auto;
       }
 
       .side-item-box {
@@ -91,9 +92,13 @@
         height: 100%;
       }
 
+      h1.title {
+        font-size: 32px;
+        margin-bottom: 2em;
+      }
+
       h1{
         font-family: 'Carter One', cursive;
-        font-size: 32px;
         color: coral;
 
       }
@@ -186,29 +191,115 @@
 
         div.menu{
 
-          margin-top: 5em;
+          margin-top: 2em;
 
         }
+
+        #map-type-menu {
+          padding: 10px;
+          font-family: 'Open Sans', sans-serif;
+          margin-top:4em;
+        }
+
+        .logos{
+         margin:2em;   
+        }
+
+        .logo2{
+          margin-left: 4em;   
+        }
+
+        label{
+         color:white;
+        }
+
+        .funding{
+          color:white;
+          margin-left: 2em;
+        }
+
+        #map-type-menu input[type="radio"]:checked + label {
+          color: coral;
+        }
+
+        .overlay_toggle>*{
+          display: inline-block;
+          float: left;
+        }
+
+        .toggle-button { 
+          background-color: white;
+          margin: 5px 0;
+          border-radius: 20px;
+          border: 2px solid #D0D0D0;
+          height: 14px;
+          cursor: pointer;
+          width: 50px;
+          position: relative;
+          display: inline-block;
+          user-select: none;
+          -webkit-user-select: none;
+          -ms-user-select: none;
+          -moz-user-select: none; 
+          margin-left: 2em;
+      }
+
+      .toggle-button button { 
+        cursor: pointer;
+        outline: 0;
+        display:block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        border-radius: 100%;
+        width: 20px;
+        height: 20px;
+        background-color: white;
+        float: left;
+        margin: -3px 0 0 -3px;
+        border: 2px solid #D0D0D0;
+        transition: left 0.3s; 
+      }
+
+      .toggle-button-selected { 
+         background-color: coral; border: 2px solid coral;
+       }
+
+      .toggle-button-selected button {
+        left: 37px;
+        top: 0;
+        margin: 0;
+        border: none;
+        width: 20px;
+        height: 22px;
+        box-shadow: 0 0 0px rgba(0,0,0,0.1); 
+      }
 
       </style>
     </head>
     <body>
       <div id="map-container">
       </div>
-      <div id="map-type-menu">
-        <input id='basic' type='radio' name='rtoggle' value='basic' checked='checked'>
-        <label for='basic'>basic</label>
-        <input id='streets' type='radio' name='rtoggle' value='streets'>
-        <label for='streets'>streets</label>
-        <input id='satellite' type='radio' name='rtoggle' value='satellite'>
-        <label for='satellite'>satellite</label>
-      </div>
-
       <div class="side-bar">
         <div class="side-item-box">
           <!--div class="side-item move-button"></div-->
           <div class="side-item title">
-            <h1>Browser-based inSAR Time Series Viewer</h1>
+            <h1>University of Miami’s inSAR Time Series Viewer</h1>
+          </div>
+          <br><br>
+          <div id="map-type-menu">
+            <input id='basic' type='radio' name='rtoggle' value='basic' checked='checked'>
+            <label for='basic'>basic</label>
+            <input id='streets' type='radio' name='rtoggle' value='streets'>
+            <label for='streets'>streets</label>
+            <input id='satellite' type='radio' name='rtoggle' value='satellite'>
+            <label for='satellite'>satellite</label>
+          </div>
+          <div class="overlay_toggle"> 
+            <label>Turn on/off data overlay</label>
+              <div class="toggle-button">     
+                <button></button> 
+             </div>
           </div>
       <!--<div class="side-item description">
         <p>Description of inSAR map web application.</p>
@@ -218,7 +309,7 @@
       <div class="menu">
         <button class="accordion">What is the InSar Project?</button>
         <div class="panel">
-          <p>The InSar map is a product that allows users to view geographic data that spans within a 20 year time frame.The data presented consists of images recorded by satellites that keep track of ground elevation levels at various parts of the Earth. Users should be able to select a specific part of a generated map and show change in elevation data for that area.</p>
+          <p>The University of Miami Geodesy laboratory studies volcanic, cryospheric and tectonic problems using Interferometric Synthetic Aperture Radar (InSAR) around the world. Repeat SAR imagery is combined to networks of interferograms from which the ground displacement history in radar line-of-sight direction can be inferred. Ground deformation is caused, e.g. by subsurface magma movements, changes of the ice sheets, tectonic ground   displacements and anthropogenic and man-made land subsidence. We use orbiting SAR sensors from the European Space Agency (ESA), the Italian Space Agency (ASI), the German Aerospace Center (DLR), the Canadian Space Agency (CSA) and the Japanese Space Exploration Agency (JAXA). Starting in 2020 we will use imagery from NASA’s and India's NISAR satellite. This website features data sets we have been analyzing for our research projects.</p>
         </div> <!-- End panel -->
 
         <button class="accordion">Instructions</button>
@@ -226,7 +317,7 @@
           <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
         </div> <!-- End panel -->
 
-        <button class="accordion">Creators</button>
+        <!--<button class="accordion">Creators</button>
         <div class="panel">
           <p>
             <strong>Client:</strong>Prof. Falk Amelung<br>
@@ -242,10 +333,10 @@
             </ul>
 
           </p>
-        </div>
+        </div>-->
       </div> <!-- End menu -->
 
-      <h2>Elevations of selected area: </h2>
+      <h2>Line-of-sight displacement time-series</h2>
 
       <div class="side-item graph">
         <canvas id="chart"></canvas>
@@ -259,6 +350,11 @@
         {!! Form::close() !!}
 
       </div>
+      <p class="funding">The UM geodesy lab is funded by NASA and NSF. This website resulted from Spring 2016 CSC 431 class. The student designers and programmers were Jeffrey Lin, Krystina Scott, Milen Buchillon-Triff,Sherman Hewitt, Xavier Aballa, Zishi Wu, and Alfredo Terrero.</p>  
+      <div class="logos">     
+        <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto"> 
+        <img src="img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
+     </div>
     </div> <!-- End side-item-box -->
   </div> <!-- End side-bar -->
   <?php
@@ -293,6 +389,11 @@
     for (var i = 0; i < inputs.length; i++) {
       inputs[i].onclick = switchLayer;
     }
+
+    /*TOGGLE BUTTON*/
+    $(document).on('click', '.toggle-button', function() {
+      $(this).toggleClass('toggle-button-selected'); 
+    });
   </script>
 </body>
 </html>
