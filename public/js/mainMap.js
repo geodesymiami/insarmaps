@@ -91,7 +91,7 @@ function Map(loadJSONFunc) {
             container: containerID, // container id
             style: 'basicStyle.json', //stylesheet location
             center: [130.89, 31.89], // starting position
-            zoom: 7 // starting zoom
+            zoom: 1 // starting zoom
         });
 
         that.map.addControl(new mapboxgl.Navigation());
@@ -154,7 +154,7 @@ function Map(loadJSONFunc) {
 
             var ctx = document.getElementById("chart").getContext("2d");
             var lineChart = new Chart(ctx).Line(lineData, options);
-            //var myNewChart = new Chart(ctx).Pie(pieData);           
+            //var myNewChart = new Chart(ctx).Pie(pieData);
         });
 
         // Use the same approach as above to indicate that the symbols are clickable
