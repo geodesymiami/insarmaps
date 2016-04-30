@@ -42,8 +42,10 @@ function Map(loadJSONFunc) {
 
         // example loop to show how we can change the geodata JSON object at runtime with code
         for (var i = 0, len = geodata.features.length; i < len; i++) {
+            var lat = geodata.features[i].geometry.coordinates[0];
+            var long = geodata.features[i].geometry.coordinates[1];;
             // set title
-            geodata.features[i].properties.title = "\"" + i + "\"";
+            geodata.features[i].properties.title = currentPoint.toString() + ":" + lat.toString() + ":" + long.toString();
 
             // add this feature to our map for quick lookup
             that.geoDataMap[geodata.features[i].properties.title] = geodata.features[i];
@@ -75,10 +77,10 @@ function Map(loadJSONFunc) {
             }
         });
         currentPoint++;
-        var fileToLoad = file + currentPoint + ".json";
+        var fileToLoad = currentPoint.toString();
 
-        if (currentPoint <= 23) {
-            loadJSONFunc(fileToLoad, that.JSONCallback);
+        if (currentPoint <= 1) {
+            loadJSONFunc(fileToLoad, "file", that.JSONCallback);
         } else {
             that.enableInteractivity();
         }
@@ -100,10 +102,10 @@ function Map(loadJSONFunc) {
             // that.drawer = mapboxgl.Draw();
             // that.map.addControl(that.drawer);
             // drawer to draw a square and select points
-            var fileToLoad = file + currentPoint + ".json";
+            var fileToLoad = currentPoint.toString();
             // load in our sample json
             //that.disableInteractivity();
-            loadJSONFunc(fileToLoad, that.JSONCallback);
+            loadJSONFunc(fileToLoad, "file", that.JSONCallback);
         });
 
         // When a click event occurs near a marker icon, open a popup at the location of
@@ -120,6 +122,7 @@ function Map(loadJSONFunc) {
 
             var feature = features[0];
             var title = feature.properties.title;
+
             // the features array seems to have a copy of the actual features, and not the real original
             // features that were added. Thus, I use the title of the feature as a key to lookup the
             // pointer to the actual feature we added, so changes made to it can be seen on the map.
@@ -127,34 +130,31 @@ function Map(loadJSONFunc) {
             // different one before showing it's information in a popup.
             var actualFeature = that.geoDataMap[title];
 
-            var lineData = {
-                labels: ["January", "February", "March", "April", "May", "June", "July"],
-                datasets: [{
-                    label: "My Second dataset",
-                    fillColor: "rgba(151,187,205,0.2)",
-                    strokeColor: "rgba(151,187,205,1)",
-                    pointColor: "rgba(151,187,205,1)",
-                    pointStrokeColor: "#fff",
-                    pointHighlightFill: "#fff",
-                    pointHighlightStroke: "rgba(151,187,205,1)",
-                    data: actualFeature.properties.myData
-                }, {
-                    label: "My third dataset",
-                    fillColor: "rgba(151,187,205,0.2)",
-                    strokeColor: "rgba(151,187,205,1)",
-                    pointColor: "rgba(151,187,205,1)",
-                    pointStrokeColor: "#fff",
-                    pointHighlightFill: "#fff",
-                    pointHighlightStroke: "rgba(151,187,205,1)",
-                    data: [0, 10, 20, 30, 40, 50]
-                }]
-            };
+            // load displacements from server, and then show on graph
+            loadJSONFunc(title, "point", function(response) {
+                var json = JSON.parse(response);
+                var dates = json.dates;
+                var pointDisplacements = json.displacements;
 
-            var options = {};
+                var lineData = {
+                    labels: ["January", "February", "March", "April", "May", "June", "July"],
+                    datasets: [{
+                        label: "My Second dataset",
+                        fillColor: "rgba(151,187,205,0.2)",
+                        strokeColor: "rgba(151,187,205,1)",
+                        pointColor: "rgba(151,187,205,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(151,187,205,1)",
+                        data: pointDisplacements
+                    }, ]
+                };
 
-            var ctx = document.getElementById("chart").getContext("2d");
-            var lineChart = new Chart(ctx).Line(lineData, options);
-            //var myNewChart = new Chart(ctx).Pie(pieData);           
+                var options = {};
+
+                var ctx = document.getElementById("chart").getContext("2d");
+                var lineChart = new Chart(ctx).Line(lineData, options);
+            });       
         });
 
         // Use the same approach as above to indicate that the symbols are clickable
@@ -260,11 +260,11 @@ function randomArray() {
 
 // function to use AJAX to load json from that same website - I looked online and AJAX is basically just used
 // to asynchronously load data using javascript from a server, in our case, our local website
-function loadJSON(fileToLoad, callback) {
-    console.log(fileToLoad);
+function loadJSON(arg, param, callback) {
+    console.log(arg);
     var xobj = new XMLHttpRequest();
     xobj.overrideMimeType("application/json");
-    xobj.open('GET', 'geoJSON.php?file=' + fileToLoad, true); // Replace 'my_data' with the path to your file
+    xobj.open('GET', 'geoJSON.php?' + param + "=" + arg, true); // Replace 'my_data' with the path to your file
     xobj.onreadystatechange = function() {
         if (xobj.readyState == 4 && xobj.status == "200") {
             // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
