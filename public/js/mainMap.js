@@ -9,7 +9,7 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={
 }).addTo(map);*/
 
 var currentPoint = 1;
-var file = "/test_chunk_";
+var file = "/home/vagrant/code/insar_map_mvc/public/json/test_chunk_";
 
 function Map(loadJSONFunc) {
     // my mapbox api key
@@ -45,27 +45,7 @@ function Map(loadJSONFunc) {
             // set title
             geodata.features[i].properties.title = "\"" + i + "\"";
 
-            var displacementsForCurrentPoint = geodata.features[i].properties.displacement;
-            var displacement = 0;
-            var numPoints = 0;
-
-            for (var disp in displacementsForCurrentPoint) {
-                displacement += displacementsForCurrentPoint[disp];
-                numPoints++;
-            }
-            // get the average
-            displacement /= numPoints;
-
-            // set colors
-            geodata.features[i].properties.myData = randomArray();
-            if (displacement < -0.15682001908620198) {
-                geodata.features[i].properties["marker-symbol"] = "redMarker";
-            } else if (displacement < 0.05441098411877951) {
-                geodata.features[i].properties["marker-symbol"] = "yellowMarker";
-            } else {
-                geodata.features[i].properties["marker-symbol"] = "greenMarker";
-            }
-
+            // add this feature to our map for quick lookup
             that.geoDataMap[geodata.features[i].properties.title] = geodata.features[i];
         }
 
@@ -97,7 +77,7 @@ function Map(loadJSONFunc) {
         currentPoint++;
         var fileToLoad = file + currentPoint + ".json";
 
-        if (currentPoint <= 5) {
+        if (currentPoint <= 23) {
             loadJSONFunc(fileToLoad, that.JSONCallback);
         } else {
             that.enableInteractivity();
@@ -284,7 +264,7 @@ function loadJSON(fileToLoad, callback) {
     console.log(fileToLoad);
     var xobj = new XMLHttpRequest();
     xobj.overrideMimeType("application/json");
-    xobj.open('GET', 'http://insar.app/json/' + fileToLoad, true); // Replace 'my_data' with the path to your file
+    xobj.open('GET', 'geoJSON.php?file=' + fileToLoad, true); // Replace 'my_data' with the path to your file
     xobj.onreadystatechange = function() {
         if (xobj.readyState == 4 && xobj.status == "200") {
             // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
