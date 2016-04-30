@@ -93,7 +93,7 @@ function Map(loadJSONFunc) {
             container: containerID, // container id
             style: 'basicStyle.json', //stylesheet location
             center: [130.89, 31.89], // starting position
-            zoom: 1 // starting zoom
+            zoom: 7 // starting zoom
         });
 
         that.map.addControl(new mapboxgl.Navigation());
@@ -133,8 +133,8 @@ function Map(loadJSONFunc) {
             // load displacements from server, and then show on graph
             loadJSONFunc(title, "point", function(response) {
                 var json = JSON.parse(response);
-                var dates = json.dates;
-                var pointDisplacements = json.displacements;
+                var dates = json.dates; // the dates
+                var pointDisplacements = json.displacements; // the displacements
 
                 var lineData = {
                     labels: ["January", "February", "March", "April", "May", "June", "July"],
