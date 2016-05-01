@@ -384,6 +384,10 @@
     function switchLayer(layer) {
       var layerId = layer.target.id;
       myMap.map.setStyle(layerId + "Style.json");
+      currentPoint = 1; // reset current point
+      var fileToLoad = currentPoint.toString();
+      // load in our sample json
+      myMap.loadJSONFunc(fileToLoad, "file", myMap.JSONCallback);
     }
 
     for (var i = 0; i < inputs.length; i++) {

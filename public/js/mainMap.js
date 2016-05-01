@@ -22,6 +22,7 @@ function Map(loadJSONFunc) {
     this.geoDataMap = {};
     this.layers = [];
     this.drawer = null;
+    this.loadJSONFunc = loadJSONFunc;
 
     this.disableInteractivity = function() {
         that.map.dragPan.disable();
@@ -79,7 +80,7 @@ function Map(loadJSONFunc) {
         currentPoint++;
         var fileToLoad = currentPoint.toString();
 
-        if (currentPoint <= 1) {
+        if (currentPoint <= 3) {
             loadJSONFunc(fileToLoad, "file", that.JSONCallback);
         } else {
             that.enableInteractivity();
