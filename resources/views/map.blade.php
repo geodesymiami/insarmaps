@@ -14,9 +14,10 @@
     <script src="https://code.jquery.com/jquery-1.12.2.js"></script>
     <!--script src='/geojson-vt-dev.js'></script-->
     <!--script type="text/javascript" src='scripts.js'></script-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.min.js"></script>
     <link href="vendor/mapbox-gl-draw.css" rel="stylesheet" />
     <script type="text/javascript" src="vendor/mapbox-gl-draw.js"></script>
+    <script type="text/javascript" src="js/regression.js"></script>
+    <script type="text/javascript" src="js/canvasjs.min.js"></script>
     <style>
       @import url(https://fonts.googleapis.com/css?family=Carter+One);
 
@@ -338,7 +339,7 @@
 
       <h2>Line-of-sight displacement time-series</h2>
 
-      <div class="side-item graph">
+      <div id="chartContainer" class="side-item graph">
         <canvas id="chart"></canvas>
       </div>
 

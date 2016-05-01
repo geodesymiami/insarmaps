@@ -11,6 +11,38 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={
 var currentPoint = 1;
 var file = "/home/vagrant/code/insar_map_mvc/public/json/geo_timeseries_masked.h5test_chunk_";
 
+// falk's date string is in format yyyymmdd - ex: 20090817 
+// take an array of these strings and return an array of date objects
+var convertStringsToDateArray = function(date_string_array) {
+    var date_array = [];
+    for (i = 0; i < date_string_array.length; i++) {
+        var year = date_string_array[i].substr(0, 4);
+        var month = date_string_array[i].substr(4, 2);
+        var day = date_string_array[i].substr(6, 2);
+        var date = new Date(year, month, day);
+        date_array.push(date);
+    }
+    return date_array;
+}
+
+// find how many days have elapsed in a date object
+var getDaysElapsed = function(date) {
+    var date2 = new Date(date.getFullYear(), 01, 1);
+    var timeDiff = Math.abs(date.getTime() - date2.getTime());
+    return Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+}
+
+// convert date in decimal - for example, 20060131 is Jan 31, 2006
+// 31 days have passed so decimal format = [2006 + (31/365)] = 2006.0849
+// take an array of date objects and return an array of date decimals
+var convertDatesToDecimalArray = function(date_array) {
+    var decimals = [];
+    for (i = 0; i < date_array.length; i++) {
+        decimals.push(date_array[i].getFullYear() + getDaysElapsed(date_array[i]) / 365);
+    }
+    return decimals;
+}
+
 function Map(loadJSONFunc) {
     // my mapbox api key
     mapboxgl.accessToken = "pk.eyJ1Ijoia2pqajExMjIzMzQ0IiwiYSI6ImNpbDJqYXZ6czNjdWd2eW0zMTA2aW1tNXUifQ.cPofQqq5jqm6l4zix7k6vw";
@@ -124,37 +156,76 @@ function Map(loadJSONFunc) {
             var feature = features[0];
             var title = feature.properties.title;
 
-            // the features array seems to have a copy of the actual features, and not the real original
-            // features that were added. Thus, I use the title of the feature as a key to lookup the
-            // pointer to the actual feature we added, so changes made to it can be seen on the map.
-            // that is just a test, so whenever a marker is clicked, the marker symbol is changed to a
-            // different one before showing it's information in a popup.
-            var actualFeature = that.geoDataMap[title];
+            // // the features array seems to have a copy of the actual features, and not the real original
+            // // features that were added. Thus, I use the title of the feature as a key to lookup the
+            // // pointer to the actual feature we added, so changes made to it can be seen on the map.
+            // // that is just a test, so whenever a marker is clicked, the marker symbol is changed to a
+            // // different one before showing it's information in a popup.
+            // var actualFeature = that.geoDataMap[title];
 
             // load displacements from server, and then show on graph
             loadJSONFunc(title, "point", function(response) {
                 var json = JSON.parse(response);
-                var dates = json.dates; // the dates
-                var pointDisplacements = json.displacements; // the displacements
 
-                var lineData = {
-                    labels: ["January", "February", "March", "April", "May", "June", "July"],
-                    datasets: [{
-                        label: "My Second dataset",
-                        fillColor: "rgba(151,187,205,0.2)",
-                        strokeColor: "rgba(151,187,205,1)",
-                        pointColor: "rgba(151,187,205,1)",
-                        pointStrokeColor: "#fff",
-                        pointHighlightFill: "#fff",
-                        pointHighlightStroke: "rgba(151,187,205,1)",
-                        data: pointDisplacements
-                    }, ]
-                };
+                // put code here, the dates are in dates variable, and points are in
+                // falk's dates from json file are in format yyyymmdd - 20090817
+                var date_string_array = json.dates;
+                var displacement_array = json.displacements;
+                var date_array = convertStringsToDateArray(date_string_array);
 
-                var options = {};
+                // convert dates to decimal format
+                var decimal_array = convertDatesToDecimalArray(date_array);
 
-                var ctx = document.getElementById("chart").getContext("2d");
-                var lineChart = new Chart(ctx).Line(lineData, options);
+                // format for chart = {x: date, y: displacement}
+                data = [];
+                for (i = 0; i < date_array.length; i++) {
+                    data.push({ x: date_array[i], y: displacement_array[i] });
+                }
+                console.log(data);
+
+                // calculate and render a linear regression of those dates and displacements
+                data_regression = [];
+                for (i = 0; i < decimal_array.length; i++) {
+                    data_regression.push([decimal_array[i], displacement_array[i]]);
+                }
+                var result = regression('linear', data_regression);
+
+                // based on result, draw linear regression line by calcuating y = mx+b and plotting 
+                // (x,y) as a separate dataset with a single point
+                // caculate y = displacement for first and last dates = x in order to plot the line
+                var slope = result["equation"][0];
+                var y_intercept = result["equation"][1];
+                var first_date = date_array[0];
+                var first_regression_displacement = slope * decimal_array[0] + y_intercept;
+                var last_date = date_array[date_array.length - 1];
+                var last_regression_displacement = slope * decimal_array[decimal_array.length - 1] + y_intercept;
+
+                // now add the new regression line as a second dataset in the chart
+                // fricking apple computers swipe left it goes right - windows does it other way
+                var chart = new CanvasJS.Chart("chartContainer", {
+                    title: {
+                        text: "Timeseries-Displacement Chart"
+                    },
+                    axisX: {
+                        title: "Date",
+                        gridThickness: 2
+                    },
+                    axisY: {
+                        title: "Displacement"
+                    },
+                    data: [{
+                        type: "line",
+                        // dataPoints: date_array
+                        dataPoints: data
+                    }, {
+                        type: "line",
+                        // dataPoints: date_array
+                        dataPoints: [{ x: first_date, y: first_regression_displacement },
+                            { x: last_date, y: last_regression_displacement }
+                        ]
+                    }]
+                });
+                chart.render();
             });
         });
 
