@@ -204,104 +204,104 @@
 
         .logos{
          margin:2em;   
-        }
-
-        .logo2{
-          margin-left: 4em;   
-        }
-
-        label{
-         color:white;
-        }
-
-        .funding{
-          color:white;
-          margin-left: 2em;
-        }
-
-        #map-type-menu input[type="radio"]:checked + label {
-          color: coral;
-        }
-
-        .overlay_toggle>*{
-          display: inline-block;
-          float: left;
-        }
-
-        .toggle-button { 
-          background-color: white;
-          margin: 5px 0;
-          border-radius: 20px;
-          border: 2px solid #D0D0D0;
-          height: 14px;
-          cursor: pointer;
-          width: 50px;
-          position: relative;
-          display: inline-block;
-          user-select: none;
-          -webkit-user-select: none;
-          -ms-user-select: none;
-          -moz-user-select: none; 
-          margin-left: 2em;
-      }
-
-      .toggle-button button { 
-        cursor: pointer;
-        outline: 0;
-        display:block;
-        position: absolute;
-        left: 0;
-        top: 0;
-        border-radius: 100%;
-        width: 20px;
-        height: 20px;
-        background-color: white;
-        float: left;
-        margin: -3px 0 0 -3px;
-        border: 2px solid #D0D0D0;
-        transition: left 0.3s; 
-      }
-
-      .toggle-button-selected { 
-         background-color: coral; border: 2px solid coral;
        }
 
-      .toggle-button-selected button {
-        left: 37px;
-        top: 0;
-        margin: 0;
-        border: none;
-        width: 20px;
-        height: 22px;
-        box-shadow: 0 0 0px rgba(0,0,0,0.1); 
+       .logo2{
+        margin-left: 4em;   
       }
 
-      </style>
-    </head>
-    <body>
-      <div id="map-container">
+      label{
+       color:white;
+     }
+
+     .funding{
+      color:white;
+      margin-left: 2em;
+    }
+
+    #map-type-menu input[type="radio"]:checked + label {
+      color: coral;
+    }
+
+    .overlay_toggle>*{
+      display: inline-block;
+      float: left;
+    }
+
+    .toggle-button { 
+      background-color: white;
+      margin: 5px 0;
+      border-radius: 20px;
+      border: 2px solid #D0D0D0;
+      height: 14px;
+      cursor: pointer;
+      width: 50px;
+      position: relative;
+      display: inline-block;
+      user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      -moz-user-select: none; 
+      margin-left: 2em;
+    }
+
+    .toggle-button button { 
+      cursor: pointer;
+      outline: 0;
+      display:block;
+      position: absolute;
+      left: 0;
+      top: 0;
+      border-radius: 100%;
+      width: 20px;
+      height: 20px;
+      background-color: white;
+      float: left;
+      margin: -3px 0 0 -3px;
+      border: 2px solid #D0D0D0;
+      transition: left 0.3s; 
+    }
+
+    .toggle-button-selected { 
+     background-color: coral; border: 2px solid coral;
+   }
+
+   .toggle-button-selected button {
+    left: 37px;
+    top: 0;
+    margin: 0;
+    border: none;
+    width: 20px;
+    height: 22px;
+    box-shadow: 0 0 0px rgba(0,0,0,0.1); 
+  }
+
+</style>
+</head>
+<body>
+  <div id="map-container">
+  </div>
+  <div class="side-bar">
+    <div class="side-item-box">
+      <!--div class="side-item move-button"></div-->
+      <div class="side-item title">
+        <h1>University of Miami’s inSAR Time Series Viewer</h1>
       </div>
-      <div class="side-bar">
-        <div class="side-item-box">
-          <!--div class="side-item move-button"></div-->
-          <div class="side-item title">
-            <h1>University of Miami’s inSAR Time Series Viewer</h1>
-          </div>
-          <br><br>
-          <div id="map-type-menu">
-            <input id='basic' type='radio' name='rtoggle' value='basic' checked='checked'>
-            <label for='basic'>basic</label>
-            <input id='streets' type='radio' name='rtoggle' value='streets'>
-            <label for='streets'>streets</label>
-            <input id='satellite' type='radio' name='rtoggle' value='satellite'>
-            <label for='satellite'>satellite</label>
-          </div>
-          <div class="overlay_toggle"> 
-            <label>Turn on/off data overlay</label>
-              <div class="toggle-button">     
-                <button></button> 
-             </div>
-          </div>
+      <br><br>
+      <div id="map-type-menu">
+        <input id='basic' type='radio' name='rtoggle' value='basic' checked='checked'>
+        <label for='basic'>basic</label>
+        <input id='streets' type='radio' name='rtoggle' value='streets'>
+        <label for='streets'>streets</label>
+        <input id='satellite' type='radio' name='rtoggle' value='satellite'>
+        <label for='satellite'>satellite</label>
+      </div>
+      <div class="overlay_toggle"> 
+        <label>Turn on/off data overlay</label>
+        <div class="toggle-button">     
+          <button></button> 
+        </div>
+      </div>
       <!--<div class="side-item description">
         <p>Description of inSAR map web application.</p>
       </div>-->
@@ -355,7 +355,7 @@
       <div class="logos">     
         <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto"> 
         <img src="img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
-     </div>
+      </div>
     </div> <!-- End side-item-box -->
   </div> <!-- End side-bar -->
   <?php
@@ -395,9 +395,53 @@
       inputs[i].onclick = switchLayer;
     }
 
+    // enum-style object to denote toggle state
+    var ToggleStates = {
+      OFF: 0,
+      ON: 1
+    }
+    var toggleState = ToggleStates.ON;
+
+    // when site loads, turn toggle on
+    $(window).load(function() {
+      $(".toggle-button").toggleClass('toggle-button-selected');
+    });
     /*TOGGLE BUTTON*/
     $(document).on('click', '.toggle-button', function() {
-      $(this).toggleClass('toggle-button-selected'); 
+      $(this).toggleClass('toggle-button-selected');
+
+      // change states
+      if (toggleState == ToggleStates.ON) {
+        toggleState = ToggleStates.OFF;
+      } else {
+        toggleState = ToggleStates.ON;
+      }
+
+      // on? add layers, otherwise remove them
+      if (toggleState == ToggleStates.ON) {
+        for (var i = 0; i < myMap.layers.length; i++) {
+          var id = myMap.layers[i];
+
+          myMap.map.addLayer({
+              "id": id,
+              "interactive": true,
+              "type": "symbol",
+              "source": id,
+              "layout": {
+                "icon-image": "{marker-symbol}",
+                "icon-allow-overlap": true,
+                "icon-size": 0.1 // notice the bigger size at smaller zoom levels.
+            }
+          });
+        }  
+      } else {
+        for (var i = 0; i < myMap.layers.length; i++) {
+          var id = myMap.layers[i];
+
+          myMap.map.removeLayer(id);
+        }
+      }
+
     });
   </script>
 </body>
