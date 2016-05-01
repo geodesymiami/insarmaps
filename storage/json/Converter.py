@@ -47,12 +47,16 @@ except:
 # start clock to track how long conversion process takes
 start_time = time.clock()
 
-# iterate through the group to get the dataset names, then use these keys to get
-# datasets and add them (stored in memory) to a dictionary 
+# iterate through the group to get the dataset names
 dataset_keys = []
 timeseries_datasets = {}
 for key in group.iterkeys():
 	dataset_keys.append(key)
+
+# sort the dates and then then use these date keys to get
+# datasets and add them (stored in memory) to a dictionary 
+dataset_keys.sort() 
+for key in group.iterkeys():
 	timeseries_datasets[key] = group[key][()]
 
 file.close()	
@@ -73,7 +77,6 @@ chunk_size = 20000
 # inner loop increments column = latitude
 longitude = y_first - y_step
 latitude = x_first - x_step
-
 
 # ---------------------------------------------------------------------------------------
 def read_data(latitude, longitude, num_rows, num_columns): 
