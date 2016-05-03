@@ -6,7 +6,7 @@ ini_set('display_errors', 1);
 // this where to put lin reg?
 // get the date array in the json file
 
-$filePath = "/home/vagrant/code/insar_map_mvc/public/json/geo_timeseries_masked.h5test_chunk_";
+$filePath = "/var/www/html/insar_map_mvc/storage/json/geo_timeseries_masked.h5test_chunk_";
 
 $file = isset($_GET["file"]) ? $_GET["file"] : "";
 $point = isset($_GET["point"]) ? $_GET["point"] : "";
