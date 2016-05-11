@@ -3,10 +3,8 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 //phpinfo();
 
-// this where to put lin reg?
-// get the date array in the json file
-
-$filePath = "/var/www/html/insar_map_mvc/storage/json/geo_timeseries_masked.h5test_chunk_";
+// thats the original file path
+$filePath = "/var/www/html/insar_map_mvc/storage/json/geo_timeseries_masked/geo_timeseries_masked_chunk_";
 
 $file = isset($_GET["file"]) ? $_GET["file"] : "";
 $point = isset($_GET["point"]) ? $_GET["point"] : "";

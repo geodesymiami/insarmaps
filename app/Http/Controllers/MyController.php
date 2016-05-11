@@ -16,13 +16,17 @@ class MyController extends Controller
       $path = storage_path() . "/json";
       //dd($path);
       $fileName = $request->file('data')->getClientOriginalName();
+      $this->makeFolder($request);
+
       $request->file('data')->move(
         $path, $fileName
       );
 
       $execString = "/usr/bin/python " . $path . "/Converter.py " . $path . "/" . $fileName . " timeseries";
 
-      $return = exec($execString, $out);          
+      echo "gonna run converter <br>";
+    //$return = exec($execString, $out);          
+      echo "i shouldnt' have run converter, so you should see me fast<br>";
 
       return view('map', ["fileName" => $fileName]);
     }
@@ -32,6 +36,15 @@ class MyController extends Controller
       $fileName = "";
 
       return view('map', ["fileName" => $fileName]);
+    }
+
+    public function makeFolder(Request $request) {
+      // get path where the Converter.py is stored in
+      $fileName = $request->file('data')->getClientOriginalName();
+      $folderName = chop($fileName,".h5");
+      $jsonFolderPath = "/var/www/html/insar_map_mvc/storage/json/" . $folderName;
+      print $jsonFolderPath;
+      mkdir($jsonFolderPath, 0777);
     }
 
 }

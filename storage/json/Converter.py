@@ -13,7 +13,7 @@ if (len(sys.argv) != 3):
 	print "example: python Converter.py geo_timeseries_masked.h5 timeseries"
 	sys.exit()
 
-# ignore argv[0], which is the name of the script
+script_name = sys.argv[0]
 file_name = sys.argv[1]
 group_name = sys.argv[2]
 
@@ -126,18 +126,17 @@ read_data(latitude, longitude, num_rows, num_columns)
 # and stores all json chunks relevant to that h5 file
 pattern = ".h5"
 index = file_name.find(pattern)
-if index == 0: 
+if index == -1: 
 	print "Not an h5 file"
 	sys.exit()
 
 directory_name = file_name[0:index]
 
-# get the path of the .h5 file, also the path for the directory named after the .h5 file
-path = os.path.abspath(file_name)
+# get the path of Converter.py - in this case it should be in storage/json
+script_path = os.path.abspath(script_name)
 
-#  directory_path = path of the .h5 file + h5 file directory name
-directory_path = os.path.dirname(os.path.realpath(file_name)) + "/" + directory_name
-print directory_path 
+#  directory_path = path of Converter.py file + h5 file directory name
+directory_path = os.path.dirname(script_path) + "/" + directory_name
 
 # if directory named after the .h5 file doesn't exist, create it
 if not os.path.exists(directory_path):
