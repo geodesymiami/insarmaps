@@ -4,6 +4,7 @@ import numpy as np
 from osgeo import gdal
 import math
 import time
+import os
 import sys
 
 # get name of h5 file and the groupname of that file's data
@@ -21,6 +22,7 @@ group_name = sys.argv[2]
 # unfortunately, try/except statements dont work when opening h5 files using gdal
 f = gdal.Open(file_name)
 if f is None:
+	print "Invalid h5 file"
 	sys.exit()
 
 # convert attributes in metadata to float, later use values to calculate latitude, longitude
@@ -116,12 +118,34 @@ def read_data(latitude, longitude, num_rows, num_columns):
 	# create logic to get the last points < chunk_size
 	siu_man.append(chunk_points)		
 
-
 # ---------------------------------------------------------------------------------------
 # call the read_data() function
 read_data(latitude, longitude, num_rows, num_columns)
 
-# dump the data from siu_man array into a newly created json file, then close json file
+# get the path for the directory to be created - named after .h5 file
+# and stores all json chunks relevant to that h5 file
+pattern = ".h5"
+index = file_name.find(pattern)
+if index == 0: 
+	print "Not an h5 file"
+	sys.exit()
+
+directory_name = file_name[0:index]
+
+# get the path of the .h5 file, also the path for the directory named after the .h5 file
+path = os.path.abspath(file_name)
+
+#  directory_path = path of the .h5 file + h5 file directory name
+directory_path = os.path.dirname(os.path.realpath(file_name)) + "/" + directory_name
+print directory_path 
+
+# if directory named after the .h5 file doesn't exist, create it
+if not os.path.exists(directory_path):
+    os.makedirs(directory_path)
+    print "made directory: " + directory_path
+
+# dump the data from siu_man array into a newly created json file chunk
+# then put json file into directory named after the h5 file
 counter = 1
 for chunk in siu_man:
 	full_data = {
@@ -129,8 +153,8 @@ for chunk in siu_man:
 	"dates": dataset_keys, 
 	"features": chunk
 	}
-	file = file_name + "test_chunk_" + str(counter) + ".json"
-	json_file = open(file, "w")
+	file_name = directory_name + "_chunk_" + str(counter) + ".json"
+	json_file = open(directory_path + "/" + file_name, "w")
 	string_json = json.dumps(full_data, json_file, indent=4, separators=(',',':'))
 	json_file.write("%s" % string_json)
 	json_file.close()
