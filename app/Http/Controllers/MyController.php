@@ -5,46 +5,48 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
+session_start();
 
 class MyController extends Controller
 {
 
-    public function convertData(Request $request) {
-      //dd($request->file('data')->getClientOriginalName());
-      //dd($request);
-      //dd(storage_path());
-      $path = storage_path() . "/json";
-      //dd($path);
-      $fileName = $request->file('data')->getClientOriginalName();
-      $this->makeFolder($request);
+    // name of each chunk is folder_path/chunk_#
+  public function convertData(Request $request) {
+    $path = storage_path() . "/json";
+    $fileName = $request->file('data')->getClientOriginalName();
+    $folderPath = $this->makeFolder($request);
 
-      $request->file('data')->move(
-        $path, $fileName
+    $request->file('data')->move(
+      $path, $fileName
       );
 
-      $execString = "/usr/bin/python " . $path . "/Converter.py " . $path . "/" . $fileName . " timeseries";
+    $execString = "/usr/bin/python " . $path . "/Converter.py " . $path . "/" . $fileName . " timeseries " . $folderPath;
 
-      echo "gonna run converter <br>";
-    //$return = exec($execString, $out);          
-      echo "i shouldnt' have run converter, so you should see me fast<br>";
+    $return = exec($execString, $out);          
+    return view('map', ["fileName" => $fileName]);
+  }
 
-      return view('map', ["fileName" => $fileName]);
-    }
+  public function returnPage() {
 
-    public function returnPage() {
+    $fileName = "";
 
-      $fileName = "";
+    return view('map', ["fileName" => $fileName]);
+  }
 
-      return view('map', ["fileName" => $fileName]);
-    }
+    // creates a folder to store json and returns string of that folder path
+  public function makeFolder(Request $request) {
+    // get path where the Converter.py is stored in
+    $fileName = $request->file('data')->getClientOriginalName();
+    $folderName = chop($fileName,".h5");
+    $jsonFolderPath = "/var/www/html/insar_map_mvc/storage/json/" . $folderName;
+    $_SESSION['jsonFolderPath'] = $jsonFolderPath;
 
-    public function makeFolder(Request $request) {
-      // get path where the Converter.py is stored in
-      $fileName = $request->file('data')->getClientOriginalName();
-      $folderName = chop($fileName,".h5");
-      $jsonFolderPath = "/var/www/html/insar_map_mvc/storage/json/" . $folderName;
-      print $jsonFolderPath;
+    // $dirname = $_POST["search"];
+    // $filename = "/folder/" . $dirname . "/";
+    if (!file_exists($jsonFolderPath)) {
       mkdir($jsonFolderPath, 0777);
     }
+    return $jsonFolderPath;
+  }
 
 }

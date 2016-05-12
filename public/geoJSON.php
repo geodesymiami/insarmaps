@@ -1,10 +1,14 @@
 <?php
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+session_start();
+
 //phpinfo();
 
-// thats the original file path
-$filePath = "/var/www/html/insar_map_mvc/storage/json/geo_timeseries_masked/geo_timeseries_masked_chunk_";
+// $filePath = "/var/www/html/insar_map_mvc/storage/json/Medan_geo_timeseries_masked/chunk_";
+// make file path be the resulf of session get
+$filePath = $_SESSION['jsonFolderPath'] . "/chunk_";
 
 $file = isset($_GET["file"]) ? $_GET["file"] : "";
 $point = isset($_GET["point"]) ? $_GET["point"] : "";
