@@ -5,17 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
+session_start();
 
 class MyController extends Controller
 {
 
     // name of each chunk is folder_path/chunk_#
   public function convertData(Request $request) {
-      //dd($request->file('data')->getClientOriginalName());
-      //dd($request);
-      //dd(storage_path());
     $path = storage_path() . "/json";
-      //dd($path);
     $fileName = $request->file('data')->getClientOriginalName();
     $folderPath = $this->makeFolder($request);
 
@@ -26,7 +23,6 @@ class MyController extends Controller
     $execString = "/usr/bin/python " . $path . "/Converter.py " . $path . "/" . $fileName . " timeseries " . $folderPath;
 
     $return = exec($execString, $out);          
-
     return view('map', ["fileName" => $fileName]);
   }
 
@@ -43,6 +39,7 @@ class MyController extends Controller
     $fileName = $request->file('data')->getClientOriginalName();
     $folderName = chop($fileName,".h5");
     $jsonFolderPath = "/var/www/html/insar_map_mvc/storage/json/" . $folderName;
+    $_SESSION['jsonFolderPath'] = $jsonFolderPath;
 
     // $dirname = $_POST["search"];
     // $filename = "/folder/" . $dirname . "/";

@@ -69,8 +69,7 @@ function Map(loadJSONFunc) {
     };
 
     this.JSONCallback = function(response) {
-        // that function is called once the AJAX loads the geojson
-
+        // that function is called once the AJAX loads the geojson        
         geodata = JSON.parse(response); // put response geojson string into a js object
 
         // example loop to show how we can change the geodata JSON object at runtime with code
