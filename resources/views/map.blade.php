@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
- <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
- <link rel="stylesheet" href="css/mainPage.css" />
- <!--jQuery-->
- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
- <!--leaflet-->
- <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
- <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js'></script>
- <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css' rel='stylesheet' />
+   <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+   <link rel="stylesheet" href="css/mainPage.css" />
+   <!--jQuery-->
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+   <!--leaflet-->
+   <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js'></script>
+   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css' rel='stylesheet' />
     <!--<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
     <script type="text/javascript" src="jquery-2.2.2.min.js"></script>
     <script src="https://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>-->
     <script src="https://code.jquery.com/jquery-1.12.2.js"></script>
     <!--script src='/geojson-vt-dev.js'></script-->
     <!--script type="text/javascript" src='scripts.js'></script-->
-    <link href="vendor/mapbox-gl-draw.css" rel="stylesheet" />
-    <script type="text/javascript" src="vendor/mapbox-gl-draw.js"></script>
+    <link href="vendor/mapbox-gl-draw.css" rel="stylesheet" />    <script type="text/javascript" src="vendor/mapbox-gl-draw.js"></script>
     <script type="text/javascript" src="js/regression.js"></script>
     <script type="text/javascript" src="js/canvasjs.min.js"></script>
-  </head>
-  <body>
+</head>
+<body>
     <div id="map-container">
     </div>
     <div class="side-bar">
@@ -38,10 +37,10 @@
           <input id='satellite' type='radio' name='rtoggle' value='satellite'>
           <label for='satellite'>satellite</label>
         </div>
-        <div class="overlay_toggle"> 
+        <div class="overlay_toggle">
           <label>Turn on/off data overlay</label>
-          <div class="toggle-button">     
-            <button></button> 
+          <div class="toggle-button">
+            <button></button>
           </div>
         </div>
       <!--<div class="side-item description">
@@ -93,20 +92,20 @@
         {!! Form::close() !!}
 
       </div>
-      <p class="funding">The UM geodesy lab is funded by NASA and NSF. This website resulted from Spring 2016 CSC 431 class. The student designers and programmers were Jeffrey Lin, Krystina Scott, Milen Buchillon-Triff,Sherman Hewitt, Xavier Aballa, Zishi Wu, and Alfredo Terrero.</p>  
-      <div class="logos">     
-        <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto"> 
+      <p class="funding">The UM geodesy lab is funded by NASA and NSF. This website resulted from Spring 2016 CSC 431 class. The student designers and programmers were Jeffrey Lin, Krystina Scott, Milen Buchillon-Triff,Sherman Hewitt, Xavier Aballa, Zishi Wu, and Alfredo Terrero.</p>
+      <div class="logos">
+        <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto">
         <img src="img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
       </div>
     </div> <!-- End side-item-box -->
   </div> <!-- End side-bar -->
   <?php
-  echo "
+echo "
   <script type=\"text/javascript\">
     var fileName = \"$fileName\";
   </script>
   ";
-  ?>
+?>
   <script type="text/javascript" src="js/mainMap.js"></script>
   <script>
 
@@ -175,7 +174,7 @@
                 "icon-size": 0.1 // notice the bigger size at smaller zoom levels.
               }
             });
-        }  
+        }
       } else {
         for (var i = 0; i < myMap.layers.length; i++) {
           var id = myMap.layers[i];
