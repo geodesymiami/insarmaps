@@ -38,7 +38,7 @@ class MyController extends Controller
     // get path where the Converter.py is stored in
     $fileName = $request->file('data')->getClientOriginalName();
     $folderName = chop($fileName,".h5");
-    $jsonFolderPath = "/var/www/html/insar_map_mvc/storage/json/" . $folderName;
+    $jsonFolderPath = storage_path() . "/json/"/*"/var/www/html/insar_map_mvc/storage/json/"*/ . $folderName;
     $_SESSION['jsonFolderPath'] = $jsonFolderPath;
 
     // $dirname = $_POST["search"];

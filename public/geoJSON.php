@@ -10,10 +10,10 @@ session_start();
 // make file path be the resulf of session get
 $filePath = $_SESSION['jsonFolderPath'] . "/chunk_";
 
-$file = isset($_GET["file"]) ? $_GET["file"] : "";
-$point = isset($_GET["point"]) ? $_GET["point"] : "";
+$action = $_GET["action"];
 
-if ($file != "") {
+if ($action == "file") {
+	$file = $_GET["file"];
 	$file = $filePath . $file . ".json";
 	$fileContents = file_get_contents($file);
 	$json = json_decode($fileContents, true);
@@ -48,7 +48,8 @@ if ($file != "") {
 	}
 
 	echo json_encode($json);
-} else if ($point != "") {
+} else if ($action == "point") {
+	$point = $_GET["point"];
 	$jsonToReturn = array();
 
 	$tokens = explode(":", $point);
