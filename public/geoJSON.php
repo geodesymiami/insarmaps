@@ -3,16 +3,17 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 session_start();
-
+include_once("../vendor/laravel/framework/src/Illuminate/Foundation/helpers.php");
 //phpinfo();
 
 // $filePath = "/var/www/html/insar_map_mvc/storage/json/Medan_geo_timeseries_masked/chunk_";
-// make file path be the resulf of session get
-$filePath = $_SESSION['jsonFolderPath'] . "/chunk_";
 
+$storage_path = "/var/www/html/insar_map_mvc/storage/json/";
 $action = $_GET["action"];
 
 if ($action == "file") {
+	// make file path be the resulf of session get
+	$filePath = $_SESSION['jsonFolderPath'] . "/chunk_";
 	$file = $_GET["file"];
 	$file = $filePath . $file . ".json";
 	$fileContents = file_get_contents($file);
@@ -50,6 +51,8 @@ if ($action == "file") {
 	echo json_encode($json);
 } else if ($action == "point") {
 	$point = $_GET["point"];
+	// make file path be the resulf of session get
+	$filePath = $_SESSION['jsonFolderPath'] . "/chunk_";
 	$jsonToReturn = array();
 
 	$tokens = explode(":", $point);
@@ -75,6 +78,19 @@ if ($action == "file") {
 			break;
 		}
 	}
+}
+else if ($action == "areas") {
+	// check the storage_path for directories
+	$files = scandir($storage_path);
+	$length = count($files);
+	$dir_array = [];
+	// ignore index 0 and 1 since ./ and ../
+	for ($i = 2; $i < $length; $i++) {	
+		if (is_dir($storage_path . $files[$i])) {
+			array_push($dir_array, $files[$i]); 
+		}
+	}
+	echo json_encode($dir_array);
 }
 
 // take in array of date strings and return array of date objects
