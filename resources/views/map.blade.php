@@ -98,7 +98,8 @@
           <h2>Well Hello!</h2>
         </div>
       </div>
-      <a class='button glyphicon glyphicon-plus' id="popupButton" href='#'>Select Area</a>
+      <button><a class='button glyphicon glyphicon-plus' id="popupButton" href='#'>Select Area</a></button>
+
       <p class="funding">The UM geodesy lab is funded by NASA and NSF. This website resulted from Spring 2016 CSC 431 class. The student designers and programmers were Jeffrey Lin, Krystina Scott, Milen Buchillon-Triff,Sherman Hewitt, Xavier Aballa, Zishi Wu, and Alfredo Terrero.</p>
       <div class="logos">
         <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto">

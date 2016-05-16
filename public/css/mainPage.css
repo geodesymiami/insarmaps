@@ -127,9 +127,7 @@ body {
 
 #popupButton {
   outline: none;
-  background: #007fed;
-  color: #fff;
-  font-size: 24px;
+  font-size: 12px;
   transition: transform 0.25s;
 }
 #popupButton:hover {
