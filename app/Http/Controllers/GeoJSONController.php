@@ -31,6 +31,22 @@ class GeoJSONController extends Controller {
     return $dates;
   }
 
+  // returns an array containing folder path as a string and number of json files
+  public function getNumJSONFiles($jsonFolderPath) {
+    $num_files = 0;
+    $files = scandir($jsonFolderPath);
+    $len = count($files);
+    $pattern = ".json";  // pattern is chunk_<number>.json"
+    $array = [$jsonFolderPath];
+    for ($i = 0; $i < $len; $i++) {
+      if (strpos($files[$i], $pattern) !== false) {
+        $num_files++;
+      }
+    }
+    array_push($array, $num_files);
+    return $array;
+  }
+
   // find how many days have elapsed in a date object
   private function getDaysElapsed($date) {
     $date2 = new DateTime($date->format("Y") . "-" . 01 . "-" . 1);
@@ -46,7 +62,6 @@ class GeoJSONController extends Controller {
     $numDates = count($date_array);
     for ($i = 0; $i < $numDates; $i++) {
       array_push($decimals, (floatval($date_array[$i]->format("Y")) + $this->getDaysElapsed($date_array[$i])/365.0));
-          // echo $decimals[$i] . "\n";
     }   
     return $decimals;
   }
@@ -168,15 +183,25 @@ class GeoJSONController extends Controller {
 
   public function getAreas() {
     // check the storage_path for directories
+    $storage_path = storage_path() . "/json/";
     $files = scandir($storage_path);
     $length = count($files);
+
     $dir_array = [];
     // ignore index 0 and 1 since ./ and ../
+    // we should actually check for ./ and ../ instead of this cheap hack
     for ($i = 2; $i < $length; $i++) {  
       if (is_dir($storage_path . $files[$i])) {
         array_push($dir_array, $files[$i]); 
       }
     }
-    echo json_encode($dir_array);
+    // 2d array stores [path_name, num_files]
+    $array = [];
+    for ($i = 0; $i < count($dir_array); $i++) {
+      $subArray = $this->getNumJSONFiles($storage_path . $dir_array[$i]);
+      array_push($array, $subArray);
+    }
+
+    echo json_encode($array);
   }
 }
