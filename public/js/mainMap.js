@@ -134,10 +134,10 @@ function Map(loadJSONFunc) {
             // that.drawer = mapboxgl.Draw();
             // that.map.addControl(that.drawer);
             // drawer to draw a square and select points
-            var fileToLoad = currentPoint.toString();
+            // var fileToLoad = currentPoint.toString();
             // load in our sample json
             //that.disableInteractivity();
-            loadJSONFunc(fileToLoad, "file", that.JSONCallback);
+            // loadJSONFunc(fileToLoad, "file", that.JSONCallback);
         });
 
         // When a click event occurs near a marker icon, open a popup at the location of
