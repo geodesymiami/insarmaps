@@ -153,9 +153,25 @@
     // when site loads, turn toggle on
     $(window).load(function() {
       $(".toggle-button").toggleClass('toggle-button-selected');
-      $('#popupButton').on('click', function(){
-        console.log("you rossed me");
+      $('#popupButton').on('click', function() {
         $('.wrap, #popupButton').toggleClass('active');
+
+        // get json response and put it in a table
+        loadJSON("", "areas", function(response) {         
+          var json = JSON.parse(response);
+
+          for (var i = 0; i < json.length; i++) {
+            var curArray = json[i];
+            var subDirectories = curArray[0].split("/");
+            var dirName = subDirectories[subDirectories.length - 1];
+            var dirFullName = curArray[0];
+            var dirSize = curArray[1];
+
+            // add our info in a table, first remove any old info
+            $(".wrap").find(".content").empty();
+            $(".wrap").find(".content").append(dirName.toString());
+          }
+        });
         return false;
       });
     });
