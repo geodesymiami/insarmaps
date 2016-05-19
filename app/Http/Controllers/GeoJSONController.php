@@ -112,9 +112,9 @@ class GeoJSONController extends Controller {
   }
 
   // gets a json file chunk, after calculating every point's color
-  public function getJSONFileChunk($fileChunkNumber) {
+  public function getJSONFileChunk($area, $fileChunkNumber) {
     // make file path be the resulf of session get
-    $filePath = $_SESSION['jsonFolderPath'] . "/chunk_";
+    $filePath = storage_path() . "/json/" . $area . "/chunk_";
     $file = $fileChunkNumber;
     $file = $filePath . $file . ".json";
     $fileContents = file_get_contents($file);
