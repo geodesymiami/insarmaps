@@ -95,8 +95,16 @@
       <!--insert pop up button for selecting areas to view here-->
       <div class='wrap'>
         <div class='content'>
-          <h2>Well Hello!</h2>
-        </div>
+        <!-- table to select dataset from-->
+          <table class='table' id='myTable'>
+            <thead>
+              <tr>
+                <th>Dataset</th>
+              </tr>
+            </thead>
+            <tbody id='tableBody'></tbody>
+          </table>
+          </div>
       </div>
       <button><a class='button glyphicon glyphicon-plus' id="popupButton" href='#'>Select Area</a></button>
 
@@ -163,15 +171,15 @@
 
           console.log(json.length);
           // add our info in a table, first remove any old info
-          $(".wrap").find(".content").empty();
+          // $(".wrap").find(".content").empty();
           for (var i = 0; i < json.length; i++) {
             var curArray = json[i];
             var subDirectories = curArray[0].split("/");
             var dirName = subDirectories[subDirectories.length - 1];
             var dirFullName = curArray[0];
             var dirSize = curArray[1];
-
-            $(".wrap").find(".content").append(dirName.toString() + "<br>");
+                       
+            $("#tableBody").append("<tr id=" + dirName +  "><td value='" + dirFullName + "''>" + dirName + "</td></tr>");
           }
         });
         return false;
