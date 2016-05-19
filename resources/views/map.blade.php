@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-   <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
-   <link rel="stylesheet" href="css/mainPage.css" />
-   <!--jQuery-->
-   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-   <!--leaflet-->
-   <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
-   <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js'></script>
-   <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css' rel='stylesheet' />
+ <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+ <link rel="stylesheet" href="css/mainPage.css" />
+ <!--jQuery-->
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+ <!--leaflet-->
+ <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+ <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.js'></script>
+ <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.18.0/mapbox-gl.css' rel='stylesheet' />
     <!--<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
     <script type="text/javascript" src="jquery-2.2.2.min.js"></script>
     <script src="https://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>-->
@@ -18,8 +18,8 @@
     <link href="vendor/mapbox-gl-draw.css" rel="stylesheet" />    <script type="text/javascript" src="vendor/mapbox-gl-draw.js"></script>
     <script type="text/javascript" src="js/regression.js"></script>
     <script type="text/javascript" src="js/canvasjs.min.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <div id="map-container">
     </div>
     <div class="side-bar">
@@ -92,6 +92,14 @@
         {!! Form::close() !!}
 
       </div>
+      <!--insert pop up button for selecting areas to view here-->
+      <div class='wrap'>
+        <div class='content'>
+          <h2>Well Hello!</h2>
+        </div>
+      </div>
+      <button><a class='button glyphicon glyphicon-plus' id="popupButton" href='#'>Select Area</a></button>
+
       <p class="funding">The UM geodesy lab is funded by NASA and NSF. This website resulted from Spring 2016 CSC 431 class. The student designers and programmers were Jeffrey Lin, Krystina Scott, Milen Buchillon-Triff,Sherman Hewitt, Xavier Aballa, Zishi Wu, and Alfredo Terrero.</p>
       <div class="logos">
         <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto">
@@ -100,12 +108,12 @@
     </div> <!-- End side-item-box -->
   </div> <!-- End side-bar -->
   <?php
-echo "
+  echo "
   <script type=\"text/javascript\">
     var fileName = \"$fileName\";
   </script>
   ";
-?>
+  ?>
   <script type="text/javascript" src="js/mainMap.js"></script>
   <script>
 
@@ -146,6 +154,28 @@ echo "
     // when site loads, turn toggle on
     $(window).load(function() {
       $(".toggle-button").toggleClass('toggle-button-selected');
+      $('#popupButton').on('click', function() {
+        $('.wrap, #popupButton').toggleClass('active');
+
+        // get json response and put it in a table
+        loadJSON("", "areas", function(response) {         
+          var json = JSON.parse(response);
+
+          console.log(json.length);
+          // add our info in a table, first remove any old info
+          $(".wrap").find(".content").empty();
+          for (var i = 0; i < json.length; i++) {
+            var curArray = json[i];
+            var subDirectories = curArray[0].split("/");
+            var dirName = subDirectories[subDirectories.length - 1];
+            var dirFullName = curArray[0];
+            var dirSize = curArray[1];
+
+            $(".wrap").find(".content").append(dirName.toString() + "<br>");
+          }
+        });
+        return false;
+      });
     });
     /*TOGGLE BUTTON*/
     $(document).on('click', '.toggle-button', function() {
