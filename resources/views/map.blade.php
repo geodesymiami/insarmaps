@@ -161,6 +161,9 @@
         loadJSON("", "areas", function(response) {         
           var json = JSON.parse(response);
 
+          console.log(json.length);
+          // add our info in a table, first remove any old info
+          $(".wrap").find(".content").empty();
           for (var i = 0; i < json.length; i++) {
             var curArray = json[i];
             var subDirectories = curArray[0].split("/");
@@ -168,9 +171,7 @@
             var dirFullName = curArray[0];
             var dirSize = curArray[1];
 
-            // add our info in a table, first remove any old info
-            $(".wrap").find(".content").empty();
-            $(".wrap").find(".content").append(dirName.toString());
+            $(".wrap").find(".content").append(dirName.toString() + "<br>");
           }
         });
         return false;
