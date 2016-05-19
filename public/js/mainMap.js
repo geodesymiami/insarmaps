@@ -140,12 +140,12 @@ function Map(loadJSONFunc) {
             // var fileToLoad = currentPoint.toString();
             // load in our sample json
             //that.disableInteractivity();
-            var fullQuery = {
-                "area": "geo_timeseries_masked",
-                "fileChunk": 1
-            };
+            // var fullQuery = {
+            //     "area": "geo_timeseries_masked",
+            //     "fileChunk": 1
+            // };
 
-            loadJSONFunc(fullQuery, "file", that.JSONCallback);
+            // loadJSONFunc(fullQuery, "file", that.JSONCallback);
         });
 
         // When a click event occurs near a marker icon, open a popup at the location of
