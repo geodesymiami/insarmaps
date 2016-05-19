@@ -109,7 +109,10 @@ function Map(loadJSONFunc) {
             }
         });
         currentPoint++;
-        var fileToLoad = currentPoint.toString();
+        var fileToLoad = {
+            "area": "geo_timeseries_masked",
+            "fileChunk": currentPoint
+        };
 
         if (currentPoint <= 3) {
             loadJSONFunc(fileToLoad, "file", that.JSONCallback);
@@ -137,7 +140,12 @@ function Map(loadJSONFunc) {
             // var fileToLoad = currentPoint.toString();
             // load in our sample json
             //that.disableInteractivity();
-            // loadJSONFunc(fileToLoad, "file", that.JSONCallback);
+            var fullQuery = {
+                "area": "geo_timeseries_masked",
+                "fileChunk": 1
+            };
+
+            loadJSONFunc(fullQuery, "file", that.JSONCallback);
         });
 
         // When a click event occurs near a marker icon, open a popup at the location of
@@ -154,6 +162,9 @@ function Map(loadJSONFunc) {
 
             var feature = features[0];
             var title = feature.properties.title;
+            var query = {
+                "title": title
+            }
 
             // // the features array seems to have a copy of the actual features, and not the real original
             // // features that were added. Thus, I use the title of the feature as a key to lookup the
@@ -163,7 +174,7 @@ function Map(loadJSONFunc) {
             // var actualFeature = that.geoDataMap[title];
 
             // load displacements from server, and then show on graph
-            loadJSONFunc(title, "point", function(response) {
+            loadJSONFunc(query, "point", function(response) {
                 var json = JSON.parse(response);
 
                 // put code here, the dates are in dates variable, and points are in
@@ -332,10 +343,16 @@ function randomArray() {
 // function to use AJAX to load json from that same website - I looked online and AJAX is basically just used
 // to asynchronously load data using javascript from a server, in our case, our local website
 function loadJSON(arg, param, callback) {
-    console.log(param + "/" + arg);
+    var fullQuery = param + "/"
+
+    for (var key in arg) {
+        fullQuery += arg[key] + "/"
+    }
+
+    console.log(fullQuery);
     var xobj = new XMLHttpRequest();
     xobj.overrideMimeType("application/json");
-    xobj.open('GET', param + "/" + arg, true); // Replace 'my_data' with the path to your file
+    xobj.open('GET', fullQuery, true); // Replace 'my_data' with the path to your file
     xobj.onreadystatechange = function() {
         if (xobj.readyState == 4 && xobj.status == "200") {
             // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
