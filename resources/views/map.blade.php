@@ -190,6 +190,9 @@
             var dirSize = curArray[1];
                        
             $("#tableBody").append("<tr id=" + dirName +  "><td value='" + dirFullName + "''>" + dirName + "</td></tr>");
+
+            // make cursor change when mouse hovers over row
+            $("#" + dirName + "").css("cursor", "pointer");
             // set the on click callback function for this row
             $("#" + dirName + "").click(function() {
               $('.wrap, #popupButton').toggleClass('active');
