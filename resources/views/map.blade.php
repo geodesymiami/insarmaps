@@ -161,6 +161,7 @@
 
     function getGEOJSON(area) {
       currentPoint = 1;
+      currentArea = area;
 
       var query = {
         "area": area,

@@ -151,9 +151,9 @@ class GeoJSONController extends Controller {
     echo json_encode($json);
   }
 
-  public function getDataForPoint($point) {   
+  public function getDataForPoint($area, $point) {   
   // make file path be the resulf of session get
-    $filePath = $_SESSION['jsonFolderPath'] . "/chunk_";
+    $filePath = storage_path() . "/json/" . $area . "/chunk_";
     $jsonToReturn = array();
 
     $tokens = explode(":", $point);
