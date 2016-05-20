@@ -9,6 +9,7 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={
 }).addTo(map);*/
 
 var currentPoint = 1;
+var currentArea = null;
 var file = "/home/vagrant/code/insar_map_mvc/public/json/geo_timeseries_masked.h5test_chunk_";
 
 // falk's date string is in format yyyymmdd - ex: 20090817 
@@ -110,7 +111,7 @@ function Map(loadJSONFunc) {
         });
         currentPoint++;
         var fileToLoad = {
-            "area": "geo_timeseries_masked",
+            "area": currentArea,
             "fileChunk": currentPoint
         };
 
@@ -141,7 +142,7 @@ function Map(loadJSONFunc) {
             // load in our sample json
             //that.disableInteractivity();
             // var fullQuery = {
-            //     "area": "geo_timeseries_masked",
+            //     "area": currentArea,
             //     "fileChunk": 1
             // };
 
@@ -163,6 +164,7 @@ function Map(loadJSONFunc) {
             var feature = features[0];
             var title = feature.properties.title;
             var query = {
+                "area": currentArea,
                 "title": title
             }
 
