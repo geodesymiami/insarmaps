@@ -45,6 +45,7 @@ var convertDatesToDecimalArray = function(date_array) {
 }
 
 function Map(loadJSONFunc) {
+    var that = this;
     // my mapbox api key
     mapboxgl.accessToken = "pk.eyJ1Ijoia2pqajExMjIzMzQ0IiwiYSI6ImNpbDJqYXZ6czNjdWd2eW0zMTA2aW1tNXUifQ.cPofQqq5jqm6l4zix7k6vw";
     // the map
@@ -53,7 +54,7 @@ function Map(loadJSONFunc) {
     this.geodata = null;
     this.drawer = null;
     this.geoDataMap = {};
-    this.layers = [];
+    this.layers_ = [];
     this.drawer = null;
     this.loadJSONFunc = loadJSONFunc;
 
@@ -69,88 +70,70 @@ function Map(loadJSONFunc) {
         that.map.doubleClickZoom.enable();
     };
 
-    this.JSONCallback = function(response) {
-        // that function is called once the AJAX loads the geojson        
-        geodata = JSON.parse(response); // put response geojson string into a js object
-
-        // example loop to show how we can change the geodata JSON object at runtime with code
-        for (var i = 0, len = geodata.features.length; i < len; i++) {
-            var lat = geodata.features[i].geometry.coordinates[0];
-            var long = geodata.features[i].geometry.coordinates[1];;
-            // set title
-            geodata.features[i].properties.title = currentPoint.toString() + ":" + lat.toString() + ":" + long.toString();
-
-            // add this feature to our map for quick lookup
-            that.geoDataMap[geodata.features[i].properties.title] = geodata.features[i];
-        }
-
-        // a fast webgl (I think) geoJSON layer which will hopefully allow us to add millions of points
-        // with little performance hit
-        geoJSONSource = new mapboxgl.GeoJSONSource({
-            data: geodata,
-            cluster: that.clustered,
-            clusterMaxZoom: 14, // Max zoom to cluster points on
-            clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
+    this.initLayer = function(data) {
+        var layer;
+        var layerList = document.getElementById('layerList');
+        that.layers_.push({
+            "id": "simple-tiles",
+            "type": "raster",
+            "source": "raster-tiles",
+            "minzoom": 0,
+            "maxzoom": 22
+        });
+        data['vector_layers'].forEach(function(el) {
+            console.log("pushed");
+            that.layers_.push({
+                id: el['id'] + Math.random(),
+                source: 'vector_layer_',
+                'source-layer': el['id'],
+                interactive: true,
+                type: 'circle',
+                paint: {
+                    'circle-color': {
+                        property: 'numb',
+                        stops: [
+                            [-1, '#f1f075'],
+                            [0, '#e55e5e'],
+                            [1, '#f1fee0']
+                        ]
+                    }
+                }
+            });
+        });
+        var tileset = 'mapbox.streets';
+        that.map.setStyle({
+            version: 8,
+            sources: {
+                "raster-tiles": {
+                    "type": "raster",
+                    "url": "mapbox://" + tileset,
+                    "tileSize": 256
+                },
+                'vector_layer_': {
+                    type: 'vector',
+                    tiles: data['tiles'],
+                    minzoom: data['minzoom'],
+                    maxzoom: data['maxzoom'],
+                    bounds: data['bounds']
+                }
+            },
+            layers: that.layers_
         });
 
-        var id = "markers" + currentPoint;
-
-        that.layers.push(id); // keep track of our layers
-
-        that.map.addSource(id, geoJSONSource);
-        that.map.addLayer({
-            "id": id,
-            "interactive": true,
-            "type": "symbol",
-            "source": id,
-            "layout": {
-                "icon-image": "{marker-symbol}", // stuff in {} gets replaced by the corresponding value
-                "icon-allow-overlap": true,
-                "icon-size": 0.1 // size of the icon
-            }
-        });
-        currentPoint++;
-        var fileToLoad = {
-            "area": currentArea,
-            "fileChunk": currentPoint
-        };
-
-        if (currentPoint <= 3) {
-            loadJSONFunc(fileToLoad, "file", that.JSONCallback);
-        } else {
-            that.enableInteractivity();
-        }
+        return layer;
     }
-
-    var that = this;
 
     this.addMapToPage = function(containerID) {
         that.map = new mapboxgl.Map({
             container: containerID, // container id
-            style: 'basicStyle.json', //stylesheet location
             center: [130.89, 31.89], // starting position
             zoom: 7 // starting zoom
         });
+        var tileJSON = { "name": "chunk_3.mbtiles", "description": "chunk_3.mbtiles", "version": "2", "minzoom": 0, "maxzoom": 14, "center": [130.57251, 32.481963, 14], "bounds": [130.538889, 32.452322, 131.082223, 32.5001], "type": "overlay", "format": "pbf", "basename": "t", "profile": "mercator", "scale": 1, "tiles": ["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "tilejson": "2.0.0", "scheme": "xyz", "grids": ["http://localhost:8888/t/{z}/{x}/{y}.grid.json"], "vector_layers": [{ "id": "chunk_3", "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "displacement": "String", "numb": "Number" } }], "zoom": 7, "tileUrl": "http://localhost:8888/t/14/14134/6627.pbf" };
+        that.initLayer(tileJSON);
 
         that.map.addControl(new mapboxgl.Navigation());
-        // what to do after the map loads
-        that.map.once("load", function load() {
-            // that.drawer = mapboxgl.Draw();
-            // that.map.addControl(that.drawer);
-            // drawer to draw a square and select points
-            // var fileToLoad = currentPoint.toString();
-            // load in our sample json
-            //that.disableInteractivity();
-            // var fullQuery = {
-            //     "area": currentArea,
-            //     "fileChunk": 1
-            // };
 
-            // loadJSONFunc(fullQuery, "file", that.JSONCallback);
-        });
-
-        // When a click event occurs near a marker icon, open a popup at the location of
-        // the feature, with description HTML from its properties.
         that.map.on('click', function(e) {
             var features = that.map.queryRenderedFeatures(e.point, {
                 layers: that.layers
@@ -254,91 +237,9 @@ function Map(loadJSONFunc) {
         // we are using, though, the marker icons are always the same size, so we can use that function to
         // dynamically change the sizes depending on the current map zoom.
         that.map.on('zoomend', function() {
-            // here's where you decided what zoom levels the layer should and should
-            // not be available for: use javascript comparisons like < and > if
-            // you want something other than just one zoom level, like
-            // (map.getZoom > 10)
-            console.log(that.map.getZoom());
-            if (that.map.getZoom() > 13) {
-                // remove the old layer with large markers and add a new one with small markers
-                for (var i = 0; i < that.layers.length; i++) {
-                    var id = that.layers[i];
 
-                    if (that.map.getLayer(id)) {
-                        that.map.removeLayer(id);
-                    }
-
-                    that.map.addLayer({
-                        "id": id,
-                        "interactive": true,
-                        "type": "symbol",
-                        "source": id,
-                        "layout": {
-                            "icon-image": "{marker-symbol}",
-                            "icon-allow-overlap": true,
-                            "icon-size": 0.4 // notice the new, larger size at higher zoom levels
-                        }
-                    });
-                }
-            } else if (that.map.getZoom() > 12) {
-                // if there is a layer with that name, remove it before adding
-                for (var i = 0; i < that.layers.length; i++) {
-                    var id = that.layers[i];
-
-                    if (that.map.getLayer(id)) {
-                        that.map.removeLayer(id);
-                    }
-
-                    that.map.addLayer({
-                        "id": id,
-                        "interactive": true,
-                        "type": "symbol",
-                        "source": id,
-                        "layout": {
-                            "icon-image": "{marker-symbol}",
-                            "icon-allow-overlap": true,
-                            "icon-size": 0.25 // notice the bigger size at smaller zoom levels.
-                        }
-                    });
-                }
-            } else {
-                // if there is a layer with that name, remove it before adding
-                for (var i = 0; i < that.layers.length; i++) {
-                    var id = that.layers[i];
-
-                    if (that.map.getLayer(id)) {
-                        that.map.removeLayer(id);
-                    }
-
-                    that.map.addLayer({
-                        "id": id,
-                        "interactive": true,
-                        "type": "symbol",
-                        "source": id,
-                        "layout": {
-                            "icon-image": "{marker-symbol}",
-                            "icon-allow-overlap": true,
-                            "icon-size": 0.1 // notice the bigger size at smaller zoom levels.
-                        }
-                    });
-                }
-            }
         });
-        // that.map.on("draw.changed", function(e) {
-        //     console.log(e)
-        // });
     }
-}
-
-// Test function that generates an array of random numbers. Simulates each point on map having their own data.
-function randomArray() {
-    var myArray = [];
-
-    for (var i = 0; i < 7; i++) {
-        myArray.push(Math.floor(Math.random() * (50 - 1 + 1)) + 1);
-    }
-
-    return myArray;
 }
 
 
