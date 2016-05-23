@@ -1,3 +1,4 @@
+//tippecanoe geo_timeseries_masked_original.json -pf -pk -Bg -d9 -D7 -g4 -rg -o t.mbtiles
 // how to do it with leaflet -
 /*var map = L.map("map-container").setView([51.505, -0.09], 13);
 
@@ -88,14 +89,20 @@ function Map(loadJSONFunc) {
                 'source-layer': el['id'],
                 interactive: true,
                 type: 'circle',
+                layout: {
+                    'visibility': 'visible'
+                },
                 paint: {
                     'circle-color': {
-                        property: 'numb',
+                        property: 'm',
                         stops: [
-                            [-1, '#f1f075'],
-                            [0, '#e55e5e'],
-                            [1, '#f1fee0']
+                            [0, 'red'],
+                            [0.001, 'yellow'],
+                            [0.005, 'green']
                         ]
+                    },
+                    'circle-radius': {
+                        stops: [[5, 10], [6.5, 3], [8, 10], [10.8, 10], [12, 5]]
                     }
                 }
             });
@@ -129,7 +136,8 @@ function Map(loadJSONFunc) {
             center: [130.89, 31.89], // starting position
             zoom: 7 // starting zoom
         });
-        var tileJSON = { "name": "chunk_3.mbtiles", "description": "chunk_3.mbtiles", "version": "2", "minzoom": 0, "maxzoom": 14, "center": [130.57251, 32.481963, 14], "bounds": [130.538889, 32.452322, 131.082223, 32.5001], "type": "overlay", "format": "pbf", "basename": "t", "profile": "mercator", "scale": 1, "tiles": ["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "tilejson": "2.0.0", "scheme": "xyz", "grids": ["http://localhost:8888/t/{z}/{x}/{y}.grid.json"], "vector_layers": [{ "id": "chunk_3", "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "displacement": "String", "numb": "Number" } }], "zoom": 7, "tileUrl": "http://localhost:8888/t/14/14134/6627.pbf" };
+        var tileJSON = {"name":"t.mbtiles","description":"t.mbtiles","version":"2","minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"type":"overlay","format":"pbf","basename":"t","profile":"mercator","scale":1,"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"],"tilejson":"2.0.0","scheme":"xyz","grids":["http://localhost:8888/t/{z}/{x}/{y}.grid.json"],"vector_layers":[{"id":"geo_timeseries_masked_original","description":"","minzoom":0,"maxzoom":14,"fields":{"m":"Number"}}],"zoom":7,"tileUrl":"http://localhost:8888/t/14/14122/6648.pbf"};
+
         that.initLayer(tileJSON);
 
         that.map.addControl(new mapboxgl.Navigation());
@@ -145,6 +153,7 @@ function Map(loadJSONFunc) {
             }
 
             var feature = features[0];
+            console.log(feature);
             var title = feature.properties.title;
             var query = {
                 "area": currentArea,
@@ -237,7 +246,9 @@ function Map(loadJSONFunc) {
         // we are using, though, the marker icons are always the same size, so we can use that function to
         // dynamically change the sizes depending on the current map zoom.
         that.map.on('zoomend', function() {
-
+            var features = that.map.queryRenderedFeatures(that.map.getBounds());
+            console.log(that.map.getZoom());
+            console.log("length is " + features.length);
         });
     }
 }
