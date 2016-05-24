@@ -102,7 +102,9 @@ function Map(loadJSONFunc) {
                         ]
                     },
                     'circle-radius': {
-                        stops: [[5, 10], [6.5, 3], [8, 10], [10.8, 10], [12, 5]]
+                        // for an explanation of this array see here:
+                        // https://www.mapbox.com/blog/data-driven-styling/
+                        stops: [[5, 2], [8, 5], [13, 8], [21, 16], [34, 32]]
                     }
                 }
             });
@@ -136,7 +138,8 @@ function Map(loadJSONFunc) {
             center: [130.89, 31.89], // starting position
             zoom: 7 // starting zoom
         });
-        var tileJSON = {"name":"t.mbtiles","description":"t.mbtiles","version":"2","minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"type":"overlay","format":"pbf","basename":"t","profile":"mercator","scale":1,"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"],"tilejson":"2.0.0","scheme":"xyz","grids":["http://localhost:8888/t/{z}/{x}/{y}.grid.json"],"vector_layers":[{"id":"geo_timeseries_masked_original","description":"","minzoom":0,"maxzoom":14,"fields":{"m":"Number"}}],"zoom":7,"tileUrl":"http://localhost:8888/t/14/14122/6648.pbf"};
+        //var tileJSON = {"name":"t.mbtiles","description":"t.mbtiles","version":"2","minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"type":"overlay","format":"pbf","basename":"t","profile":"mercator","scale":1,"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"],"tilejson":"2.0.0","scheme":"xyz","grids":["http://localhost:8888/t/{z}/{x}/{y}.grid.json"],"vector_layers":[{"id":"geo_timeseries_masked_original","description":"","minzoom":0,"maxzoom":14,"fields":{"m":"Number"}}],"zoom":7,"tileUrl":"http://localhost:8888/t/14/14122/6648.pbf"};
+        var tileJSON = {"name":"t.mbtiles","description":"t.mbtiles","version":"2","minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"type":"overlay","format":"pbf","basename":"t","profile":"mercator","scale":1,"tiles":["https://b.tiles.mapbox.com/v4/kjjj11223344.drllqb0d/{z}/{x}/{y}.vector.pbf?access_token=" + mapboxgl.accessToken],"tilejson":"2.0.0","scheme":"xyz","grids":["http://localhost:8888/t/{z}/{x}/{y}.grid.json"],"vector_layers":[{"id":"geo_timeseries_masked_original","description":"","minzoom":0,"maxzoom":14,"fields":{"m":"Number"}}],"zoom":7,"tileUrl":"http://localhost:8888/t/14/14122/6648.pbf"};
 
         that.initLayer(tileJSON);
 
