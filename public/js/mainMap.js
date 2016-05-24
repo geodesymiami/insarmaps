@@ -167,6 +167,7 @@ function Map(loadJSONFunc) {
             }
 
             var feature = features[0];
+            console.log(feature);
             var lat = feature.geometry.coordinates[0];
             var long = feature.geometry.coordinates[1];
             var chunk = feature.properties.c;
@@ -203,7 +204,6 @@ function Map(loadJSONFunc) {
                 for (i = 0; i < date_array.length; i++) {
                     data.push({ x: date_array[i], y: displacement_array[i] });
                 }
-                console.log(data);
 
                 // calculate and render a linear regression of those dates and displacements
                 data_regression = [];
