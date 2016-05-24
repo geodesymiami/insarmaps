@@ -58,6 +58,7 @@ function Map(loadJSONFunc) {
     this.layers_ = [];
     this.drawer = null;
     this.loadJSONFunc = loadJSONFunc;
+    this.tileURLID = "kjjj11223344.4avm5zmh";
 
     this.disableInteractivity = function() {
         that.map.dragPan.disable();
@@ -74,13 +75,7 @@ function Map(loadJSONFunc) {
     this.initLayer = function(data) {
         var layer;
         var layerList = document.getElementById('layerList');
-        that.layers_.push({
-            "id": "simple-tiles",
-            "type": "raster",
-            "source": "raster-tiles",
-            "minzoom": 0,
-            "maxzoom": 22
-        });
+
         data['vector_layers'].forEach(function(el) {
             console.log("pushed");
             that.layers_.push({
@@ -104,7 +99,7 @@ function Map(loadJSONFunc) {
                     'circle-radius': {
                         // for an explanation of this array see here:
                         // https://www.mapbox.com/blog/data-driven-styling/
-                        stops: [[5, 2], [8, 5], [13, 8], [21, 16], [34, 32]]
+                        stops: [[5, 2], [8, 2], [13, 8], [21, 16], [34, 32]]
                     }
                 }
             });
@@ -112,7 +107,7 @@ function Map(loadJSONFunc) {
         var tileset = 'mapbox.streets';
         that.map.setStyle({
             version: 8,
-            sources: {
+            sources: {                
                 "raster-tiles": {
                     "type": "raster",
                     "url": "mapbox://" + tileset,
@@ -138,10 +133,26 @@ function Map(loadJSONFunc) {
             center: [130.89, 31.89], // starting position
             zoom: 7 // starting zoom
         });
-        var tileJSON = {"name":"t.mbtiles","description":"t.mbtiles","version":"2","minzoom":0,"maxzoom":14,"center":[130.968018,32.611616,14],"bounds":[130.565556,32.548989,131.062223,32.634544],"type":"overlay","format":"pbf","basename":"t","profile":"mercator","scale":1,"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"],"tilejson":"2.0.0","scheme":"xyz","grids":["http://localhost:8888/t/{z}/{x}/{y}.grid.json"],"vector_layers":[{"id":"chunk_1","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}}],"zoom":7,"tileUrl":"http://localhost:8888/t/14/14152/6620.pbf"};     
-        //var tileJSON = {"name":"t.mbtiles","description":"t.mbtiles","version":"2","minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"type":"overlay","format":"pbf","basename":"t","profile":"mercator","scale":1,"tiles":["https://b.tiles.mapbox.com/v4/kjjj11223344.drllqb0d/{z}/{x}/{y}.vector.pbf?access_token=" + mapboxgl.accessToken],"tilejson":"2.0.0","scheme":"xyz","grids":["http://localhost:8888/t/{z}/{x}/{y}.grid.json"],"vector_layers":[{"id":"geo_timeseries_masked_original","description":"","minzoom":0,"maxzoom":14,"fields":{"m":"Number"}}],"zoom":7,"tileUrl":"http://localhost:8888/t/14/14122/6648.pbf"};
 
-        that.initLayer(tileJSON);
+        var tileset = 'mapbox.streets';
+        that.layers_.push({
+            "id": "simple-tiles",
+            "type": "raster",
+            "source": "raster-tiles",
+            "minzoom": 0,
+            "maxzoom": 22
+        });
+        that.map.setStyle({
+            version: 8,
+            sources: {
+                "raster-tiles": {
+                    "type": "raster",
+                    "url": "mapbox://" + tileset,
+                    "tileSize": 256
+                }
+            },
+            layers: that.layers_
+        });
 
         that.map.addControl(new mapboxgl.Navigation());
 
@@ -156,7 +167,6 @@ function Map(loadJSONFunc) {
             }
 
             var feature = features[0];
-            console.log(feature);
             var lat = feature.geometry.coordinates[0];
             var long = feature.geometry.coordinates[1];
             var chunk = feature.properties.c;
@@ -238,6 +248,7 @@ function Map(loadJSONFunc) {
                     }]
                 });
                 chart.render();
+                console.log("rendered");
             });
         });
 
@@ -256,7 +267,6 @@ function Map(loadJSONFunc) {
         that.map.on('zoomend', function() {
             var features = that.map.queryRenderedFeatures(that.map.getBounds());
             console.log(that.map.getZoom());
-            console.log("length is " + features.length);
         });
     }
 }
