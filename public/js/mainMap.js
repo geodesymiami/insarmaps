@@ -138,8 +138,8 @@ function Map(loadJSONFunc) {
             center: [130.89, 31.89], // starting position
             zoom: 7 // starting zoom
         });
-        //var tileJSON = {"name":"t.mbtiles","description":"t.mbtiles","version":"2","minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"type":"overlay","format":"pbf","basename":"t","profile":"mercator","scale":1,"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"],"tilejson":"2.0.0","scheme":"xyz","grids":["http://localhost:8888/t/{z}/{x}/{y}.grid.json"],"vector_layers":[{"id":"geo_timeseries_masked_original","description":"","minzoom":0,"maxzoom":14,"fields":{"m":"Number"}}],"zoom":7,"tileUrl":"http://localhost:8888/t/14/14122/6648.pbf"};
-        var tileJSON = {"name":"t.mbtiles","description":"t.mbtiles","version":"2","minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"type":"overlay","format":"pbf","basename":"t","profile":"mercator","scale":1,"tiles":["https://b.tiles.mapbox.com/v4/kjjj11223344.drllqb0d/{z}/{x}/{y}.vector.pbf?access_token=" + mapboxgl.accessToken],"tilejson":"2.0.0","scheme":"xyz","grids":["http://localhost:8888/t/{z}/{x}/{y}.grid.json"],"vector_layers":[{"id":"geo_timeseries_masked_original","description":"","minzoom":0,"maxzoom":14,"fields":{"m":"Number"}}],"zoom":7,"tileUrl":"http://localhost:8888/t/14/14122/6648.pbf"};
+        var tileJSON = {"name":"t.mbtiles","description":"t.mbtiles","version":"2","minzoom":0,"maxzoom":14,"center":[130.968018,32.611616,14],"bounds":[130.565556,32.548989,131.062223,32.634544],"type":"overlay","format":"pbf","basename":"t","profile":"mercator","scale":1,"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"],"tilejson":"2.0.0","scheme":"xyz","grids":["http://localhost:8888/t/{z}/{x}/{y}.grid.json"],"vector_layers":[{"id":"chunk_1","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}}],"zoom":7,"tileUrl":"http://localhost:8888/t/14/14152/6620.pbf"};     
+        //var tileJSON = {"name":"t.mbtiles","description":"t.mbtiles","version":"2","minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"type":"overlay","format":"pbf","basename":"t","profile":"mercator","scale":1,"tiles":["https://b.tiles.mapbox.com/v4/kjjj11223344.drllqb0d/{z}/{x}/{y}.vector.pbf?access_token=" + mapboxgl.accessToken],"tilejson":"2.0.0","scheme":"xyz","grids":["http://localhost:8888/t/{z}/{x}/{y}.grid.json"],"vector_layers":[{"id":"geo_timeseries_masked_original","description":"","minzoom":0,"maxzoom":14,"fields":{"m":"Number"}}],"zoom":7,"tileUrl":"http://localhost:8888/t/14/14122/6648.pbf"};
 
         that.initLayer(tileJSON);
 
@@ -157,7 +157,12 @@ function Map(loadJSONFunc) {
 
             var feature = features[0];
             console.log(feature);
-            var title = feature.properties.title;
+            var lat = feature.geometry.coordinates[0];
+            var long = feature.geometry.coordinates[1];
+            var chunk = feature.properties.c;
+            var pointNumber = feature.properties.p;
+            var title = chunk.toString() + ":" + pointNumber.toString() + ":" + lat.toString() + ":" + long.toString();
+           
             var query = {
                 "area": currentArea,
                 "title": title
