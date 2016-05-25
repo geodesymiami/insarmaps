@@ -59,6 +59,7 @@ function Map(loadJSONFunc) {
     this.drawer = null;
     this.loadJSONFunc = loadJSONFunc;
     this.tileURLID = "kjjj11223344.4avm5zmh";
+    that.tileJSON = null;
 
     this.disableInteractivity = function() {
         that.map.dragPan.disable();

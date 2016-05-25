@@ -171,15 +171,15 @@
       // loadJSON(query, "file", myMap.JSONCallback);
        //var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[]};
        
-       var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://insarvmcsc431.cloudapp.net:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[]};
-       console.log(tileJSON);
+       myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://insarvmcsc431.cloudapp.net:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[]};
+       console.log(myMap.tileJSON);
        for (var i = 1; i < 944; i++) {
         var layer = {"id":"chunk_" + i,"description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}};
-        tileJSON.vector_layers.push(layer);
-       }
+        myMap.tileJSON.vector_layers.push(layer);
+      }
 
-       myMap.initLayer(tileJSON);
-     }
+      myMap.initLayer(myMap.tileJSON);
+    }
     // when site loads, turn toggle on
     $(window).load(function() {
       $(".toggle-button").toggleClass('toggle-button-selected');
@@ -226,26 +226,28 @@
 
       // on? add layers, otherwise remove them
       if (toggleState == ToggleStates.ON) {
-        for (var i = 0; i < myMap.layers.length; i++) {
-          var id = myMap.layers[i];
+        myMap.map.addSource("vector_layer_", {
+            type: 'vector',
+            tiles: myMap.tileJSON['tiles'],
+            minzoom: myMap.tileJSON['minzoom'],
+            maxzoom: myMap.tileJSON['maxzoom'],
+            bounds: myMap.tileJSON['bounds']
+        });
+        for (var i = 0; i < myMap.layers_.length; i++) {
+          var layer = myMap.layers_[i];
 
-          myMap.map.addLayer({
-            "id": id,
-            "interactive": true,
-            "type": "symbol",
-            "source": id,
-            "layout": {
-              "icon-image": "{marker-symbol}",
-              "icon-allow-overlap": true,
-                "icon-size": 0.1 // notice the bigger size at smaller zoom levels.
-              }
-            });
+          myMap.map.addLayer(layer);
         }
       } else {
-        for (var i = 0; i < myMap.layers.length; i++) {
-          var id = myMap.layers[i];
+        myMap.map.removeSource("vector_layer_");
 
-          myMap.map.removeLayer(id);
+        for (var i = 0; i < myMap.layers_.length; i++) {
+          var id = myMap.layers_[i].id;
+
+          // don't remove the base map, only the points
+          if (id !== "simple-tiles") {
+            myMap.map.removeLayer(id);
+          }
         }
       }
 
