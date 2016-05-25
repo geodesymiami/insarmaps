@@ -158,8 +158,9 @@ class GeoJSONController extends Controller {
 
     $tokens = explode(":", $point);
     $fileNum = $tokens[0];
-    $lat = $tokens[1];
-    $long = $tokens[2];
+    $pointNumber = $tokens[1];
+    $lat = $tokens[2];
+    $long = $tokens[3];
 
     $file = $filePath . $fileNum . ".json";
     $fileContents = file_get_contents($file);
@@ -170,11 +171,11 @@ class GeoJSONController extends Controller {
     $jsonToReturn["dates"] = $json["dates"];
 
     for ($i = 0; $i < $numFeatures; $i++) {
-      $fileLat = $json["features"][$i]["geometry"]["coordinates"][0];
-      $fileLong = $json["features"][$i]["geometry"]["coordinates"][1];
+      $filePointNumber = $json["features"][$i]["properties"]["p"];
+      $pointNumber = $json["features"][$i]["properties"]["p"];
 
-      if (abs($lat - $fileLat) < $epsilon && abs($long - $fileLong) < $epsilon) {
-        $jsonToReturn["displacements"] = $json["features"][$i]["properties"]["displacement"];
+      if ($pointNumber == $filePointNumber) {
+        $jsonToReturn["displacements"] = $json["features"][$i]["properties"]["d"];
         echo json_encode($jsonToReturn);
         break;
       }

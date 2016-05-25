@@ -95,7 +95,7 @@
       <!--insert pop up button for selecting areas to view here-->
       <div class='wrap'>
         <div class='content'>
-        <!-- table to select dataset from-->
+          <!-- table to select dataset from-->
           <table class='table' id='myTable'>
             <thead>
               <tr>
@@ -104,7 +104,7 @@
             </thead>
             <tbody id='tableBody'></tbody>
           </table>
-          </div>
+        </div>
       </div>
       <button><a class='button glyphicon glyphicon-plus' id="popupButton" href='#'>Select Area</a></button>
 
@@ -160,16 +160,26 @@
     var toggleState = ToggleStates.ON;
 
     function getGEOJSON(area) {
-      currentPoint = 1;
+      // currentPoint = 1;
       currentArea = area;
 
-      var query = {
-        "area": area,
-        "fileChunk": currentPoint
-      }
+      // var query = {
+      //   "area": area,
+      //   "fileChunk": currentPoint
+      // }
 
-      loadJSON(query, "file", myMap.JSONCallback);
-    }
+      // loadJSON(query, "file", myMap.JSONCallback);
+       //var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[{"id":"chunk_1","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_10","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_11","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_12","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_13","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_14","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_15","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_16","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_17","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_18","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_19","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_2","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_20","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_21","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_22","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_23","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_3","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_4","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_5","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_6","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_7","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_8","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_9","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}}]};
+       
+       var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[]};
+       console.log(tileJSON);
+       for (var i = 1; i < 944; i++) {
+        var layer = {"id":"chunk_" + i,"description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}};
+        tileJSON.vector_layers.push(layer);
+       }
+
+       myMap.initLayer(tileJSON);
+     }
     // when site loads, turn toggle on
     $(window).load(function() {
       $(".toggle-button").toggleClass('toggle-button-selected');
@@ -188,7 +198,7 @@
             var dirName = subDirectories[subDirectories.length - 1];
             var dirFullName = curArray[0];
             var dirSize = curArray[1];
-                       
+
             $("#tableBody").append("<tr id=" + dirName +  "><td value='" + dirFullName + "''>" + dirName + "</td></tr>");
 
             // make cursor change when mouse hovers over row

@@ -1,3 +1,4 @@
+//tippecanoe geo_timeseries_masked_original.json -pf -pk -Bg -d9 -D7 -g4 -rg -o t.mbtiles
 // how to do it with leaflet -
 /*var map = L.map("map-container").setView([51.505, -0.09], 13);
 
@@ -45,6 +46,7 @@ var convertDatesToDecimalArray = function(date_array) {
 }
 
 function Map(loadJSONFunc) {
+    var that = this;
     // my mapbox api key
     mapboxgl.accessToken = "pk.eyJ1Ijoia2pqajExMjIzMzQ0IiwiYSI6ImNpbDJqYXZ6czNjdWd2eW0zMTA2aW1tNXUifQ.cPofQqq5jqm6l4zix7k6vw";
     // the map
@@ -53,9 +55,10 @@ function Map(loadJSONFunc) {
     this.geodata = null;
     this.drawer = null;
     this.geoDataMap = {};
-    this.layers = [];
+    this.layers_ = [];
     this.drawer = null;
     this.loadJSONFunc = loadJSONFunc;
+    this.tileURLID = "kjjj11223344.4avm5zmh";
 
     this.disableInteractivity = function() {
         that.map.dragPan.disable();
@@ -69,88 +72,90 @@ function Map(loadJSONFunc) {
         that.map.doubleClickZoom.enable();
     };
 
-    this.JSONCallback = function(response) {
-        // that function is called once the AJAX loads the geojson        
-        geodata = JSON.parse(response); // put response geojson string into a js object
+    this.initLayer = function(data) {
+        var layer;
+        var layerList = document.getElementById('layerList');
 
-        // example loop to show how we can change the geodata JSON object at runtime with code
-        for (var i = 0, len = geodata.features.length; i < len; i++) {
-            var lat = geodata.features[i].geometry.coordinates[0];
-            var long = geodata.features[i].geometry.coordinates[1];;
-            // set title
-            geodata.features[i].properties.title = currentPoint.toString() + ":" + lat.toString() + ":" + long.toString();
-
-            // add this feature to our map for quick lookup
-            that.geoDataMap[geodata.features[i].properties.title] = geodata.features[i];
-        }
-
-        // a fast webgl (I think) geoJSON layer which will hopefully allow us to add millions of points
-        // with little performance hit
-        geoJSONSource = new mapboxgl.GeoJSONSource({
-            data: geodata,
-            cluster: that.clustered,
-            clusterMaxZoom: 14, // Max zoom to cluster points on
-            clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
+        data['vector_layers'].forEach(function(el) {
+            console.log("pushed");
+            that.layers_.push({
+                id: el['id'] + Math.random(),
+                source: 'vector_layer_',
+                'source-layer': el['id'],
+                interactive: true,
+                type: 'circle',
+                layout: {
+                    'visibility': 'visible'
+                },
+                paint: {
+                    'circle-color': {
+                        property: 'm',
+                        stops: [
+                            [0, 'red'],
+                            [0.001, 'yellow'],
+                            [0.005, 'green']
+                        ]
+                    },
+                    'circle-radius': {
+                        // for an explanation of this array see here:
+                        // https://www.mapbox.com/blog/data-driven-styling/
+                        stops: [[5, 2], [8, 2], [13, 8], [21, 16], [34, 32]]
+                    }
+                }
+            });
+        });
+        var tileset = 'mapbox.streets';
+        that.map.setStyle({
+            version: 8,
+            sources: {                
+                "raster-tiles": {
+                    "type": "raster",
+                    "url": "mapbox://" + tileset,
+                    "tileSize": 256
+                },
+                'vector_layer_': {
+                    type: 'vector',
+                    tiles: data['tiles'],
+                    minzoom: data['minzoom'],
+                    maxzoom: data['maxzoom'],
+                    bounds: data['bounds']
+                }
+            },
+            layers: that.layers_
         });
 
-        var id = "markers" + currentPoint;
-
-        that.layers.push(id); // keep track of our layers
-
-        that.map.addSource(id, geoJSONSource);
-        that.map.addLayer({
-            "id": id,
-            "interactive": true,
-            "type": "symbol",
-            "source": id,
-            "layout": {
-                "icon-image": "{marker-symbol}", // stuff in {} gets replaced by the corresponding value
-                "icon-allow-overlap": true,
-                "icon-size": 0.1 // size of the icon
-            }
-        });
-        currentPoint++;
-        var fileToLoad = {
-            "area": currentArea,
-            "fileChunk": currentPoint
-        };
-
-        if (currentPoint <= 3) {
-            loadJSONFunc(fileToLoad, "file", that.JSONCallback);
-        } else {
-            that.enableInteractivity();
-        }
+        return layer;
     }
-
-    var that = this;
 
     this.addMapToPage = function(containerID) {
         that.map = new mapboxgl.Map({
             container: containerID, // container id
-            style: 'basicStyle.json', //stylesheet location
             center: [130.89, 31.89], // starting position
             zoom: 7 // starting zoom
         });
 
-        that.map.addControl(new mapboxgl.Navigation());
-        // what to do after the map loads
-        that.map.once("load", function load() {
-            // that.drawer = mapboxgl.Draw();
-            // that.map.addControl(that.drawer);
-            // drawer to draw a square and select points
-            // var fileToLoad = currentPoint.toString();
-            // load in our sample json
-            //that.disableInteractivity();
-            // var fullQuery = {
-            //     "area": currentArea,
-            //     "fileChunk": 1
-            // };
-
-            // loadJSONFunc(fullQuery, "file", that.JSONCallback);
+        var tileset = 'mapbox.streets';
+        that.layers_.push({
+            "id": "simple-tiles",
+            "type": "raster",
+            "source": "raster-tiles",
+            "minzoom": 0,
+            "maxzoom": 22
+        });
+        that.map.setStyle({
+            version: 8,
+            sources: {
+                "raster-tiles": {
+                    "type": "raster",
+                    "url": "mapbox://" + tileset,
+                    "tileSize": 256
+                }
+            },
+            layers: that.layers_
         });
 
-        // When a click event occurs near a marker icon, open a popup at the location of
-        // the feature, with description HTML from its properties.
+        that.map.addControl(new mapboxgl.Navigation());
+
         that.map.on('click', function(e) {
             var features = that.map.queryRenderedFeatures(e.point, {
                 layers: that.layers
@@ -162,7 +167,13 @@ function Map(loadJSONFunc) {
             }
 
             var feature = features[0];
-            var title = feature.properties.title;
+            console.log(feature);
+            var lat = feature.geometry.coordinates[0];
+            var long = feature.geometry.coordinates[1];
+            var chunk = feature.properties.c;
+            var pointNumber = feature.properties.p;
+            var title = chunk.toString() + ":" + pointNumber.toString() + ":" + lat.toString() + ":" + long.toString();
+           
             var query = {
                 "area": currentArea,
                 "title": title
@@ -193,7 +204,6 @@ function Map(loadJSONFunc) {
                 for (i = 0; i < date_array.length; i++) {
                     data.push({ x: date_array[i], y: displacement_array[i] });
                 }
-                console.log(data);
 
                 // calculate and render a linear regression of those dates and displacements
                 data_regression = [];
@@ -238,6 +248,7 @@ function Map(loadJSONFunc) {
                     }]
                 });
                 chart.render();
+                console.log("rendered");
             });
         });
 
@@ -254,91 +265,10 @@ function Map(loadJSONFunc) {
         // we are using, though, the marker icons are always the same size, so we can use that function to
         // dynamically change the sizes depending on the current map zoom.
         that.map.on('zoomend', function() {
-            // here's where you decided what zoom levels the layer should and should
-            // not be available for: use javascript comparisons like < and > if
-            // you want something other than just one zoom level, like
-            // (map.getZoom > 10)
+            var features = that.map.queryRenderedFeatures(that.map.getBounds());
             console.log(that.map.getZoom());
-            if (that.map.getZoom() > 13) {
-                // remove the old layer with large markers and add a new one with small markers
-                for (var i = 0; i < that.layers.length; i++) {
-                    var id = that.layers[i];
-
-                    if (that.map.getLayer(id)) {
-                        that.map.removeLayer(id);
-                    }
-
-                    that.map.addLayer({
-                        "id": id,
-                        "interactive": true,
-                        "type": "symbol",
-                        "source": id,
-                        "layout": {
-                            "icon-image": "{marker-symbol}",
-                            "icon-allow-overlap": true,
-                            "icon-size": 0.4 // notice the new, larger size at higher zoom levels
-                        }
-                    });
-                }
-            } else if (that.map.getZoom() > 12) {
-                // if there is a layer with that name, remove it before adding
-                for (var i = 0; i < that.layers.length; i++) {
-                    var id = that.layers[i];
-
-                    if (that.map.getLayer(id)) {
-                        that.map.removeLayer(id);
-                    }
-
-                    that.map.addLayer({
-                        "id": id,
-                        "interactive": true,
-                        "type": "symbol",
-                        "source": id,
-                        "layout": {
-                            "icon-image": "{marker-symbol}",
-                            "icon-allow-overlap": true,
-                            "icon-size": 0.25 // notice the bigger size at smaller zoom levels.
-                        }
-                    });
-                }
-            } else {
-                // if there is a layer with that name, remove it before adding
-                for (var i = 0; i < that.layers.length; i++) {
-                    var id = that.layers[i];
-
-                    if (that.map.getLayer(id)) {
-                        that.map.removeLayer(id);
-                    }
-
-                    that.map.addLayer({
-                        "id": id,
-                        "interactive": true,
-                        "type": "symbol",
-                        "source": id,
-                        "layout": {
-                            "icon-image": "{marker-symbol}",
-                            "icon-allow-overlap": true,
-                            "icon-size": 0.1 // notice the bigger size at smaller zoom levels.
-                        }
-                    });
-                }
-            }
         });
-        // that.map.on("draw.changed", function(e) {
-        //     console.log(e)
-        // });
     }
-}
-
-// Test function that generates an array of random numbers. Simulates each point on map having their own data.
-function randomArray() {
-    var myArray = [];
-
-    for (var i = 0; i < 7; i++) {
-        myArray.push(Math.floor(Math.random() * (50 - 1 + 1)) + 1);
-    }
-
-    return myArray;
 }
 
 
