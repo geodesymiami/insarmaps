@@ -59,7 +59,8 @@ function Map(loadJSONFunc) {
     this.drawer = null;
     this.loadJSONFunc = loadJSONFunc;
     this.tileURLID = "kjjj11223344.4avm5zmh";
-    that.tileJSON = null;
+    this.tileJSON = null;
+    this.clickLocationMarker = new mapboxgl.GeoJSONSource();
 
     this.disableInteractivity = function() {
         that.map.dragPan.disable();
@@ -174,6 +175,7 @@ function Map(loadJSONFunc) {
                 layers: that.layers
             });
             that.map.interactive = false;
+            var layerID = "touchLocation";
             //console.log("this is features",features);
             if (!features.length) {
                 return;
@@ -192,9 +194,8 @@ function Map(loadJSONFunc) {
                 "title": title
             }
 
-            that.map.addSource("touchLocation", {
-                "type": "geojson",
-                "data": {
+            if (!that.map.getLayer(layerID)) {
+                that.clickLocationMarker.setData({
                     "type": "FeatureCollection",
                     "features": [{
                         "type": "Feature",
@@ -206,17 +207,32 @@ function Map(loadJSONFunc) {
                             "marker-symbol": "dog-park"
                         }
                     }]
-                }
-            });
+                });
+                that.map.addSource(layerID, that.clickLocationMarker);
 
-            that.map.addLayer({
-                "id": "touchLocation",
-                "type": "symbol",
-                "source": "touchLocation",
-                "layout": {
-                    "icon-image": "{marker-symbol}-15",
-                }
-            });
+                that.map.addLayer({
+                    "id": layerID,
+                    "type": "symbol",
+                    "source": layerID,
+                    "layout": {
+                        "icon-image": "{marker-symbol}-15",
+                    }
+                });
+            } else {
+                that.clickLocationMarker.setData({
+                    "type": "FeatureCollection",
+                    "features": [{
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [lat, long]
+                        },
+                        "properties": {
+                            "marker-symbol": "dog-park"
+                        }
+                    }]
+                });
+            }
 
             // // the features array seems to have a copy of the actual features, and not the real original
             // // features that were added. Thus, I use the title of the feature as a key to lookup the
