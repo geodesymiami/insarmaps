@@ -78,7 +78,6 @@ function Map(loadJSONFunc) {
         var layerList = document.getElementById('layerList');
 
         data['vector_layers'].forEach(function(el) {
-            console.log("pushed");
             that.layers_.push({
                 id: el['id'] + Math.random(),
                 source: 'vector_layer_',
@@ -100,7 +99,13 @@ function Map(loadJSONFunc) {
                     'circle-radius': {
                         // for an explanation of this array see here:
                         // https://www.mapbox.com/blog/data-driven-styling/
-                        stops: [[5, 2], [8, 2], [13, 8], [21, 16], [34, 32]]
+                        stops: [
+                            [5, 2],
+                            [8, 2],
+                            [13, 8],
+                            [21, 16],
+                            [34, 32]
+                        ]
                     }
                 }
             });
@@ -108,7 +113,9 @@ function Map(loadJSONFunc) {
         var tileset = 'mapbox.streets';
         that.map.setStyle({
             version: 8,
-            sources: {                
+            sprite: "mapbox://sprites/mapbox/streets-v8",
+            glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+            sources: {
                 "raster-tiles": {
                     "type": "raster",
                     "url": "mapbox://" + tileset,
@@ -145,6 +152,8 @@ function Map(loadJSONFunc) {
         });
         that.map.setStyle({
             version: 8,
+            sprite: "mapbox://sprites/mapbox/streets-v8",
+            glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
                     "type": "raster",
@@ -177,11 +186,37 @@ function Map(loadJSONFunc) {
             var chunk = feature.properties.c;
             var pointNumber = feature.properties.p;
             var title = chunk.toString() + ":" + pointNumber.toString() + ":" + lat.toString() + ":" + long.toString();
-           
+
             var query = {
                 "area": currentArea,
                 "title": title
             }
+
+            that.map.addSource("touchLocation", {
+                "type": "geojson",
+                "data": {
+                    "type": "FeatureCollection",
+                    "features": [{
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [lat, long]
+                        },
+                        "properties": {
+                            "marker-symbol": "dog-park"
+                        }
+                    }]
+                }
+            });
+
+            that.map.addLayer({
+                "id": "touchLocation",
+                "type": "symbol",
+                "source": "touchLocation",
+                "layout": {
+                    "icon-image": "{marker-symbol}-15",
+                }
+            });
 
             // // the features array seems to have a copy of the actual features, and not the real original
             // // features that were added. Thus, I use the title of the feature as a key to lookup the
