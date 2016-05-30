@@ -157,6 +157,9 @@ function Map(loadJSONFunc) {
 
         that.map.addControl(new mapboxgl.Navigation());
 
+        // disable rotation gesture
+        that.map.dragRotate.disable();
+
         that.map.on('click', function(e) {
             var features = that.map.queryRenderedFeatures(e.point, {
                 layers: that.layers
