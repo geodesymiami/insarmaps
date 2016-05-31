@@ -84,14 +84,14 @@
         <canvas id="chart"></canvas>
       </div>
 
-      <div class="side-item upload-button">
+      <!-- <div class="side-item upload-button">
         {!! Form::open(array('action' => 'MyController@convertData','method'=>'POST', 'files'=>true)) !!}
         {!! Form::label('data', 'Upload File:') !!}
         {!! Form::file('data') !!}
         {!! Form::submit('Upload'); !!}
         {!! Form::close() !!}
 
-      </div>
+      </div> -->
       <!--insert pop up button for selecting areas to view here-->
       <div class='wrap'>
         <div class='content'>
@@ -108,7 +108,7 @@
       </div>
       <button><a class='button glyphicon glyphicon-plus' id="popupButton" href='#'>Select Area</a></button>
 
-      <p class="funding">The UM geodesy lab is funded by NASA and NSF. This website resulted from Spring 2016 CSC 431 class. The student designers and programmers were Jeffrey Lin, Krystina Scott, Milen Buchillon-Triff,Sherman Hewitt, Xavier Aballa, Zishi Wu, and Alfredo Terrero.</p>
+      <p class="funding">The UM geodesy lab is funded by NASA and NSF.</p>
       <div class="logos">
         <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto">
         <img src="img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
