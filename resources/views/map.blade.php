@@ -30,7 +30,7 @@
         </div>
         <br><br>
         <div id="map-type-menu">
-          <input id='streets' type='radio' name='rtoggle' value='streets'>
+          <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
           <label for='streets'>streets</label>
           <input id='satellite' type='radio' name='rtoggle' value='satellite'>
           <label for='satellite'>satellite</label>
