@@ -172,7 +172,6 @@ class GeoJSONController extends Controller {
 
     for ($i = 0; $i < $numFeatures; $i++) {
       $filePointNumber = $json["features"][$i]["properties"]["p"];
-      $pointNumber = $json["features"][$i]["properties"]["p"];
 
       if ($pointNumber == $filePointNumber) {
         $jsonToReturn["displacements"] = $json["features"][$i]["properties"]["d"];

@@ -261,6 +261,8 @@ function Map(loadJSONFunc) {
                 for (i = 0; i < date_array.length; i++) {
                     data.push({ x: date_array[i], y: displacement_array[i] });
                 }
+                // testing
+                // console.log("data: " + data[1].y);
 
                 // calculate and render a linear regression of those dates and displacements
                 data_regression = [];
@@ -305,7 +307,7 @@ function Map(loadJSONFunc) {
                     }]
                 });
                 chart.render();
-                console.log("rendered");
+                console.log("rendered: " + slope);
             });
         });
 
