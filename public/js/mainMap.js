@@ -92,11 +92,11 @@ function Map(loadJSONFunc) {
                     'circle-color': {
                         property: 'm',
                         stops: [
-                            [-0.006, '#0000FF'], // blue
-                            [-0.003, '#00FFFF'], // cyan
+                            [-0.014, '#0000FF'], // blue
+                            [-0.007, '#00FFFF'], // cyan
                             [0.0, '#01DF01'], // lime green
-                            [0.003, '#FFBF00'], // yellow orange
-                            [0.006, '#FF0000']   // red orange
+                            [0.007, '#FFBF00'], // yellow orange
+                            [0.014, '#FF0000']   // red orange
                         ]
                     },
                     'circle-radius': {
