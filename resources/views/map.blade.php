@@ -30,8 +30,6 @@
         </div>
         <br><br>
         <div id="map-type-menu">
-          <input id='basic' type='radio' name='rtoggle' value='basic' checked='checked'>
-          <label for='basic'>basic</label>
           <input id='streets' type='radio' name='rtoggle' value='streets'>
           <label for='streets'>streets</label>
           <input id='satellite' type='radio' name='rtoggle' value='satellite'>
@@ -84,14 +82,14 @@
         <canvas id="chart"></canvas>
       </div>
 
-      <div class="side-item upload-button">
+      <!-- <div class="side-item upload-button">
         {!! Form::open(array('action' => 'MyController@convertData','method'=>'POST', 'files'=>true)) !!}
         {!! Form::label('data', 'Upload File:') !!}
         {!! Form::file('data') !!}
         {!! Form::submit('Upload'); !!}
         {!! Form::close() !!}
 
-      </div>
+      </div> -->
       <!--insert pop up button for selecting areas to view here-->
       <div class='wrap'>
         <div class='content'>
@@ -108,7 +106,7 @@
       </div>
       <button><a class='button glyphicon glyphicon-plus' id="popupButton" href='#'>Select Area</a></button>
 
-      <p class="funding">The UM geodesy lab is funded by NASA and NSF. This website resulted from Spring 2016 CSC 431 class. The student designers and programmers were Jeffrey Lin, Krystina Scott, Milen Buchillon-Triff,Sherman Hewitt, Xavier Aballa, Zishi Wu, and Alfredo Terrero.</p>
+      <p class="funding">The UM geodesy lab is funded by NASA and NSF.</p>
       <div class="logos">
         <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto">
         <img src="img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
@@ -136,30 +134,64 @@
     }
   </script>
   <script type="text/javascript">
-    var layerList = document.getElementById('map-type-menu');
-    var inputs = layerList.getElementsByTagName('input');
+  // enum-style object to denote toggle state
+  var ToggleStates = {
+    OFF: 0,
+    ON: 1
+  }
+  var toggleState = ToggleStates.ON;
 
-    function switchLayer(layer) {
-      var layerId = layer.target.id;
-      myMap.map.setStyle(layerId + "Style.json");
-      currentPoint = 1; // reset current point
-      var fileToLoad = currentPoint.toString();
-      // load in our sample json
-      myMap.loadJSONFunc(fileToLoad, "file", myMap.JSONCallback);
+  var layerList = document.getElementById('map-type-menu');
+  var inputs = layerList.getElementsByTagName('input');
+
+  function switchLayer(layer) {
+    var layerId = layer.target.id;
+
+    var tileset = 'mapbox.' + layerId;
+
+    if (toggleState == ToggleStates.ON && myMap.tileJSON != null) {
+      myMap.map.setStyle({
+        version: 8,
+        sprite: "mapbox://sprites/mapbox/streets-v8",
+        glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+        sources: {
+          "raster-tiles": {
+            "type": "raster",
+            "url": "mapbox://" + tileset,
+            "tileSize": 256
+          },
+          'vector_layer_': {
+            type: 'vector',
+            tiles: myMap.tileJSON['tiles'],
+            minzoom: myMap.tileJSON['minzoom'],
+            maxzoom: myMap.tileJSON['maxzoom'],
+            bounds: myMap.tileJSON['bounds']
+          }
+        },
+        layers: myMap.layers_
+      });
+    } else {
+      myMap.map.setStyle({
+        version: 8,
+        sprite: "mapbox://sprites/mapbox/streets-v8",
+        glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+        sources: {
+          "raster-tiles": {
+            "type": "raster",
+            "url": "mapbox://" + tileset,
+            "tileSize": 256
+          }
+        },
+        layers: myMap.layers_
+      });
     }
+  }
 
-    for (var i = 0; i < inputs.length; i++) {
-      inputs[i].onclick = switchLayer;
-    }
+  for (var i = 0; i < inputs.length; i++) {
+    inputs[i].onclick = switchLayer;
+  }
 
-    // enum-style object to denote toggle state
-    var ToggleStates = {
-      OFF: 0,
-      ON: 1
-    }
-    var toggleState = ToggleStates.ON;
-
-    function getGEOJSON(area) {
+  function getGEOJSON(area) {
       // currentPoint = 1;
       currentArea = area;
 
@@ -227,11 +259,11 @@
       // on? add layers, otherwise remove them
       if (toggleState == ToggleStates.ON) {
         myMap.map.addSource("vector_layer_", {
-            type: 'vector',
-            tiles: myMap.tileJSON['tiles'],
-            minzoom: myMap.tileJSON['minzoom'],
-            maxzoom: myMap.tileJSON['maxzoom'],
-            bounds: myMap.tileJSON['bounds']
+          type: 'vector',
+          tiles: myMap.tileJSON['tiles'],
+          minzoom: myMap.tileJSON['minzoom'],
+          maxzoom: myMap.tileJSON['maxzoom'],
+          bounds: myMap.tileJSON['bounds']
         });
         for (var i = 0; i < myMap.layers_.length; i++) {
           var layer = myMap.layers_[i];
