@@ -92,11 +92,11 @@ function Map(loadJSONFunc) {
                     'circle-color': {
                         property: 'm',
                         stops: [
-                            [-0.014, '#0000FF'], // blue
-                            [-0.007, '#00FFFF'], // cyan
+                            [-0.02, '#0000FF'], // blue
+                            [-0.01, '#00FFFF'], // cyan
                             [0.0, '#01DF01'], // lime green
-                            [0.007, '#FFBF00'], // yellow orange
-                            [0.014, '#FF0000']   // red orange
+                            [0.01, '#FFBF00'], // yellow orange
+                            [0.02, '#FF0000']   // red orange
                         ]
                     },
                     'circle-radius': {
@@ -236,13 +236,6 @@ function Map(loadJSONFunc) {
                 });
             }
 
-            // // the features array seems to have a copy of the actual features, and not the real original
-            // // features that were added. Thus, I use the title of the feature as a key to lookup the
-            // // pointer to the actual feature we added, so changes made to it can be seen on the map.
-            // // that is just a test, so whenever a marker is clicked, the marker symbol is changed to a
-            // // different one before showing it's information in a popup.
-            // var actualFeature = that.geoDataMap[title];
-
             // load displacements from server, and then show on graph
             loadJSONFunc(query, "point", function(response) {
                 var json = JSON.parse(response);
@@ -259,10 +252,8 @@ function Map(loadJSONFunc) {
                 // format for chart = {x: date, y: displacement}
                 data = [];
                 for (i = 0; i < date_array.length; i++) {
-                    data.push({ x: date_array[i], y: displacement_array[i] });
+                    data.push({x: date_array[i], y: displacement_array[i], label: date_array[i].toLocaleDateString()});
                 }
-                // testing
-                // console.log("data: " + data[1].y);
 
                 // calculate and render a linear regression of those dates and displacements
                 data_regression = [];
@@ -280,29 +271,28 @@ function Map(loadJSONFunc) {
                 var first_regression_displacement = slope * decimal_array[0] + y_intercept;
                 var last_date = date_array[date_array.length - 1];
                 var last_regression_displacement = slope * decimal_array[decimal_array.length - 1] + y_intercept;
-
+                var velocity = "velocity: " + slope;
                 // now add the new regression line as a second dataset in the chart
                 // fricking apple computers swipe left it goes right - windows does it other way
                 var chart = new CanvasJS.Chart("chartContainer", {
                     title: {
-                        text: "Timeseries-Displacement Chart"
+                        text: "Timeseries-Displacement Chart", 
                     },
                     axisX: {
-                        title: "Date",
-                        gridThickness: 2
+                        // instead of leabeling title: "Date", we can display value of slope
+                        title: velocity, gridThickness: 2, fontWeight: "bolder"
                     },
                     axisY: {
-                        title: "Displacement"
+                        title: "Displacement", fontWeight: "bolder"
                     },
                     data: [{
                         type: "line",
-                        // dataPoints: date_array
+                        markerSize: 7,
                         dataPoints: data
                     }, {
                         type: "line",
-                        // dataPoints: date_array
-                        dataPoints: [{ x: first_date, y: first_regression_displacement },
-                            { x: last_date, y: last_regression_displacement }
+                        dataPoints: [{ x: first_date, y: first_regression_displacement, label: first_date.toLocaleDateString() },
+                            { x: last_date, y: last_regression_displacement, label: last_date.toLocaleDateString() }
                         ]
                     }]
                 });
