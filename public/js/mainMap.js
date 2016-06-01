@@ -339,9 +339,6 @@ function Map(loadJSONFunc) {
                     };
 
                     features.push(feature);
-
-                    console.log(lat);
-                    console.log(long);
                 };
 
                 // add the markers representing the available areas
