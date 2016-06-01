@@ -71,10 +71,22 @@ class GeoJSONController extends Controller {
         array_push($dir_array, $files[$i]); 
       }
     }
-    // 2d array stores [path_name, num_files]
+    // 2d array stores [path_name, num_files, lat_of_first_point, long_first_point]
     $array = [];
     for ($i = 0; $i < count($dir_array); $i++) {
       $subArray = $this->getNumJSONFiles($storage_path . $dir_array[$i]);
+      // get a random point
+      $file = $storage_path . $dir_array[$i] . "/chunk_1.json";
+      $fileContents = file_get_contents($file);
+      $json = json_decode($fileContents, true);
+      // save some memory
+      unset($fileContents);
+      $long = $json["features"][0]["geometry"]["coordinates"][0];
+      $lat = $json["features"][0]["geometry"]["coordinates"][1];
+
+      array_push($subArray, $lat);
+      array_push($subArray, $long);
+
       array_push($array, $subArray);
     }
 

@@ -96,7 +96,7 @@ function Map(loadJSONFunc) {
                             [-0.01, '#00FFFF'], // cyan
                             [0.0, '#01DF01'], // lime green
                             [0.01, '#FFBF00'], // yellow orange
-                            [0.02, '#FF0000']   // red orange
+                            [0.02, '#FF0000'] // red orange
                         ]
                     },
                     'circle-radius': {
@@ -143,6 +143,51 @@ function Map(loadJSONFunc) {
             container: containerID, // container id
             center: [130.89, 31.89], // starting position
             zoom: 7 // starting zoom
+        });
+
+        that.map.on("load", function() {
+            loadJSONFunc("", "areas", function(response) {
+                var json = JSON.parse(response);
+
+                var areaMarker = new mapboxgl.GeoJSONSource();
+
+                for (var i = 0; i < json.length; i++) {
+                    var curArray = json[i];
+                    var subDirectories = curArray[0].split("/");
+                    var dirName = subDirectories[subDirectories.length - 1];
+                    var dirFullName = curArray[0];
+                    var dirSize = curArray[1];
+                    var lat = curArray[2];
+                    var long = curArray[3];
+
+                    areaMarker.setData({
+                        "type": "FeatureCollection",
+                        "features": [{
+                            "type": "Feature",
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [long, lat]
+                            },
+                            "properties": {
+                                "marker-symbol": "dog-park"
+                            }
+                        }]
+                    });
+                    var id = "areas";
+                    that.map.addSource("areas", areaMarker);
+
+                    that.map.addLayer({
+                        "id": id,
+                        "type": "symbol",
+                        "source": id,
+                        "layout": {
+                            "icon-image": "{marker-symbol}-15",
+                        }
+                    });
+                    console.log(lat);
+                    console.log(long);
+                }
+            });
         });
 
         var tileset = 'mapbox.streets';
@@ -252,7 +297,7 @@ function Map(loadJSONFunc) {
                 // format for chart = {x: date, y: displacement}
                 data = [];
                 for (i = 0; i < date_array.length; i++) {
-                    data.push({x: date_array[i], y: displacement_array[i], label: date_array[i].toLocaleDateString()});
+                    data.push({ x: date_array[i], y: displacement_array[i], label: date_array[i].toLocaleDateString() });
                 }
 
                 // calculate and render a linear regression of those dates and displacements
@@ -276,14 +321,17 @@ function Map(loadJSONFunc) {
                 // fricking apple computers swipe left it goes right - windows does it other way
                 var chart = new CanvasJS.Chart("chartContainer", {
                     title: {
-                        text: "Timeseries-Displacement Chart", 
+                        text: "Timeseries-Displacement Chart",
                     },
                     axisX: {
                         // instead of leabeling title: "Date", we can display value of slope
-                        title: velocity, gridThickness: 2, fontWeight: "bolder"
+                        title: velocity,
+                        gridThickness: 2,
+                        fontWeight: "bolder"
                     },
                     axisY: {
-                        title: "Displacement", fontWeight: "bolder"
+                        title: "Displacement",
+                        fontWeight: "bolder"
                     },
                     data: [{
                         type: "line",
