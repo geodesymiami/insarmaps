@@ -73,6 +73,165 @@ function Map(loadJSONFunc) {
         that.map.scrollZoom.enable();
         that.map.doubleClickZoom.enable();
     };
+    this.clickOnAPoint = function(e) {
+        var features = that.map.queryRenderedFeatures(e.point, {
+            layers: that.layers
+        });
+
+        var layerID = "touchLocation";
+
+        if (!features.length) {
+            return;
+        }
+
+        var feature = features[0];
+        console.log(feature);
+        var lat = feature.geometry.coordinates[0];
+        var long = feature.geometry.coordinates[1];
+        var chunk = feature.properties.c;
+        var pointNumber = feature.properties.p;
+        var title = chunk.toString() + ":" + pointNumber.toString() + ":" + lat.toString() + ":" + long.toString();
+
+        var query = {
+            "area": currentArea,
+            "title": title
+        }
+
+        if (!that.map.getLayer(layerID)) {
+            that.clickLocationMarker.setData({
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lat, long]
+                    },
+                    "properties": {
+                        "marker-symbol": "dog-park"
+                    }
+                }]
+            });
+            that.map.addSource(layerID, that.clickLocationMarker);
+
+            that.map.addLayer({
+                "id": layerID,
+                "type": "symbol",
+                "source": layerID,
+                "layout": {
+                    "icon-image": "{marker-symbol}-15",
+                }
+            });
+        } else {
+            that.clickLocationMarker.setData({
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lat, long]
+                    },
+                    "properties": {
+                        "marker-symbol": "dog-park"
+                    }
+                }]
+            });
+        }
+
+        // load displacements from server, and then show on graph
+        loadJSONFunc(query, "point", function(response) {
+            var json = JSON.parse(response);
+
+            // put code here, the dates are in dates variable, and points are in
+            // falk's dates from json file are in format yyyymmdd - 20090817
+            var date_string_array = json.dates;
+            var displacement_array = json.displacements;
+            var date_array = convertStringsToDateArray(date_string_array);
+
+            // convert dates to decimal format
+            var decimal_array = convertDatesToDecimalArray(date_array);
+
+            // format for chart = {x: date, y: displacement}
+            data = [];
+            for (i = 0; i < date_array.length; i++) {
+                data.push({ x: date_array[i], y: displacement_array[i], label: date_array[i].toLocaleDateString() });
+            }
+
+            // calculate and render a linear regression of those dates and displacements
+            data_regression = [];
+            for (i = 0; i < decimal_array.length; i++) {
+                data_regression.push([decimal_array[i], displacement_array[i]]);
+            }
+            var result = regression('linear', data_regression);
+
+            // based on result, draw linear regression line by calcuating y = mx+b and plotting 
+            // (x,y) as a separate dataset with a single point
+            // caculate y = displacement for first and last dates = x in order to plot the line
+            var slope = result["equation"][0];
+            var y_intercept = result["equation"][1];
+            var first_date = date_array[0];
+            var first_regression_displacement = slope * decimal_array[0] + y_intercept;
+            var last_date = date_array[date_array.length - 1];
+            var last_regression_displacement = slope * decimal_array[decimal_array.length - 1] + y_intercept;
+            var velocity = "velocity: " + slope;
+            // now add the new regression line as a second dataset in the chart
+            // fricking apple computers swipe left it goes right - windows does it other way
+            var chart = new CanvasJS.Chart("chartContainer", {
+                title: {
+                    text: "Timeseries-Displacement Chart",
+                },
+                axisX: {
+                    // instead of leabeling title: "Date", we can display value of slope
+                    title: velocity,
+                    gridThickness: 2,
+                    fontWeight: "bolder"
+                },
+                axisY: {
+                    title: "Displacement",
+                    fontWeight: "bolder"
+                },
+                data: [{
+                    type: "line",
+                    markerSize: 7,
+                    dataPoints: data
+                }, {
+                    type: "line",
+                    dataPoints: [{ x: first_date, y: first_regression_displacement, label: first_date.toLocaleDateString() },
+                        { x: last_date, y: last_regression_displacement, label: last_date.toLocaleDateString() }
+                    ]
+                }]
+            });
+            chart.render();
+            console.log("rendered: " + slope);
+        });
+    };
+
+    this.clickOnAnAreaMaker = function(e) {
+        var features = that.map.queryRenderedFeatures(e.point, {
+            layers: that.layers
+        });
+
+        var layerID = "touchLocation";
+
+        if (!features.length) {
+            return;
+        }
+
+        var feature = features[0];
+        console.log(feature);
+        var areaName = feature.properties.area;
+        // var lat = feature.geometry.coordinates[0];
+        // var long = feature.geometry.coordinates[1];
+        // var chunk = feature.properties.c;
+        // var pointNumber = feature.properties.p;
+        // var title = chunk.toString() + ":" + pointNumber.toString() + ":" + lat.toString() + ":" + long.toString();
+
+        // var query = {
+        //     "area": currentArea,
+        //     "title": title
+        // }
+
+        getGEOJSON(areaName);
+    };
 
     this.initLayer = function(data) {
         var layer;
@@ -135,8 +294,14 @@ function Map(loadJSONFunc) {
             layers: that.layers_
         });
 
+        // remove click listener for selecting an area, and add new one for clicking on a point
+        that.map.off("click");
+        that.map.on('click', that.clickOnAPoint);
+
         return layer;
     }
+
+
 
     this.addMapToPage = function(containerID) {
         that.map = new mapboxgl.Map({
@@ -150,6 +315,7 @@ function Map(loadJSONFunc) {
                 var json = JSON.parse(response);
 
                 var areaMarker = new mapboxgl.GeoJSONSource();
+                var features = [];
 
                 for (var i = 0; i < json.length; i++) {
                     var curArray = json[i];
@@ -160,33 +326,40 @@ function Map(loadJSONFunc) {
                     var lat = curArray[2];
                     var long = curArray[3];
 
-                    areaMarker.setData({
-                        "type": "FeatureCollection",
-                        "features": [{
-                            "type": "Feature",
-                            "geometry": {
-                                "type": "Point",
-                                "coordinates": [long, lat]
-                            },
-                            "properties": {
-                                "marker-symbol": "dog-park"
-                            }
-                        }]
-                    });
-                    var id = "areas";
-                    that.map.addSource("areas", areaMarker);
-
-                    that.map.addLayer({
-                        "id": id,
-                        "type": "symbol",
-                        "source": id,
-                        "layout": {
-                            "icon-image": "{marker-symbol}-15",
+                    var feature = {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [long, lat]
+                        },
+                        "properties": {
+                            "marker-symbol": "dog-park",
+                            "area": dirName
                         }
-                    });
+                    };
+
+                    features.push(feature);
+
                     console.log(lat);
                     console.log(long);
-                }
+                };
+
+                // add the markers representing the available areas
+                areaMarker.setData({
+                    "type": "FeatureCollection",
+                    "features": features
+                });
+                var id = "areas";
+                that.map.addSource(id, areaMarker);
+
+                that.map.addLayer({
+                    "id": id,
+                    "type": "symbol",
+                    "source": id,
+                    "layout": {
+                        "icon-image": "{marker-symbol}-15",
+                    }
+                });
             });
         });
 
@@ -217,137 +390,7 @@ function Map(loadJSONFunc) {
         // disable rotation gesture
         that.map.dragRotate.disable();
 
-        that.map.on('click', function(e) {
-            var features = that.map.queryRenderedFeatures(e.point, {
-                layers: that.layers
-            });
-            that.map.interactive = false;
-            var layerID = "touchLocation";
-            //console.log("this is features",features);
-            if (!features.length) {
-                return;
-            }
-
-            var feature = features[0];
-            console.log(feature);
-            var lat = feature.geometry.coordinates[0];
-            var long = feature.geometry.coordinates[1];
-            var chunk = feature.properties.c;
-            var pointNumber = feature.properties.p;
-            var title = chunk.toString() + ":" + pointNumber.toString() + ":" + lat.toString() + ":" + long.toString();
-
-            var query = {
-                "area": currentArea,
-                "title": title
-            }
-
-            if (!that.map.getLayer(layerID)) {
-                that.clickLocationMarker.setData({
-                    "type": "FeatureCollection",
-                    "features": [{
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [lat, long]
-                        },
-                        "properties": {
-                            "marker-symbol": "dog-park"
-                        }
-                    }]
-                });
-                that.map.addSource(layerID, that.clickLocationMarker);
-
-                that.map.addLayer({
-                    "id": layerID,
-                    "type": "symbol",
-                    "source": layerID,
-                    "layout": {
-                        "icon-image": "{marker-symbol}-15",
-                    }
-                });
-            } else {
-                that.clickLocationMarker.setData({
-                    "type": "FeatureCollection",
-                    "features": [{
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [lat, long]
-                        },
-                        "properties": {
-                            "marker-symbol": "dog-park"
-                        }
-                    }]
-                });
-            }
-
-            // load displacements from server, and then show on graph
-            loadJSONFunc(query, "point", function(response) {
-                var json = JSON.parse(response);
-
-                // put code here, the dates are in dates variable, and points are in
-                // falk's dates from json file are in format yyyymmdd - 20090817
-                var date_string_array = json.dates;
-                var displacement_array = json.displacements;
-                var date_array = convertStringsToDateArray(date_string_array);
-
-                // convert dates to decimal format
-                var decimal_array = convertDatesToDecimalArray(date_array);
-
-                // format for chart = {x: date, y: displacement}
-                data = [];
-                for (i = 0; i < date_array.length; i++) {
-                    data.push({ x: date_array[i], y: displacement_array[i], label: date_array[i].toLocaleDateString() });
-                }
-
-                // calculate and render a linear regression of those dates and displacements
-                data_regression = [];
-                for (i = 0; i < decimal_array.length; i++) {
-                    data_regression.push([decimal_array[i], displacement_array[i]]);
-                }
-                var result = regression('linear', data_regression);
-
-                // based on result, draw linear regression line by calcuating y = mx+b and plotting 
-                // (x,y) as a separate dataset with a single point
-                // caculate y = displacement for first and last dates = x in order to plot the line
-                var slope = result["equation"][0];
-                var y_intercept = result["equation"][1];
-                var first_date = date_array[0];
-                var first_regression_displacement = slope * decimal_array[0] + y_intercept;
-                var last_date = date_array[date_array.length - 1];
-                var last_regression_displacement = slope * decimal_array[decimal_array.length - 1] + y_intercept;
-                var velocity = "velocity: " + slope;
-                // now add the new regression line as a second dataset in the chart
-                // fricking apple computers swipe left it goes right - windows does it other way
-                var chart = new CanvasJS.Chart("chartContainer", {
-                    title: {
-                        text: "Timeseries-Displacement Chart",
-                    },
-                    axisX: {
-                        // instead of leabeling title: "Date", we can display value of slope
-                        title: velocity,
-                        gridThickness: 2,
-                        fontWeight: "bolder"
-                    },
-                    axisY: {
-                        title: "Displacement",
-                        fontWeight: "bolder"
-                    },
-                    data: [{
-                        type: "line",
-                        markerSize: 7,
-                        dataPoints: data
-                    }, {
-                        type: "line",
-                        dataPoints: [{ x: first_date, y: first_regression_displacement, label: first_date.toLocaleDateString() },
-                            { x: last_date, y: last_regression_displacement, label: last_date.toLocaleDateString() }
-                        ]
-                    }]
-                });
-                chart.render();
-                console.log("rendered: " + slope);
-            });
-        });
+        that.map.on('click', that.clickOnAnAreaMaker);
 
         // Use the same approach as above to indicate that the symbols are clickable
         // by changing the cursor style to 'pointer'.
