@@ -150,6 +150,16 @@
     var tileset = 'mapbox.' + layerId;
 
     if (toggleState == ToggleStates.ON && myMap.tileJSON != null) {
+      // remove selected point marker if it exists, and create a new GeoJSONSource for it
+      // prevents crash of "cannot read property 'send' of undefined"
+      if (myMap.map.getLayer(layerID)) {
+        var layerID = "touchLocation";      
+        myMap.map.removeLayer(layerID);
+        myMap.map.removeSource(layerID);
+
+        myMap.clickLocationMarker = new mapboxgl.GeoJSONSource();
+      }
+
       myMap.map.setStyle({
         version: 8,
         sprite: "mapbox://sprites/mapbox/streets-v8",
