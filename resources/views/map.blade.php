@@ -18,7 +18,11 @@
     <link href="vendor/mapbox-gl-draw.css" rel="stylesheet" />    <script type="text/javascript" src="vendor/mapbox-gl-draw.js"></script>
     <script type="text/javascript" src="js/regression.js"></script>
     <script type="text/javascript" src="js/canvasjs.min.js"></script>
-    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <!-- <script src="http://code.highcharts.com/highcharts.js"></script> -->
+    <script src="http://code.highcharts.com/stock/highstock.js"></script>
+    <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+
+    <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js"> </script>
   </head>
   <body>
     <div id="map-container">
@@ -213,9 +217,9 @@
 
       // loadJSON(query, "file", myMap.JSONCallback);
        //var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[]};
-        myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
+       myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
        //myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://insarvmcsc431.cloudapp.net:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
-              
+       
        console.log(myMap.tileJSON);
        for (var i = 1; i < 944; i++) {
         var layer = {"id":"chunk_" + i,"description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}};

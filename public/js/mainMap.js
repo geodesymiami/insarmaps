@@ -9,6 +9,59 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={
     accessToken: "pk.eyJ1Ijoia2pqajExMjIzMzQ0IiwiYSI6ImNpbDJqYXZ6czNjdWd2eW0zMTA2aW1tNXUifQ.cPofQqq5jqm6l4zix7k6vw"
 }).addTo(map);*/
 
+// Source: http://stackoverflow.com/questions/497790
+var dates = {
+    convert:function(d) {
+        // Converts the date in d to a date-object. The input can be:
+        //   a date object: returned without modification
+        //  an array      : Interpreted as [year,month,day]. NOTE: month is 0-11.
+        //   a number     : Interpreted as number of milliseconds
+        //                  since 1 Jan 1970 (a timestamp) 
+        //   a string     : Any format supported by the javascript engine, like
+        //                  "YYYY/MM/DD", "MM/DD/YYYY", "Jan 31 2009" etc.
+        //  an object     : Interpreted as an object with year, month and date
+        //                  attributes.  **NOTE** month is 0-11.
+        return (
+            d.constructor === Date ? d :
+            d.constructor === Array ? new Date(d[0],d[1],d[2]) :
+            d.constructor === Number ? new Date(d) :
+            d.constructor === String ? new Date(d) :
+            typeof d === "object" ? new Date(d.year,d.month,d.date) :
+            NaN
+        );
+    },
+    compare:function(a,b) {
+        // Compare two dates (could be of any type supported by the convert
+        // function above) and returns:
+        //  -1 : if a < b
+        //   0 : if a = b
+        //   1 : if a > b
+        // NaN : if a or b is an illegal date
+        // NOTE: The code inside isFinite does an assignment (=).
+        return (
+            isFinite(a=this.convert(a).valueOf()) &&
+            isFinite(b=this.convert(b).valueOf()) ?
+            (a>b)-(a<b) :
+            NaN
+        );
+    },
+    inRange:function(d,start,end) {
+        // Checks if date in d is between dates in start and end.
+        // Returns a boolean or NaN:
+        //    true  : if d is between start and end (inclusive)
+        //    false : if d is before start or after end
+        //    NaN   : if one or more of the dates is illegal.
+        // NOTE: The code inside isFinite does an assignment (=).
+       return (
+            isFinite(d=this.convert(d).valueOf()) &&
+            isFinite(start=this.convert(start).valueOf()) &&
+            isFinite(end=this.convert(end).valueOf()) ?
+            start <= d && d <= end :
+            NaN
+        );
+    }
+}
+
 var currentPoint = 1;
 var currentArea = null;
 var file = "/home/vagrant/code/insar_map_mvc/public/json/geo_timeseries_masked.h5test_chunk_";
@@ -175,11 +228,12 @@ function Map(loadJSONFunc) {
             var first_regression_displacement = slope * decimal_array[0] + y_intercept;
             var last_date = date_array[date_array.length - 1];
             var last_regression_displacement = slope * decimal_array[decimal_array.length - 1] + y_intercept;
-            var velocity = "velocity: " + slope.toString().substr(0,10) + " m/yr;
+            var velocity = "velocity: " + slope.toString().substr(0, 8) + " m/yr";
+            var sub_array = [];
 
             // now add the new regression line as a second dataset in the chart
             // fricking apple computers swipe left it goes right - windows does it other way
-            $(function () {
+            $(function() {
                 $('#chartContainer').highcharts({
                     chart: {
                         type: 'scatter' // falk wants default points to have no connecting lines
@@ -191,10 +245,42 @@ function Map(loadJSONFunc) {
                         text: velocity
                     },
                     navigator: {
-                        enabled: true      
+                        enabled: true
                     },
                     xAxis: {
                         type: 'datetime',
+                        events: {   // get dates for slider bounds
+                            afterSetExtremes: function(e) {
+                                var minDate = e.min;
+                                var maxDate = e.max;
+                                console.log(Highcharts.dateFormat(null, e.min));
+
+                                // lower limit index of subarray bounded by slider dates
+                                // must be >= minDate; upper limit <= maxDate                              
+                                var minIndex = 0;
+                                var maxIndex = 0;
+                                for (i = 0; i < date_array.length; i++) {
+                                    if (minIndex != 0) {
+                                         var compare = dates.compare(maxDate,date_array[i]);
+                                        if (compare == 0 || compare == 1) {
+                                            console.log("getting max index");
+                                            console.log("date at max index is " + date_array[i]);
+                                            maxIndex = i;
+                                        }
+                                    } else {
+                                        var compare = dates.compare(minDate,date_array[i]);
+                                        if (compare == 0 || compare == -1) {
+                                            console.log("getting min index");
+                                            minIndex = i;
+                                        }
+                                    }
+                                }
+                                console.log("max date: " + date_array[maxIndex]);
+                                console.log("max slider: " + Highcharts.dateFormat(null, maxDate));
+                                console.log("min date: " + date_array[minIndex]);
+                                console.log("min slider: " + Highcharts.dateFormat(null, minDate));
+                            }
+                        },
                         dateTimeLabelFormats: { // don't display the dummy year
                             month: '%e. %b',
                             year: '%Y'
@@ -202,24 +288,33 @@ function Map(loadJSONFunc) {
                         title: {
                             text: 'Date'
                         }
-                     },
+                    },
                     yAxis: {
                         title: {
                             text: 'Ground Displacement (m)'
                         },
-                        // these min/max values can be changed later
-                        min: -1,
-                        max: 1
+                        legend: {
+                            layout: 'vertical',
+                            align: 'left',
+                            verticalAlign: 'top',
+                            x: 100,
+                            y: 70,
+                            floating: true,
+                            backgroundColor: '#FFFFFF',
+                            borderWidth: 1,
+                        },
                     },
                     tooltip: {
                         headerFormat: '<b>{series.name}</b><br>',
                         pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} m'
                     },
                     series: [{
-                        regression: true ,
+                        regression: true,
                         regressionSettings: {
                             type: 'linear',
-                            color:  'rgba(223, 83, 83, .9)'
+                            color: '#1111cc',
+                            decimalPlaces: 6,
+                            name: 'Linear Regression (RMS Error: %se)'
                         },
                         name: 'Displacement',
                         data: data_array
