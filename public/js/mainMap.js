@@ -150,10 +150,13 @@ function Map(loadJSONFunc) {
             // convert dates to decimal format
             var decimal_array = convertDatesToDecimalArray(date_array);
 
-            // format for chart = {x: date, y: displacement}
-            data = [];
+            // format is [date, displacement] for highchart datetime graph
+            data_array = [];
             for (i = 0; i < date_array.length; i++) {
-                data.push({ x: date_array[i], y: displacement_array[i], label: date_array[i].toLocaleDateString() });
+                var year = parseInt(date_string_array[i].substr(0, 4));
+                var month = parseInt(date_string_array[i].substr(4, 2));
+                var day = parseInt(date_string_array[i].substr(6, 2));
+                data_array.push([Date.UTC(year, month, day), displacement_array[i]]);
             }
 
             // calculate and render a linear regression of those dates and displacements
@@ -172,35 +175,58 @@ function Map(loadJSONFunc) {
             var first_regression_displacement = slope * decimal_array[0] + y_intercept;
             var last_date = date_array[date_array.length - 1];
             var last_regression_displacement = slope * decimal_array[decimal_array.length - 1] + y_intercept;
-            var velocity = "velocity: " + slope;
+            var velocity = "velocity: " + slope.toString().substr(0,10) + " m/yr;
+
             // now add the new regression line as a second dataset in the chart
             // fricking apple computers swipe left it goes right - windows does it other way
-            var chart = new CanvasJS.Chart("chartContainer", {
-                title: {
-                    text: "Timeseries-Displacement Chart",
-                },
-                axisX: {
-                    // instead of leabeling title: "Date", we can display value of slope
-                    title: velocity,
-                    gridThickness: 2,
-                    fontWeight: "bolder"
-                },
-                axisY: {
-                    title: "Displacement",
-                    fontWeight: "bolder"
-                },
-                data: [{
-                    type: "line",
-                    markerSize: 7,
-                    dataPoints: data
-                }, {
-                    type: "line",
-                    dataPoints: [{ x: first_date, y: first_regression_displacement, label: first_date.toLocaleDateString() },
-                        { x: last_date, y: last_regression_displacement, label: last_date.toLocaleDateString() }
-                    ]
-                }]
+            $(function () {
+                $('#chartContainer').highcharts({
+                    chart: {
+                        type: 'scatter' // falk wants default points to have no connecting lines
+                    },
+                    title: {
+                        text: 'Timeseries Displacement Chart'
+                    },
+                    subtitle: {
+                        text: velocity
+                    },
+                    navigator: {
+                        enabled: true      
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        dateTimeLabelFormats: { // don't display the dummy year
+                            month: '%e. %b',
+                            year: '%Y'
+                        },
+                        title: {
+                            text: 'Date'
+                        }
+                     },
+                    yAxis: {
+                        title: {
+                            text: 'Ground Displacement (m)'
+                        },
+                        // these min/max values can be changed later
+                        min: -1,
+                        max: 1
+                    },
+                    tooltip: {
+                        headerFormat: '<b>{series.name}</b><br>',
+                        pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} m'
+                    },
+                    series: [{
+                        regression: true ,
+                        regressionSettings: {
+                            type: 'linear',
+                            color:  'rgba(223, 83, 83, .9)'
+                        },
+                        name: 'Displacement',
+                        data: data_array
+                    }]
+                });
             });
-            chart.render();
+
             console.log("rendered: " + slope);
         });
     };
