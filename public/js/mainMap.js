@@ -9,9 +9,10 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={
     accessToken: "pk.eyJ1Ijoia2pqajExMjIzMzQ0IiwiYSI6ImNpbDJqYXZ6czNjdWd2eW0zMTA2aW1tNXUifQ.cPofQqq5jqm6l4zix7k6vw"
 }).addTo(map);*/
 
+
 // Source: http://stackoverflow.com/questions/497790
 var dates = {
-    convert:function(d) {
+    convert: function(d) {
         // Converts the date in d to a date-object. The input can be:
         //   a date object: returned without modification
         //  an array      : Interpreted as [year,month,day]. NOTE: month is 0-11.
@@ -23,14 +24,14 @@ var dates = {
         //                  attributes.  **NOTE** month is 0-11.
         return (
             d.constructor === Date ? d :
-            d.constructor === Array ? new Date(d[0],d[1],d[2]) :
+            d.constructor === Array ? new Date(d[0], d[1], d[2]) :
             d.constructor === Number ? new Date(d) :
             d.constructor === String ? new Date(d) :
-            typeof d === "object" ? new Date(d.year,d.month,d.date) :
+            typeof d === "object" ? new Date(d.year, d.month, d.date) :
             NaN
         );
     },
-    compare:function(a,b) {
+    compare: function(a, b) {
         // Compare two dates (could be of any type supported by the convert
         // function above) and returns:
         //  -1 : if a < b
@@ -39,23 +40,23 @@ var dates = {
         // NaN : if a or b is an illegal date
         // NOTE: The code inside isFinite does an assignment (=).
         return (
-            isFinite(a=this.convert(a).valueOf()) &&
-            isFinite(b=this.convert(b).valueOf()) ?
-            (a>b)-(a<b) :
+            isFinite(a = this.convert(a).valueOf()) &&
+            isFinite(b = this.convert(b).valueOf()) ?
+            (a > b) - (a < b) :
             NaN
         );
     },
-    inRange:function(d,start,end) {
+    inRange: function(d, start, end) {
         // Checks if date in d is between dates in start and end.
         // Returns a boolean or NaN:
         //    true  : if d is between start and end (inclusive)
         //    false : if d is before start or after end
         //    NaN   : if one or more of the dates is illegal.
         // NOTE: The code inside isFinite does an assignment (=).
-       return (
-            isFinite(d=this.convert(d).valueOf()) &&
-            isFinite(start=this.convert(start).valueOf()) &&
-            isFinite(end=this.convert(end).valueOf()) ?
+        return (
+            isFinite(d = this.convert(d).valueOf()) &&
+            isFinite(start = this.convert(start).valueOf()) &&
+            isFinite(end = this.convert(end).valueOf()) ?
             start <= d && d <= end :
             NaN
         );
@@ -96,6 +97,41 @@ var convertDatesToDecimalArray = function(date_array) {
         decimals.push(date_array[i].getFullYear() + getDaysElapsed(date_array[i]) / 365);
     }
     return decimals;
+}
+
+// takes displacements and dates, returns slope and y intercept in array
+function calcLinearRegression(displacements, decimal_dates) {
+    data = [];
+    for (i = 0; i < decimal_dates.length; i++) {
+        data.push([decimal_dates[i], displacements[i]]);
+    }
+    var result = regression('linear', data);
+    return result;
+}
+
+// takes slope, y-intercept; decimal_dates and chart_data(displacement) must
+// start and end around bounds of the sliders
+function getRegressionChartData(slope, y, decimal_dates, chart_data) {
+    var data = [];
+    var first_date = chart_data[0][0];
+    var first_reg_displacement = slope * decimal_dates[0] + y;
+    var last_date = chart_data[chart_data.length - 1][0];
+    var last_reg_displacement = slope * decimal_dates[decimal_dates.length - 1] + y;
+    data.push([first_date, first_reg_displacement]);
+    data.push([last_date, last_reg_displacement]);
+    return data;
+}
+
+// returns an array of [date, displacement] objects
+function getDisplacementChartData(displacements, dates) {
+    var data = [];
+    for (i = 0; i < dates.length; i++) {
+        var year = parseInt(dates[i].substr(0, 4));
+        var month = parseInt(dates[i].substr(4, 2));
+        var day = parseInt(dates[i].substr(6, 2));
+        data.push([Date.UTC(year, month, day), displacements[i]]);
+    }
+    return data;
 }
 
 function Map(loadJSONFunc) {
@@ -201,55 +237,34 @@ function Map(loadJSONFunc) {
             var date_array = convertStringsToDateArray(date_string_array);
 
             // convert dates to decimal format
-            var decimal_array = convertDatesToDecimalArray(date_array);
+            var decimal_dates = convertDatesToDecimalArray(date_array);
 
-            // format is [date, displacement] for highchart datetime graph
-            data_array = [];
-            for (i = 0; i < date_array.length; i++) {
-                var year = parseInt(date_string_array[i].substr(0, 4));
-                var month = parseInt(date_string_array[i].substr(4, 2));
-                var day = parseInt(date_string_array[i].substr(6, 2));
-                data_array.push([Date.UTC(year, month, day), displacement_array[i]]);
-            }
+            // returns array for displacement on chart
+            chart_data = getDisplacementChartData(displacement_array, date_string_array);
 
             // calculate and render a linear regression of those dates and displacements
-            data_regression = [];
-            for (i = 0; i < decimal_array.length; i++) {
-                data_regression.push([decimal_array[i], displacement_array[i]]);
-            }
-            var result = regression('linear', data_regression);
-
-            // based on result, draw linear regression line by calcuating y = mx+b and plotting 
-            // (x,y) as a separate dataset with a single point
-            // caculate y = displacement for first and last dates = x in order to plot the line
+            var result = calcLinearRegression(displacement_array, decimal_dates);
             var slope = result["equation"][0];
-            var y_intercept = result["equation"][1];
-            var first_date = date_array[0];
-            var first_regression_displacement = slope * decimal_array[0] + y_intercept;
-            var last_date = date_array[date_array.length - 1];
-            var last_regression_displacement = slope * decimal_array[decimal_array.length - 1] + y_intercept;
-            var velocity = "velocity: " + slope.toString().substr(0, 8) + " m/yr";
-            var sub_array = [];
+            var y = result["equation"][1];
+
+            // returns array for linear regression on chart
+            var regression_data = getRegressionChartData(slope, y, decimal_dates, chart_data);
 
             // now add the new regression line as a second dataset in the chart
-            // fricking apple computers swipe left it goes right - windows does it other way
             $(function() {
                 $('#chartContainer').highcharts({
-                    chart: {
-                        type: 'scatter' // falk wants default points to have no connecting lines
-                    },
                     title: {
                         text: 'Timeseries Displacement Chart'
                     },
                     subtitle: {
-                        text: velocity
+                        text: "velocity: " + slope.toString().substr(0, 8) + " m/yr"
                     },
                     navigator: {
                         enabled: true
                     },
                     xAxis: {
                         type: 'datetime',
-                        events: {   // get dates for slider bounds
+                        events: { // get dates for slider bounds
                             afterSetExtremes: function(e) {
                                 var minDate = e.min;
                                 var maxDate = e.max;
@@ -261,27 +276,63 @@ function Map(loadJSONFunc) {
                                 var maxIndex = 0;
                                 for (i = 0; i < date_array.length; i++) {
                                     if (minIndex != 0) {
-                                         var compare = dates.compare(maxDate,date_array[i]);
+                                        var compare = dates.compare(maxDate, date_array[i]);
                                         if (compare == 0 || compare == 1) {
                                             console.log("getting max index");
                                             console.log("date at max index is " + date_array[i]);
                                             maxIndex = i;
                                         }
                                     } else {
-                                        var compare = dates.compare(minDate,date_array[i]);
+                                        var compare = dates.compare(minDate, date_array[i]);
                                         if (compare == 0 || compare == -1) {
                                             console.log("getting min index");
                                             minIndex = i;
                                         }
                                     }
                                 }
-                                console.log("max date: " + date_array[maxIndex]);
-                                console.log("max slider: " + Highcharts.dateFormat(null, maxDate));
-                                console.log("min date: " + date_array[minIndex]);
-                                console.log("min slider: " + Highcharts.dateFormat(null, minDate));
+                                // console.log("max date: " + date_array[maxIndex]);
+                                // console.log("max slider: " + Highcharts.dateFormat(null, maxDate));
+
+                                // get slope and y intercept of sub array 
+                                var sub_displacements = displacement_array.slice(minIndex, maxIndex + 1);
+                                var sub_decimal_dates = decimal_dates.slice(minIndex, maxIndex + 1);
+                                var sub_result = calcLinearRegression(sub_displacements, sub_decimal_dates);
+
+                                // get linear regression data for sub array
+                                var sub_chart_data = chart_data.slice(minIndex, maxIndex + 1);
+                                var sub_slope = sub_result["equation"][0];
+                                var sub_y = sub_result["equation"][1];
+                                var sub_regression_data = getRegressionChartData(sub_slope, sub_y, sub_decimal_dates, sub_chart_data);
+                            
+                                console.log("calculated sub array");
+
+                                // remove an existing sub array from chart
+                                var chart = $('#chartContainer').highcharts();
+                                var seriesLength = chart.series.length;
+
+                                for (var i = seriesLength - 1; i > -1; i--) {
+                                    console.log(chart.series[i].name);
+                                    if (chart.series[i].name == "Linear Regression") {
+                                        chart.series[i].remove();
+                                        console.log("removed sub data");
+                                        break;
+                                    }
+                                }
+
+                                var date_range = Highcharts.dateFormat(null, minDate) + " - " + Highcharts.dateFormat(null, maxDate);
+                                chart.addSeries({
+                                    name: 'Linear Regression',
+                                    color: '#808080',
+                                    data: sub_regression_data                             
+                                });
+
+                                chart.setTitle(null, {
+                                    text: "velocity: " + sub_slope.toString().substr(0, 8) + " m/yr"
+                                });
+                                console.log("finished add Series " + sub_slope.toString());
                             }
                         },
-                        dateTimeLabelFormats: { // don't display the dummy year
+                        dateTimeLabelFormats: {
                             month: '%e. %b',
                             year: '%Y'
                         },
@@ -303,21 +354,22 @@ function Map(loadJSONFunc) {
                             backgroundColor: '#FFFFFF',
                             borderWidth: 1,
                         },
+                        plotLines: [{
+                            value: 0,
+                            width: 1,
+                            color: '#808080'
+                        }]
                     },
                     tooltip: {
                         headerFormat: '<b>{series.name}</b><br>',
                         pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} m'
                     },
                     series: [{
-                        regression: true,
-                        regressionSettings: {
-                            type: 'linear',
-                            color: '#1111cc',
-                            decimalPlaces: 6,
-                            name: 'Linear Regression (RMS Error: %se)'
-                        },
                         name: 'Displacement',
-                        data: data_array
+                        data: chart_data
+                    }, {
+                        name: 'Linear Regression',
+                        data: regression_data
                     }]
                 });
             });
