@@ -18,6 +18,11 @@
     <link href="vendor/mapbox-gl-draw.css" rel="stylesheet" />    <script type="text/javascript" src="vendor/mapbox-gl-draw.js"></script>
     <script type="text/javascript" src="js/regression.js"></script>
     <script type="text/javascript" src="js/canvasjs.min.js"></script>
+    <!-- <script src="http://code.highcharts.com/highcharts.js"></script> -->
+    <script src="http://code.highcharts.com/stock/highstock.js"></script>
+    <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+
+    <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js"> </script>
   </head>
   <body>
     <div id="map-container">
@@ -30,9 +35,7 @@
         </div>
         <br><br>
         <div id="map-type-menu">
-          <input id='basic' type='radio' name='rtoggle' value='basic' checked='checked'>
-          <label for='basic'>basic</label>
-          <input id='streets' type='radio' name='rtoggle' value='streets'>
+          <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
           <label for='streets'>streets</label>
           <input id='satellite' type='radio' name='rtoggle' value='satellite'>
           <label for='satellite'>satellite</label>
@@ -81,17 +84,17 @@
       <h2>Line-of-sight displacement time-series</h2>
 
       <div id="chartContainer" class="side-item graph">
-        <canvas id="chart"></canvas>
+        <!--<canvas id="chart"></canvas>-->
       </div>
 
-      <div class="side-item upload-button">
+      <!-- <div class="side-item upload-button">
         {!! Form::open(array('action' => 'MyController@convertData','method'=>'POST', 'files'=>true)) !!}
         {!! Form::label('data', 'Upload File:') !!}
         {!! Form::file('data') !!}
         {!! Form::submit('Upload'); !!}
         {!! Form::close() !!}
 
-      </div>
+      </div> -->
       <!--insert pop up button for selecting areas to view here-->
       <div class='wrap'>
         <div class='content'>
@@ -108,7 +111,7 @@
       </div>
       <button><a class='button glyphicon glyphicon-plus' id="popupButton" href='#'>Select Area</a></button>
 
-      <p class="funding">The UM geodesy lab is funded by NASA and NSF. This website resulted from Spring 2016 CSC 431 class. The student designers and programmers were Jeffrey Lin, Krystina Scott, Milen Buchillon-Triff,Sherman Hewitt, Xavier Aballa, Zishi Wu, and Alfredo Terrero.</p>
+      <p class="funding">The UM geodesy lab is funded by NASA and NSF.</p>
       <div class="logos">
         <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto">
         <img src="img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
@@ -136,30 +139,74 @@
     }
   </script>
   <script type="text/javascript">
-    var layerList = document.getElementById('map-type-menu');
-    var inputs = layerList.getElementsByTagName('input');
+  // enum-style object to denote toggle state
+  var ToggleStates = {
+    OFF: 0,
+    ON: 1
+  }
+  var toggleState = ToggleStates.ON;
 
-    function switchLayer(layer) {
-      var layerId = layer.target.id;
-      myMap.map.setStyle(layerId + "Style.json");
-      currentPoint = 1; // reset current point
-      var fileToLoad = currentPoint.toString();
-      // load in our sample json
-      myMap.loadJSONFunc(fileToLoad, "file", myMap.JSONCallback);
+  var layerList = document.getElementById('map-type-menu');
+  var inputs = layerList.getElementsByTagName('input');
+
+  function switchLayer(layer) {
+    var layerId = layer.target.id;
+
+    var tileset = 'mapbox.' + layerId;
+
+    if (toggleState == ToggleStates.ON && myMap.tileJSON != null) {
+      // remove selected point marker if it exists, and create a new GeoJSONSource for it
+      // prevents crash of "cannot read property 'send' of undefined"
+      if (myMap.map.getLayer(layerID)) {
+        var layerID = "touchLocation";      
+        myMap.map.removeLayer(layerID);
+        myMap.map.removeSource(layerID);
+
+        myMap.clickLocationMarker = new mapboxgl.GeoJSONSource();
+      }
+
+      myMap.map.setStyle({
+        version: 8,
+        sprite: "mapbox://sprites/mapbox/streets-v8",
+        glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+        sources: {
+          "raster-tiles": {
+            "type": "raster",
+            "url": "mapbox://" + tileset,
+            "tileSize": 256
+          },
+          'vector_layer_': {
+            type: 'vector',
+            tiles: myMap.tileJSON['tiles'],
+            minzoom: myMap.tileJSON['minzoom'],
+            maxzoom: myMap.tileJSON['maxzoom'],
+            bounds: myMap.tileJSON['bounds']
+          }
+        },
+        layers: myMap.layers_
+      });
+    } else {
+      myMap.map.setStyle({
+        version: 8,
+        sprite: "mapbox://sprites/mapbox/streets-v8",
+        glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+        sources: {
+          "raster-tiles": {
+            "type": "raster",
+            "url": "mapbox://" + tileset,
+            "tileSize": 256
+          }
+        },
+        layers: myMap.layers_
+      });
     }
+  }
 
-    for (var i = 0; i < inputs.length; i++) {
-      inputs[i].onclick = switchLayer;
-    }
+  for (var i = 0; i < inputs.length; i++) {
+    inputs[i].onclick = switchLayer;
+  }
 
-    // enum-style object to denote toggle state
-    var ToggleStates = {
-      OFF: 0,
-      ON: 1
-    }
-    var toggleState = ToggleStates.ON;
-
-    function getGEOJSON(area) {
+  function getGEOJSON(area) {
       // currentPoint = 1;
       currentArea = area;
 
@@ -169,17 +216,18 @@
       // }
 
       // loadJSON(query, "file", myMap.JSONCallback);
-       //var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[{"id":"chunk_1","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_10","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_11","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_12","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_13","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_14","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_15","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_16","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_17","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_18","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_19","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_2","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_20","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_21","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_22","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_23","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_3","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_4","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_5","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_6","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_7","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_8","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}},{"id":"chunk_9","description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}}]};
+       //var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[]};
+       myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
+       //myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://insarvmcsc431.cloudapp.net:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
        
-       var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[]};
-       console.log(tileJSON);
+       console.log(myMap.tileJSON);
        for (var i = 1; i < 944; i++) {
         var layer = {"id":"chunk_" + i,"description":"","minzoom":0,"maxzoom":14,"fields":{"c":"Number","m":"Number","p":"Number"}};
-        tileJSON.vector_layers.push(layer);
-       }
+        myMap.tileJSON.vector_layers.push(layer);
+      }
 
-       myMap.initLayer(tileJSON);
-     }
+      myMap.initLayer(myMap.tileJSON);
+    }
     // when site loads, turn toggle on
     $(window).load(function() {
       $(".toggle-button").toggleClass('toggle-button-selected');
@@ -202,14 +250,20 @@
             $("#tableBody").append("<tr id=" + dirName +  "><td value='" + dirFullName + "''>" + dirName + "</td></tr>");
 
             // make cursor change when mouse hovers over row
-            $("#" + dirName + "").css("cursor", "pointer");
+            $("#" + dirName).css("cursor", "pointer");
             // set the on click callback function for this row
-            $("#" + dirName + "").click(function() {
-              $('.wrap, #popupButton').toggleClass('active');
-              getGEOJSON(dirName);
-            });
+
+            // ugly click function declaration to to JS not using block scope
+            $("#" + dirName).click((function(area) {
+              return function() {
+                $('.wrap, #popupButton').toggleClass('active');
+                getGEOJSON(area);
+                console.log("clicked on " + area);
+              };
+            })(dirName));
           }
         });
+
         return false;
       });
     });
@@ -226,26 +280,28 @@
 
       // on? add layers, otherwise remove them
       if (toggleState == ToggleStates.ON) {
-        for (var i = 0; i < myMap.layers.length; i++) {
-          var id = myMap.layers[i];
+        myMap.map.addSource("vector_layer_", {
+          type: 'vector',
+          tiles: myMap.tileJSON['tiles'],
+          minzoom: myMap.tileJSON['minzoom'],
+          maxzoom: myMap.tileJSON['maxzoom'],
+          bounds: myMap.tileJSON['bounds']
+        });
+        for (var i = 0; i < myMap.layers_.length; i++) {
+          var layer = myMap.layers_[i];
 
-          myMap.map.addLayer({
-            "id": id,
-            "interactive": true,
-            "type": "symbol",
-            "source": id,
-            "layout": {
-              "icon-image": "{marker-symbol}",
-              "icon-allow-overlap": true,
-                "icon-size": 0.1 // notice the bigger size at smaller zoom levels.
-              }
-            });
+          myMap.map.addLayer(layer);
         }
       } else {
-        for (var i = 0; i < myMap.layers.length; i++) {
-          var id = myMap.layers[i];
+        myMap.map.removeSource("vector_layer_");
 
-          myMap.map.removeLayer(id);
+        for (var i = 0; i < myMap.layers_.length; i++) {
+          var id = myMap.layers_[i].id;
+
+          // don't remove the base map, only the points
+          if (id !== "simple-tiles") {
+            myMap.map.removeLayer(id);
+          }
         }
       }
 

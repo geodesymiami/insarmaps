@@ -41,8 +41,9 @@ def convert_data():
 		displacement = float(value)	
 		# if value is not equal to naN, create a new json point object and append to siu_man array
 		if not math.isnan(displacement):
-			point_num = row * col + col
-			displacement_values = []
+			# point num will be betw 1 and 20000 within each chunk of 20k points
+			point_num += 1
+
 			# get displacement values for all the dates
 			for key in dataset_keys:
 				displacement = float(timeseries_datasets[key][row][col])
@@ -51,11 +52,8 @@ def convert_data():
 			# np array of displacement values, y parameter in linear regression equation
 			y = np.array(displacement_values)
 
-			# linear regression calculation example:
-			# http://docs.scipy.org/doc/numpy-1.10.0/reference/generated/numpy.linalg.lstsq.html
 			# y = mx + c -> we want m = slope of the linear regression line 
-			A = np.vstack([x, np.ones(len(x))]).T
-			m, c = np.linalg.lstsq(A, y)[0]
+			m, c = np.polyfit(x, y, 1)
 
 			data = {
    			"type": "Feature",
@@ -65,11 +63,15 @@ def convert_data():
 			# allocate memory space for siu_man array in beginning 
 			siu_man.append(data)
 
+			# clear displacement array for next point
+			displacement_values = []
+
 			# if chunk_size limit is reached, write chunk into a json file
 			# then increment chunk number and clear siu_man array
 			if len(siu_man) == chunk_size:
 				make_json_file(chunk_num, siu_man)
 				chunk_num += 1
+				point_num = 0
 				siu_man = []
 
 	# write the last chunk that might be smaller than chunk_size
@@ -87,7 +89,7 @@ def make_json_file(chunk_num, points):
 	}
 
 	# remove '.h5' from the end of file_name
-	file = "chunk_ " + str(chunk_num) + ".json"
+	file = "chunk_" + str(chunk_num) + ".json"
 	json_file = open(path_name + "/" + file, "w")
 	string_json = json.dumps(data, json_file, indent=4, separators=(',',':'))
 	json_file.write("%s" % string_json)
