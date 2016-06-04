@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use DateTime;
+use DB;
 
 session_start();
 
@@ -27,34 +28,22 @@ class GeoJSONController extends Controller {
     return $array;
   }
 
-  public function getDataForPoint($area, $point) {   
-  // make file path be the resulf of session get
-    $filePath = storage_path() . "/json/" . $area . "/chunk_";
-    $jsonToReturn = array();
-
-    $tokens = explode(":", $point);
-    $fileNum = $tokens[0];
-    $pointNumber = $tokens[1];
-    $lat = $tokens[2];
-    $long = $tokens[3];
-
-    $file = $filePath . $fileNum . ".json";
-    $fileContents = file_get_contents($file);
-    $json = json_decode($fileContents, true);
-
-    $numFeatures = count($json["features"]);
-    $epsilon = 0.00000001; // floats are inherently inaccurate to compare, especially since the JSON has such accurate numbers
-    $jsonToReturn["dates"] = $json["dates"];
-
-    for ($i = 0; $i < $numFeatures; $i++) {
-      $filePointNumber = $json["features"][$i]["properties"]["p"];
-
-      if ($pointNumber == $filePointNumber) {
-        $jsonToReturn["displacements"] = $json["features"][$i]["properties"]["d"];
-        echo json_encode($jsonToReturn);
-        break;
+  public function getDataForPoint($chunk, $pointNumber) {
+    try {
+      $query = "SELECT data->'dates' from pythonTest WHERE id = " . $chunk;
+      $dates = DB::select($query);
+      $json["dates"] = $dates;
+      foreach ($dates as $d) {
+        print_r($d->column);
       }
+      // $query = "SELECT data->'features'->" . $pointNumber . "->'properties'->'d' from pythonTest WHERE id = " . $chunk;
+      // $displacements = DB::select($query);
+      // $json["displacements"] = $displacements;
+      echo json_encode($json);
+    } catch (\Illuminate\Database\QueryException $e) {
+        echo "Point Not found";
     }
+    
   }
 
   public function getAreas() {

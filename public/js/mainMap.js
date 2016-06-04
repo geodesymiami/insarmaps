@@ -179,11 +179,11 @@ function Map(loadJSONFunc) {
         var long = feature.geometry.coordinates[1];
         var chunk = feature.properties.c;
         var pointNumber = feature.properties.p;
-        var title = chunk.toString() + ":" + pointNumber.toString() + ":" + lat.toString() + ":" + long.toString();
+        var title = chunk.toString() + ":" + pointNumber.toString();
 
         var query = {
-            "area": currentArea,
-            "title": title
+            "chunk": chunk,
+            "pointNumber": pointNumber
         }
 
         if (!that.map.getLayer(layerID)) {
@@ -229,6 +229,7 @@ function Map(loadJSONFunc) {
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "point", function(response) {
             var json = JSON.parse(response);
+            console.log(json);
 
             // put code here, the dates are in dates variable, and points are in
             // falk's dates from json file are in format yyyymmdd - 20090817
