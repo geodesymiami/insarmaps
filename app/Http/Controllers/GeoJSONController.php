@@ -32,13 +32,18 @@ class GeoJSONController extends Controller {
     try {
       $query = "SELECT data->'dates' from pythonTest WHERE id = " . $chunk;
       $dates = DB::select($query);
-      $json["dates"] = $dates;
-      foreach ($dates as $d) {
-        print_r($d->column);
+      $array = get_object_vars($dates[0]);
+      foreach ($array as $key => $dateArray) {
+        $json["dates"] = json_decode($dateArray);
       }
-      // $query = "SELECT data->'features'->" . $pointNumber . "->'properties'->'d' from pythonTest WHERE id = " . $chunk;
-      // $displacements = DB::select($query);
-      // $json["displacements"] = $displacements;
+
+      $query = "SELECT data->'features'->" . $pointNumber . "->'properties'->'d' from pythonTest WHERE id = " . $chunk;
+      $displacements = DB::select($query);
+      $array = get_object_vars($displacements[0]);
+
+      foreach ($array as $key => $displacementArray) {
+        $json["displacements"] = json_decode($displacementArray);
+      }
       echo json_encode($json);
     } catch (\Illuminate\Database\QueryException $e) {
         echo "Point Not found";

@@ -229,7 +229,6 @@ function Map(loadJSONFunc) {
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "point", function(response) {
             var json = JSON.parse(response);
-            console.log(json);
 
             // put code here, the dates are in dates variable, and points are in
             // falk's dates from json file are in format yyyymmdd - 20090817
@@ -287,6 +286,7 @@ function Map(loadJSONFunc) {
                                         var compare = dates.compare(minDate, date_array[i]);
                                         if (compare == 0 || compare == -1) {
                                             console.log("getting min index");
+                                            console.log("date at min index is " + date_array[i]);
                                             minIndex = i;
                                         }
                                     }
