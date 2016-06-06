@@ -6,6 +6,7 @@ import math
 import time
 import os
 import sys
+import psycopg2
 
 # ---------------------------------------------------------------------------------------
 # FUNCTIONS
@@ -33,6 +34,14 @@ def convert_data():
 	y = []
 	chunk_num = 1
 	point_num = 0
+
+	# insert a point into area table - name, lat, long
+	mid_lat = x_first + ((num_columns/2) * x_step)
+	mid_long = y_first + ((num_rows/2) * y_step)
+	area_data = {"latitude": mid_lat, "longitude": mid_long}
+	area_data_string = json.dumps(area_data, indent=4, separators=(',',':'))
+	cur.execute('INSERT INTO area VALUES (' + "'" + folder_name + "'" +',' + "'" + area_data_string + "')")
+	con.commit()
 
 	# outer loop increments row = longitude, inner loop increments column = latitude
 	for (row, col), value in np.ndenumerate(timeseries_datasets[dataset_keys[0]]):
@@ -89,9 +98,16 @@ def make_json_file(chunk_num, points):
 	}
 
 	# remove '.h5' from the end of file_name
-	file = "chunk_" + str(chunk_num) + ".json"
-	json_file = open(path_name + "/" + file, "w")
-	string_json = json.dumps(data, json_file, indent=4, separators=(',',':'))
+	chunk = "chunk_" + str(chunk_num) + ".json"
+	json_file = open(path_name + "/" + chunk, "w")
+	string_json = json.dumps(data, indent=4, separators=(',',':'))
+	try:
+		cur.execute('INSERT INTO ' + folder_name + ' VALUES (' + str(chunk_num) +',' + "'" + string_json + "')")
+		con.commit()
+	except Exception, e:
+		print "failed to insert chunk " + str(chunk_num)
+		print str(e)
+
 	json_file.write("%s" % string_json)
 	json_file.close()
 
@@ -160,8 +176,31 @@ print does_exist
 if not does_exist:
 	json_directory = os.mkdir(path_name)
 
-# read and convert the datasets, then write them into json
+# connect to postgresql database
+con = None
+cur = None
+folder_name = path_name.split("/")
+folder_name = folder_name[len(folder_name)-1]
+try:
+	con = psycopg2.connect("dbname='point' user='aterzishi' host='insarvmcsc431.cloudapp.net' password='abc123'")
+	cur = con.cursor()
+	# create area table if not exist
+	cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, data json );")
+	con.commit()
+	# create table named after h5 dataset area - take out .h5
+	query = 'CREATE TABLE IF NOT EXISTS ' + folder_name + '( id integer, data json );'
+	print query
+	cur.execute(query)
+	con.commit()
+	print "created table"
+except Exception, e:
+	print "unable to connect to the database"
+	print e
+	sys.exit()
+
+# read and convert the datasets, then write them into json files and insert into database
 convert_data()
+con.close()
 
 # ---------------------------------------------------------------------------------------
 # check how long it took to read h5 file data and create json files
