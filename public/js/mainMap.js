@@ -183,7 +183,8 @@ function Map(loadJSONFunc) {
 
         var query = {
             "area": currentArea,
-            "title": title
+            "chunk": chunk,
+            "pointNumber": pointNumber
         }
 
         if (!that.map.getLayer(layerID)) {
@@ -268,13 +269,13 @@ function Map(loadJSONFunc) {
                             afterSetExtremes: function(e) {
                                 var minDate = e.min;
                                 var maxDate = e.max;
-                                console.log(Highcharts.dateFormat(null, e.min));
+                                //console.log(Highcharts.dateFormat(null, e.min));
 
                                 // lower limit index of subarray bounded by slider dates
                                 // must be >= minDate; upper limit <= maxDate                              
                                 var minIndex = 0;
                                 var maxIndex = 0;
-                                console.log("length of date array " + date_array.length);
+                                
                                 for (var i = 0; i < date_array.length; i++) {
                                     var currentDate = date_array[i];
                                     if (currentDate > minDate) {
@@ -306,7 +307,7 @@ function Map(loadJSONFunc) {
                                 var seriesLength = chart.series.length;
 
                                 for (var i = seriesLength - 1; i > -1; i--) {
-                                    console.log(chart.series[i].name);
+                                    // console.log(chart.series[i].name);
                                     if (chart.series[i].name == "Linear Regression") {
                                         chart.series[i].remove();                                        
                                         break;
@@ -381,7 +382,7 @@ function Map(loadJSONFunc) {
         }
 
         var feature = features[0];
-        console.log(feature);
+        // console.log(feature);
         var areaName = feature.properties.area;
         // var lat = feature.geometry.coordinates[0];
         // var long = feature.geometry.coordinates[1];
@@ -476,8 +477,7 @@ function Map(loadJSONFunc) {
 
         that.map.on("load", function() {
             loadJSONFunc("", "areas", function(response) {
-                var json = JSON.parse(response);
-                console.log(json);
+                var json = JSON.parse(response);                
 
                 var areaMarker = new mapboxgl.GeoJSONSource();
                 var features = [];

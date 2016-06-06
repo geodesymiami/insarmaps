@@ -28,9 +28,9 @@ class GeoJSONController extends Controller {
     return $array;
   }
 
-  public function getDataForPoint($chunk, $pointNumber) {
+  public function getDataForPoint($area, $chunk, $pointNumber) {
     try {
-      $query = "SELECT data->'dates' from pythonTest WHERE id = " . $chunk;
+      $query = "SELECT data->'dates' from " . $area . " WHERE id = " . $chunk;
       $dates = DB::select($query);
       $array = get_object_vars($dates[0]);
       foreach ($array as $key => $dateArray) {

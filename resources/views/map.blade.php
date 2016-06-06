@@ -241,7 +241,7 @@
           // add our info in a table, first remove any old info
           $(".wrap").find(".content").find("#myTable").find("#tableBody").empty();
           for (var i = 0; i < json.areas.length; i++) {
-            var area = json.areas[i];        
+            var area = json.areas[i];
 
             $("#tableBody").append("<tr id=" + area.name +  "><td value='" + area.name + "''>" + area.name + "</td></tr>");
 
@@ -253,8 +253,7 @@
             $("#" + area.name).click((function(area) {
               return function() {
                 $('.wrap, #popupButton').toggleClass('active');
-                getGEOJSON(area);
-                console.log("clicked on " + area);
+                getGEOJSON(area);                
               };
             })(area.name));
           }
