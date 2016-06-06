@@ -179,7 +179,7 @@ function Map(loadJSONFunc) {
         var long = feature.geometry.coordinates[1];
         var chunk = feature.properties.c;
         var pointNumber = feature.properties.p;
-        var title = chunk.toString() + ":" + pointNumber.toString() + ":" + lat.toString() + ":" + long.toString();
+        var title = chunk.toString() + ":" + pointNumber.toString();
 
         var query = {
             "area": currentArea,
@@ -477,28 +477,26 @@ function Map(loadJSONFunc) {
         that.map.on("load", function() {
             loadJSONFunc("", "areas", function(response) {
                 var json = JSON.parse(response);
+                console.log(json);
 
                 var areaMarker = new mapboxgl.GeoJSONSource();
                 var features = [];
 
-                for (var i = 0; i < json.length; i++) {
-                    var curArray = json[i];
-                    var subDirectories = curArray[0].split("/");
-                    var dirName = subDirectories[subDirectories.length - 1];
-                    var dirFullName = curArray[0];
-                    var dirSize = curArray[1];
-                    var lat = curArray[2];
-                    var long = curArray[3];
+                for (var i = 0; i < json.areas.length; i++) {
+                    var area = json.areas[i];
+                    var lat = area.coords.latitude;
+                    var long = area.coords.longitude;
+                    console.log(area);
 
                     var feature = {
                         "type": "Feature",
                         "geometry": {
                             "type": "Point",
-                            "coordinates": [long, lat]
+                            "coordinates": [lat, long]
                         },
                         "properties": {
                             "marker-symbol": "dog-park",
-                            "area": dirName
+                            "area": area.name
                         }
                     };
 

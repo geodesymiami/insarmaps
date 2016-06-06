@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use DateTime;
+use DB;
 
 session_start();
 
@@ -27,17 +28,19 @@ class GeoJSONController extends Controller {
     return $array;
   }
 
-  public function getDataForPoint($area, $point) {   
-   try {
+  public function getDataForPoint($chunk, $pointNumber) {
+    try {
       $query = "SELECT data->'dates' from pythonTest WHERE id = " . $chunk;
       $dates = DB::select($query);
       $array = get_object_vars($dates[0]);
       foreach ($array as $key => $dateArray) {
         $json["dates"] = json_decode($dateArray);
       }
+
       $query = "SELECT data->'features'->" . $pointNumber . "->'properties'->'d' from pythonTest WHERE id = " . $chunk;
       $displacements = DB::select($query);
       $array = get_object_vars($displacements[0]);
+
       foreach ($array as $key => $displacementArray) {
         $json["displacements"] = json_decode($displacementArray);
       }
@@ -45,11 +48,37 @@ class GeoJSONController extends Controller {
     } catch (\Illuminate\Database\QueryException $e) {
         echo "Point Not found";
     }
+    
   }
 
   public function getAreas() {
-    $json
+    $json = array();
 
-    echo json_encode($json);
+    try {
+      $query = "SELECT name, data from area";
+      $areas = DB::select($query);
+
+      $json["areas"] = [];
+      for ($i = 0; $i < count($areas); $i++) {
+        $array = get_object_vars($areas[$i]);
+        $areaName = $array["name"];
+
+        $currentArea = [];
+        $currentArea["name"] = $areaName;
+        
+        $hack = 0;
+        foreach ($array as $key => $area) {
+          if ($hack != 0) {
+            $currentArea["coords"] = json_decode($area);
+            array_push($json["areas"], $currentArea);
+          }
+          $hack++;
+        }
+      }
+
+      echo json_encode($json);
+    } catch (\Illuminate\Database\QueryException $e) {
+      echo "error getting areas";
+    }
   }
 }
