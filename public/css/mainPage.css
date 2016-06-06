@@ -17,7 +17,7 @@ body {
 .side-bar {
     float: left;
     height: 100%;
-    width: 33%;
+    width: 80%;
     background-color: rgb(4, 53, 101);
     z-index: 10;
     overflow: auto;
@@ -60,7 +60,7 @@ body {
 }
 
 #map-container {
-    width: 67%;
+    width: 20%;
     height: 100%;
     /*position: absolute;*/
     z-index: 0;

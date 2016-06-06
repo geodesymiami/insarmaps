@@ -179,11 +179,11 @@ function Map(loadJSONFunc) {
         var long = feature.geometry.coordinates[1];
         var chunk = feature.properties.c;
         var pointNumber = feature.properties.p;
-        var title = chunk.toString() + ":" + pointNumber.toString();
+        var title = chunk.toString() + ":" + pointNumber.toString() + ":" + lat.toString() + ":" + long.toString();
 
         var query = {
-            "chunk": chunk,
-            "pointNumber": pointNumber
+            "area": currentArea,
+            "title": title
         }
 
         if (!that.map.getLayer(layerID)) {
@@ -274,25 +274,20 @@ function Map(loadJSONFunc) {
                                 // must be >= minDate; upper limit <= maxDate                              
                                 var minIndex = 0;
                                 var maxIndex = 0;
-                                for (i = 0; i < date_array.length; i++) {
-                                    if (minIndex != 0) {
-                                        var compare = dates.compare(maxDate, date_array[i]);
-                                        if (compare == 0 || compare == 1) {
-                                            console.log("getting max index");
-                                            console.log("date at max index is " + date_array[i]);
-                                            maxIndex = i;
-                                        }
-                                    } else {
-                                        var compare = dates.compare(minDate, date_array[i]);
-                                        if (compare == 0 || compare == -1) {
-                                            console.log("getting min index");
-                                            console.log("date at min index is " + date_array[i]);
-                                            minIndex = i;
-                                        }
+                                console.log("length of date array " + date_array.length);
+                                for (var i = 0; i < date_array.length; i++) {
+                                    var currentDate = date_array[i];
+                                    if (currentDate > minDate) {
+                                        minIndex = i;
+                                        break;
                                     }
                                 }
-                                // console.log("max date: " + date_array[maxIndex]);
-                                // console.log("max slider: " + Highcharts.dateFormat(null, maxDate));
+                                for (var i = 0; i < date_array.length; i++) {
+                                    var currentDate = date_array[i];
+                                    if (currentDate < maxDate) {
+                                        maxIndex = i + 1;
+                                    }
+                                }
 
                                 // get slope and y intercept of sub array 
                                 var sub_displacements = displacement_array.slice(minIndex, maxIndex + 1);
@@ -304,8 +299,7 @@ function Map(loadJSONFunc) {
                                 var sub_slope = sub_result["equation"][0];
                                 var sub_y = sub_result["equation"][1];
                                 var sub_regression_data = getRegressionChartData(sub_slope, sub_y, sub_decimal_dates, sub_chart_data);
-                            
-                                console.log("calculated sub array");
+                                
 
                                 // remove an existing sub array from chart
                                 var chart = $('#chartContainer').highcharts();
@@ -314,8 +308,7 @@ function Map(loadJSONFunc) {
                                 for (var i = seriesLength - 1; i > -1; i--) {
                                     console.log(chart.series[i].name);
                                     if (chart.series[i].name == "Linear Regression") {
-                                        chart.series[i].remove();
-                                        console.log("removed sub data");
+                                        chart.series[i].remove();                                        
                                         break;
                                     }
                                 }
@@ -324,13 +317,12 @@ function Map(loadJSONFunc) {
                                 chart.addSeries({
                                     name: 'Linear Regression',
                                     color: '#808080',
-                                    data: sub_regression_data                             
+                                    data: sub_regression_data
                                 });
 
                                 chart.setTitle(null, {
                                     text: "velocity: " + sub_slope.toString().substr(0, 8) + " m/yr"
-                                });
-                                console.log("finished add Series " + sub_slope.toString());
+                                });                                
                             }
                         },
                         dateTimeLabelFormats: {
@@ -374,8 +366,6 @@ function Map(loadJSONFunc) {
                     }]
                 });
             });
-
-            console.log("rendered: " + slope);
         });
     };
 
