@@ -240,27 +240,22 @@
 
           // add our info in a table, first remove any old info
           $(".wrap").find(".content").find("#myTable").find("#tableBody").empty();
-          for (var i = 0; i < json.length; i++) {
-            var curArray = json[i];
-            var subDirectories = curArray[0].split("/");
-            var dirName = subDirectories[subDirectories.length - 1];
-            var dirFullName = curArray[0];
-            var dirSize = curArray[1];
+          for (var i = 0; i < json.areas.length; i++) {
+            var area = json.areas[i];
 
-            $("#tableBody").append("<tr id=" + dirName +  "><td value='" + dirFullName + "''>" + dirName + "</td></tr>");
+            $("#tableBody").append("<tr id=" + area.name +  "><td value='" + area.name + "''>" + area.name + "</td></tr>");
 
             // make cursor change when mouse hovers over row
-            $("#" + dirName).css("cursor", "pointer");
+            $("#" + area.name).css("cursor", "pointer");
             // set the on click callback function for this row
 
             // ugly click function declaration to to JS not using block scope
-            $("#" + dirName).click((function(area) {
+            $("#" + area.name).click((function(area) {
               return function() {
                 $('.wrap, #popupButton').toggleClass('active');
-                getGEOJSON(area);
-                console.log("clicked on " + area);
+                getGEOJSON(area);                
               };
-            })(dirName));
+            })(area.name));
           }
         });
 

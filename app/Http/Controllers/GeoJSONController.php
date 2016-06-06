@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use DateTime;
+use DB;
 
 session_start();
 
@@ -27,69 +28,57 @@ class GeoJSONController extends Controller {
     return $array;
   }
 
-  public function getDataForPoint($area, $point) {   
-  // make file path be the resulf of session get
-    $filePath = storage_path() . "/json/" . $area . "/chunk_";
-    $jsonToReturn = array();
-
-    $tokens = explode(":", $point);
-    $fileNum = $tokens[0];
-    $pointNumber = $tokens[1];
-    $lat = $tokens[2];
-    $long = $tokens[3];
-
-    $file = $filePath . $fileNum . ".json";
-    $fileContents = file_get_contents($file);
-    $json = json_decode($fileContents, true);
-
-    $numFeatures = count($json["features"]);
-    $epsilon = 0.00000001; // floats are inherently inaccurate to compare, especially since the JSON has such accurate numbers
-    $jsonToReturn["dates"] = $json["dates"];
-
-    for ($i = 0; $i < $numFeatures; $i++) {
-      $filePointNumber = $json["features"][$i]["properties"]["p"];
-
-      if ($pointNumber == $filePointNumber) {
-        $jsonToReturn["displacements"] = $json["features"][$i]["properties"]["d"];
-        echo json_encode($jsonToReturn);
-        break;
+  public function getDataForPoint($area, $chunk, $pointNumber) {
+    try {
+      $query = "SELECT data->'dates' from " . $area . " WHERE id = " . $chunk;
+      $dates = DB::select($query);
+      $array = get_object_vars($dates[0]);
+      foreach ($array as $key => $dateArray) {
+        $json["dates"] = json_decode($dateArray);
       }
+
+      $query = "SELECT data->'features'->" . $pointNumber . "->'properties'->'d' from pythonTest WHERE id = " . $chunk;
+      $displacements = DB::select($query);
+      $array = get_object_vars($displacements[0]);
+
+      foreach ($array as $key => $displacementArray) {
+        $json["displacements"] = json_decode($displacementArray);
+      }
+      echo json_encode($json);
+    } catch (\Illuminate\Database\QueryException $e) {
+        echo "Point Not found";
     }
+    
   }
 
   public function getAreas() {
-    // check the storage_path for directories
-    $storage_path = storage_path() . "/json/";
-    $files = scandir($storage_path);
-    $length = count($files);
+    $json = array();
 
-    $dir_array = [];
-    // ignore index 0 and 1 since ./ and ../
-    // we should actually check for ./ and ../ instead of this cheap hack
-    for ($i = 2; $i < $length; $i++) {  
-      if (is_dir($storage_path . $files[$i])) {
-        array_push($dir_array, $files[$i]); 
+    try {
+      $query = "SELECT name, data from area";
+      $areas = DB::select($query);
+
+      $json["areas"] = [];
+      for ($i = 0; $i < count($areas); $i++) {
+        $array = get_object_vars($areas[$i]);
+        $areaName = $array["name"];
+
+        $currentArea = [];
+        $currentArea["name"] = $areaName;
+        
+        $hack = 0;
+        foreach ($array as $key => $area) {
+          if ($hack != 0) {
+            $currentArea["coords"] = json_decode($area);
+            array_push($json["areas"], $currentArea);
+          }
+          $hack++;
+        }
       }
+
+      echo json_encode($json);
+    } catch (\Illuminate\Database\QueryException $e) {
+      echo "error getting areas";
     }
-    // 2d array stores [path_name, num_files, lat_of_first_point, long_first_point]
-    $array = [];
-    for ($i = 0; $i < count($dir_array); $i++) {
-      $subArray = $this->getNumJSONFiles($storage_path . $dir_array[$i]);
-      // get a random point
-      $file = $storage_path . $dir_array[$i] . "/chunk_1.json";
-      $fileContents = file_get_contents($file);
-      $json = json_decode($fileContents, true);
-      // save some memory
-      unset($fileContents);
-      $long = $json["features"][0]["geometry"]["coordinates"][0];
-      $lat = $json["features"][0]["geometry"]["coordinates"][1];
-
-      array_push($subArray, $lat);
-      array_push($subArray, $long);
-
-      array_push($array, $subArray);
-    }
-
-    echo json_encode($array);
   }
 }
