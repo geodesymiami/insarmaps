@@ -316,9 +316,13 @@ function Map(loadJSONFunc) {
 
                                 var date_range = Highcharts.dateFormat(null, minDate) + " - " + Highcharts.dateFormat(null, maxDate);
                                 chart.addSeries({
+                                    type: 'line',
                                     name: 'Linear Regression',
                                     color: '#808080',
-                                    data: sub_regression_data
+                                    data: sub_regression_data,
+                                    marker: {
+                                        enabled: false
+                                    }
                                 });
 
                                 chart.setTitle(null, {
@@ -359,12 +363,23 @@ function Map(loadJSONFunc) {
                         pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} m'
                     },
                     series: [{
+                        type: 'line',
                         name: 'Displacement',
-                        data: chart_data
+                        data: chart_data,
+                        marker: {
+                            enabled: true
+                        }
                     }, {
+                        type: 'line',
                         name: 'Linear Regression',
-                        data: regression_data
-                    }]
+                        data: regression_data,
+                        marker: {
+                            enabled: false
+                        }
+                    }],
+                    chart: {
+                        marginRight: 50
+                    }
                 });
             });
         });
