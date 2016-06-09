@@ -205,6 +205,10 @@ $(window).load(function() {
     $("#overlay-toggle-button").toggleClass('toggle-button-selected');
     overlayToggleButton.toggleState = ToggleStates.ON;
 
+    $("#close-button").on("click", function() {
+        $('.wrap, #popupButton').toggleClass('active');
+    });
+
     $('#popupButton').on('click', function() {
         $('.wrap, #popupButton').toggleClass('active');
 
@@ -223,7 +227,7 @@ $(window).load(function() {
                 $("#" + area.name).css("cursor", "pointer");
                 // set the on click callback function for this row
 
-                // ugly click function declaration to to JS not using block scope
+                // ugly click function declaration to JS not using block scope
                 $("#" + area.name).click((function(area) {
                     return function() {
                         $('.wrap, #popupButton').toggleClass('active');
@@ -234,5 +238,11 @@ $(window).load(function() {
         });
 
         return false;
+    });
+
+    // cancel the popup
+    $('#cancelPopupButton').on('click', function() {
+        console.log("#cancel");
+        $('.wrap, #popupButton').toggleClass('active');
     });
 });

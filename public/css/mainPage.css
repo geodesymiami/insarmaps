@@ -7,6 +7,10 @@ body {
     width: 100%
 }
 
+button {
+  cursor: pointer;
+}
+
 .page-container {
     position: relative;
     display: block;
@@ -84,6 +88,26 @@ body {
 .wrap .content {
   opacity: 0;
 }
+
+#close-button-parent {  
+  float: right;
+  position: relative;
+}
+
+#close-button-child {
+  position: absolute;
+  left: 10px;
+  top: -20px;
+  overflow: auto;
+}
+
+#close-button {
+  background: white;
+  border: none;
+  color: red;
+  font-size: 30px;
+}
+
 .wrap:before {
   position: absolute;
   width: 1px;
