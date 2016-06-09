@@ -201,6 +201,8 @@ function Map(loadJSONFunc) {
             // now add the new regression line as a second dataset in the chart
             $(function() {
                 firstToggle = true;
+                dotToggleButton.set("off");
+                
                 $('#chartContainer').highcharts({
                     title: {
                         text: 'Timeseries Displacement Chart'
@@ -311,7 +313,7 @@ function Map(loadJSONFunc) {
                         pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} m'
                     },
                     series: [{
-                        type: 'line',
+                        type: 'scatter',
                         name: 'Displacement',
                         data: chart_data,
                         marker: {
