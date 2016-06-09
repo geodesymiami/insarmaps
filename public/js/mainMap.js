@@ -9,63 +9,10 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={
     accessToken: "pk.eyJ1Ijoia2pqajExMjIzMzQ0IiwiYSI6ImNpbDJqYXZ6czNjdWd2eW0zMTA2aW1tNXUifQ.cPofQqq5jqm6l4zix7k6vw"
 }).addTo(map);*/
 
-
-// Source: http://stackoverflow.com/questions/497790
-var dates = {
-    convert: function(d) {
-        // Converts the date in d to a date-object. The input can be:
-        //   a date object: returned without modification
-        //  an array      : Interpreted as [year,month,day]. NOTE: month is 0-11.
-        //   a number     : Interpreted as number of milliseconds
-        //                  since 1 Jan 1970 (a timestamp) 
-        //   a string     : Any format supported by the javascript engine, like
-        //                  "YYYY/MM/DD", "MM/DD/YYYY", "Jan 31 2009" etc.
-        //  an object     : Interpreted as an object with year, month and date
-        //                  attributes.  **NOTE** month is 0-11.
-        return (
-            d.constructor === Date ? d :
-            d.constructor === Array ? new Date(d[0], d[1], d[2]) :
-            d.constructor === Number ? new Date(d) :
-            d.constructor === String ? new Date(d) :
-            typeof d === "object" ? new Date(d.year, d.month, d.date) :
-            NaN
-        );
-    },
-    compare: function(a, b) {
-        // Compare two dates (could be of any type supported by the convert
-        // function above) and returns:
-        //  -1 : if a < b
-        //   0 : if a = b
-        //   1 : if a > b
-        // NaN : if a or b is an illegal date
-        // NOTE: The code inside isFinite does an assignment (=).
-        return (
-            isFinite(a = this.convert(a).valueOf()) &&
-            isFinite(b = this.convert(b).valueOf()) ?
-            (a > b) - (a < b) :
-            NaN
-        );
-    },
-    inRange: function(d, start, end) {
-        // Checks if date in d is between dates in start and end.
-        // Returns a boolean or NaN:
-        //    true  : if d is between start and end (inclusive)
-        //    false : if d is before start or after end
-        //    NaN   : if one or more of the dates is illegal.
-        // NOTE: The code inside isFinite does an assignment (=).
-        return (
-            isFinite(d = this.convert(d).valueOf()) &&
-            isFinite(start = this.convert(start).valueOf()) &&
-            isFinite(end = this.convert(end).valueOf()) ?
-            start <= d && d <= end :
-            NaN
-        );
-    }
-}
-
 var currentPoint = 1;
 var currentArea = null;
 var file = "/home/vagrant/code/insar_map_mvc/public/json/geo_timeseries_masked.h5test_chunk_";
+var firstToggle = true;
 
 // falk's date string is in format yyyymmdd - ex: 20090817 
 // take an array of these strings and return an array of date objects
@@ -179,11 +126,12 @@ function Map(loadJSONFunc) {
         var long = feature.geometry.coordinates[1];
         var chunk = feature.properties.c;
         var pointNumber = feature.properties.p;
-        var title = chunk.toString() + ":" + pointNumber.toString() + ":" + lat.toString() + ":" + long.toString();
+        var title = chunk.toString() + ":" + pointNumber.toString();
 
         var query = {
             "area": currentArea,
-            "title": title
+            "chunk": chunk,
+            "pointNumber": pointNumber
         }
 
         if (!that.map.getLayer(layerID)) {
@@ -252,6 +200,7 @@ function Map(loadJSONFunc) {
 
             // now add the new regression line as a second dataset in the chart
             $(function() {
+                firstToggle = true;
                 $('#chartContainer').highcharts({
                     title: {
                         text: 'Timeseries Displacement Chart'
@@ -268,13 +217,14 @@ function Map(loadJSONFunc) {
                             afterSetExtremes: function(e) {
                                 var minDate = e.min;
                                 var maxDate = e.max;
-                                console.log(Highcharts.dateFormat(null, e.min));
+
+                                //console.log(Highcharts.dateFormat(null, e.min));
 
                                 // lower limit index of subarray bounded by slider dates
                                 // must be >= minDate; upper limit <= maxDate                              
                                 var minIndex = 0;
                                 var maxIndex = 0;
-                                console.log("length of date array " + date_array.length);
+
                                 for (var i = 0; i < date_array.length; i++) {
                                     var currentDate = date_array[i];
                                     if (currentDate > minDate) {
@@ -299,30 +249,33 @@ function Map(loadJSONFunc) {
                                 var sub_slope = sub_result["equation"][0];
                                 var sub_y = sub_result["equation"][1];
                                 var sub_regression_data = getRegressionChartData(sub_slope, sub_y, sub_decimal_dates, sub_chart_data);
-                                
+
 
                                 // remove an existing sub array from chart
                                 var chart = $('#chartContainer').highcharts();
                                 var seriesLength = chart.series.length;
 
                                 for (var i = seriesLength - 1; i > -1; i--) {
-                                    console.log(chart.series[i].name);
                                     if (chart.series[i].name == "Linear Regression") {
-                                        chart.series[i].remove();                                        
+                                        chart.series[i].remove();
                                         break;
                                     }
                                 }
 
                                 var date_range = Highcharts.dateFormat(null, minDate) + " - " + Highcharts.dateFormat(null, maxDate);
                                 chart.addSeries({
+                                    type: 'line',
                                     name: 'Linear Regression',
                                     color: '#808080',
-                                    data: sub_regression_data
+                                    data: sub_regression_data,
+                                    marker: {
+                                        enabled: false
+                                    }
                                 });
 
                                 chart.setTitle(null, {
                                     text: "velocity: " + sub_slope.toString().substr(0, 8) + " m/yr"
-                                });                                
+                                });
                             }
                         },
                         dateTimeLabelFormats: {
@@ -358,12 +311,23 @@ function Map(loadJSONFunc) {
                         pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} m'
                     },
                     series: [{
+                        type: 'line',
                         name: 'Displacement',
-                        data: chart_data
+                        data: chart_data,
+                        marker: {
+                            enabled: true
+                        }
                     }, {
+                        type: 'line',
                         name: 'Linear Regression',
-                        data: regression_data
-                    }]
+                        data: regression_data,
+                        marker: {
+                            enabled: false
+                        }
+                    }],
+                    chart: {
+                        marginRight: 50
+                    }
                 });
             });
         });
@@ -381,7 +345,7 @@ function Map(loadJSONFunc) {
         }
 
         var feature = features[0];
-        console.log(feature);
+        // console.log(feature);
         var areaName = feature.properties.area;
         // var lat = feature.geometry.coordinates[0];
         // var long = feature.geometry.coordinates[1];
@@ -481,24 +445,21 @@ function Map(loadJSONFunc) {
                 var areaMarker = new mapboxgl.GeoJSONSource();
                 var features = [];
 
-                for (var i = 0; i < json.length; i++) {
-                    var curArray = json[i];
-                    var subDirectories = curArray[0].split("/");
-                    var dirName = subDirectories[subDirectories.length - 1];
-                    var dirFullName = curArray[0];
-                    var dirSize = curArray[1];
-                    var lat = curArray[2];
-                    var long = curArray[3];
+                for (var i = 0; i < json.areas.length; i++) {
+                    var area = json.areas[i];
+                    var lat = area.coords.latitude;
+                    var long = area.coords.longitude;
+                    console.log(area);
 
                     var feature = {
                         "type": "Feature",
                         "geometry": {
                             "type": "Point",
-                            "coordinates": [long, lat]
+                            "coordinates": [lat, long]
                         },
                         "properties": {
                             "marker-symbol": "dog-park",
-                            "area": dirName
+                            "area": area.name
                         }
                     };
 
