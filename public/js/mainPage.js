@@ -104,16 +104,33 @@ function ToggleButton(id) {
     this.onclick = null;
     this.firstToggle = true;
 
-    this.onclick = function(clickFunction) {
-        $(that.id).on("click", function() {
-            $(that.id).toggleClass('toggle-button-selected');
+    this.toggle = function() {
+    	$(that.id).toggleClass('toggle-button-selected');
 
-            // change states
-            if (that.toggleState == ToggleStates.ON) {
-                that.toggleState = ToggleStates.OFF;
-            } else {
-                that.toggleState = ToggleStates.ON;
-            }
+        if (that.toggleState == ToggleStates.ON) {
+            that.toggleState = ToggleStates.OFF;
+        } else {
+            that.toggleState = ToggleStates.ON;
+        }
+    };
+
+    this.set = function(state) {
+    	if (state == "on") {
+    		if (that.toggleState == ToggleStates.OFF) {    	
+    			that.toggle();
+    		}
+    	} else if (state == "off") {
+    		if (that.toggleState == ToggleStates.ON) {
+	    		that.toggle();
+	    	}
+    	} else {
+    		console.log("invalid toggle option");
+    	}
+    }
+    this.onclick = function(clickFunction) {
+        $(that.id).on("click", function() {          
+            // toggle states
+            that.toggle();
 
             clickFunction();
         });
@@ -157,15 +174,11 @@ dotToggleButton.onclick(function() {
 
     if (dotToggleButton.toggleState == ToggleStates.ON) {
         chart.series[0].update({
-            marker: {
-                enabled: true
-            }
+            type: "line"
         });
     } else {
         chart.series[0].update({
-            marker: {
-                enabled: false
-            }
+            type: "scatter"
         });
     }
     // prevents bug resulting from toggling line connecting points on the graph
@@ -189,14 +202,13 @@ dotToggleButton.onclick(function() {
 
 // when site loads, turn toggle on
 $(window).load(function() {
-    $(".toggle-button").toggleClass('toggle-button-selected');
+    $("#overlay-toggle-button").toggleClass('toggle-button-selected');
     overlayToggleButton.toggleState = ToggleStates.ON;
-    dotToggleButton.toggleState = ToggleStates.ON;
 
     $("#close-button").on("click", function() {
         $('.wrap, #popupButton').toggleClass('active');
     });
-    
+
     $('#popupButton').on('click', function() {
         $('.wrap, #popupButton').toggleClass('active');
 
