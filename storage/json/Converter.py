@@ -202,6 +202,11 @@ except Exception, e:
 convert_data()
 con.close()
 
+# run tippecanoe command to get mbtiles file and then delete the json files to save space
+os.chdir(path_name)
+os.system("tippecanoe *.json -x d -pf -pk -Bg -d9 -D12 -g12 -r0 -o " + folder_name + ".mbtiles")
+os.system("rm -rf *.json")
+
 # ---------------------------------------------------------------------------------------
 # check how long it took to read h5 file data and create json files
 end_time =  time.clock()

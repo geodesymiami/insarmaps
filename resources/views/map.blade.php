@@ -98,6 +98,11 @@
       <!--insert pop up button for selecting areas to view here-->
       <div class='wrap'>
         <div class='content'>
+          <div class="modal-header" id="close-button-parent">
+            <div id="close-button-child">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
+            </div>
+          </div>
           <!-- table to select dataset from-->
           <table class='table' id='myTable'>
             <thead>
