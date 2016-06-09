@@ -37,7 +37,7 @@ class GeoJSONController extends Controller {
         $json["dates"] = json_decode($dateArray);
       }
 
-      $query = "SELECT data->'features'->" . $pointNumber . "->'properties'->'d' from pythonTest WHERE id = " . $chunk;
+      $query = "SELECT data->'features'->" . $pointNumber . "->'properties'->'d' from " . $area . " WHERE id = " . $chunk;
       $displacements = DB::select($query);
       $array = get_object_vars($displacements[0]);
 
