@@ -210,7 +210,7 @@ $(window).load(function() {
     });
 
     $('#popupButton').on('click', function() {
-        $('.wrap, #popupButton').toggleClass('active');
+        $('.wrap').toggleClass('active');
 
         // get json response and put it in a table
         loadJSON("", "areas", function(response) {
