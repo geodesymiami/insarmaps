@@ -7,6 +7,7 @@ import time
 import os
 import sys
 import psycopg2
+import geocoder
 
 # ---------------------------------------------------------------------------------------
 # FUNCTIONS
@@ -35,10 +36,16 @@ def convert_data():
 	chunk_num = 1
 	point_num = 0
 
-	# insert a point into area table - name, lat, long
+	# calculate mid lat and long of dataset - then use google python lib to get country
 	mid_lat = x_first + ((num_columns/2) * x_step)
 	mid_long = y_first + ((num_rows/2) * y_step)
-	area_data = {"latitude": mid_lat, "longitude": mid_long}
+	g = geocoder.google([32.0000992,131.0000008], method='reverse')
+ 	country = str(g.country_long)
+
+	# put area data into database
+	area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country}
+	print "Country: " + area_data['country']
+
 	area_data_string = json.dumps(area_data, indent=4, separators=(',',':'))
 	cur.execute('INSERT INTO area VALUES (' + "'" + folder_name + "'" +',' + "'" + area_data_string + "')")
 	con.commit()
