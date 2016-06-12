@@ -105,7 +105,7 @@ function ToggleButton(id) {
     this.firstToggle = true;
 
     this.toggle = function() {
-    	$(that.id).toggleClass('toggle-button-selected');
+        $(that.id).toggleClass('toggle-button-selected');
 
         if (that.toggleState == ToggleStates.ON) {
             that.toggleState = ToggleStates.OFF;
@@ -115,20 +115,20 @@ function ToggleButton(id) {
     };
 
     this.set = function(state) {
-    	if (state == "on") {
-    		if (that.toggleState == ToggleStates.OFF) {    	
-    			that.toggle();
-    		}
-    	} else if (state == "off") {
-    		if (that.toggleState == ToggleStates.ON) {
-	    		that.toggle();
-	    	}
-    	} else {
-    		console.log("invalid toggle option");
-    	}
+        if (state == "on") {
+            if (that.toggleState == ToggleStates.OFF) {
+                that.toggle();
+            }
+        } else if (state == "off") {
+            if (that.toggleState == ToggleStates.ON) {
+                that.toggle();
+            }
+        } else {
+            console.log("invalid toggle option");
+        }
     }
     this.onclick = function(clickFunction) {
-        $(that.id).on("click", function() {          
+        $(that.id).on("click", function() {
             // toggle states
             that.toggle();
 
@@ -205,8 +205,57 @@ $(window).load(function() {
     $("#overlay-toggle-button").toggleClass('toggle-button-selected');
     overlayToggleButton.toggleState = ToggleStates.ON;
 
+    var json = null;
+    var clickedArea = null;
+    // logic for search button
+    $("#search-button").on("click", function() {
+        console.log(json);
+        if (json != null) {
+            query = $("#search-input").val();
+            // full list of areas
+            var areas = json.areas;
+            // new sublist of areas that match query
+            var match_areas = [];
+
+            var fuse = new Fuse(areas, { keys: ["coords.country"] });
+            var countries = fuse.search(query);
+            console.log(countries);
+
+            console.log("area 1");
+            console.log(areas[1].coords.country);
+
+            // add our info in a table, first remove any old info
+            $(".wrap").find(".content").find("#myTable").find("#tableBody").empty();
+            for (var i = 0; i < countries.length; i++) {
+                var country = countries[i];
+
+                $("#tableBody").append("<tr id=" + country.name + "><td value='" + country.name + "''>" + country.name + "</td></tr>");
+
+                // make cursor change when mouse hovers over row
+                $("#" + country.name).css("cursor", "pointer");
+                // set the on click callback function for this row
+
+                // ugly click function declaration to JS not using block scope
+                $("#" + country.name).click((function(country) {
+                    return function() {
+                        clickedArea = country;
+                        $('.wrap').toggleClass('active');
+                        getGEOJSON(country);
+                    };
+                })(country.name));
+            }
+
+            // now get only datasets from countries array with query search
+            // for (i = 0; i < areas.length; i++) {}
+
+        } else {
+            console.log("No such areas");
+        }
+
+    });
+
     $("#close-button").on("click", function() {
-        $('.wrap, #popupButton').toggleClass('active');
+        $('.wrap').toggleClass('active');
     });
 
     $('#popupButton').on('click', function() {
@@ -214,7 +263,7 @@ $(window).load(function() {
 
         // get json response and put it in a table
         loadJSON("", "areas", function(response) {
-            var json = JSON.parse(response);
+            json = JSON.parse(response);
 
             // add our info in a table, first remove any old info
             $(".wrap").find(".content").find("#myTable").find("#tableBody").empty();
@@ -230,7 +279,8 @@ $(window).load(function() {
                 // ugly click function declaration to JS not using block scope
                 $("#" + area.name).click((function(area) {
                     return function() {
-                        $('.wrap, #popupButton').toggleClass('active');
+                        clickedArea = area;
+                        $('.wrap').toggleClass('active');
                         getGEOJSON(area);
                     };
                 })(area.name));
@@ -243,6 +293,6 @@ $(window).load(function() {
     // cancel the popup
     $('#cancelPopupButton').on('click', function() {
         console.log("#cancel");
-        $('.wrap, #popupButton').toggleClass('active');
+        $('.wrap').toggleClass('active');
     });
 });

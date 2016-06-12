@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="js/fuse.js"></script>
   </head>
   <body>
     <div id="map-container">
@@ -103,6 +104,13 @@
       <!--insert pop up button for selecting areas to view here-->
       <div class='wrap'>
         <div class='content'>
+          <!--search bar-->
+          <div class="input-group">
+            <span class="input-group-btn">
+              <button class="btn btn-default" id="search-button" type="button">Go!</button>
+            </span>
+            <input type="text" class="form-control" placeholder="Search for..." id="search-input">
+          </div>
           <!-- <div class="modal-header" id="close-button-parent">
             <div id="close-button-child">
               <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
@@ -130,7 +138,6 @@
           <button></button>          
         </div>
       </div>
-      <br>
       <br>
       <br>
       <div>
