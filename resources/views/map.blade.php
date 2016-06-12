@@ -23,6 +23,14 @@
     <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
 
     <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js"> </script>
+    <!--boostrap-->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="js/fuse.js"></script>
+    <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.css' rel='stylesheet' />
   </head>
   <body>
     <div id="map-container">
@@ -98,20 +106,32 @@
       <!--insert pop up button for selecting areas to view here-->
       <div class='wrap'>
         <div class='content'>
-          <div class="modal-header" id="close-button-parent">
+          <!--search bar-->
+          <div class="input-group">
+            <span class="input-group-btn">
+              <button class="btn btn-default" id="search-button" type="button">Go!</button>
+            </span>
+            <input type="text" class="form-control" placeholder="Search for..." id="search-input">
+          </div>
+          <!-- <div class="modal-header" id="close-button-parent">
             <div id="close-button-child">
               <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
             </div>
-          </div>
+          </div> -->
           <!-- table to select dataset from-->
           <table class='table' id='myTable'>
+            <div class="modal-header" id="close-button-parent">
+              <div id="close-button-child">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
+              </div>
+            </div>
             <thead>
               <tr>
                 <th>Dataset</th>
               </tr>
             </thead>
             <tbody id='tableBody'></tbody>
-          </table>
+          </table>          
         </div>
       </div>
       <div class="overlay_toggle">
@@ -120,7 +140,6 @@
           <button></button>          
         </div>
       </div>
-      <br>
       <br>
       <br>
       <div>
