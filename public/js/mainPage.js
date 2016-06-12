@@ -205,6 +205,14 @@ $(window).load(function() {
     $("#overlay-toggle-button").toggleClass('toggle-button-selected');
     overlayToggleButton.toggleState = ToggleStates.ON;
 
+    // enter key triggers go button for search
+    $("#search-input").keyup(function(event) {
+        var ENTER_KEY = 13;
+
+        if (event.keyCode == ENTER_KEY) {
+            $("#search-button").click();
+        }
+    });
     var json = null;
     var clickedArea = null;
     // logic for search button
