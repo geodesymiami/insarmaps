@@ -510,6 +510,7 @@ function Map(loadJSONFunc) {
         });
 
         that.map.addControl(new mapboxgl.Navigation());
+        that.map.addControl(new mapboxgl.Geocoder());
 
         // disable rotation gesture
         that.map.dragRotate.disable();
