@@ -17,12 +17,43 @@ var ToggleStates = {
 var layerList = document.getElementById('map-type-menu');
 var inputs = layerList.getElementsByTagName('input');
 
+/*TOGGLE BUTTON*/
+var overlayToggleButton = new ToggleButton("#overlay-toggle-button");
+overlayToggleButton.onclick(function() {
+    // on? add layers, otherwise remove them
+    if (overlayToggleButton.toggleState == ToggleStates.ON) {
+        myMap.map.addSource("vector_layer_", {
+            type: 'vector',
+            tiles: myMap.tileJSON['tiles'],
+            minzoom: myMap.tileJSON['minzoom'],
+            maxzoom: myMap.tileJSON['maxzoom'],
+            bounds: myMap.tileJSON['bounds']
+        });
+        for (var i = 0; i < myMap.layers_.length; i++) {
+            var layer = myMap.layers_[i];
+
+            myMap.map.addLayer(layer);
+        }
+    } else {
+        myMap.map.removeSource("vector_layer_");
+
+        for (var i = 0; i < myMap.layers_.length; i++) {
+            var id = myMap.layers_[i].id;
+
+            // don't remove the base map, only the points
+            if (id !== "simple-tiles") {
+                myMap.map.removeLayer(id);
+            }
+        }
+    }
+});
+
 function switchLayer(layer) {
     var layerId = layer.target.id;
 
     var tileset = 'mapbox.' + layerId;
 
-    if (toggleState == ToggleStates.ON && myMap.tileJSON != null) {
+    if (overlayToggleButton.toggleState == ToggleStates.ON && myMap.tileJSON != null) {
         // remove selected point marker if it exists, and create a new GeoJSONSource for it
         // prevents crash of "cannot read property 'send' of undefined"
         if (myMap.map.getLayer(layerID)) {
@@ -136,36 +167,6 @@ function ToggleButton(id) {
         });
     };
 }
-/*TOGGLE BUTTON*/
-var overlayToggleButton = new ToggleButton("#overlay-toggle-button");
-overlayToggleButton.onclick(function() {
-    // on? add layers, otherwise remove them
-    if (overlayToggleButton.toggleState == ToggleStates.ON) {
-        myMap.map.addSource("vector_layer_", {
-            type: 'vector',
-            tiles: myMap.tileJSON['tiles'],
-            minzoom: myMap.tileJSON['minzoom'],
-            maxzoom: myMap.tileJSON['maxzoom'],
-            bounds: myMap.tileJSON['bounds']
-        });
-        for (var i = 0; i < myMap.layers_.length; i++) {
-            var layer = myMap.layers_[i];
-
-            myMap.map.addLayer(layer);
-        }
-    } else {
-        myMap.map.removeSource("vector_layer_");
-
-        for (var i = 0; i < myMap.layers_.length; i++) {
-            var id = myMap.layers_[i].id;
-
-            // don't remove the base map, only the points
-            if (id !== "simple-tiles") {
-                myMap.map.removeLayer(id);
-            }
-        }
-    }
-});
 
 // line connecting dots in chart on/off
 var dotToggleButton = new ToggleButton("#dot-toggle-button");
