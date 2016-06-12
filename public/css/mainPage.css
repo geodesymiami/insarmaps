@@ -260,7 +260,7 @@ div.panel.show > p {
   color: black;
 }
 button {
-    font-family: 'Carter One', cursive;
+    font-family: 'Carter One', cursive !important;
 }
 
 p.ul {
