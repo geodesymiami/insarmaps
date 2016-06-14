@@ -31,7 +31,8 @@ def convert_data():
 	siu_man = []
 	displacement_values = []
 	# np array of decimal dates, x parameter in linear regression equation
-	x = np.array(decimal_dates)	
+	x = decimal_dates
+	A = np.vstack([x, np.ones(len(x))]).T
 	y = []
 	chunk_num = 1
 	point_num = 0
@@ -52,24 +53,26 @@ def convert_data():
 
 	# outer loop increments row = longitude, inner loop increments column = latitude
 	for (row, col), value in np.ndenumerate(timeseries_datasets[dataset_keys[0]]):
+
 		latitude = x_first + (col * x_step)
 		longitude = y_first + (row * y_step) 
 		displacement = float(value)	
 		# if value is not equal to naN, create a new json point object and append to siu_man array
 		if not math.isnan(displacement):
-			# point num will be betw 1 and 20000 within each chunk of 20k points
-			point_num += 1
-
 			# get displacement values for all the dates
 			for key in dataset_keys:
 				displacement = float(timeseries_datasets[key][row][col])
 				displacement_values.append(displacement)
 
+			if chunk_num == 10 and point_num == 507:
+				print displacement_values
+				print decimal_dates
+
 			# np array of displacement values, y parameter in linear regression equation
-			y = np.array(displacement_values)
+			y = displacement_values
 
 			# y = mx + c -> we want m = slope of the linear regression line 
-			m, c = np.polyfit(x, y, 1)
+			m, c = np.linalg.lstsq(A, y)[0]
 
 			data = {
    			"type": "Feature",
@@ -81,7 +84,7 @@ def convert_data():
 
 			# clear displacement array for next point
 			displacement_values = []
-
+			point_num += 1
 			# if chunk_size limit is reached, write chunk into a json file
 			# then increment chunk number and clear siu_man array
 			if len(siu_man) == chunk_size:
@@ -100,7 +103,9 @@ def make_json_file(chunk_num, points):
 
 	data = {
 	"type": "FeatureCollection",
-	"dates": dataset_keys, 
+	# "dates": dataset_keys, 
+	"string_dates": dataset_keys, 
+	"decimal_dates": decimal_dates,
 	"features": points
 	}
 
@@ -188,6 +193,7 @@ con = None
 cur = None
 folder_name = path_name.split("/")
 folder_name = folder_name[len(folder_name)-1]
+
 try:
 	con = psycopg2.connect("dbname='point' user='aterzishi' host='insarvmcsc431.cloudapp.net' password='abc123'")
 	cur = con.cursor()
@@ -207,12 +213,12 @@ except Exception, e:
 
 # read and convert the datasets, then write them into json files and insert into database
 convert_data()
-con.close()
+# con.close()
 
 # run tippecanoe command to get mbtiles file and then delete the json files to save space
 os.chdir(path_name)
 os.system("tippecanoe *.json -x d -pf -pk -Bg -d9 -D12 -g12 -r0 -o " + folder_name + ".mbtiles")
-os.system("rm -rf *.json")
+# os.system("rm -rf *.json")
 
 # ---------------------------------------------------------------------------------------
 # check how long it took to read h5 file data and create json files
