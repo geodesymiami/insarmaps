@@ -142,7 +142,7 @@
       <br>
       <br>
       <div>
-        <button><a class='button glyphicon glyphicon-plus' id="popupButton" href='#'>Select Area</a></button>
+        <button class="btn btn-primary-outline"><a id="popupButton" href='#'>Select Area</a></button>
       </div>
 
       <p class="funding">The UM geodesy lab is funded by NASA and NSF.</p>
