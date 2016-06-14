@@ -29,8 +29,7 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
     <script type="text/javascript" src="js/fuse.js"></script>
-    <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.js'></script>
-    <link href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.css' rel='stylesheet' />
+    \
   </head>
   <body>
     <div id="map-container">
@@ -106,25 +105,25 @@
       <!--insert pop up button for selecting areas to view here-->
       <div class='wrap'>
         <div class='content'>
+         <div class="modal-header" id="close-button-parent">
+              <div id="close-button-child">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
+              </div>
+          </div>
           <!--search bar-->
           <div class="input-group">
             <span class="input-group-btn">
-              <button class="btn btn-default" id="search-button" type="button">Go!</button>
+              <button class="btn btn-default" id="search-button" type="button">Search</button>
             </span>
             <input type="text" class="form-control" placeholder="Search for..." id="search-input">
-          </div>
+          </div>         
           <!-- <div class="modal-header" id="close-button-parent">
             <div id="close-button-child">
               <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
             </div>
           </div> -->
           <!-- table to select dataset from-->
-          <table class='table' id='myTable'>
-            <div class="modal-header" id="close-button-parent">
-              <div id="close-button-child">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
-              </div>
-            </div>
+          <table class='table' id='myTable'>            
             <thead>
               <tr>
                 <th>Dataset</th>
@@ -143,7 +142,7 @@
       <br>
       <br>
       <div>
-        <button><a class='button glyphicon glyphicon-plus' id="popupButton" href='#'>Select Area</a></button>
+        <button class="btn btn-primary-outline"><a id="popupButton" href='#'>Select Area</a></button>
       </div>
 
       <p class="funding">The UM geodesy lab is funded by NASA and NSF.</p>
