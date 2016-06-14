@@ -64,10 +64,6 @@ def convert_data():
 				displacement = float(timeseries_datasets[key][row][col])
 				displacement_values.append(displacement)
 
-			if chunk_num == 10 and point_num == 507:
-				print displacement_values
-				print decimal_dates
-
 			# np array of displacement values, y parameter in linear regression equation
 			y = displacement_values
 
@@ -122,7 +118,6 @@ def make_json_file(chunk_num, points):
 
 	json_file.write("%s" % string_json)
 	json_file.close()
-
 # ---------------------------------------------------------------------------------------
 # START OF EXECUTABLE
 # ---------------------------------------------------------------------------------------
@@ -213,12 +208,12 @@ except Exception, e:
 
 # read and convert the datasets, then write them into json files and insert into database
 convert_data()
-# con.close()
+con.close()
 
 # run tippecanoe command to get mbtiles file and then delete the json files to save space
 os.chdir(path_name)
 os.system("tippecanoe *.json -x d -pf -pk -Bg -d9 -D12 -g12 -r0 -o " + folder_name + ".mbtiles")
-# os.system("rm -rf *.json")
+os.system("rm -rf *.json")
 
 # ---------------------------------------------------------------------------------------
 # check how long it took to read h5 file data and create json files
