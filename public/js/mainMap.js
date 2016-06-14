@@ -19,9 +19,9 @@ var firstToggle = true;
 var convertStringsToDateArray = function(date_string_array) {
     var date_array = [];
     for (i = 0; i < date_string_array.length; i++) {
-        var year = date_string_array[i].substr(0, 4);
-        var month = date_string_array[i].substr(4, 2);
-        var day = date_string_array[i].substr(6, 2);
+        var year = date_string_array[i].toString().substr(0, 4);
+        var month = date_string_array[i].toString().substr(4, 2);
+        var day = date_string_array[i].toString().substr(6, 2);
         var date = new Date(year, month, day);
         date_array.push(date);
     }
@@ -50,6 +50,7 @@ var convertDatesToDecimalArray = function(date_array) {
 function calcLinearRegression(displacements, decimal_dates) {
     data = [];
     for (i = 0; i < decimal_dates.length; i++) {
+        // data.push([displacements[i], decimal_dates[i]]);
         data.push([decimal_dates[i], displacements[i]]);
     }
     var result = regression('linear', data);
@@ -73,9 +74,9 @@ function getRegressionChartData(slope, y, decimal_dates, chart_data) {
 function getDisplacementChartData(displacements, dates) {
     var data = [];
     for (i = 0; i < dates.length; i++) {
-        var year = parseInt(dates[i].substr(0, 4));
-        var month = parseInt(dates[i].substr(4, 2));
-        var day = parseInt(dates[i].substr(6, 2));
+        var year = parseInt(dates[i].toString().substr(0, 4));
+        var month = parseInt(dates[i].toString().substr(4, 2));
+        var day = parseInt(dates[i].toString().substr(6, 2));
         data.push([Date.UTC(year, month, day), displacements[i]]);
     }
     return data;
@@ -132,7 +133,12 @@ function Map(loadJSONFunc) {
             "area": currentArea,
             "chunk": chunk,
             "pointNumber": pointNumber
-        }
+        };
+        // var query = {
+        //     "area": currentArea,
+        //     "chunk": 1,
+        //     "pointNumber": 1
+        // }
 
         if (!that.map.getLayer(layerID)) {
             that.clickLocationMarker.setData({
@@ -178,14 +184,10 @@ function Map(loadJSONFunc) {
         loadJSONFunc(query, "point", function(response) {
             var json = JSON.parse(response);
 
-            // put code here, the dates are in dates variable, and points are in
-            // falk's dates from json file are in format yyyymmdd - 20090817
-            var date_string_array = json.dates;
+            var date_string_array = json.string_dates;
+            var date_array = convertStringsToDateArray(date_string_array); 
+            var decimal_dates = json.decimal_dates;
             var displacement_array = json.displacements;
-            var date_array = convertStringsToDateArray(date_string_array);
-
-            // convert dates to decimal format
-            var decimal_dates = convertDatesToDecimalArray(date_array);
 
             // returns array for displacement on chart
             chart_data = getDisplacementChartData(displacement_array, date_string_array);

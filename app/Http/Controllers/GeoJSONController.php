@@ -30,11 +30,18 @@ class GeoJSONController extends Controller {
 
   public function getDataForPoint($area, $chunk, $pointNumber) {
     try {
-      $query = "SELECT data->'dates' from " . $area . " WHERE id = " . $chunk;
+      $query = "SELECT data->'decimal_dates' from " . $area . " WHERE id = " . $chunk;
       $dates = DB::select($query);
       $array = get_object_vars($dates[0]);
       foreach ($array as $key => $dateArray) {
-        $json["dates"] = json_decode($dateArray);
+        $json["decimal_dates"] = json_decode($dateArray);
+      }
+
+      $query = "SELECT data->'string_dates' from " . $area . " WHERE id = " . $chunk;
+      $dates = DB::select($query);
+      $array = get_object_vars($dates[0]);
+      foreach ($array as $key => $dateArray) {
+        $json["string_dates"] = json_decode($dateArray);
       }
 
       $query = "SELECT data->'features'->" . $pointNumber . "->'properties'->'d' from " . $area . " WHERE id = " . $chunk;
