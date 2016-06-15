@@ -56,13 +56,16 @@ function switchLayer(layer) {
     if (overlayToggleButton.toggleState == ToggleStates.ON && myMap.tileJSON != null) {
         // remove selected point marker if it exists, and create a new GeoJSONSource for it
         // prevents crash of "cannot read property 'send' of undefined"
-        if (myMap.map.getLayer(layerID)) {
-            var layerID = "touchLocation";
-            myMap.map.removeLayer(layerID);
-            myMap.map.removeSource(layerID);
+        // if (myMap.map.getLayer(layerID)) {
 
-            myMap.clickLocationMarker = new mapboxgl.GeoJSONSource();
-        }
+        // }
+        var touchMarker = "touchLocation";
+        if (myMap.map.getLayer(touchMarker)) {
+        myMap.map.removeLayer(touchMarker);
+        myMap.map.removeSource(touchMarker);
+    }
+
+        myMap.clickLocationMarker = new mapboxgl.GeoJSONSource();
 
         myMap.map.setStyle({
             version: 8,
@@ -120,7 +123,11 @@ function getGEOJSON(area) {
     myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://insarvmcsc431.cloudapp.net:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
 
     console.log(myMap.tileJSON);
-    for (var i = 1; i < 944; i++) {
+    if (myMap.pointsLoaded()) {
+        myMap.removePoints();
+    }
+
+    for (var i = 1; i < 24; i++) {
         var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
         myMap.tileJSON.vector_layers.push(layer);
     }
@@ -226,7 +233,7 @@ $(window).load(function() {
             // new sublist of areas that match query
             var match_areas = [];
 
-            var fuse = new Fuse(areas, { keys: ["coords.country"] });
+            var fuse = new Fuse(areas, { keys: ["coords.country", "name"] });
             var countries = fuse.search(query);
             console.log(countries);
 

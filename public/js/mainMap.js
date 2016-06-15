@@ -134,11 +134,6 @@ function Map(loadJSONFunc) {
             "chunk": chunk,
             "pointNumber": pointNumber
         };
-        // var query = {
-        //     "area": currentArea,
-        //     "chunk": 1,
-        //     "pointNumber": 1
-        // }
 
         if (!that.map.getLayer(layerID)) {
             that.clickLocationMarker.setData({
@@ -185,7 +180,7 @@ function Map(loadJSONFunc) {
             var json = JSON.parse(response);
 
             var date_string_array = json.string_dates;
-            var date_array = convertStringsToDateArray(date_string_array); 
+            var date_array = convertStringsToDateArray(date_string_array);
             var decimal_dates = json.decimal_dates;
             var displacement_array = json.displacements;
 
@@ -204,7 +199,7 @@ function Map(loadJSONFunc) {
             $(function() {
                 firstToggle = true;
                 dotToggleButton.set("off");
-                
+
                 $('#chartContainer').highcharts({
                     title: {
                         text: 'Timeseries Displacement Chart'
@@ -535,6 +530,34 @@ function Map(loadJSONFunc) {
             var features = that.map.queryRenderedFeatures(that.map.getBounds());
             console.log(that.map.getZoom());
         });
+    };
+
+    this.pointsLoaded = function() {
+        return that.map.getSource("vector_layer_") != null;
+    };
+
+    this.removePoints = function() {
+        that.map.removeSource("vector_layer_");
+
+        for (var i = 0; i < that.layers_.length; i++) {
+            var id = that.layers_[i].id;            
+
+            // don't remove the base map, only the points
+            if (id !== "simple-tiles") {
+                that.map.removeLayer(id);
+            }
+        }
+
+        // remove all layers but the first, base layer
+        that.layers_ = that.layers_.slice(0, 1);
+
+        // remove selected point marker if it exists, and create a new GeoJSONSource for it
+        // prevents crash of "cannot read property 'send' of undefined"
+        var layerID = "touchLocation";
+        that.map.removeLayer(layerID);
+        that.map.removeSource(layerID);
+
+        that.clickLocationMarker = new mapboxgl.GeoJSONSource();
     }
 }
 
