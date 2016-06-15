@@ -344,8 +344,19 @@ function Map(loadJSONFunc) {
         }
 
         var feature = features[0];
-        // console.log(feature);
-        var areaName = feature.properties.area;
+        console.log(feature);
+        var areaName = feature.properties.name;
+        var lat = feature.geometry.coordinates[0];
+        var long = feature.geometry.coordinates[1];
+
+        // needed as mapbox doesn't return original feature
+        var markerArea = {
+            "name": areaName,
+            "coords": {
+                "latitude": lat,
+                "longitude": long
+            }
+        };
         // var lat = feature.geometry.coordinates[0];
         // var long = feature.geometry.coordinates[1];
         // var chunk = feature.properties.c;
@@ -357,7 +368,7 @@ function Map(loadJSONFunc) {
         //     "title": title
         // }
 
-        getGEOJSON(areaName);
+        getGEOJSON(markerArea);
     };
 
     this.initLayer = function(data, mapType) {
@@ -458,7 +469,7 @@ function Map(loadJSONFunc) {
                         },
                         "properties": {
                             "marker-symbol": "dog-park",
-                            "area": area
+                            "name": area.name
                         }
                     };
 
