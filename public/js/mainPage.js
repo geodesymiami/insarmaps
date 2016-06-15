@@ -29,22 +29,57 @@ overlayToggleButton.onclick(function() {
             maxzoom: myMap.tileJSON['maxzoom'],
             bounds: myMap.tileJSON['bounds']
         });
-        for (var i = 0; i < myMap.layers_.length; i++) {
+
+        // for (var i = 1; i < 24; i++) {
+        //     var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
+        //     myMap.tileJSON.vector_layers.push(layer);
+        // }
+
+        myMap.tileJSON["vector_layers"].forEach(function(el) {
+            myMap.layers_.push({
+                id: el['id'] + Math.random(),
+                source: 'vector_layer_',
+                'source-layer': el['id'],
+                interactive: true,
+                type: 'circle',
+                layout: {
+                    'visibility': 'visible'
+                },
+                paint: {
+                    'circle-color': {
+                        property: 'm',
+                        stops: [
+                            [-0.02, '#0000FF'], // blue
+                            [-0.01, '#00FFFF'], // cyan
+                            [0.0, '#01DF01'], // lime green
+                            [0.01, '#FFBF00'], // yellow orange
+                            [0.02, '#FF0000'] // red orange
+                        ]
+                    },
+                    'circle-radius': {
+                        // for an explanation of this array see here:
+                        // https://www.mapbox.com/blog/data-driven-styling/
+                        stops: [
+                            [5, 2],
+                            [8, 2],
+                            [13, 8],
+                            [21, 16],
+                            [34, 32]
+                        ]
+                    }
+                }
+            });
+        });
+
+        for (var i = 1; i < myMap.layers_.length; i++) {
             var layer = myMap.layers_[i];
 
             myMap.map.addLayer(layer);
         }
+        console.log("added that");
     } else {
-        myMap.map.removeSource("vector_layer_");
-
-        for (var i = 0; i < myMap.layers_.length; i++) {
-            var id = myMap.layers_[i].id;
-
-            // don't remove the base map, only the points
-            if (id !== "simple-tiles") {
-                myMap.map.removeLayer(id);
-            }
-        }
+        myMap.removePoints();
+        myMap.removeTouchLocationMarker();
     }
 });
 
@@ -65,15 +100,12 @@ function switchLayer(layer) {
         var mapHadClickLocationMarker = false;
 
         if (myMap.map.getLayer(layerID)) {
-            var markerCoords = myMap.clickLocationMarker._data.features[0].geometry.coordinates;           
+            var markerCoords = myMap.clickLocationMarker._data.features[0].geometry.coordinates;
             lat = markerCoords[0];
             long = markerCoords[1];
             mapHadClickLocationMarker = true;
-            
-            myMap.map.removeLayer(layerID);
-            myMap.map.removeSource(layerID);
 
-            myMap.clickLocationMarker = new mapboxgl.GeoJSONSource();
+            myMap.removeTouchLocationMarker();
         }
 
         myMap.map.setStyle({
@@ -99,8 +131,8 @@ function switchLayer(layer) {
 
         // finally, add back the click location marker, do on load of style to prevent
         // style not done loading error
-        myMap.map.style.on("load", function() {            
-            if (mapHadClickLocationMarker) {                
+        myMap.map.style.on("load", function() {
+            if (mapHadClickLocationMarker) {
                 myMap.clickLocationMarker.setData({
                     "type": "FeatureCollection",
                     "features": [{
@@ -159,22 +191,31 @@ function getGEOJSON(area) {
     // loadJSON(query, "file", myMap.JSONCallback);
     //var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[]};
     //myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
-    myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://insarvmcsc431.cloudapp.net:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
+    myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://insarvmcsc431.cloudapp.net:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
 
     console.log(myMap.tileJSON);
     if (myMap.pointsLoaded()) {
         myMap.removePoints();
+        myMap.removeTouchLocationMarker();
     }
 
     // make streets toggle button be only checked one
     $("#streets").prop("checked", true);
-    
+
     for (var i = 1; i < 24; i++) {
         var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
         myMap.tileJSON.vector_layers.push(layer);
     }
 
-    myMap.initLayer(myMap.tileJSON);
+    myMap.initLayer(myMap.tileJSON, "streets");
+    myMap.map.style.on("load", function() {
+        window.setTimeout(function() {
+            myMap.map.flyTo({
+                center: [area.coords.latitude, area.coords.longitude],
+                zoom: 7
+            });
+        }, 1000);
+    });
 }
 
 function ToggleButton(id) {
@@ -337,11 +378,11 @@ $(window).load(function() {
                 // ugly click function declaration to JS not using block scope
                 $("#" + area.name).click((function(area) {
                     return function() {
-                        clickedArea = area;
+                        clickedArea = area.name;
                         $('.wrap').toggleClass('active');
                         getGEOJSON(area);
                     };
-                })(area.name));
+                })(area));
             }
         });
 
