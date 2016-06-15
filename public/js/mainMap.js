@@ -130,7 +130,7 @@ function Map(loadJSONFunc) {
         var title = chunk.toString() + ":" + pointNumber.toString();
 
         var query = {
-            "area": currentArea,
+            "area": currentArea.name,
             "chunk": chunk,
             "pointNumber": pointNumber
         };
