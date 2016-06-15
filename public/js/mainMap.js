@@ -360,7 +360,7 @@ function Map(loadJSONFunc) {
         getGEOJSON(areaName);
     };
 
-    this.initLayer = function(data) {
+    this.initLayer = function(data, mapType) {
         var layer;
         var layerList = document.getElementById('layerList');
 
@@ -399,7 +399,7 @@ function Map(loadJSONFunc) {
                 }
             });
         });
-        var tileset = 'mapbox.streets';
+        var tileset = 'mapbox.' + mapType;
         that.map.setStyle({
             version: 8,
             sprite: "mapbox://sprites/mapbox/streets-v8",
@@ -540,7 +540,7 @@ function Map(loadJSONFunc) {
         that.map.removeSource("vector_layer_");
 
         for (var i = 0; i < that.layers_.length; i++) {
-            var id = that.layers_[i].id;            
+            var id = that.layers_[i].id;
 
             // don't remove the base map, only the points
             if (id !== "simple-tiles") {
@@ -550,15 +550,19 @@ function Map(loadJSONFunc) {
 
         // remove all layers but the first, base layer
         that.layers_ = that.layers_.slice(0, 1);
+    }
 
+    this.removeTouchLocationMarker = function() {
         // remove selected point marker if it exists, and create a new GeoJSONSource for it
         // prevents crash of "cannot read property 'send' of undefined"
         var layerID = "touchLocation";
-        that.map.removeLayer(layerID);
-        that.map.removeSource(layerID);
+        if (that.map.getLayer(layerID)) {
+            that.map.removeLayer(layerID);
+            that.map.removeSource(layerID);
 
-        that.clickLocationMarker = new mapboxgl.GeoJSONSource();
-    }
+            that.clickLocationMarker = new mapboxgl.GeoJSONSource();
+        }
+    };
 }
 
 
