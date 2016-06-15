@@ -59,13 +59,22 @@ function switchLayer(layer) {
         // if (myMap.map.getLayer(layerID)) {
 
         // }
-        var touchMarker = "touchLocation";
-        if (myMap.map.getLayer(touchMarker)) {
-        myMap.map.removeLayer(touchMarker);
-        myMap.map.removeSource(touchMarker);
-    }
+        var layerID = "touchLocation";
+        var lat = 0.0;
+        var long = 0.0;
+        var mapHadClickLocationMarker = false;
 
-        myMap.clickLocationMarker = new mapboxgl.GeoJSONSource();
+        if (myMap.map.getLayer(layerID)) {
+            var markerCoords = myMap.clickLocationMarker._data.features[0].geometry.coordinates;           
+            lat = markerCoords[0];
+            long = markerCoords[1];
+            mapHadClickLocationMarker = true;
+            
+            myMap.map.removeLayer(layerID);
+            myMap.map.removeSource(layerID);
+
+            myMap.clickLocationMarker = new mapboxgl.GeoJSONSource();
+        }
 
         myMap.map.setStyle({
             version: 8,
@@ -86,6 +95,36 @@ function switchLayer(layer) {
                 }
             },
             layers: myMap.layers_
+        });
+
+        // finally, add back the click location marker, do on load of style to prevent
+        // style not done loading error
+        myMap.map.style.on("load", function() {            
+            if (mapHadClickLocationMarker) {                
+                myMap.clickLocationMarker.setData({
+                    "type": "FeatureCollection",
+                    "features": [{
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [lat, long]
+                        },
+                        "properties": {
+                            "marker-symbol": "dog-park"
+                        }
+                    }]
+                });
+                myMap.map.addSource(layerID, myMap.clickLocationMarker);
+
+                myMap.map.addLayer({
+                    "id": layerID,
+                    "type": "symbol",
+                    "source": layerID,
+                    "layout": {
+                        "icon-image": "{marker-symbol}-15",
+                    }
+                });
+            }
         });
     } else {
         myMap.map.setStyle({
@@ -127,6 +166,9 @@ function getGEOJSON(area) {
         myMap.removePoints();
     }
 
+    // make streets toggle button be only checked one
+    $("#streets").prop("checked", true);
+    
     for (var i = 1; i < 24; i++) {
         var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
         myMap.tileJSON.vector_layers.push(layer);
