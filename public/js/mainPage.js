@@ -191,7 +191,7 @@ function getGEOJSON(area) {
     // loadJSON(query, "file", myMap.JSONCallback);
     //var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[]};
     //myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
-    myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://insarvmcsc431.cloudapp.net:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
+    myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://insarvmcsc431.cloudapp.net:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
 
     console.log(myMap.tileJSON);
     if (myMap.pointsLoaded()) {
@@ -208,6 +208,14 @@ function getGEOJSON(area) {
     }
 
     myMap.initLayer(myMap.tileJSON, "streets");
+    myMap.map.style.on("load", function() {
+        window.setTimeout(function() {
+            myMap.map.flyTo({
+                center: [area.coords.latitude, area.coords.longitude],
+                zoom: 7
+            });
+        }, 1000);
+    });
 }
 
 function ToggleButton(id) {
@@ -370,11 +378,11 @@ $(window).load(function() {
                 // ugly click function declaration to JS not using block scope
                 $("#" + area.name).click((function(area) {
                     return function() {
-                        clickedArea = area;
+                        clickedArea = area.name;
                         $('.wrap').toggleClass('active');
                         getGEOJSON(area);
                     };
-                })(area.name));
+                })(area));
             }
         });
 

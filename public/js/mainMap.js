@@ -433,8 +433,8 @@ function Map(loadJSONFunc) {
     this.addMapToPage = function(containerID) {
         that.map = new mapboxgl.Map({
             container: containerID, // container id
-            center: [130.89, 31.89], // starting position
-            zoom: 7 // starting zoom
+            center: [0, 0], // starting position
+            zoom: 0 // starting zoom
         });
 
         that.map.on("load", function() {
@@ -458,7 +458,7 @@ function Map(loadJSONFunc) {
                         },
                         "properties": {
                             "marker-symbol": "dog-park",
-                            "area": area.name
+                            "area": area
                         }
                     };
 
