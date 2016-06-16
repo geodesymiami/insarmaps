@@ -145,7 +145,7 @@ function Map(loadJSONFunc) {
                         "coordinates": [lat, long]
                     },
                     "properties": {
-                        "marker-symbol": "dog-park"
+                        "marker-symbol": "cross"
                     }
                 }]
             });
@@ -169,7 +169,7 @@ function Map(loadJSONFunc) {
                         "coordinates": [lat, long]
                     },
                     "properties": {
-                        "marker-symbol": "dog-park"
+                        "marker-symbol": "cross"
                     }
                 }]
             });
@@ -356,17 +356,7 @@ function Map(loadJSONFunc) {
                 "latitude": lat,
                 "longitude": long
             }
-        };
-        // var lat = feature.geometry.coordinates[0];
-        // var long = feature.geometry.coordinates[1];
-        // var chunk = feature.properties.c;
-        // var pointNumber = feature.properties.p;
-        // var title = chunk.toString() + ":" + pointNumber.toString() + ":" + lat.toString() + ":" + long.toString();
-
-        // var query = {
-        //     "area": currentArea,
-        //     "title": title
-        // }
+        };        
 
         getGEOJSON(markerArea);
     };
@@ -413,7 +403,7 @@ function Map(loadJSONFunc) {
         var tileset = 'mapbox.' + mapType;
         that.map.setStyle({
             version: 8,
-            sprite: "mapbox://sprites/mapbox/streets-v8",
+            sprite: "/maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
@@ -468,7 +458,7 @@ function Map(loadJSONFunc) {
                             "coordinates": [lat, long]
                         },
                         "properties": {
-                            "marker-symbol": "dog-park",
+                            "marker-symbol": "marker",
                             "name": area.name
                         }
                     };
@@ -490,6 +480,7 @@ function Map(loadJSONFunc) {
                     "source": id,
                     "layout": {
                         "icon-image": "{marker-symbol}-15",
+                        "icon-allow-overlap": true
                     }
                 });
             });
@@ -505,7 +496,7 @@ function Map(loadJSONFunc) {
         });
         that.map.setStyle({
             version: 8,
-            sprite: "mapbox://sprites/mapbox/streets-v8",
+            sprite: "/maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
