@@ -9,6 +9,10 @@ import sys
 import psycopg2
 import geocoder
 
+# To convert a single h5 file to mbtile: python Converter.py <name of h5 file> timeseries <name of mbtiles file>
+# To convert multiple h5 files to mbtiles: python Converter.py <name of folder of mbtiles> timeseries <name of mbtiles file>
+# for naming of mbtiles file, we will eventually use the name attribute from the h5 file
+
 # ---------------------------------------------------------------------------------------
 # FUNCTIONS
 # ---------------------------------------------------------------------------------------
@@ -122,22 +126,21 @@ def make_json_file(chunk_num, points):
 # START OF EXECUTABLE
 # ---------------------------------------------------------------------------------------
 # get name of h5 file and the groupname of that file's data
-if (len(sys.argv) != 4):
+if (len(sys.argv) != 3):
 	print "Incorrect number of arguments - see correct example below:"
-	print "example: python Converter.py geo_timeseries_masked.h5 timeseries /Users/zishiwu/Desktop/data"
+	print "example: python Converter.py geo_timeseries_masked.h5 ./japan"
 	sys.exit()
 
 file_name = sys.argv[1]
-group_name = sys.argv[2]
-path_name = sys.argv[3]
+path_name = sys.argv[2]
 # ---------------------------------------------------------------------------------------
 # use h5py to open a sepcified group in the h5 file 
 # then read datasets from h5 file into memory for faster reading of data
 file = h5py.File(file_name,  "r")
 try: 
-	group = file[group_name]
+	group = file["timeseries"]
 except: 
-	print "unable to find group: %s" % group_name
+	print "not a timeseries file"
 	sys.exit()
 
 # start clock to track how long conversion process takes
