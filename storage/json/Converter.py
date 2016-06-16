@@ -44,7 +44,7 @@ def convert_data():
 	# calculate mid lat and long of dataset - then use google python lib to get country
 	mid_lat = x_first + ((num_columns/2) * x_step)
 	mid_long = y_first + ((num_rows/2) * y_step)
-	g = geocoder.google([32.0000992,131.0000008], method='reverse')
+	g = geocoder.google([mid_lat,mid_long], method='reverse')
  	country = str(g.country_long)
 
 	# put area data into database
@@ -126,19 +126,20 @@ def make_json_file(chunk_num, points):
 # START OF EXECUTABLE
 # ---------------------------------------------------------------------------------------
 # get name of h5 file and the groupname of that file's data
-if (len(sys.argv) != 3):
+if (len(sys.argv) != 2):
 	print "Incorrect number of arguments - see correct example below:"
-	print "example: python Converter.py geo_timeseries_masked.h5 ./japan"
+	print "example: python Converter.py geo_timeseries_masked.h5"
 	sys.exit()
 
 file_name = sys.argv[1]
-path_name = sys.argv[2]
+path_name = file_name[:len(file_name)-3]
 # ---------------------------------------------------------------------------------------
 # use h5py to open a sepcified group in the h5 file 
 # then read datasets from h5 file into memory for faster reading of data
 file = h5py.File(file_name,  "r")
 try: 
 	group = file["timeseries"]
+	print "opened file: " + file_name
 except: 
 	print "not a timeseries file"
 	sys.exit()
