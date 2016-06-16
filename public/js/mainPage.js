@@ -110,7 +110,7 @@ function switchLayer(layer) {
 
         myMap.map.setStyle({
             version: 8,
-            sprite: "mapbox://sprites/mapbox/streets-v8",
+            sprite: "/maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
@@ -142,7 +142,7 @@ function switchLayer(layer) {
                             "coordinates": [lat, long]
                         },
                         "properties": {
-                            "marker-symbol": "dog-park"
+                            "marker-symbol": "cross"
                         }
                     }]
                 });
@@ -161,7 +161,7 @@ function switchLayer(layer) {
     } else {
         myMap.map.setStyle({
             version: 8,
-            sprite: "mapbox://sprites/mapbox/streets-v8",
+            sprite: "/maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
