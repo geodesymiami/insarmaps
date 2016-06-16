@@ -44,7 +44,9 @@ def convert_data():
 	# calculate mid lat and long of dataset - then use google python lib to get country
 	mid_lat = x_first + ((num_columns/2) * x_step)
 	mid_long = y_first + ((num_rows/2) * y_step)
-	g = geocoder.google([mid_lat,mid_long], method='reverse')
+	print "lat: " + str(mid_lat)
+	print "long: " + str(mid_long)
+	g = geocoder.google([mid_long,mid_lat], method='reverse')
  	country = str(g.country_long)
 
 	# put area data into database
