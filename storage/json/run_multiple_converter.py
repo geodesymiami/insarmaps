@@ -9,7 +9,7 @@ import subprocess
 print "length of command argv: " + str(len(sys.argv))
 if (len(sys.argv) != 2):
 	print "Incorrect number of arguments - see correct example below:"
-	print "example: python Converter_multiple.py <folder of h5 files>"
+	print "example: python run_multiple_converter.py <folder of h5 files>"
 	sys.exit()
 
 # check if folder given is a directory
@@ -31,5 +31,5 @@ for f in all_files:
 # run multiple processes of converting h5 files
 for f in h5_files:
 	# command = 'python Converter_no_database.py ' + f
-	p = subprocess.Popen(['python', 'Converter_no_database.py', f])
+	p = subprocess.Popen(['python', 'Converter.py', f])
 	print "spawned process: " + str(p)
