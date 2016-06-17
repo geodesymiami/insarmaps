@@ -95,7 +95,7 @@ def convert_data():
 	# debugging this one line took 1 hour...
 	print "num_chunks: " + str(chunk_num)
 	area_data_string = json.dumps(area_data, indent=4, separators=(',',':'))
-	cur.execute('INSERT INTO area VALUES (' + "'" + folder_name + "','" + area_data_string + "','" + chunk_num + "')")
+	cur.execute('INSERT INTO area VALUES (' + "'" + folder_name + "','" + area_data_string + "','" + str(chunk_num) + "')")
 	con.commit()
 
 # ---------------------------------------------------------------------------------------
