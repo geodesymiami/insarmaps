@@ -194,16 +194,14 @@ if not does_exist:
 con = None
 cur = None
 folder_name = path_name.split("/")
-mbtiles_path = folder_name[len(folder_name)-2] + "/mbtiles"
+mbtiles_path = folder_name[len(folder_name)-2] + "/mbtiles" # path of folder containing all folders that have mbtiles
 
 try: 
 	os.mkdir(mbtiles_path)
 except:
 	print mbtiles_path + " already exists"
-print "tried making mbtiles folder"
 
-folder_name = folder_name[len(folder_name)-1]
-sys.exit()
+folder_name = folder_name[len(folder_name)-1] # name of folder containing an mbtible converted from h5
 try:
 	con = psycopg2.connect("dbname='point' user='aterzishi' host='insarvmcsc431.cloudapp.net' password='abc123'")
 	cur = con.cursor()
