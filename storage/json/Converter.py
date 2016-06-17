@@ -91,7 +91,9 @@ def convert_data():
 	# put area data into database
 	area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country}
 	print "Country: " + area_data['country']
-	print "num_chunks: " + chunk_num
+
+	# debugging this one line took 1 hour...
+	print "num_chunks: " + str(chunk_num)
 	area_data_string = json.dumps(area_data, indent=4, separators=(',',':'))
 	cur.execute('INSERT INTO area VALUES (' + "'" + folder_name + "','" + area_data_string + "','" + chunk_num + "')")
 	con.commit()
@@ -192,8 +194,16 @@ if not does_exist:
 con = None
 cur = None
 folder_name = path_name.split("/")
-folder_name = folder_name[len(folder_name)-1]
+mbtiles_path = folder_name[len(folder_name)-2] + "/mbtiles"
 
+try: 
+	os.mkdir(mbtiles_path)
+except:
+	print mbtiles_path + " already exists"
+print "tried making mbtiles folder"
+
+folder_name = folder_name[len(folder_name)-1]
+sys.exit()
 try:
 	con = psycopg2.connect("dbname='point' user='aterzishi' host='insarvmcsc431.cloudapp.net' password='abc123'")
 	cur = con.cursor()
@@ -216,7 +226,7 @@ convert_data()
 con.close()
 
 # run tippecanoe command to get mbtiles file and then delete the json files to save space
-os.chdir(path_name)
+os.chdir(mbtiles_path)
 os.system("tippecanoe *.json -x d -pf -pk -Bg -d9 -D12 -g12 -r0 -o " + folder_name + ".mbtiles")
 os.system("rm -rf *.json")
 
