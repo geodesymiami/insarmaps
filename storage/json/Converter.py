@@ -113,7 +113,7 @@ def make_json_file(chunk_num, points):
 
 	# remove '.h5' from the end of file_name
 	chunk = "chunk_" + str(chunk_num) + ".json"
-	json_file = open(path_name + "/" + chunk, "w")
+	json_file = open(mbtiles_path + "/" + chunk, "w")
 	string_json = json.dumps(data, indent=4, separators=(',',':'))
 	try:
 		cur.execute('INSERT INTO ' + folder_name + ' VALUES (' + str(chunk_num) +',' + "'" + string_json + "')")
