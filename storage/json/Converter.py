@@ -198,10 +198,10 @@ try:
 	con = psycopg2.connect("dbname='point' user='aterzishi' host='insarvmcsc431.cloudapp.net' password='abc123'")
 	cur = con.cursor()
 	# create area table if not exist
-	cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, data json );")
+	cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, data json, num_chunks integer );")
 	con.commit()
 	# create table named after h5 dataset area - take out .h5
-	query = 'CREATE TABLE IF NOT EXISTS ' + folder_name + '( id integer, data json, num_chunks integer );'
+	query = 'CREATE TABLE IF NOT EXISTS ' + folder_name + '( id integer, data json );'
 	print query
 	cur.execute(query)
 	con.commit()
