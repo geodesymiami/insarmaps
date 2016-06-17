@@ -89,11 +89,11 @@ def convert_data():
  	country = str(g.country_long)
 
 	# put area data into database
-	area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country, "num_chunks": chunk_num}
+	area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country}
 	print "Country: " + area_data['country']
 	print "num_chunks: " + chunk_num
 	area_data_string = json.dumps(area_data, indent=4, separators=(',',':'))
-	cur.execute('INSERT INTO area VALUES (' + "'" + folder_name + "','" + area_data_string + "')")
+	cur.execute('INSERT INTO area VALUES (' + "'" + folder_name + "','" + area_data_string + "','" + chunk_num + "')")
 	con.commit()
 
 # ---------------------------------------------------------------------------------------
@@ -201,7 +201,7 @@ try:
 	cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, data json );")
 	con.commit()
 	# create table named after h5 dataset area - take out .h5
-	query = 'CREATE TABLE IF NOT EXISTS ' + folder_name + '( id integer, data json );'
+	query = 'CREATE TABLE IF NOT EXISTS ' + folder_name + '( id integer, data json, num_chunks integer );'
 	print query
 	cur.execute(query)
 	con.commit()
