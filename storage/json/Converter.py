@@ -41,22 +41,6 @@ def convert_data():
 	chunk_num = 1
 	point_num = 0
 
-	# calculate mid lat and long of dataset - then use google python lib to get country
-	mid_lat = x_first + ((num_columns/2) * x_step)
-	mid_long = y_first + ((num_rows/2) * y_step)
-	print "lat: " + str(mid_lat)
-	print "long: " + str(mid_long)
-	g = geocoder.google([mid_long,mid_lat], method='reverse')
- 	country = str(g.country_long)
-
-	# put area data into database
-	area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country}
-	print "Country: " + area_data['country']
-
-	area_data_string = json.dumps(area_data, indent=4, separators=(',',':'))
-	cur.execute('INSERT INTO area VALUES (' + "'" + folder_name + "'" +',' + "'" + area_data_string + "')")
-	con.commit()
-
 	# outer loop increments row = longitude, inner loop increments column = latitude
 	for (row, col), value in np.ndenumerate(timeseries_datasets[dataset_keys[0]]):
 
@@ -97,6 +81,19 @@ def convert_data():
 
 	# write the last chunk that might be smaller than chunk_size
 	make_json_file(chunk_num, siu_man)
+
+	# calculate mid lat and long of dataset - then use google python lib to get country
+	mid_lat = x_first + ((num_columns/2) * x_step)
+	mid_long = y_first + ((num_rows/2) * y_step)
+	g = geocoder.google([mid_long,mid_lat], method='reverse')
+ 	country = str(g.country_long)
+
+	# put area data into database
+	area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country}
+	print "Country: " + area_data['country']
+	area_data_string = json.dumps(area_data, indent=4, separators=(',',':'))
+	cur.execute('INSERT INTO area VALUES (' + "'" + folder_name + "','" + area_data_string + "','" + str(chunk_num) + "')")
+	con.commit()
 
 # ---------------------------------------------------------------------------------------
 # create a json file out of siu man array
@@ -158,6 +155,7 @@ num_columns = int(group.attrs["WIDTH"])
 num_rows = int(group.attrs["FILE_LENGTH"])
 print "columns: %d" % num_columns
 print "rows: %d" % num_rows
+print 
 
 # get keys
 dataset_keys = group.keys()
@@ -199,7 +197,7 @@ try:
 	con = psycopg2.connect("dbname='point' user='aterzishi' host='insarvmcsc431.cloudapp.net' password='abc123'")
 	cur = con.cursor()
 	# create area table if not exist
-	cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, data json );")
+	cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, data json, numchunks integer );")
 	con.commit()
 	# create table named after h5 dataset area - take out .h5
 	query = 'CREATE TABLE IF NOT EXISTS ' + folder_name + '( id integer, data json );'
