@@ -113,7 +113,7 @@ def make_json_file(chunk_num, points):
 
 	# remove '.h5' from the end of file_name
 	chunk = "chunk_" + str(chunk_num) + ".json"
-	json_file = open(mbtiles_path + "/" + chunk, "w")
+	json_file = open(json_path + "/" + chunk, "w")
 	string_json = json.dumps(data, indent=4, separators=(',',':'))
 	try:
 		cur.execute('INSERT INTO ' + folder_name + ' VALUES (' + str(chunk_num) +',' + "'" + string_json + "')")
@@ -175,33 +175,30 @@ for key in dataset_keys:
 	decimal = get_decimal_date(d)
 	decimal_dates.append(decimal)
 
-# set number of points per json chunk
+# set number of points per json chunk - then close h5 file
 chunk_size = 20000
-
 file.close()	
 
-# check if directory to put json files exists in specified path - if not, create it
-# example: python Converter.py geo_timeseries_masked.h5 timeseries /Users/zishiwu/Desktop
-# creates /Users/zishiwu/Desktop/geo_timeseries_masked folder to put json files in
-does_exist = os.path.isdir(path_name)
-print path_name + " already exists?"
-print does_exist
-
-if not does_exist:
-	json_directory = os.mkdir(path_name)
-
 # connect to postgresql database
+# also create folder named after h5 file to store json files in mbtiles folder
 con = None
 cur = None
-folder_name = path_name.split("/")
-mbtiles_path = folder_name[len(folder_name)-2] + "/mbtiles" # path of folder containing all folders that have mbtiles
 
-try: 
+path_list = path_name.split("/")
+mbtiles_path = os.getcwd() + "/mbtiles"
+folder_name = path_name.split("/")[len(path_list)-1]
+json_path = mbtiles_path + "/" + folder_name
+
+try: # create path for folder that stores all mbtiles
 	os.mkdir(mbtiles_path)
 except:
 	print mbtiles_path + " already exists"
 
-folder_name = folder_name[len(folder_name)-1] # name of folder containing an mbtible converted from h5
+try: # create path for json
+	os.mkdir(json_path)
+except:
+	print json_path + " already exists"
+
 try:
 	con = psycopg2.connect("dbname='point' user='aterzishi' host='insarvmcsc431.cloudapp.net' password='abc123'")
 	cur = con.cursor()
@@ -224,9 +221,13 @@ convert_data()
 con.close()
 
 # run tippecanoe command to get mbtiles file and then delete the json files to save space
-os.chdir(mbtiles_path)
+os.chdir(os.path.abspath(json_path))
 os.system("tippecanoe *.json -x d -pf -pk -Bg -d9 -D12 -g12 -r0 -o " + folder_name + ".mbtiles")
 os.system("rm -rf *.json")
+
+# move mbtiles file from json folder to mbtiles folder and then delete json folder
+os.system("mv " + folder_name + ".mbtiles " + os.path.abspath(mbtiles_path))
+os.system("rm -rf " + os.path.abspath(json_path))
 
 # ---------------------------------------------------------------------------------------
 # check how long it took to read h5 file data and create json files
