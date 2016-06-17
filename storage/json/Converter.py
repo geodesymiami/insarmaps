@@ -89,10 +89,11 @@ def convert_data():
  	country = str(g.country_long)
 
 	# put area data into database
-	area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country}
+	area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country, "num_chunks": chunk_num}
 	print "Country: " + area_data['country']
+	print "num_chunks: " + chunk_num
 	area_data_string = json.dumps(area_data, indent=4, separators=(',',':'))
-	cur.execute('INSERT INTO area VALUES (' + "'" + folder_name + "','" + area_data_string + "','" + str(chunk_num) + "')")
+	cur.execute('INSERT INTO area VALUES (' + "'" + folder_name + "','" + area_data_string + "')")
 	con.commit()
 
 # ---------------------------------------------------------------------------------------
@@ -197,7 +198,7 @@ try:
 	con = psycopg2.connect("dbname='point' user='aterzishi' host='insarvmcsc431.cloudapp.net' password='abc123'")
 	cur = con.cursor()
 	# create area table if not exist
-	cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, data json, numchunks integer );")
+	cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, data json );")
 	con.commit()
 	# create table named after h5 dataset area - take out .h5
 	query = 'CREATE TABLE IF NOT EXISTS ' + folder_name + '( id integer, data json );'
