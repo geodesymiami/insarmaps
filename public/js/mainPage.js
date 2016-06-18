@@ -202,7 +202,7 @@ function getGEOJSON(area) {
     // make streets toggle button be only checked one
     $("#streets").prop("checked", true);
 
-    for (var i = 1; i < 24; i++) {
+    for (var i = 1; i <= area.coords.num_chunks; i++) {
         var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
         myMap.tileJSON.vector_layers.push(layer);
     }
