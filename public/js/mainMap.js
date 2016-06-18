@@ -344,17 +344,19 @@ function Map(loadJSONFunc) {
         }
 
         var feature = features[0];
-        console.log(feature);
+    console.log(feature);
         var areaName = feature.properties.name;
         var lat = feature.geometry.coordinates[0];
         var long = feature.geometry.coordinates[1];
+        var num_chunks = feature.properties.num_chunks;
 
         // needed as mapbox doesn't return original feature
         var markerArea = {
             "name": areaName,
             "coords": {
                 "latitude": lat,
-                "longitude": long
+                "longitude": long,
+                "num_chunks": num_chunks
             }
         };        
 
@@ -459,7 +461,8 @@ function Map(loadJSONFunc) {
                         },
                         "properties": {
                             "marker-symbol": "marker",
-                            "name": area.name
+                            "name": area.name,
+                            "num_chunks": area.coords.num_chunks
                         }
                     };
 
