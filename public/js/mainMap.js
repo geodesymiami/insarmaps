@@ -14,6 +14,8 @@ var currentArea = null;
 var file = "/home/vagrant/code/insar_map_mvc/public/json/geo_timeseries_masked.h5test_chunk_";
 var firstToggle = true;
 
+var myPolygon = null;
+
 // falk's date string is in format yyyymmdd - ex: 20090817 
 // take an array of these strings and return an array of date objects
 var convertStringsToDateArray = function(date_string_array) {
@@ -344,7 +346,11 @@ function Map(loadJSONFunc) {
         }
 
         var feature = features[0];
-    console.log(feature);
+        // return if we are drawing
+        if (feature.geometry.type == "LineString" || feature.geometry.type == "Polygon") {
+            return;
+        }
+        console.log(feature);
         var areaName = feature.properties.name;
         var lat = feature.geometry.coordinates[0];
         var long = feature.geometry.coordinates[1];
@@ -513,6 +519,15 @@ function Map(loadJSONFunc) {
 
         that.map.addControl(new mapboxgl.Navigation());
         that.map.addControl(new mapboxgl.Geocoder());
+        var draw = mapboxgl.Draw();
+        that.map.addControl(draw);
+        that.map.on("draw.modified",  e => {
+            if (e.features[0].geometry.type == "Polygon") {
+                // console.log(e);
+                that.polygonCorners(e.features[0]);
+                myPolygon = e.features[0];
+            }
+        });
 
         // disable rotation gesture
         that.map.dragRotate.disable();
@@ -524,6 +539,12 @@ function Map(loadJSONFunc) {
         that.map.on('mousemove', function(e) {
             var features = that.map.queryRenderedFeatures(e.point, { layers: that.layers });
             that.map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+
+            if (myPolygon != null) {
+                if (that.pointInPolygon(e.lngLat, myPolygon)) {
+                    console.log("mouse in polygon");
+                } 
+            }
         });
 
         // handle zoom changed. we want to change the icon-size in the layer for varying zooms.
@@ -535,6 +556,79 @@ function Map(loadJSONFunc) {
             var features = that.map.queryRenderedFeatures(that.map.getBounds());
             console.log(that.map.getZoom());
         });
+    };
+
+    // takes a polygon as input and returns a square bounding box describing the corners of the
+    // polygon
+    this.polygonCorners = function(polygon) {
+        var corners = [];
+        var polygonCoordinates = polygon.geometry.coordinates;
+        var minLat = polygonCoordinates[0][0][0];
+        var maxLat = minLat;
+        var minLong = polygonCoordinates[0][0][1];
+        var maxLong = minLong;
+
+        for (var i = 0; i < polygonCoordinates[0].length - 1; i++) {
+            var corner = polygonCoordinates[0][i]
+            var lat = corner[1];
+            var long = corner[0];
+
+            // get our corners
+            if (lat < minLat) {
+                minLat = lat; 
+            }
+
+            if (long < minLong) {
+                minLong = long; 
+            }
+
+            if (lat > maxLat) {
+                maxLat = lat;
+            }
+
+            if (long > maxLong) {
+                maxLong = long;
+            }
+        }
+
+        var corners = {
+            "nw": {
+                "lat": maxLat,
+                "long": minLong
+            },
+            "ne": {
+                "lat": maxLat,
+                "long": maxLong
+            },
+            "sw": {
+                "lat": minLat,
+                "long": minLong
+            },
+            "se": {
+                "lat": minLat,
+                "long": maxLong
+            }
+        };
+
+        return corners;
+    };
+
+    this.pointInPolygon = function(point, polygon) {
+        var pointLat = point.lat; 
+        var pointLong = point.lng; 
+        var corners = that.polygonCorners(polygon);
+        // console.log("northwest ");console.log(corners.nw);
+        // console.log("northeast ");console.log(corners.ne);
+        // console.log("southwest ");console.log(corners.sw);
+        // console.log("southeast ");console.log(corners.se);
+        // console.log(pointLat);
+        // console.log(pointLong);
+
+        if (pointLat > corners.nw.lat || pointLat < corners.sw.lat || pointLong < corners.sw.long || pointLong > corners.se.long) {
+            return false;
+        }
+
+        return true;
     };
 
     this.pointsLoaded = function() {
