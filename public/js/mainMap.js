@@ -60,7 +60,7 @@ function calcLinearRegression(displacements, decimal_dates) {
 }
 
 // takes slope, y-intercept; decimal_dates and chart_data(displacement) must
-// start and end around bounds of the sliders
+// that.start and end around bounds of the sliders
 function getRegressionChartData(slope, y, decimal_dates, chart_data) {
     var data = [];
     var first_date = chart_data[0][0];
@@ -84,6 +84,116 @@ function getDisplacementChartData(displacements, dates) {
     return data;
 }
 
+function SquareSelector(map) {
+    var that = this;
+    this.map = map;
+    this.canvas = map.map.getCanvasContainer();
+
+    // Variable to hold the that.starting xy coordinates
+    // when `mousedown` occured.
+    this.start;
+
+    // Variable to hold the current xy coordinates
+    // when `mousemove` or `mouseup` occurs.
+    this.current;
+
+    // Variable for the draw box element.
+    this.box;
+
+    this.mousePos = function(e) {
+        var rect = that.canvas.getBoundingClientRect();
+        return new mapboxgl.Point(
+            e.clientX - rect.left - that.canvas.clientLeft,
+            e.clientY - rect.top - that.canvas.clientTop
+        );
+    };
+    this.onMouseMove = function(e) {
+        // Capture the ongoing xy coordinates
+        that.current = that.mousePos(e);
+
+        // Append the box element if it doesnt exist
+        if (!that.box) {
+            that.box = document.createElement('div');
+            that.box.classList.add('boxdraw');
+            that.canvas.appendChild(that.box);
+        }
+
+        var minX = Math.min(that.start.x, that.current.x),
+            maxX = Math.max(that.start.x, that.current.x),
+            minY = Math.min(that.start.y, that.current.y),
+            maxY = Math.max(that.start.y, that.current.y);
+
+        // Adjust width and xy position of the box element ongoing
+        var pos = 'translate(' + minX + 'px,' + minY + 'px)';
+        that.box.style.transform = pos;
+        that.box.style.WebkitTransform = pos;
+        that.box.style.width = maxX - minX + 'px';
+        that.box.style.height = maxY - minY + 'px';
+    };
+
+    this.onMouseUp = function(e) {
+        // Capture xy coordinates
+        that.finish([that.start, that.mousePos(e)]);
+    };
+
+    this.onKeyDown = function(e) {
+        // If the ESC key is pressed
+        if (e.keyCode === 27) finish();
+    };
+    // Set `true` to dispatch the event before other functions
+    // call it. This is necessary for disabling the default map
+    // dragging behaviour.
+    this.mouseDown = function(e) {       
+        // Continue the rest of the function if the shiftkey is pressed.
+        if (!(e.shiftKey && e.button === 0)) return;
+        // Disable default drag zooming when the shift key is held down.
+        that.map.map.dragPan.disable();
+        console.log("hello");
+        // Call functions for the following events
+        document.addEventListener('mousemove', that.onMouseMove);
+        document.addEventListener('mouseup', that.onMouseUp);
+        document.addEventListener('keydown', that.onKeyDown);
+
+        // Capture the first xy coordinates
+        that.start = that.mousePos(e);
+    };
+
+    this.canvas.addEventListener('mousedown', this.mouseDown, true);
+
+    this.finish = function(bbox) {
+        // Remove these events now that finish has been called.
+        document.removeEventListener('mousemove', that.onMouseMove);
+        document.removeEventListener('keydown', that.onKeyDown);
+        document.removeEventListener('mouseup', that.onMouseUp);
+
+        if (that.box) {
+            that.box.parentNode.removeChild(that.box);
+            that.box = null;
+        }
+
+        // If bbox exists. use this value as the argument for `queryRenderedFeatures`
+        if (bbox) {
+            var features = that.map.map.queryRenderedFeatures(bbox);
+
+            if (features.length >= 1000) {
+                return window.alert('Select a smaller number of features');
+            }
+
+            // Run through the selected features and set a filter
+            // to match features with unique FIPS codes to activate
+            // the `counties-highlighted` layer.
+            // var filter = features.reduce(function(memo, feature) {
+            //     memo.push(feature.properties.FIPS);
+            //     return memo;
+            // }, ['in', 'FIPS']);
+
+            console.log("num features " + features.length);
+        }
+
+        that.map.map.dragPan.enable();
+    };
+}
+
 function Map(loadJSONFunc) {
     var that = this;
     // my mapbox api key
@@ -100,6 +210,8 @@ function Map(loadJSONFunc) {
     this.tileURLID = "kjjj11223344.4avm5zmh";
     this.tileJSON = null;
     this.clickLocationMarker = new mapboxgl.GeoJSONSource();
+    this.drawing = false;
+    this.selector = null;
 
     this.disableInteractivity = function() {
         that.map.dragPan.disable();
@@ -125,6 +237,10 @@ function Map(loadJSONFunc) {
 
         var feature = features[0];
         console.log(feature);
+        // return if we are drawing
+        if (that.drawing) {
+            return;
+        }
         var lat = feature.geometry.coordinates[0];
         var long = feature.geometry.coordinates[1];
         var chunk = feature.properties.c;
@@ -347,7 +463,7 @@ function Map(loadJSONFunc) {
 
         var feature = features[0];
         // return if we are drawing
-        if (feature.geometry.type == "LineString" || feature.geometry.type == "Polygon") {
+        if (that.drawing) {
             return;
         }
         console.log(feature);
@@ -364,7 +480,7 @@ function Map(loadJSONFunc) {
                 "longitude": long,
                 "num_chunks": num_chunks
             }
-        };        
+        };
 
         getGEOJSON(markerArea);
     };
@@ -442,11 +558,12 @@ function Map(loadJSONFunc) {
     this.addMapToPage = function(containerID) {
         that.map = new mapboxgl.Map({
             container: containerID, // container id
-            center: [0, 0], // starting position
-            zoom: 0 // starting zoom
+            center: [0, 0], // that.starting position
+            zoom: 0 // that.starting zoom
         });
 
         that.map.on("load", function() {
+            that.selector = new SquareSelector(that);
             loadJSONFunc("", "areas", function(response) {
                 var json = JSON.parse(response);
 
@@ -518,33 +635,20 @@ function Map(loadJSONFunc) {
         });
 
         that.map.addControl(new mapboxgl.Navigation());
-        that.map.addControl(new mapboxgl.Geocoder());
-        var draw = mapboxgl.Draw();
-        that.map.addControl(draw);
-        that.map.on("draw.modified", function(e) {
-            if (e.features[0].geometry.type == "Polygon") {
-                // console.log(e);
-                that.polygonCorners(e.features[0]);
-                myPolygon = e.features[0];
-            }
-        });
+        that.map.addControl(new mapboxgl.Geocoder()); 
 
         // disable rotation gesture
         that.map.dragRotate.disable();
+        // and box zoom
+        that.map.boxZoom.disable();
 
         that.map.on('click', that.clickOnAnAreaMaker);
 
         // Use the same approach as above to indicate that the symbols are clickable
         // by changing the cursor style to 'pointer'.
-        that.map.on('mousemove', function(e) {
+        that.map.on('mousemove', function(e) {            
             var features = that.map.queryRenderedFeatures(e.point, { layers: that.layers });
             that.map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
-
-            if (myPolygon != null) {
-                if (that.pointInPolygon(e.lngLat, myPolygon)) {
-                    console.log("mouse in polygon");
-                } 
-            }
         });
 
         // handle zoom changed. we want to change the icon-size in the layer for varying zooms.
@@ -575,11 +679,11 @@ function Map(loadJSONFunc) {
 
             // get our corners
             if (lat < minLat) {
-                minLat = lat; 
+                minLat = lat;
             }
 
             if (long < minLong) {
-                minLong = long; 
+                minLong = long;
             }
 
             if (lat > maxLat) {
@@ -614,8 +718,8 @@ function Map(loadJSONFunc) {
     };
 
     this.pointInPolygon = function(point, polygon) {
-        var pointLat = point.lat; 
-        var pointLong = point.lng; 
+        var pointLat = point[1];
+        var pointLong = point[0];
         var corners = that.polygonCorners(polygon);
         // console.log("northwest ");console.log(corners.nw);
         // console.log("northeast ");console.log(corners.ne);

@@ -209,6 +209,8 @@ function getGEOJSON(area) {
     myMap.initLayer(myMap.tileJSON, "streets");
     myMap.map.style.on("load", function() {
         window.setTimeout(function() {
+            var draw = mapboxgl.Draw();
+            myMap.map.addControl(draw);
             myMap.map.flyTo({
                 center: [area.coords.latitude, area.coords.longitude],
                 zoom: 7
