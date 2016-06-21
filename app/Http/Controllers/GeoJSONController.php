@@ -58,6 +58,49 @@ class GeoJSONController extends Controller {
     
   }
 
+  public function getPoints($area, $points = null) {
+    try {
+      $json = [];
+      $json["decimal_dates"] = [];
+      $json["string_dates"] = [];
+      $json["displacements"] = [];
+
+      $pointsArray = explode("/", $points);      
+      $pointsArrayLen = count($pointsArray);
+
+      for ($i = 0; $i < $pointsArrayLen; $i++) {
+        $curChunk = $pointsArray[$i][0];
+        $curPointNum = $pointsArray[$i][1];
+
+        $query = "SELECT data->'decimal_dates' from " . $area . " WHERE id = " . $curChunk;
+        $dates = DB::select($query);
+        $array = get_object_vars($dates[0]);
+        foreach ($array as $key => $dateArray) {
+          array_push($json["decimal_dates"], json_decode($dateArray));
+        }
+
+        $query = "SELECT data->'string_dates' from " . $area . " WHERE id = " . $curChunk;
+        $dates = DB::select($query);
+        $array = get_object_vars($dates[0]);
+        foreach ($array as $key => $dateArray) {
+          array_push($json["string_dates"], json_decode($dateArray));          
+        }
+
+        $query = "SELECT data->'features'->" . $curPointNum . "->'properties'->'d' from " . $area . " WHERE id = " . $curChunk;
+        $displacements = DB::select($query);
+        $array = get_object_vars($displacements[0]);
+
+        foreach ($array as $key => $displacementArray) {
+          array_push($json["displacements"], json_decode($displacementArray));          
+        } 
+      }
+       
+      echo json_encode($json);
+    } catch (\Illuminate\Database\QueryException $e) {
+        echo "Error Getting Points";
+    }
+  }
+
   public function getAreas() {
     $json = array();
 
