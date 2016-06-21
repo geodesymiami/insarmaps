@@ -521,7 +521,7 @@ function Map(loadJSONFunc) {
         that.map.addControl(new mapboxgl.Geocoder());
         var draw = mapboxgl.Draw();
         that.map.addControl(draw);
-        that.map.on("draw.modified",  e => {
+        that.map.on("draw.modified", function(e) {
             if (e.features[0].geometry.type == "Polygon") {
                 // console.log(e);
                 that.polygonCorners(e.features[0]);
