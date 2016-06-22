@@ -92,7 +92,17 @@ function SquareSelector(map) {
                 that.map.map.removeLayer("onTheFlyJSON");
             }
 
-            var features = that.map.map.queryRenderedFeatures(bbox);
+            // get the names of all the layers
+            var pointLayers = [];
+            for (var i = 1; i < that.map.layers_.length; i++) {
+            	pointLayers.push(that.map.layers_[i].id);
+            }
+            console.log(pointLayers);
+            var features = that.map.map.queryRenderedFeatures(bbox, { layers: pointLayers });
+            if (features.length == 0) {
+            	return;
+            }
+
             if (features.length >= 60000) {
                 return window.alert('Select a smaller number of features');
             }
