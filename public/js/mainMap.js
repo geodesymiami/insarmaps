@@ -99,6 +99,10 @@ function Map(loadJSONFunc) {
     this.tileJSON = null;
     this.clickLocationMarker = new mapboxgl.GeoJSONSource();
     this.selector = null;
+    this.popup = popup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false
+    });
 
     this.disableInteractivity = function() {
         that.map.dragPan.disable();
@@ -124,7 +128,7 @@ function Map(loadJSONFunc) {
 
         var feature = features[0];
         console.log(feature);
-        
+
         var lat = feature.geometry.coordinates[0];
         var long = feature.geometry.coordinates[1];
         var chunk = feature.properties.c;
@@ -346,7 +350,7 @@ function Map(loadJSONFunc) {
         }
 
         var feature = features[0];
-        
+
         console.log(feature);
         var areaName = feature.properties.name;
         var lat = feature.geometry.coordinates[0];
@@ -516,7 +520,7 @@ function Map(loadJSONFunc) {
         });
 
         that.map.addControl(new mapboxgl.Navigation());
-        that.map.addControl(new mapboxgl.Geocoder()); 
+        that.map.addControl(new mapboxgl.Geocoder());
 
         // disable rotation gesture
         that.map.dragRotate.disable();
@@ -527,9 +531,22 @@ function Map(loadJSONFunc) {
 
         // Use the same approach as above to indicate that the symbols are clickable
         // by changing the cursor style to 'pointer'.
-        that.map.on('mousemove', function(e) {            
+        that.map.on('mousemove', function(e) {
             var features = that.map.queryRenderedFeatures(e.point, { layers: that.layers });
             that.map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+
+            if (!features.length) {
+                that.popup.remove();
+                return;
+            }
+            // if it's a select area marker
+            if (features[0].properties["marker-symbol"] != null) {              
+                // Populate the popup and set its coordinates
+                // based on the feature found.
+                that.popup.setLngLat(features[0].geometry.coordinates)
+                    .setHTML(features[0].properties.name)
+                    .addTo(that.map);
+            }
         });
 
         // handle zoom changed. we want to change the icon-size in the layer for varying zooms.
