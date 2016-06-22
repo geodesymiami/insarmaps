@@ -34,19 +34,18 @@
   </head>
   <body>
     <div id="map-container">
+    <div id="map-type-menu">
+      <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
+      <label for='streets'>streets</label>
+      <input id='satellite' type='radio' name='rtoggle' value='satellite'>
+      <label for='satellite'>satellite</label>
+    </div>
     </div>
     <div class="side-bar">
       <div class="side-item-box">
         <!--div class="side-item move-button"></div-->
         <div class="side-item title">
-          <h1>University of Miami’s inSAR Time Series Viewer</h1>
-        </div>
-        <br><br>
-        <div id="map-type-menu">
-          <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
-          <label for='streets'>streets</label>
-          <input id='satellite' type='radio' name='rtoggle' value='satellite'>
-          <label for='satellite'>satellite</label>
+          <h3>University of Miami’s inSAR Time Series Viewer</h3>
         </div>
         <div class="overlay_toggle">
           <label>Turn on/off data overlay</label>
@@ -107,17 +106,17 @@
       <div class='wrap'>
         <div class='content'>
          <div class="modal-header" id="close-button-parent">
-              <div id="close-button-child">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
-              </div>
+          <div id="close-button-child">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
           </div>
-          <!--search bar-->
-          <div class="input-group">
-            <span class="input-group-btn">
-              <button class="btn btn-default" id="search-button" type="button">Search</button>
-            </span>
-            <input type="text" class="form-control" placeholder="Search for..." id="search-input">
-          </div>         
+        </div>
+        <!--search bar-->
+        <div class="input-group">
+          <span class="input-group-btn">
+            <button class="btn btn-default" id="search-button" type="button">Search</button>
+          </span>
+          <input type="text" class="form-control" placeholder="Search for..." id="search-input">
+        </div>         
           <!-- <div class="modal-header" id="close-button-parent">
             <div id="close-button-child">
               <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
