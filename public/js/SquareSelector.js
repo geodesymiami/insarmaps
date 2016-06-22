@@ -97,7 +97,6 @@ function SquareSelector(map) {
             for (var i = 1; i < that.map.layers_.length; i++) {
             	pointLayers.push(that.map.layers_[i].id);
             }
-            console.log(pointLayers);
             var features = that.map.map.queryRenderedFeatures(bbox, { layers: pointLayers });
             if (features.length == 0) {
             	return;
