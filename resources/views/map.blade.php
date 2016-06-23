@@ -9,50 +9,47 @@
  <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.0/mapbox-gl.js'></script>
  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.0/mapbox-gl.css' rel='stylesheet' />
-    <!--<script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
-    <script type="text/javascript" src="jquery-2.2.2.min.js"></script>
-    <script src="https://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>-->
-    <script src="https://code.jquery.com/jquery-1.12.2.js"></script>
-    <!--script src='/geojson-vt-dev.js'></script-->
-    <!--script type="text/javascript" src='scripts.js'></script-->
-    <link href="vendor/mapbox-gl-draw.css" rel="stylesheet" />    <script type="text/javascript" src="vendor/mapbox-gl-draw.js"></script>
-    <script type="text/javascript" src="js/regression.js"></script>
-    <script type="text/javascript" src="js/canvasjs.min.js"></script>
-    <!-- <script src="http://code.highcharts.com/highcharts.js"></script> -->
-    <script src="http://code.highcharts.com/stock/highstock.js"></script>
-    <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+ 
+ <script src="https://code.jquery.com/jquery-1.12.2.js"></script>
+ 
+ <link href="vendor/mapbox-gl-draw.css" rel="stylesheet" />    <script type="text/javascript" src="vendor/mapbox-gl-draw.js"></script>
+ <script type="text/javascript" src="js/regression.js"></script>
+ <script type="text/javascript" src="js/canvasjs.min.js"></script>
+ 
+ <script src="http://code.highcharts.com/stock/highstock.js"></script>
+ <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
 
-    <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js"> </script>
-    <!--boostrap-->
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="js/fuse.js"></script>
-    <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.js'></script>
-    <link href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.css' rel='stylesheet' />
-  </head>
-  <body>
-    <div id="map-container">
+ <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js"> </script>
+ <!--boostrap-->
+ <!-- Latest compiled and minified CSS -->
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+ <!-- Latest compiled and minified JavaScript -->
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+ <script type="text/javascript" src="js/fuse.js"></script>
+ <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.js'></script>
+ <link href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.css' rel='stylesheet' />
+</head>
+<body>
+  <div id="map-container">
     <div id="map-type-menu">
       <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
       <label for='streets'>streets</label>
       <input id='satellite' type='radio' name='rtoggle' value='satellite'>
       <label for='satellite'>satellite</label>
     </div>
-    </div>
-    <div class="side-bar">
-      <div class="side-item-box">
-        <!--div class="side-item move-button"></div-->
-        <div class="side-item title">
-          <h3>University of Miami’s inSAR Time Series Viewer</h3>
+  </div>
+  <div class="side-bar">
+    <div class="side-item-box">
+      <!--div class="side-item move-button"></div-->
+      <div class="side-item title">
+        <h3>University of Miami’s inSAR Time Series Viewer</h3>
+      </div>
+      <div class="overlay_toggle">
+        <label>Turn on/off data overlay</label>
+        <div id="overlay-toggle-button" class="toggle-button">
+          <button></button>
         </div>
-        <div class="overlay_toggle">
-          <label>Turn on/off data overlay</label>
-          <div id="overlay-toggle-button" class="toggle-button">
-            <button></button>
-          </div>
-        </div>
+      </div>
       <!--<div class="side-item description">
         <p>Description of inSAR map web application.</p>
       </div>-->
@@ -139,8 +136,6 @@
           <button></button>          
         </div>
       </div>
-      <br>
-      <br>
       <div>
         <button class="btn btn-primary-outline" id="popupButton">Select Dataset</button>
       </div>
@@ -153,14 +148,16 @@
     </div> <!-- End side-item-box -->
   </div> <!-- End side-bar -->
   <?php
-  echo "
-  <script type=\"text/javascript\">
-    var fileName = \"$fileName\";
-  </script>
-  ";
-  ?>
+    echo "
+      <script type=\"text/javascript\">
+        var fileName = \"$fileName\";
+      </script>
+      ";
+    ?>
   <script type="text/javascript" src="js/SquareSelector.js"></script>
   <script type="text/javascript" src="js/mainMap.js"></script>
   <script type="text/javascript" src="js/mainPage.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js"
+  async defer></script>
 </body>
 </html>

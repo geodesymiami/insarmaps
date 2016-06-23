@@ -99,7 +99,11 @@ function Map(loadJSONFunc) {
     this.tileJSON = null;
     this.clickLocationMarker = new mapboxgl.GeoJSONSource();
     this.selector = null;
-    this.popup = popup = new mapboxgl.Popup({
+    this.areaPopup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false
+    });
+    this.elevationPopup = new mapboxgl.Popup({
         closeButton: false,
         closeOnClick: false
     });
@@ -129,8 +133,8 @@ function Map(loadJSONFunc) {
         var feature = features[0];
         console.log(feature);
 
-        var lat = feature.geometry.coordinates[0];
-        var long = feature.geometry.coordinates[1];
+        var long = feature.geometry.coordinates[0];
+        var lat = feature.geometry.coordinates[1];
         var chunk = feature.properties.c;
         var pointNumber = feature.properties.p;
         var title = chunk.toString() + ":" + pointNumber.toString();
@@ -148,7 +152,7 @@ function Map(loadJSONFunc) {
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [lat, long]
+                        "coordinates": [long, lat]
                     },
                     "properties": {
                         "marker-symbol": "cross"
@@ -172,7 +176,7 @@ function Map(loadJSONFunc) {
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [lat, long]
+                        "coordinates": [long, lat]
                     },
                     "properties": {
                         "marker-symbol": "cross"
@@ -333,6 +337,19 @@ function Map(loadJSONFunc) {
                     chart: {
                         marginRight: 50
                     }
+                });
+
+                // request elevation of point from google api
+
+                var elevationGetter = new google.maps.ElevationService;
+                elevationGetter.getElevationForLocations({
+                    "locations": [{ lat: lat, lng: long }]
+                }, function(results, status) {
+                    that.elevationPopup.remove();
+
+                    that.elevationPopup.setLngLat(features[0].geometry.coordinates)
+                    .setHTML("Elevation: " + results[0].elevation + " meters")
+                    .addTo(that.map);
                 });
             });
         });
@@ -536,14 +553,17 @@ function Map(loadJSONFunc) {
             that.map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
 
             if (!features.length) {
-                that.popup.remove();
+                that.areaPopup.remove();
                 return;
             }
-            // if it's a select area marker
-            if (features[0].properties["marker-symbol"] != null) {              
-                // Populate the popup and set its coordinates
+            // if it's a select area marker, but not a selected point marker... I suppose this is hackish
+            // a better way is to have two mousemove callbacks like we do with select area vs select marker
+            var markerSymbol = features[0].properties["marker-symbol"];
+
+            if (markerSymbol != null && typeof markerSymbol != "undefined" && markerSymbol != "cross") {
+                // Populate the areaPopup and set its coordinates
                 // based on the feature found.
-                that.popup.setLngLat(features[0].geometry.coordinates)
+                that.areaPopup.setLngLat(features[0].geometry.coordinates)
                     .setHTML(features[0].properties.name)
                     .addTo(that.map);
             }

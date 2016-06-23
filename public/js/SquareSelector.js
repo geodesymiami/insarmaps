@@ -95,11 +95,11 @@ function SquareSelector(map) {
             // get the names of all the layers
             var pointLayers = [];
             for (var i = 1; i < that.map.layers_.length; i++) {
-            	pointLayers.push(that.map.layers_[i].id);
+                pointLayers.push(that.map.layers_[i].id);
             }
             var features = that.map.map.queryRenderedFeatures(bbox, { layers: pointLayers });
             if (features.length == 0) {
-            	return;
+                return;
             }
 
             if (features.length >= 60000) {

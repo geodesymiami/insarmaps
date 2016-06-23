@@ -192,7 +192,7 @@ function getGEOJSON(area) {
     //var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[]};
     //myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
     myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://insarvmcsc431.cloudapp.net:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
-    
+
     if (myMap.pointsLoaded()) {
         myMap.removePoints();
         myMap.removeTouchLocationMarker();
@@ -208,7 +208,7 @@ function getGEOJSON(area) {
 
     myMap.initLayer(myMap.tileJSON, "streets");
     myMap.map.style.on("load", function() {
-        window.setTimeout(function() {            
+        window.setTimeout(function() {
             myMap.map.flyTo({
                 center: [area.coords.latitude, area.coords.longitude],
                 zoom: 7

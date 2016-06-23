@@ -319,8 +319,8 @@ label {
 .overlay_toggle {
     display: inline-block;
     float: left;
-    height: 100px;
-    padding-top: 20px;
+    height: 40px;
+    width: 100%;
 }
 
 .toggle-button {
