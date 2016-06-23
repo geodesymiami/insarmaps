@@ -292,6 +292,19 @@ dotToggleButton.onclick(function() {
 
 // when site loads, turn toggle on
 $(window).load(function() {
+    $(function() {
+        $("#overlay-slider").slider({
+            value: 100,
+            slide: function(event, ui) {
+                // start at 1 to avoid base map layer
+                for (var i = 1; i < myMap.layers_.length; i++) {
+                    var layerName = myMap.layers_[i].id;
+
+                    myMap.map.setPaintProperty(layerName, "circle-opacity", ui.value / 100.0);
+                }
+            }
+        });
+    });
     $("#overlay-toggle-button").toggleClass('toggle-button-selected');
     overlayToggleButton.toggleState = ToggleStates.ON;
 
