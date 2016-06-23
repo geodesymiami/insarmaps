@@ -340,16 +340,19 @@ function Map(loadJSONFunc) {
                 });
 
                 // request elevation of point from google api
-
                 var elevationGetter = new google.maps.ElevationService;
                 elevationGetter.getElevationForLocations({
                     "locations": [{ lat: lat, lng: long }]
                 }, function(results, status) {
-                    that.elevationPopup.remove();
+                    if (status === google.maps.ElevationStatus.OK) {
+                        that.elevationPopup.remove();
 
-                    that.elevationPopup.setLngLat(features[0].geometry.coordinates)
-                    .setHTML("Elevation: " + results[0].elevation + " meters")
-                    .addTo(that.map);
+                        that.elevationPopup.setLngLat(features[0].geometry.coordinates)
+                            .setHTML("Elevation: " + results[0].elevation + " meters")
+                            .addTo(that.map);
+                    } else {
+                        console.log(status);
+                    }
                 });
             });
         });
