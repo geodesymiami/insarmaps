@@ -11,6 +11,8 @@
  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.0/mapbox-gl.css' rel='stylesheet' />
  
  <script src="https://code.jquery.com/jquery-1.12.2.js"></script>
+ <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+ <link href="http://code.jquery.com/ui/1.11.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
  
  <link href="vendor/mapbox-gl-draw.css" rel="stylesheet" />    <script type="text/javascript" src="vendor/mapbox-gl-draw.js"></script>
  <script type="text/javascript" src="js/regression.js"></script>
@@ -50,6 +52,7 @@
           <button></button>
         </div>
       </div>
+      <div id="overlay-slider"></div>
       <!--<div class="side-item description">
         <p>Description of inSAR map web application.</p>
       </div>-->
