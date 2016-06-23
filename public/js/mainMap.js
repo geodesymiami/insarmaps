@@ -14,6 +14,8 @@ var currentArea = null;
 var file = "/home/vagrant/code/insar_map_mvc/public/json/geo_timeseries_masked.h5test_chunk_";
 var firstToggle = true;
 
+var myPolygon = null;
+
 // falk's date string is in format yyyymmdd - ex: 20090817 
 // take an array of these strings and return an array of date objects
 var convertStringsToDateArray = function(date_string_array) {
@@ -58,7 +60,7 @@ function calcLinearRegression(displacements, decimal_dates) {
 }
 
 // takes slope, y-intercept; decimal_dates and chart_data(displacement) must
-// start and end around bounds of the sliders
+// that.start and end around bounds of the sliders
 function getRegressionChartData(slope, y, decimal_dates, chart_data) {
     var data = [];
     var first_date = chart_data[0][0];
@@ -90,14 +92,21 @@ function Map(loadJSONFunc) {
     this.map = null;
     this.geoJSONSource = null;
     this.geodata = null;
-    this.drawer = null;
     this.geoDataMap = {};
     this.layers_ = [];
-    this.drawer = null;
     this.loadJSONFunc = loadJSONFunc;
     this.tileURLID = "kjjj11223344.4avm5zmh";
     this.tileJSON = null;
     this.clickLocationMarker = new mapboxgl.GeoJSONSource();
+    this.selector = null;
+    this.areaPopup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false
+    });
+    this.elevationPopup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false
+    });
 
     this.disableInteractivity = function() {
         that.map.dragPan.disable();
@@ -123,8 +132,9 @@ function Map(loadJSONFunc) {
 
         var feature = features[0];
         console.log(feature);
-        var lat = feature.geometry.coordinates[0];
-        var long = feature.geometry.coordinates[1];
+
+        var long = feature.geometry.coordinates[0];
+        var lat = feature.geometry.coordinates[1];
         var chunk = feature.properties.c;
         var pointNumber = feature.properties.p;
         var title = chunk.toString() + ":" + pointNumber.toString();
@@ -142,7 +152,7 @@ function Map(loadJSONFunc) {
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [lat, long]
+                        "coordinates": [long, lat]
                     },
                     "properties": {
                         "marker-symbol": "cross"
@@ -166,7 +176,7 @@ function Map(loadJSONFunc) {
                     "type": "Feature",
                     "geometry": {
                         "type": "Point",
-                        "coordinates": [lat, long]
+                        "coordinates": [long, lat]
                     },
                     "properties": {
                         "marker-symbol": "cross"
@@ -328,6 +338,19 @@ function Map(loadJSONFunc) {
                         marginRight: 50
                     }
                 });
+
+                // request elevation of point from google api
+
+                var elevationGetter = new google.maps.ElevationService;
+                elevationGetter.getElevationForLocations({
+                    "locations": [{ lat: lat, lng: long }]
+                }, function(results, status) {
+                    that.elevationPopup.remove();
+
+                    that.elevationPopup.setLngLat(features[0].geometry.coordinates)
+                    .setHTML("Elevation: " + results[0].elevation + " meters")
+                    .addTo(that.map);
+                });
             });
         });
     };
@@ -344,7 +367,8 @@ function Map(loadJSONFunc) {
         }
 
         var feature = features[0];
-    console.log(feature);
+
+        console.log(feature);
         var areaName = feature.properties.name;
         var lat = feature.geometry.coordinates[0];
         var long = feature.geometry.coordinates[1];
@@ -358,7 +382,7 @@ function Map(loadJSONFunc) {
                 "longitude": long,
                 "num_chunks": num_chunks
             }
-        };        
+        };
 
         getGEOJSON(markerArea);
     };
@@ -436,11 +460,12 @@ function Map(loadJSONFunc) {
     this.addMapToPage = function(containerID) {
         that.map = new mapboxgl.Map({
             container: containerID, // container id
-            center: [0, 0], // starting position
-            zoom: 0 // starting zoom
+            center: [0, 0], // that.starting position
+            zoom: 0 // that.starting zoom
         });
 
         that.map.on("load", function() {
+            that.selector = new SquareSelector(that);
             loadJSONFunc("", "areas", function(response) {
                 var json = JSON.parse(response);
 
@@ -516,6 +541,8 @@ function Map(loadJSONFunc) {
 
         // disable rotation gesture
         that.map.dragRotate.disable();
+        // and box zoom
+        that.map.boxZoom.disable();
 
         that.map.on('click', that.clickOnAnAreaMaker);
 
@@ -524,6 +551,22 @@ function Map(loadJSONFunc) {
         that.map.on('mousemove', function(e) {
             var features = that.map.queryRenderedFeatures(e.point, { layers: that.layers });
             that.map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
+
+            if (!features.length) {
+                that.areaPopup.remove();
+                return;
+            }
+            // if it's a select area marker, but not a selected point marker... I suppose this is hackish
+            // a better way is to have two mousemove callbacks like we do with select area vs select marker
+            var markerSymbol = features[0].properties["marker-symbol"];
+
+            if (markerSymbol != null && typeof markerSymbol != "undefined" && markerSymbol != "cross") {
+                // Populate the areaPopup and set its coordinates
+                // based on the feature found.
+                that.areaPopup.setLngLat(features[0].geometry.coordinates)
+                    .setHTML(features[0].properties.name)
+                    .addTo(that.map);
+            }
         });
 
         // handle zoom changed. we want to change the icon-size in the layer for varying zooms.
@@ -535,6 +578,79 @@ function Map(loadJSONFunc) {
             var features = that.map.queryRenderedFeatures(that.map.getBounds());
             console.log(that.map.getZoom());
         });
+    };
+
+    // takes a polygon as input and returns a square bounding box describing the corners of the
+    // polygon
+    this.polygonCorners = function(polygon) {
+        var corners = [];
+        var polygonCoordinates = polygon.geometry.coordinates;
+        var minLat = polygonCoordinates[0][0][0];
+        var maxLat = minLat;
+        var minLong = polygonCoordinates[0][0][1];
+        var maxLong = minLong;
+
+        for (var i = 0; i < polygonCoordinates[0].length - 1; i++) {
+            var corner = polygonCoordinates[0][i]
+            var lat = corner[1];
+            var long = corner[0];
+
+            // get our corners
+            if (lat < minLat) {
+                minLat = lat;
+            }
+
+            if (long < minLong) {
+                minLong = long;
+            }
+
+            if (lat > maxLat) {
+                maxLat = lat;
+            }
+
+            if (long > maxLong) {
+                maxLong = long;
+            }
+        }
+
+        var corners = {
+            "nw": {
+                "lat": maxLat,
+                "long": minLong
+            },
+            "ne": {
+                "lat": maxLat,
+                "long": maxLong
+            },
+            "sw": {
+                "lat": minLat,
+                "long": minLong
+            },
+            "se": {
+                "lat": minLat,
+                "long": maxLong
+            }
+        };
+
+        return corners;
+    };
+
+    this.pointInPolygon = function(point, polygon) {
+        var pointLat = point[1];
+        var pointLong = point[0];
+        var corners = that.polygonCorners(polygon);
+        // console.log("northwest ");console.log(corners.nw);
+        // console.log("northeast ");console.log(corners.ne);
+        // console.log("southwest ");console.log(corners.sw);
+        // console.log("southeast ");console.log(corners.se);
+        // console.log(pointLat);
+        // console.log(pointLong);
+
+        if (pointLat > corners.nw.lat || pointLat < corners.sw.lat || pointLong < corners.sw.long || pointLong > corners.se.long) {
+            return false;
+        }
+
+        return true;
     };
 
     this.pointsLoaded = function() {

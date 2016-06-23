@@ -8,7 +8,7 @@ body {
 }
 
 button {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 h1.title {
@@ -22,6 +22,12 @@ h1 {
 }
 
 h2 {
+    font-family: 'Carter One', cursive !important;
+    margin-top: 20px;
+    color: coral !important;
+}
+
+h3 {
     font-family: 'Carter One', cursive !important;
     margin-top: 20px;
     color: coral !important;
@@ -85,6 +91,7 @@ label {
 }
 
 #map-container {
+    position: relative;
     width: 67%;
     height: 100%;
     /*position: absolute;*/
@@ -93,95 +100,101 @@ label {
 }
 
 .wrap {
-  position: absolute;
-  overflow: hidden;
-  top: 10%;
-  right: 10%;
-  bottom: 85px;
-  left: 10%;
-  padding: 20px 50px;
-  display: block;
-  border-radius: 4px;
-  transform: translateY(20px);
-  transition: all 0.5s;
-  visibility: hidden;
-}
-.wrap .content {
-  opacity: 0;
+    position: absolute;
+    overflow: hidden;
+    top: 10%;
+    right: 10%;
+    bottom: 85px;
+    left: 10%;
+    padding: 20px 50px;
+    display: block;
+    border-radius: 4px;
+    transform: translateY(20px);
+    transition: all 0.5s;
+    visibility: hidden;
 }
 
-#close-button-parent {  
-  float: right;
-  position: relative;
+.wrap .content {
+    opacity: 0;
+}
+
+#close-button-parent {
+    float: right;
+    position: relative;
 }
 
 #close-button-child {
-  position: absolute;
-  left: 50px;
-  top: -10px;
+    position: absolute;
+    left: 50px;
+    top: -10px;
 }
 
 #close-button {
-  background: white;
-  border: none;
-  color: red;
-  font-size: 30px;
+    background: white;
+    border: none;
+    color: red;
+    font-size: 30px;
 }
 
 .wrap:before {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  background: white;
-  content: "";
-  bottom: 10px;
-  left: 50%;
-  top: 95%;
-  color: #fff;
-  border-radius: 50%;
-  -webkit-transition: all 600ms cubic-bezier(0.215, 0.61, 0.355, 1);
-  transition: all 600ms cubic-bezier(0.215, 0.61, 0.355, 1);
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    background: white;
+    content: "";
+    bottom: 10px;
+    left: 50%;
+    top: 95%;
+    color: #fff;
+    border-radius: 50%;
+    -webkit-transition: all 600ms cubic-bezier(0.215, 0.61, 0.355, 1);
+    transition: all 600ms cubic-bezier(0.215, 0.61, 0.355, 1);
 }
+
 .wrap.active {
-  display: block;
-  visibility: visible;
-  box-shadow: 2px 3px 16px silver;
-  transition: all 600ms;
-  transform: translateY(0px);
-  transition: all 0.5s;
-  z-index: 2;
+    display: block;
+    visibility: visible;
+    box-shadow: 2px 3px 16px silver;
+    transition: all 600ms;
+    transform: translateY(0px);
+    transition: all 0.5s;
+    z-index: 2;
 }
+
 .wrap.active:before {
-  height: 2000px;
-  width: 2000px;
-  border-radius: 50%;
-  top: 50%;
-  left: 50%;
-  margin-left: -1000px;
-  margin-top: -1000px;
-  display: block;
-  -webkit-transition: all 600ms cubic-bezier(0.215, 0.61, 0.355, 1);
-  transition: all 600ms cubic-bezier(0.215, 0.61, 0.355, 1);
+    height: 2000px;
+    width: 2000px;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    margin-left: -1000px;
+    margin-top: -1000px;
+    display: block;
+    -webkit-transition: all 600ms cubic-bezier(0.215, 0.61, 0.355, 1);
+    transition: all 600ms cubic-bezier(0.215, 0.61, 0.355, 1);
 }
+
 .wrap.active .content {
-  position: relative;
-  z-index: 2;
-  opacity: 1;
-  transition: all 600ms cubic-bezier(0.55, 0.055, 0.675, 0.19);
+    position: relative;
+    z-index: 2;
+    opacity: 1;
+    transition: all 600ms cubic-bezier(0.55, 0.055, 0.675, 0.19);
 }
 
 #popupButton {
-  outline: none;
-  font-size: 12px;
-  transition: transform 0.25s;
+    outline: none;
+    font-size: 12px;
+    transition: transform 0.25s;
 }
+
 #popupButton:hover {
-  text-decoration: none;
-  background: #2198ff;
+    text-decoration: none;
+    background: #2198ff;
 }
+
 #popupButton.active {
-  transform: rotate(135deg);
-  transition: transform 0.5s;
+    transform: rotate(135deg);
+    transition: transform 0.5s;
 }
 
 #map {
@@ -202,7 +215,7 @@ label {
 
           margin:0;
           padding:0;
-        }*/
+          }*/
 
 .accordion {
     background: DeepSkyBlue;
@@ -223,7 +236,7 @@ label {
 
 button.accordion {
     /*background-color: #eee;
-          color: #444;*/
+    color: #444;*/
     background-color: DeepSkyBlue;
     border-bottom: 1px solid DodgerBlue;
     cursor: pointer;
@@ -255,10 +268,10 @@ div.panel.show {
     color: white !white;
 }
 
-
 div.panel.show > p {
-  color: black;
+    color: black;
 }
+
 button {
     font-family: 'Carter One', cursive !important;
 }
@@ -272,9 +285,14 @@ div.menu {
 }
 
 #map-type-menu {
-    padding: 10px;
+    position: absolute;
+    background: #fff;
+    padding: 7px;
     font-family: 'Open Sans', sans-serif;
-    margin-top: 4em;
+    z-index: 99;
+    left: 300px;
+    top: 6px;
+    border-radius: 5px;
 }
 
 .logos {
@@ -298,14 +316,16 @@ label {
     color: coral;
 }
 
-.overlay_toggle>* {
+.overlay_toggle {
     display: inline-block;
     float: left;
+    height: 40px;
+    width: 100%;
 }
 
 .toggle-button {
     background-color: white;
-    margin: 5px 0;
+    margin: 10px 0 0 0;
     border-radius: 20px;
     border: 2px solid #D0D0D0;
     height: 14px;
@@ -319,6 +339,8 @@ label {
     -moz-user-select: none;
     margin-left: 2em;
     z-index: 1;
+    background-color: white;
+    padding-top: 10px;
 }
 
 .toggle-button button {
@@ -354,7 +376,19 @@ label {
     box-shadow: 0 0 0px rgba(0, 0, 0, 0.1);
 }
 
+
 /*disable compass in nav controls*/
+
 .mapboxgl-ctrl-compass {
-  display: none !important;
+    display: none !important;
+}
+
+.boxdraw {
+    background: rgba(56, 135, 190, 0.1);
+    border: 2px solid #3887be;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
 }
