@@ -458,7 +458,54 @@ function Map(loadJSONFunc) {
         return layer;
     }
 
+    this.loadAreaMarkers = function() {
+        loadJSONFunc("", "areas", function(response) {
+            var json = JSON.parse(response);
 
+            var areaMarker = new mapboxgl.GeoJSONSource();
+            var features = [];
+
+            for (var i = 0; i < json.areas.length; i++) {
+                var area = json.areas[i];
+                var lat = area.coords.latitude;
+                var long = area.coords.longitude;
+                console.log(area);
+
+                var feature = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [lat, long]
+                    },
+                    "properties": {
+                        "marker-symbol": "marker",
+                        "name": area.name,
+                        "num_chunks": area.coords.num_chunks
+                    }
+                };
+
+                features.push(feature);
+            };
+
+            // add the markers representing the available areas
+            areaMarker.setData({
+                "type": "FeatureCollection",
+                "features": features
+            });
+            var id = "areas";
+            that.map.addSource(id, areaMarker);
+
+            that.map.addLayer({
+                "id": id,
+                "type": "symbol",
+                "source": id,
+                "layout": {
+                    "icon-image": "{marker-symbol}-15",
+                    "icon-allow-overlap": true
+                }
+            });
+        });
+    };
 
     this.addMapToPage = function(containerID) {
         that.map = new mapboxgl.Map({
@@ -469,52 +516,7 @@ function Map(loadJSONFunc) {
 
         that.map.on("load", function() {
             that.selector = new SquareSelector(that);
-            loadJSONFunc("", "areas", function(response) {
-                var json = JSON.parse(response);
-
-                var areaMarker = new mapboxgl.GeoJSONSource();
-                var features = [];
-
-                for (var i = 0; i < json.areas.length; i++) {
-                    var area = json.areas[i];
-                    var lat = area.coords.latitude;
-                    var long = area.coords.longitude;
-                    console.log(area);
-
-                    var feature = {
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [lat, long]
-                        },
-                        "properties": {
-                            "marker-symbol": "marker",
-                            "name": area.name,
-                            "num_chunks": area.coords.num_chunks
-                        }
-                    };
-
-                    features.push(feature);
-                };
-
-                // add the markers representing the available areas
-                areaMarker.setData({
-                    "type": "FeatureCollection",
-                    "features": features
-                });
-                var id = "areas";
-                that.map.addSource(id, areaMarker);
-
-                that.map.addLayer({
-                    "id": id,
-                    "type": "symbol",
-                    "source": id,
-                    "layout": {
-                        "icon-image": "{marker-symbol}-15",
-                        "icon-allow-overlap": true
-                    }
-                });
-            });
+            that.loadAreaMarkers();
         });
 
         var tileset = 'mapbox.streets';
@@ -578,82 +580,21 @@ function Map(loadJSONFunc) {
         // we are using, though, the marker icons are always the same size, so we can use that function to
         // dynamically change the sizes depending on the current map zoom.
         that.map.on('zoomend', function() {
-            var features = that.map.queryRenderedFeatures(that.map.getBounds());
             console.log(that.map.getZoom());
+
+            // reshow area markers once we zoom out enough
+            if (myMap.pointsLoaded() && myMap.map.getZoom() <= 3) {
+                myMap.removePoints();
+                myMap.removeTouchLocationMarker();
+                myMap.elevationPopup.remove(); // incase it's up
+
+                that.loadAreaMarkers();
+
+                // remove click listener for selecting an area, and add new one for clicking on a point
+                that.map.off("click");
+                that.map.on('click', that.clickOnAnAreaMaker);
+            }
         });
-    };
-
-    // takes a polygon as input and returns a square bounding box describing the corners of the
-    // polygon
-    this.polygonCorners = function(polygon) {
-        var corners = [];
-        var polygonCoordinates = polygon.geometry.coordinates;
-        var minLat = polygonCoordinates[0][0][0];
-        var maxLat = minLat;
-        var minLong = polygonCoordinates[0][0][1];
-        var maxLong = minLong;
-
-        for (var i = 0; i < polygonCoordinates[0].length - 1; i++) {
-            var corner = polygonCoordinates[0][i]
-            var lat = corner[1];
-            var long = corner[0];
-
-            // get our corners
-            if (lat < minLat) {
-                minLat = lat;
-            }
-
-            if (long < minLong) {
-                minLong = long;
-            }
-
-            if (lat > maxLat) {
-                maxLat = lat;
-            }
-
-            if (long > maxLong) {
-                maxLong = long;
-            }
-        }
-
-        var corners = {
-            "nw": {
-                "lat": maxLat,
-                "long": minLong
-            },
-            "ne": {
-                "lat": maxLat,
-                "long": maxLong
-            },
-            "sw": {
-                "lat": minLat,
-                "long": minLong
-            },
-            "se": {
-                "lat": minLat,
-                "long": maxLong
-            }
-        };
-
-        return corners;
-    };
-
-    this.pointInPolygon = function(point, polygon) {
-        var pointLat = point[1];
-        var pointLong = point[0];
-        var corners = that.polygonCorners(polygon);
-        // console.log("northwest ");console.log(corners.nw);
-        // console.log("northeast ");console.log(corners.ne);
-        // console.log("southwest ");console.log(corners.sw);
-        // console.log("southeast ");console.log(corners.se);
-        // console.log(pointLat);
-        // console.log(pointLong);
-
-        if (pointLat > corners.nw.lat || pointLat < corners.sw.lat || pointLong < corners.sw.long || pointLong > corners.se.long) {
-            return false;
-        }
-
-        return true;
     };
 
     this.pointsLoaded = function() {
