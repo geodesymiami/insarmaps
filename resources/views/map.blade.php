@@ -39,6 +39,9 @@
       <input id='satellite' type='radio' name='rtoggle' value='satellite'>
       <label for='satellite'>satellite</label>
     </div>
+    <div id="reset-button">
+      <button class="btn btn-primary-outline">Reset</button>
+    </div>
   </div>
   <div class="side-bar">
     <div class="side-item-box">
@@ -127,6 +130,7 @@
             <thead>
               <tr>
                 <th>Dataset</th>
+                <th>Reference</th>
               </tr>
             </thead>
             <tbody id='tableBody'></tbody>

@@ -292,15 +292,50 @@ dotToggleButton.onclick(function() {
 
 // when site loads, turn toggle on
 $(window).load(function() {
+    var NUM_CHUNKS = 300;
+
+    $("#reset-button").on("click", function() {
+        if (myMap.pointsLoaded()) {
+            myMap.removePoints();
+            myMap.removeTouchLocationMarker();
+            myMap.elevationPopup.remove(); // incase it's up
+
+            myMap.loadAreaMarkers();
+
+            // remove click listener for selecting an area, and add new one for clicking on a point
+            myMap.map.off("click");
+            myMap.map.on('click', myMap.clickOnAnAreaMaker);
+        }
+
+        myMap.map.flyTo({
+            center: [0, 0],
+            zoom: 0
+        });
+    });
+
     $(function() {
         $("#overlay-slider").slider({
             value: 100,
-            slide: function(event, ui) {
-                // start at 1 to avoid base map layer
-                for (var i = 1; i < myMap.layers_.length; i++) {
-                    var layerName = myMap.layers_[i].id;
+            change: function(event, ui) {
+                // call change only if too many layers, to avoid lag
+                if (myMap.layers_.length > NUM_CHUNKS) {
+                    // start at 1 to avoid base map layer
+                    for (var i = 1; i < myMap.layers_.length; i++) {
+                        var layerName = myMap.layers_[i].id;
 
-                    myMap.map.setPaintProperty(layerName, "circle-opacity", ui.value / 100.0);
+                        myMap.map.setPaintProperty(layerName, "circle-opacity", ui.value / 100.0);
+                    }
+                }
+            },
+            slide: function(event, ui) {
+                // call slide only if sufficiently small amount of layers, otherwise lag
+                if (myMap.layers_.length <= NUM_CHUNKS) {
+                    // start at 1 to avoid base map layer
+                    for (var i = 1; i < myMap.layers_.length; i++) {
+                        var layerName = myMap.layers_[i].id;
+
+                        myMap.map.setPaintProperty(layerName, "circle-opacity", ui.value / 100.0);
+                    }
                 }
             }
         });
@@ -322,25 +357,30 @@ $(window).load(function() {
     $("#search-button").on("click", function() {
         console.log(json);
         if (json != null) {
+            // TODO: dummy search for paper, add actual paper later on when we get attribute    
             query = $("#search-input").val();
             // full list of areas
             var areas = json.areas;
+            // TODO: remove, this is placeholder
+            for (var i = 0; i < areas.length; i++) {
+                areas[i].reference = "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288";
+            }
             // new sublist of areas that match query
             var match_areas = [];
 
-            var fuse = new Fuse(areas, { keys: ["coords.country", "name"] });
+            var fuse = new Fuse(areas, { keys: ["coords.country", "name", "reference"] });
             var countries = fuse.search(query);
-            console.log(countries);
 
             console.log("area 1");
-            console.log(areas[1].coords.country);
 
             // add our info in a table, first remove any old info
             $(".wrap").find(".content").find("#myTable").find("#tableBody").empty();
             for (var i = 0; i < countries.length; i++) {
                 var country = countries[i];
 
-                $("#tableBody").append("<tr id=" + country.name + "><td value='" + country.name + "''>" + country.name + "</td></tr>");
+                $("#tableBody").append("<tr id=" + country.name + "><td value='" + country.name + "''>" +
+                    country.name + "</td><td value='reference'><a href='http://www.rsmas.miami.edu/personal/famelung/Publications_files/ChaussardAmelungAoki_VolcanoCycles_JGR_2013.pdf' target='_blank'>" +
+                    "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288.</a></td></tr>");
 
                 // make cursor change when mouse hovers over row
                 $("#" + country.name).css("cursor", "pointer");
@@ -348,12 +388,16 @@ $(window).load(function() {
 
                 // ugly click function declaration to JS not using block scope
                 $("#" + country.name).click((function(country) {
-                    return function() {
-                        clickedArea = country;
-                        $('.wrap').toggleClass('active');
-                        getGEOJSON(country);
+                    return function(e) {
+                        // don't load area if reference link is clicked
+                        if (e.target.cellIndex == 0) {
+                            clickedArea = country;
+                            console.log(country);
+                            $('.wrap').toggleClass('active');
+                            getGEOJSON(country);
+                        }
                     };
-                })(country.name));
+                })(country));
             }
 
             // now get only datasets from countries array with query search
@@ -381,7 +425,9 @@ $(window).load(function() {
             for (var i = 0; i < json.areas.length; i++) {
                 var area = json.areas[i];
 
-                $("#tableBody").append("<tr id=" + area.name + "><td value='" + area.name + "''>" + area.name + "</td></tr>");
+                $("#tableBody").append("<tr id=" + area.name + "><td value='" + area.name + "''>" + area.name +
+                    "</td><td value='reference'><a href='http://www.rsmas.miami.edu/personal/famelung/Publications_files/ChaussardAmelungAoki_VolcanoCycles_JGR_2013.pdf' target='_blank'>" +
+                    "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288.</a></td></tr>");
 
                 // make cursor change when mouse hovers over row
                 $("#" + area.name).css("cursor", "pointer");
@@ -389,10 +435,13 @@ $(window).load(function() {
 
                 // ugly click function declaration to JS not using block scope
                 $("#" + area.name).click((function(area) {
-                    return function() {
-                        clickedArea = area.name;
-                        $('.wrap').toggleClass('active');
-                        getGEOJSON(area);
+                    return function(e) {
+                        // don't load area if reference link is clicked
+                        if (e.target.cellIndex == 0) {
+                            clickedArea = area.name;
+                            $('.wrap').toggleClass('active');
+                            getGEOJSON(area);
+                        }
                     };
                 })(area));
             }
