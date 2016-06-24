@@ -30,6 +30,8 @@
  <script type="text/javascript" src="js/fuse.js"></script>
  <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.js'></script>
  <link href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.css' rel='stylesheet' />
+ <link href="css/mapbox-gl-draw.css" rel="stylesheet" />
+ <script type="text/javascript" src="js/mapbox-gl-draw.js"></script>
 </head>
 <body>
   <div id="map-container">
@@ -38,6 +40,9 @@
       <label for='streets'>streets</label>
       <input id='satellite' type='radio' name='rtoggle' value='satellite'>
       <label for='satellite'>satellite</label>
+    </div>
+    <div id="polygon-button-div">
+      <button class="btn btn-primary-outline" data-toggle="tooltip" data-placement="right" title="Draw polygon" id="polygon-button">P</button>
     </div>
     <div id="reset-button">
       <button class="btn btn-primary-outline">Reset</button>
