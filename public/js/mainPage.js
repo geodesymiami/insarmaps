@@ -312,6 +312,13 @@ $(window).load(function() {
             zoom: 0
         });
     });
+    $(function() {
+        $('[data-toggle="tooltip"]').tooltip()
+    });
+
+    $("#polygon-button").on("click", function() {
+        myMap.selector.polygonButtonSelected = !myMap.selector.polygonButtonSelected;
+    });
 
     $(function() {
         $("#overlay-slider").slider({

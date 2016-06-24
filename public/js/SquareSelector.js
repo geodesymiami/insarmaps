@@ -2,6 +2,7 @@ function SquareSelector(map) {
     var that = this;
     this.map = map;
     this.canvas = map.map.getCanvasContainer();
+    this.polygonButtonSelected = false;
 
     // Variable to hold the that.starting xy coordinates
     // when `mousedown` occured.
@@ -59,10 +60,9 @@ function SquareSelector(map) {
     // dragging behaviour.
     this.mouseDown = function(e) {
         // Continue the rest of the function if the shiftkey is pressed.
-        if (!(e.shiftKey && e.button === 0)) return;
+        if (!(e.shiftKey && e.button === 0) && !that.polygonButtonSelected) return;
         // Disable default drag zooming when the shift key is held down.
         that.map.map.dragPan.disable();
-        console.log("hello");
         // Call functions for the following events
         document.addEventListener('mousemove', that.onMouseMove);
         document.addEventListener('mouseup', that.onMouseUp);
@@ -76,6 +76,9 @@ function SquareSelector(map) {
 
     this.finish = function(bbox) {
         // Remove these events now that finish has been called.
+        that.polygonButtonSelected = false;        
+        that.map.map.dragPan.enable();
+
         document.removeEventListener('mousemove', that.onMouseMove);
         document.removeEventListener('keydown', that.onKeyDown);
         document.removeEventListener('mouseup', that.onMouseUp);
@@ -232,7 +235,5 @@ function SquareSelector(map) {
                 console.log("error");
             });
         }
-
-        that.map.map.dragPan.enable();
     };
 }
