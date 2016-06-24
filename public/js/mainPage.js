@@ -338,25 +338,30 @@ $(window).load(function() {
     $("#search-button").on("click", function() {
         console.log(json);
         if (json != null) {
+            // TODO: dummy search for paper, add actual paper later on when we get attribute    
             query = $("#search-input").val();
             // full list of areas
             var areas = json.areas;
+            // TODO: remove, this is placeholder
+            for (var i = 0; i < areas.length; i++) {
+                areas[i].reference = "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288";
+            }
             // new sublist of areas that match query
             var match_areas = [];
 
-            var fuse = new Fuse(areas, { keys: ["coords.country", "name"] });
+            var fuse = new Fuse(areas, { keys: ["coords.country", "name", "reference"] });
             var countries = fuse.search(query);
-            console.log(countries);
 
             console.log("area 1");
-            console.log(areas[1].coords.country);
 
             // add our info in a table, first remove any old info
             $(".wrap").find(".content").find("#myTable").find("#tableBody").empty();
             for (var i = 0; i < countries.length; i++) {
                 var country = countries[i];
 
-                $("#tableBody").append("<tr id=" + country.name + "><td value='" + country.name + "''>" + country.name + "</td></tr>");
+                $("#tableBody").append("<tr id=" + country.name + "><td value='" + country.name + "''>" +
+                    country.name + "</td><td value='reference'><a href='http://www.rsmas.miami.edu/personal/famelung/Publications_files/ChaussardAmelungAoki_VolcanoCycles_JGR_2013.pdf' target='_blank'>" +
+                    "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288.</a></td></tr>");
 
                 // make cursor change when mouse hovers over row
                 $("#" + country.name).css("cursor", "pointer");
@@ -364,12 +369,16 @@ $(window).load(function() {
 
                 // ugly click function declaration to JS not using block scope
                 $("#" + country.name).click((function(country) {
-                    return function() {
-                        clickedArea = country;
-                        $('.wrap').toggleClass('active');
-                        getGEOJSON(country);
+                    return function(e) {
+                        // don't load area if reference link is clicked
+                        if (e.target.cellIndex == 0) {
+                            clickedArea = country;
+                            console.log(country);
+                            $('.wrap').toggleClass('active');
+                            getGEOJSON(country);
+                        }
                     };
-                })(country.name));
+                })(country));
             }
 
             // now get only datasets from countries array with query search
@@ -397,7 +406,9 @@ $(window).load(function() {
             for (var i = 0; i < json.areas.length; i++) {
                 var area = json.areas[i];
 
-                $("#tableBody").append("<tr id=" + area.name + "><td value='" + area.name + "''>" + area.name + "</td></tr>");
+                $("#tableBody").append("<tr id=" + area.name + "><td value='" + area.name + "''>" + area.name +
+                    "</td><td value='reference'><a href='http://www.rsmas.miami.edu/personal/famelung/Publications_files/ChaussardAmelungAoki_VolcanoCycles_JGR_2013.pdf' target='_blank'>" +
+                    "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288.</a></td></tr>");
 
                 // make cursor change when mouse hovers over row
                 $("#" + area.name).css("cursor", "pointer");
@@ -405,10 +416,13 @@ $(window).load(function() {
 
                 // ugly click function declaration to JS not using block scope
                 $("#" + area.name).click((function(area) {
-                    return function() {
-                        clickedArea = area.name;
-                        $('.wrap').toggleClass('active');
-                        getGEOJSON(area);
+                    return function(e) {
+                        // don't load area if reference link is clicked
+                        if (e.target.cellIndex == 0) {
+                            clickedArea = area.name;
+                            $('.wrap').toggleClass('active');
+                            getGEOJSON(area);
+                        }
                     };
                 })(area));
             }
