@@ -365,7 +365,8 @@ function Map(loadJSONFunc) {
 
         var layerID = "touchLocation";
 
-        if (!features.length) {
+        // remove cluster count check if you remove clustering
+        if (!features.length || features[0].layer.id == "cluster-count") {
             return;
         }
 
@@ -462,7 +463,10 @@ function Map(loadJSONFunc) {
         loadJSONFunc("", "areas", function(response) {
             var json = JSON.parse(response);
 
-            var areaMarker = new mapboxgl.GeoJSONSource();
+            var areaMarker = new mapboxgl.GeoJSONSource({
+                cluster: true,
+                clusterRadius: 10
+            });
             var features = [];
 
             for (var i = 0; i < json.areas.length; i++) {
@@ -502,6 +506,43 @@ function Map(loadJSONFunc) {
                 "layout": {
                     "icon-image": "{marker-symbol}-15",
                     "icon-allow-overlap": true
+                }
+            });
+
+            // clustering
+            var layers = [
+                [150, '#f28cb1'],
+                [20, '#f1f075'],
+                [0, '#51bbd6']
+            ];
+
+            layers.forEach(function(layer, i) {
+                that.map.addLayer({
+                    "id": "cluster-" + i,
+                    "type": "circle",
+                    "source": id,
+                    "paint": {
+                        "circle-color": layer[1],
+                        "circle-radius": 10
+                    },
+                    "filter": i == 0 ? [">=", "point_count", layer[0]] : ["all", [">=", "point_count", layer[0]],
+                        ["<", "point_count", layers[i - 1][0]]
+                    ]
+                });
+            });
+
+            // Add a layer for the clusters' count labels
+            that.map.addLayer({
+                "id": "cluster-count",
+                "type": "symbol",
+                "source": id,
+                "layout": {
+                    "text-field": "{point_count}",
+                    "text-font": [
+                        "DIN Offc Pro Medium",
+                        "Arial Unicode MS Bold"
+                    ],
+                    "text-size": 12
                 }
             });
         });
