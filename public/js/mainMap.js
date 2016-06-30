@@ -248,7 +248,10 @@ function Map(loadJSONFunc) {
                                     }
                                 }
 
-                                // get slope and y intercept of sub array 
+                                // get slope and y intercept of sub array
+                                that.selector.minIndex = minIndex;
+                                that.selector.maxIndex = maxIndex;
+                                
                                 var sub_displacements = displacement_array.slice(minIndex, maxIndex + 1);
                                 var sub_decimal_dates = decimal_dates.slice(minIndex, maxIndex + 1);
                                 var sub_result = calcLinearRegression(sub_displacements, sub_decimal_dates);

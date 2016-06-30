@@ -1,6 +1,9 @@
 function SquareSelector(map) {
     var that = this;
     this.map = map;
+    this.minIndex = -1;
+    this.maxIndex = -1;
+
     this.canvas = map.map.getCanvasContainer();
     this.polygonButtonSelected = false;
 
@@ -76,7 +79,7 @@ function SquareSelector(map) {
 
     this.finish = function(bbox) {
         // Remove these events now that finish has been called.
-        that.polygonButtonSelected = false;        
+        that.polygonButtonSelected = false;
         that.map.map.dragPan.enable();
 
         document.removeEventListener('mousemove', that.onMouseMove);
@@ -168,31 +171,30 @@ function SquareSelector(map) {
             });
             console.log(query);
             $.getJSON(query, function(json) {
-                var minIndex = 4;
-                var maxIndex = 5;
-
                 var decimalDates = json[0];
 
                 for (var i = 0; i < geoJSONData.features.length; i++) {
                     var curFeature = geoJSONData.features[i];
 
-                    var date_string_array = json.string_dates[i];
+                    var date_string_array = json.string_dates;
                     var date_array = convertStringsToDateArray(date_string_array);
-                    var decimal_dates = json.decimal_dates[i];
+                    var decimal_dates = json.decimal_dates;
                     var displacement_array = json.displacements[i];
+                    var sub_displacements = displacement_array.slice(that.minIndex, that.maxIndex + 1);
+                    var sub_decimal_dates = decimal_dates.slice(that.minIndex, that.maxIndex + 1);
 
                     // // returns array for displacement on chart
                     // chart_data = getDisplacementChartData(displacement_array, date_string_array);
 
                     // calculate and render a linear regression of those dates and displacements
-                    var result = calcLinearRegression(displacement_array, decimal_dates);
+                    var result = calcLinearRegression(sub_displacements, sub_decimal_dates);
                     var slope = result["equation"][0];
                     var y = result["equation"][1];
                     console.log("before " + curFeature.properties.m)
                     console.log("slope is " + slope);
                     console.log(curFeature);
                     curFeature.properties.m = slope;
-                    console.log("after " + curFeature.properties.m)
+                    console.log("after " + curFeature.properties.m);
                     console.log(curFeature);
                 }
                 if (that.map.map.getSource("onTheFlyJSON")) {
