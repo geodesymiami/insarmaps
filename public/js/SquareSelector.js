@@ -119,8 +119,7 @@ function SquareSelector(map) {
         for (var i = 1; i < that.map.layers_.length; i++) {
             pointLayers.push(that.map.layers_[i].id);
         }
-        console.log("recoloring in");
-        console.log(that.bbox);
+
         var pixelBoundingBox = [that.map.map.project(that.bbox[0]), that.map.map.project(that.bbox[1])];
         var features = that.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
         if (features.length == 0) {
@@ -151,6 +150,8 @@ function SquareSelector(map) {
             var lat = features[i].geometry.coordinates[1];
             var curFeatureKey = features[i].properties.p.toString();
 
+            // mapbox gives us duplicate tiles (see documentation to see how query rendered features works)
+            // yet we only want unique features, not duplicates
             if (featuresMap[curFeatureKey] != null) {
                 continue;
             }
