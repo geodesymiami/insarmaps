@@ -107,8 +107,17 @@ def convert_data():
 
 	# put dataset into area table
 	# area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country, "num_chunks": chunk_num, "dates": dataset_keys}
-	cur.execute('INSERT INTO area VALUES (' + "'" + area + "','" + str(mid_lat) + "','" + str(mid_long) + "','" + country + "','" + str(chunk_num) + "','" + string_dates_sql + "','" + decimal_dates_sql + "')")
-	con.commit()
+	try:
+		con = psycopg2.connect("dbname='pgis' user='aterzishi' host='insarvmcsc431.cloudapp.net' password='abc123'")
+		cur = con.cursor()
+		query = 'INSERT INTO area VALUES (' + "'" + area + "','" + str(mid_lat) + "','" + str(mid_long) + "','" + country + "','" + str(chunk_num) + "','" + string_dates_sql + "','" + decimal_dates_sql + "')"
+		cur.execute(query)
+		con.commit()
+		con.close()
+	except Exception, e:
+		print "error inserting into area"
+		print e
+		sys.exit()
 	
 # ---------------------------------------------------------------------------------------
 # create a json file out of siu man array
@@ -221,7 +230,6 @@ except Exception, e:
 
 # read and convert the datasets, then write them into json files and insert into database
 convert_data()
-con.close()
 
 # run tippecanoe command to get mbtiles file and then delete the json files to save space
 os.chdir(os.path.abspath(json_path))
