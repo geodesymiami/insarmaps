@@ -81,7 +81,6 @@ def convert_data():
 			if len(siu_man) == chunk_size:
 				make_json_file(chunk_num, siu_man)
 				chunk_num += 1
-				point_num = 0
 				siu_man = []
 
 	# write the last chunk that might be smaller than chunk_size
