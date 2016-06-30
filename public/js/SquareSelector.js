@@ -52,8 +52,8 @@ function SquareSelector(map) {
 
     this.onMouseUp = function(e) {
         // Capture xy coordinates
-        that.bbox = [that.start, that.mousePos(e)];
-        that.finish([that.start, that.mousePos(e)]);
+        that.bbox = [that.map.map.unproject(that.start), that.map.map.unproject(that.mousePos(e))];
+        that.finish(that.bbox);
     };
 
     this.onKeyDown = function(e) {
@@ -117,7 +117,8 @@ function SquareSelector(map) {
         }
         console.log("recoloring in");
         console.log(that.bbox);
-        var features = that.map.map.queryRenderedFeatures(that.bbox, { layers: pointLayers });
+        var pixelBoundingBox = [that.map.map.project(that.bbox[0]), that.map.map.project(that.bbox[1])];
+        var features = that.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
         if (features.length == 0) {
             return;
         }
@@ -160,16 +161,7 @@ function SquareSelector(map) {
             "type": "circle",
             "source": "onTheFlyJSON",
             "paint": {
-                'circle-color': {
-                    property: 'm',
-                    stops: [
-                        [-0.02, '#0000FF'], // blue
-                        [-0.01, '#00FFFF'], // cyan
-                        [0.0, '#01DF01'], // lime green
-                        [0.01, '#FFBF00'], // yellow orange
-                        [0.02, '#FF0000'] // red orange
-                    ]
-                },
+                'circle-color': "black",
                 'circle-radius': {
                     // for an explanation of this array see here:
                     // https://www.mapbox.com/blog/data-driven-styling/
@@ -183,7 +175,7 @@ function SquareSelector(map) {
                 }
             }
         });
-        //console.log(query);
+        console.log(query);
 
         $.ajax({
             url: "/points",
