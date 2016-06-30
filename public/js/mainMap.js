@@ -192,7 +192,7 @@ function Map(loadJSONFunc) {
             var date_string_array = json.string_dates;
             var date_array = convertStringsToDateArray(date_string_array);
             var decimal_dates = json.decimal_dates;
-            var displacement_array = json.displacements;
+            var displacement_array = json.displacements;            
 
             // returns array for displacement on chart
             chart_data = getDisplacementChartData(displacement_array, date_string_array);
@@ -248,7 +248,10 @@ function Map(loadJSONFunc) {
                                     }
                                 }
 
-                                // get slope and y intercept of sub array 
+                                // get slope and y intercept of sub array
+                                that.selector.minIndex = minIndex;
+                                that.selector.maxIndex = maxIndex;
+                                
                                 var sub_displacements = displacement_array.slice(minIndex, maxIndex + 1);
                                 var sub_decimal_dates = decimal_dates.slice(minIndex, maxIndex + 1);
                                 var sub_result = calcLinearRegression(sub_displacements, sub_decimal_dates);
@@ -622,6 +625,10 @@ function Map(loadJSONFunc) {
         // dynamically change the sizes depending on the current map zoom.
         that.map.on('zoomend', function() {
             console.log(that.map.getZoom());
+
+            if (that.selector.bbox != null) {
+                that.selector.recolorMap();
+            }
 
             // reshow area markers once we zoom out enough
             if (myMap.pointsLoaded() && myMap.map.getZoom() <= 3) {

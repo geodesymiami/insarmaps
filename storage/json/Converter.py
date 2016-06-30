@@ -34,6 +34,7 @@ def convert_data():
 	# create a siu_man array to store json point objects
 	siu_man = []
 	displacement_values = []
+	displacements = '{'
 	# np array of decimal dates, x parameter in linear regression equation
 	x = decimal_dates
 	A = np.vstack([x, np.ones(len(x))]).T
@@ -49,10 +50,12 @@ def convert_data():
 		displacement = float(value)	
 		# if value is not equal to naN, create a new json point object and append to siu_man array
 		if not math.isnan(displacement):
-			# get displacement values for all the dates
+			# get displacement values for all the dates into array for json and string for pgsql
 			for key in dataset_keys:
-				displacement = float(timeseries_datasets[key][row][col])
-				displacement_values.append(displacement)
+				displacement = timeseries_datasets[key][row][col]
+				displacements += (str(displacement) + ",")
+				displacement_values.append(float(displacement))
+			displacements = displacements[:len(displacements)-2] + '}'
 
 			# np array of displacement values, y parameter in linear regression equation
 			y = displacement_values
@@ -68,9 +71,11 @@ def convert_data():
 			# allocate memory space for siu_man array in beginning 
 			siu_man.append(data)
 
-			# clear displacement array for next point
+			# clear displacement array for json and the other string for dictionary, for next point
 			displacement_values = []
+			displacements = '{'
 			point_num += 1
+
 			# if chunk_size limit is reached, write chunk into a json file
 			# then increment chunk number and clear siu_man array
 			if len(siu_man) == chunk_size:
@@ -87,13 +92,33 @@ def convert_data():
 	mid_long = y_first + ((num_rows/2) * y_step)
 	g = geocoder.google([mid_long,mid_lat], method='reverse')
  	country = str(g.country_long)
+ 	area = folder_name
 
-	# put area data into database
-	area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country, "num_chunks": chunk_num}
-	area_data_string = json.dumps(area_data, indent=4, separators=(',',':'))
-	cur.execute('INSERT INTO area VALUES (' + "'" + folder_name + "','" + area_data_string + "')")
-	con.commit()
+ 	# for some reason pgsql only takes {} not [] - format date arrays to be inserted to pgsql
+ 	string_dates_sql = '{'
+ 	for k in dataset_keys:
+ 		string_dates_sql += (str(k) + ",")
+ 	string_dates_sql = string_dates_sql[:len(string_dates_sql)-2] + '}'
 
+ 	decimal_dates_sql = '{'
+ 	for d in decimal_dates:
+ 		decimal_dates_sql += (str(d) + ",")
+ 	decimal_dates_sql = decimal_dates_sql[:len(decimal_dates_sql)-2] + '}'
+
+	# put dataset into area table
+	# area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country, "num_chunks": chunk_num, "dates": dataset_keys}
+	try:
+		con = psycopg2.connect("dbname='pgis' user='aterzishi' host='insarvmcsc431.cloudapp.net' password='abc123'")
+		cur = con.cursor()
+		query = 'INSERT INTO area VALUES (' + "'" + area + "','" + str(mid_lat) + "','" + str(mid_long) + "','" + country + "','" + str(chunk_num) + "','" + string_dates_sql + "','" + decimal_dates_sql + "')"
+		cur.execute(query)
+		con.commit()
+		con.close()
+	except Exception, e:
+		print "error inserting into area"
+		print e
+		sys.exit()
+	
 # ---------------------------------------------------------------------------------------
 # create a json file out of siu man array
 # then put json file into directory named after the h5 file
@@ -102,24 +127,21 @@ def make_json_file(chunk_num, points):
 	data = {
 	"type": "FeatureCollection",
 	# "dates": dataset_keys, 
-	"string_dates": dataset_keys, 
-	"decimal_dates": decimal_dates,
+	"dates": dataset_keys, 
 	"features": points
 	}
 
-	# remove '.h5' from the end of file_name
 	chunk = "chunk_" + str(chunk_num) + ".json"
 	json_file = open(json_path + "/" + chunk, "w")
 	string_json = json.dumps(data, indent=4, separators=(',',':'))
-	try:
-		cur.execute('INSERT INTO ' + folder_name + ' VALUES (' + str(chunk_num) +',' + "'" + string_json + "')")
-		con.commit()
-	except Exception, e:
-		print "failed to insert chunk " + str(chunk_num)
-		print str(e)
-
 	json_file.write("%s" % string_json)
 	json_file.close()
+
+	# insert json file to pgsql using ogr2ogr - folder_name = area name
+	command = 'ogr2ogr -append -f "PostgreSQL" PG:"dbname=pgis host=insarvmcsc431.cloudapp.net user=aterzishi password=abc123" -nln ' + folder_name + " "
+	chunk_path = './mbtiles/' + folder_name + '/' + chunk
+	os.system(command + ' ' + chunk_path)
+	print "inserted chunk " + str(chunk_num) + " to db"
 # ---------------------------------------------------------------------------------------
 # START OF EXECUTABLE
 # ---------------------------------------------------------------------------------------
@@ -154,7 +176,6 @@ num_columns = int(group.attrs["WIDTH"])
 num_rows = int(group.attrs["FILE_LENGTH"])
 print "columns: %d" % num_columns
 print "rows: %d" % num_rows
-print 
 
 # get keys
 dataset_keys = group.keys()
@@ -195,18 +216,13 @@ try: # create path for json
 except:
 	print json_path + " already exists"
 
-try:
-	con = psycopg2.connect("dbname='point' user='aterzishi' host='insarvmcsc431.cloudapp.net' password='abc123'")
+try:	# connect to databse
+	con = psycopg2.connect("dbname='pgis' user='aterzishi' host='insarvmcsc431.cloudapp.net' password='abc123'")
 	cur = con.cursor()
-	# create area table if not exist
-	cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, data json );")
+	# create area table if not exist - limit for number of dates is 200
+	cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, latitude double precision, longitude double precision, country varchar, numchunks integer, stringdates varchar[200], decimaldates double precision[200] );")
 	con.commit()
-	# create table named after h5 dataset area - take out .h5
-	query = 'CREATE TABLE IF NOT EXISTS ' + folder_name + '( id integer, data json );'
-	print query
-	cur.execute(query)
-	con.commit()
-	print "created table"
+	print 'created area table'
 except Exception, e:
 	print "unable to connect to the database"
 	print e
@@ -214,7 +230,6 @@ except Exception, e:
 
 # read and convert the datasets, then write them into json files and insert into database
 convert_data()
-con.close()
 
 # run tippecanoe command to get mbtiles file and then delete the json files to save space
 os.chdir(os.path.abspath(json_path))

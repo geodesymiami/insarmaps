@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use DateTime;
 use DB;
+use Illuminate\Support\Facades\Input;
 
 session_start();
 
@@ -28,107 +29,143 @@ class GeoJSONController extends Controller {
     return $array;
   }
 
+  private function postgresToPHPArray($pgArray) {
+    $postgresStr = trim($pgArray, "{}");
+    $elmts = explode(",", $postgresStr);
+
+    return $elmts;
+  }
+
+  private function stringArrayToFloatArray($array) {    
+    return array_map("floatval", $array);
+  }
+
+  private function postgresToPHPFloatArray($pgArray) {
+    $stringArray = $this->postgresToPHPArray($pgArray);
+
+    return $this->stringArrayToFloatArray($stringArray);
+  }
+
   public function getDataForPoint($area, $chunk, $pointNumber) {
     try {
-      $query = "SELECT data->'decimal_dates' from " . $area . " WHERE id = " . $chunk;
-      $dates = DB::select($query);
-      $array = get_object_vars($dates[0]);
-      foreach ($array as $key => $dateArray) {
-        $json["decimal_dates"] = json_decode($dateArray);
-      }
+      $json = [];
+      // hard coded until zishi is back
+      $decimal_dates = null;
+      $string_dates = null;
 
-      $query = "SELECT data->'string_dates' from " . $area . " WHERE id = " . $chunk;
-      $dates = DB::select($query);
-      $array = get_object_vars($dates[0]);
-      foreach ($array as $key => $dateArray) {
-        $json["string_dates"] = json_decode($dateArray);
-      }
+      $query = "SELECT decimaldates, stringdates FROM area WHERE name='" . $area . "'";
+      $dateInfos = DB::select($query);
 
-      $query = "SELECT data->'features'->" . $pointNumber . "->'properties'->'d' from " . $area . " WHERE id = " . $chunk;
-      $displacements = DB::select($query);
-      $array = get_object_vars($displacements[0]);
+      foreach ($dateInfos as $dateInfo) {
+       $decimal_dates = $dateInfo->decimaldates;
+       $string_dates = $dateInfo->stringdates;
+     }
+      
+      $json["decimal_dates"] = $this->postgresToPHPFloatArray($decimal_dates);
 
-      foreach ($array as $key => $displacementArray) {
-        $json["displacements"] = json_decode($displacementArray);
+      
+      $json["string_dates"] = $this->postgresToPHPArray($string_dates);
+
+      $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = " . $pointNumber . " AND c = " . $chunk;
+
+      $points = DB::select($query);
+      foreach ($points as $point) {
+        $json["displacements"] = $this->postgresToPHPFloatArray($point->d);
       }
       echo json_encode($json);
     } catch (\Illuminate\Database\QueryException $e) {
-        echo "Point Not found";
+      echo "Point Not found";
     }
     
-  }
+  }  
 
-  public function getPoints($area, $points = null) {
+  public function getPoints() {
+    $points = Input::get("points");
+
     try {
-      $json = [];
-      $json["decimal_dates"] = [];
-      $json["string_dates"] = [];
+      $json = [];    
+
       $json["displacements"] = [];
+      $decimal_dates = null;
+      $string_dates = null;
 
-      $pointsArray = explode("/", $points);      
+      $parameters = explode("/", $points);
+      $area = $parameters[0];
+      $offset = count($parameters) - 2;
+      $pointsArray = array_slice($parameters, 1, $offset);
+
       $pointsArrayLen = count($pointsArray);
+      $query = "SELECT decimaldates, stringdates FROM area WHERE name='" . $area . "'";
+      $dateInfos = DB::select($query);
 
-      for ($i = 0; $i < $pointsArrayLen; $i++) {
-        $curChunk = $pointsArray[$i][0];
-        $curPointNum = $pointsArray[$i][1];
+      foreach ($dateInfos as $dateInfo) {
+       $decimal_dates = $dateInfo->decimaldates;
+       $string_dates = $dateInfo->stringdates;
+     }
 
-        $query = "SELECT data->'decimal_dates' from " . $area . " WHERE id = " . $curChunk;
-        $dates = DB::select($query);
-        $array = get_object_vars($dates[0]);
-        foreach ($array as $key => $dateArray) {
-          array_push($json["decimal_dates"], json_decode($dateArray));
-        }
+     $json["decimal_dates"] = $this->postgresToPHPFloatArray($decimal_dates);
+     $json["string_dates"] = $this->postgresToPHPArray($string_dates);
+     $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = ANY (VALUES ";
+     $query2 = "SELECT *, st_astext(wkb_geometry) from " . $area . " where c = ANY (VALUES ";
 
-        $query = "SELECT data->'string_dates' from " . $area . " WHERE id = " . $curChunk;
-        $dates = DB::select($query);
-        $array = get_object_vars($dates[0]);
-        foreach ($array as $key => $dateArray) {
-          array_push($json["string_dates"], json_decode($dateArray));          
-        }
+     for ($i = 0; $i < $pointsArrayLen - 1; $i++) {
+      $curPointInfo = $pointsArray[$i];
+      $curPoint = explode(":", $curPointInfo);        
+      $curPointNum = $curPoint[1];
+      $curChunk = $curPoint[0];
 
-        $query = "SELECT data->'features'->" . $curPointNum . "->'properties'->'d' from " . $area . " WHERE id = " . $curChunk;
-        $displacements = DB::select($query);
-        $array = get_object_vars($displacements[0]);
-
-        foreach ($array as $key => $displacementArray) {
-          array_push($json["displacements"], json_decode($displacementArray));          
-        } 
-      }
-       
-      echo json_encode($json);
-    } catch (\Illuminate\Database\QueryException $e) {
-        echo "Error Getting Points";
+      $query = $query . "(" . $curPointNum . "),"; 
+      $query2 = $query2 . "(" . $curChunk . "),";
     }
+
+      // add last ANY values without comma
+    $curPointInfo = $pointsArray[$i];
+    $curPoint = explode(":", $curPointInfo);
+
+    $curPointNum = $curPoint[1];
+    $curChunk = $curPoint[0];
+    $query = $query . "(" . $curPointNum . "))"; 
+    $query2 = $query2 . "(" . $curChunk . "))";
+
+    $fullQuery = $query . " INTERSECT " . $query2;
+      // echo $fullQuery;
+    $points = DB::select($fullQuery);
+
+    foreach ($points as $point) {
+      $displacements = $this->postgresToPHPFloatArray($point->d);
+      array_push($json["displacements"], $displacements);
+    }     
+
+    echo json_encode($json);
+  } catch (\Illuminate\Database\QueryException $e) {
+    echo "Error Getting Points";
   }
+}
 
-  public function getAreas() {
-    $json = array();
+public function getAreas() {
+  $json = array();
 
-    try {
-      $query = "SELECT name, data from area";
-      $areas = DB::select($query);
+  try {
+    $query = "SELECT * from area";
+    $areas = DB::select($query);
 
-      $json["areas"] = [];
-      for ($i = 0; $i < count($areas); $i++) {
-        $array = get_object_vars($areas[$i]);
-        $areaName = $array["name"];
+    $json["areas"] = [];
+    foreach ($areas as $area) {
+      $areaName = $area->name;
 
-        $currentArea = [];
-        $currentArea["name"] = $areaName;
-        
-        $hack = 0;
-        foreach ($array as $key => $area) {
-          if ($hack != 0) {
-            $currentArea["coords"] = json_decode($area);
-            array_push($json["areas"], $currentArea);
-          }
-          $hack++;
-        }
-      }
+      $currentArea = [];
+      $currentArea["name"] = $areaName;
 
-      echo json_encode($json);
-    } catch (\Illuminate\Database\QueryException $e) {
-      echo "error getting areas";
+      $hack = 0;
+      $currentArea["coords"]["latitude"] = $area->latitude;
+      $currentArea["coords"]["longitude"] = $area->longitude;                
+      $currentArea["coords"]["num_chunks"] = $area->numchunks;
+      array_push($json["areas"], $currentArea);
     }
+
+    echo json_encode($json);
+  } catch (\Illuminate\Database\QueryException $e) {
+    echo "error getting areas";
   }
+}
 }
