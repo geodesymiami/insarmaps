@@ -318,6 +318,11 @@ $(window).load(function() {
 
     $("#polygon-button").on("click", function() {
         myMap.selector.polygonButtonSelected = !myMap.selector.polygonButtonSelected;
+
+        // reset bounding box
+        if (!myMap.selector.polygonButtonSelected) {
+            myMap.bbox = null;
+        }
     });
 
     $(function() {
