@@ -626,6 +626,10 @@ function Map(loadJSONFunc) {
         that.map.on('zoomend', function() {
             console.log(that.map.getZoom());
 
+            if (that.selector.bbox != null) {
+                that.selector.recolorMap();
+            }
+
             // reshow area markers once we zoom out enough
             if (myMap.pointsLoaded() && myMap.map.getZoom() <= 3) {
                 myMap.removePoints();
