@@ -192,7 +192,7 @@ function Map(loadJSONFunc) {
             var date_string_array = json.string_dates;
             var date_array = convertStringsToDateArray(date_string_array);
             var decimal_dates = json.decimal_dates;
-            var displacement_array = json.displacements;
+            var displacement_array = json.displacements;            
 
             // returns array for displacement on chart
             chart_data = getDisplacementChartData(displacement_array, date_string_array);
