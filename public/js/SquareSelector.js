@@ -3,7 +3,8 @@ function SquareSelector(map) {
     this.map = map;
     this.minIndex = -1;
     this.maxIndex = -1;
-    that.bbox = null;
+    this.bbox = null;
+    this.recoloringInProgress = false;
 
     this.canvas = map.map.getCanvasContainer();
     this.polygonButtonSelected = false;
@@ -104,6 +105,9 @@ function SquareSelector(map) {
         if (that.minIndex == -1 || that.maxIndex == -1) {
             return;
         }
+        if (that.recoloringInProgress) {
+            return;
+        }
 
         if (that.map.map.getSource("onTheFlyJSON")) {
             that.map.map.removeSource("onTheFlyJSON");
@@ -146,9 +150,8 @@ function SquareSelector(map) {
             var long = features[i].geometry.coordinates[0];
             var lat = features[i].geometry.coordinates[1];
             var curFeatureKey = features[i].properties.p.toString();
-            
+
             if (featuresMap[curFeatureKey] != null) {
-                console.log("we continuing");
                 continue;
             }
 
@@ -166,7 +169,7 @@ function SquareSelector(map) {
                 }
             });
         }
-        console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
+        //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
         that.map.map.addSource("onTheFlyJSON", {
             "type": "geojson",
             "data": geoJSONData
@@ -190,7 +193,8 @@ function SquareSelector(map) {
                 }
             }
         });
-        //console.log(query);
+        //console.log(query);        
+        that.recoloringInProgress = true;
 
         $.ajax({
             url: "/points",
@@ -201,9 +205,9 @@ function SquareSelector(map) {
             },
             success: function(response) {
                 var json = JSON.parse(response);
-                if (geoJSONData.features.length != json.displacements.length) {
-                    console.log("not the same size json is " + json.displacements.length + " while features is " + geoJSONData.features.length);
-                }
+                // if (geoJSONData.features.length != json.displacements.length) {
+                //     console.log("not the same size json is " + json.displacements.length + " while features is " + geoJSONData.features.length);
+                // }
                 for (var i = 0; i < geoJSONData.features.length; i++) {
                     var curFeature = geoJSONData.features[i];
 
@@ -264,6 +268,7 @@ function SquareSelector(map) {
                         }
                     }
                 });
+                that.recoloringInProgress = false;
             },
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed " + xhr.responseText);
