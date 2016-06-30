@@ -137,21 +137,36 @@ function SquareSelector(map) {
             "type": "FeatureCollection",
             "features": []
         };
+
+        var featuresMap = [];
+
         var query = currentArea.name + "/";
 
         for (var i = 0; i < features.length; i++) {
-            query += features[i].properties.c.toString() + ":" + features[i].properties.p.toString() + "/";
+            var long = features[i].geometry.coordinates[0];
+            var lat = features[i].geometry.coordinates[1];
+            var curFeatureKey = features[i].properties.p.toString();
+            
+            if (featuresMap[curFeatureKey] != null) {
+                console.log("we continuing");
+                continue;
+            }
+
+            query += features[i].properties.p.toString() + "/";
+            featuresMap[curFeatureKey] = "1";
+
             geoJSONData.features.push({
                 "type": "Feature",
                 "geometry": {
                     "type": "Point",
-                    "coordinates": [features[i].geometry.coordinates[0], features[i].geometry.coordinates[1]]
+                    "coordinates": [long, lat]
                 },
                 "properties": {
                     "m": 0
                 }
             });
         }
+        console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
         that.map.map.addSource("onTheFlyJSON", {
             "type": "geojson",
             "data": geoJSONData
@@ -175,7 +190,7 @@ function SquareSelector(map) {
                 }
             }
         });
-        console.log(query);
+        //console.log(query);
 
         $.ajax({
             url: "/points",
@@ -186,7 +201,9 @@ function SquareSelector(map) {
             },
             success: function(response) {
                 var json = JSON.parse(response);
-
+                if (geoJSONData.features.length != json.displacements.length) {
+                    console.log("not the same size json is " + json.displacements.length + " while features is " + geoJSONData.features.length);
+                }
                 for (var i = 0; i < geoJSONData.features.length; i++) {
                     var curFeature = geoJSONData.features[i];
 

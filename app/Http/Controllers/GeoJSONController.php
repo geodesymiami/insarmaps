@@ -46,7 +46,7 @@ class GeoJSONController extends Controller {
     return $this->stringArrayToFloatArray($stringArray);
   }
 
-  public function getDataForPoint($area, $chunk, $pointNumber) {
+  public function getDataForPoint($area, $pointNumber) {
     try {
       $json = [];
       // hard coded until zishi is back
@@ -66,7 +66,7 @@ class GeoJSONController extends Controller {
       
       $json["string_dates"] = $this->postgresToPHPArray($string_dates);
 
-      $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = " . $pointNumber . " AND c = " . $chunk;
+      $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = " . $pointNumber;
 
       $points = DB::select($query);
       foreach ($points as $point) {
@@ -106,30 +106,19 @@ class GeoJSONController extends Controller {
      $json["decimal_dates"] = $this->postgresToPHPFloatArray($decimal_dates);
      $json["string_dates"] = $this->postgresToPHPArray($string_dates);
      $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = ANY (VALUES ";
-     $query2 = "SELECT *, st_astext(wkb_geometry) from " . $area . " where c = ANY (VALUES ";
 
-     for ($i = 0; $i < $pointsArrayLen - 1; $i++) {
-      $curPointInfo = $pointsArray[$i];
-      $curPoint = explode(":", $curPointInfo);        
-      $curPointNum = $curPoint[1];
-      $curChunk = $curPoint[0];
+     for ($i = 0; $i < $pointsArrayLen - 1; $i++) {       
+      $curPointNum = $pointsArray[$i];
 
       $query = $query . "(" . $curPointNum . "),"; 
-      $query2 = $query2 . "(" . $curChunk . "),";
     }
 
-      // add last ANY values without comma
-    $curPointInfo = $pointsArray[$i];
-    $curPoint = explode(":", $curPointInfo);
+    // add last ANY values without comma
+    $curPointNum = $pointsArray[$i];
+    $query = $query . "(" . $curPointNum . "))";
 
-    $curPointNum = $curPoint[1];
-    $curChunk = $curPoint[0];
-    $query = $query . "(" . $curPointNum . "))"; 
-    $query2 = $query2 . "(" . $curChunk . "))";
-
-    $fullQuery = $query . " INTERSECT " . $query2;
-      // echo $fullQuery;
-    $points = DB::select($fullQuery);
+    // echo $fullQuery;
+    $points = DB::select($query);
 
     foreach ($points as $point) {
       $displacements = $this->postgresToPHPFloatArray($point->d);
