@@ -20,6 +20,14 @@
  
  <script src="http://code.highcharts.com/stock/highstock.js"></script>
  <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+ <meta name="csrf-token" content="{{ csrf_token() }}" />
+ <script type="text/javascript">
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+</script>
 
  <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js"> </script>
  <!--boostrap-->

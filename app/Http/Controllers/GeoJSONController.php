@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use DateTime;
 use DB;
+use Illuminate\Support\Facades\Input;
 
 session_start();
 
@@ -78,7 +79,9 @@ class GeoJSONController extends Controller {
     
   }  
 
-  public function getPoints($area, $points = null) {
+  public function getPoints() {
+    $points = Input::get("points");
+
     try {
       $json = [];    
 
@@ -86,7 +89,11 @@ class GeoJSONController extends Controller {
       $decimal_dates = null;
       $string_dates = null;
 
-      $pointsArray = explode("/", $points);      
+      $parameters = explode("/", $points);
+      $area = $parameters[0];
+      $offset = count($parameters) - 2;
+      $pointsArray = array_slice($parameters, 1, $offset);
+
       $pointsArrayLen = count($pointsArray);
       $query = "SELECT decimaldates, stringdates FROM area WHERE name='" . $area . "'";
       $dateInfos = DB::select($query);
