@@ -66,7 +66,7 @@ def convert_data():
 			data = {
    			"type": "Feature",
    			"geometry": {"type": "Point", "coordinates": [latitude, longitude]},	
-   			"properties": {"d": displacement_values, "m": m, "c": chunk_num, "p": point_num}
+   			"properties": {"d": displacement_values, "m": m, "p": point_num}
 			}	
 			# allocate memory space for siu_man array in beginning 
 			siu_man.append(data)
