@@ -3,7 +3,8 @@ function SquareSelector(map) {
     this.map = map;
     this.minIndex = -1;
     this.maxIndex = -1;
-    that.bbox = null;
+    this.bbox = null;
+    this.recoloringInProgress = false;
 
     this.canvas = map.map.getCanvasContainer();
     this.polygonButtonSelected = false;
@@ -104,6 +105,9 @@ function SquareSelector(map) {
         if (that.minIndex == -1 || that.maxIndex == -1) {
             return;
         }
+        if (that.recoloringInProgress) {
+            return;
+        }
 
         if (that.map.map.getSource("onTheFlyJSON")) {
             that.map.map.removeSource("onTheFlyJSON");
@@ -115,8 +119,7 @@ function SquareSelector(map) {
         for (var i = 1; i < that.map.layers_.length; i++) {
             pointLayers.push(that.map.layers_[i].id);
         }
-        console.log("recoloring in");
-        console.log(that.bbox);
+
         var pixelBoundingBox = [that.map.map.project(that.bbox[0]), that.map.map.project(that.bbox[1])];
         var features = that.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
         if (features.length == 0) {
@@ -137,21 +140,37 @@ function SquareSelector(map) {
             "type": "FeatureCollection",
             "features": []
         };
+
+        var featuresMap = [];
+
         var query = currentArea.name + "/";
 
         for (var i = 0; i < features.length; i++) {
-            query += features[i].properties.c.toString() + ":" + features[i].properties.p.toString() + "/";
+            var long = features[i].geometry.coordinates[0];
+            var lat = features[i].geometry.coordinates[1];
+            var curFeatureKey = features[i].properties.p.toString();
+
+            // mapbox gives us duplicate tiles (see documentation to see how query rendered features works)
+            // yet we only want unique features, not duplicates
+            if (featuresMap[curFeatureKey] != null) {
+                continue;
+            }
+
+            query += features[i].properties.p.toString() + "/";
+            featuresMap[curFeatureKey] = "1";
+
             geoJSONData.features.push({
                 "type": "Feature",
                 "geometry": {
                     "type": "Point",
-                    "coordinates": [features[i].geometry.coordinates[0], features[i].geometry.coordinates[1]]
+                    "coordinates": [long, lat]
                 },
                 "properties": {
                     "m": 0
                 }
             });
         }
+        //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
         that.map.map.addSource("onTheFlyJSON", {
             "type": "geojson",
             "data": geoJSONData
@@ -175,7 +194,8 @@ function SquareSelector(map) {
                 }
             }
         });
-        console.log(query);
+        //console.log(query);        
+        that.recoloringInProgress = true;
 
         $.ajax({
             url: "/points",
@@ -186,7 +206,9 @@ function SquareSelector(map) {
             },
             success: function(response) {
                 var json = JSON.parse(response);
-
+                // if (geoJSONData.features.length != json.displacements.length) {
+                //     console.log("not the same size json is " + json.displacements.length + " while features is " + geoJSONData.features.length);
+                // }
                 for (var i = 0; i < geoJSONData.features.length; i++) {
                     var curFeature = geoJSONData.features[i];
 
@@ -247,6 +269,7 @@ function SquareSelector(map) {
                         }
                     }
                 });
+                that.recoloringInProgress = false;
             },
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed " + xhr.responseText);

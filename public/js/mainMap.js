@@ -135,13 +135,11 @@ function Map(loadJSONFunc) {
 
         var long = feature.geometry.coordinates[0];
         var lat = feature.geometry.coordinates[1];
-        var chunk = feature.properties.c;
         var pointNumber = feature.properties.p;
-        var title = chunk.toString() + ":" + pointNumber.toString();
+        var title = pointNumber.toString();
 
         var query = {
             "area": currentArea.name,
-            "chunk": chunk,
             "pointNumber": pointNumber
         };
 
