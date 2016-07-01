@@ -166,10 +166,17 @@ function SquareSelector(map) {
                     "coordinates": [long, lat]
                 },
                 "properties": {
-                    "m": 0
+                    "m": 0,
+                    "p": features[i].properties.p
                 }
             });
         }
+
+        // sort by p in ascending order so we match displacements with the features
+        geoJSONData.features.sort(function(a, b) {
+            return a.properties.p - b.properties.p;
+        });
+
         //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
         that.map.map.addSource("onTheFlyJSON", {
             "type": "geojson",
