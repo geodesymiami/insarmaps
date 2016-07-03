@@ -98,6 +98,7 @@ function Map(loadJSONFunc) {
     this.tileURLID = "kjjj11223344.4avm5zmh";
     this.tileJSON = null;
     this.clickLocationMarker = new mapboxgl.GeoJSONSource();
+    this.clickLocationMarker2 = new mapboxgl.GeoJSONSource();
     this.selector = null;
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,
@@ -119,12 +120,14 @@ function Map(loadJSONFunc) {
         that.map.scrollZoom.enable();
         that.map.doubleClickZoom.enable();
     };
-    this.clickOnAPoint = function(e) {
+    this.clickOnAPoint = function(e, chartContainer, layerID, clickMarker) {
+        console.log("it is");
+        console.log(e.point);
         var features = that.map.queryRenderedFeatures(e.point, {
             layers: that.layers
         });
 
-        var layerID = "touchLocation";
+        // var layerID = "touchLocation";
 
         if (!features.length) {
             return;
@@ -140,7 +143,7 @@ function Map(loadJSONFunc) {
         if (!pointNumber) {
             return;
         }
-        
+
         var title = pointNumber.toString();
 
         var query = {
@@ -149,7 +152,7 @@ function Map(loadJSONFunc) {
         };
 
         if (!that.map.getLayer(layerID)) {
-            that.clickLocationMarker.setData({
+            clickMarker.setData({
                 "type": "FeatureCollection",
                 "features": [{
                     "type": "Feature",
@@ -162,7 +165,7 @@ function Map(loadJSONFunc) {
                     }
                 }]
             });
-            that.map.addSource(layerID, that.clickLocationMarker);
+            that.map.addSource(layerID, clickMarker);
 
             that.map.addLayer({
                 "id": layerID,
@@ -173,7 +176,7 @@ function Map(loadJSONFunc) {
                 }
             });
         } else {
-            that.clickLocationMarker.setData({
+            clickMarker.setData({
                 "type": "FeatureCollection",
                 "features": [{
                     "type": "Feature",
@@ -195,7 +198,7 @@ function Map(loadJSONFunc) {
             var date_string_array = json.string_dates;
             var date_array = convertStringsToDateArray(date_string_array);
             var decimal_dates = json.decimal_dates;
-            var displacement_array = json.displacements;            
+            var displacement_array = json.displacements;
 
             // returns array for displacement on chart
             chart_data = getDisplacementChartData(displacement_array, date_string_array);
@@ -213,7 +216,7 @@ function Map(loadJSONFunc) {
                 firstToggle = true;
                 dotToggleButton.set("off");
 
-                $('#chartContainer').highcharts({
+                $('#' + chartContainer).highcharts({
                     title: {
                         text: 'Timeseries Displacement Chart'
                     },
@@ -254,7 +257,7 @@ function Map(loadJSONFunc) {
                                 // get slope and y intercept of sub array
                                 that.selector.minIndex = minIndex;
                                 that.selector.maxIndex = maxIndex;
-                                
+
                                 var sub_displacements = displacement_array.slice(minIndex, maxIndex + 1);
                                 var sub_decimal_dates = decimal_dates.slice(minIndex, maxIndex + 1);
                                 var sub_result = calcLinearRegression(sub_displacements, sub_decimal_dates);
@@ -364,6 +367,16 @@ function Map(loadJSONFunc) {
         });
     };
 
+    this.leftClickOnAPoint = function(e) {
+        that.clickOnAPoint(e, "chartContainer", "touchLocation", that.clickLocationMarker);
+    };
+
+    this.rightClickOnAPoint = function(e) {
+        if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
+            that.clickOnAPoint(e, "chartContainer2", "touchLocation2", that.clickLocationMarker2);
+        }
+    };
+
     this.clickOnAnAreaMaker = function(e) {
         var features = that.map.queryRenderedFeatures(e.point, {
             layers: that.layers
@@ -460,7 +473,7 @@ function Map(loadJSONFunc) {
 
         // remove click listener for selecting an area, and add new one for clicking on a point
         that.map.off("click");
-        that.map.on('click', that.clickOnAPoint);
+        that.map.on('click', that.leftClickOnAPoint);
 
         return layer;
     }
@@ -598,6 +611,8 @@ function Map(loadJSONFunc) {
 
         that.map.on('click', that.clickOnAnAreaMaker);
 
+        that.map.on("contextmenu", that.rightClickOnAPoint);
+
         // Use the same approach as above to indicate that the symbols are clickable
         // by changing the cursor style to 'pointer'.
         that.map.on('mousemove', function(e) {
@@ -677,6 +692,14 @@ function Map(loadJSONFunc) {
             that.map.removeSource(layerID);
 
             that.clickLocationMarker = new mapboxgl.GeoJSONSource();
+        }
+
+        layerID = "touchLocation2";
+        if (that.map.getLayer(layerID)) {
+            that.map.removeLayer(layerID);
+            that.map.removeSource(layerID);
+
+            that.clickLocationMarker2 = new mapboxgl.GeoJSONSource();
         }
     };
 }

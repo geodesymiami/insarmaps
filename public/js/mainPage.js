@@ -290,6 +290,22 @@ dotToggleButton.onclick(function() {
     }
 });
 
+var secondGraphToggleButton = new ToggleButton("#second-graph-toggle-button");
+secondGraphToggleButton.onclick(function() {
+    if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
+        $("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
+    } else {
+        var layerID = "touchLocation2";
+        if (myMap.map.getLayer(layerID)) {
+            myMap.map.removeLayer(layerID);
+            myMap.map.removeSource(layerID);
+            myMap.touchLocationMarker2 = new mapboxgl.GeoJSONSource();
+        }
+
+        $("#chartContainer2").remove();
+    }
+});
+
 // when site loads, turn toggle on
 $(window).load(function() {
     var NUM_CHUNKS = 300;
