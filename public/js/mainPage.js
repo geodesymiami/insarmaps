@@ -1,3 +1,81 @@
+function getGEOJSON(area) {
+    // currentPoint = 1;
+    currentArea = area;
+
+    // var query = {
+    //   "area": area,
+    //   "fileChunk": currentPoint
+    // }
+
+    // loadJSON(query, "file", myMap.JSONCallback);
+    //var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[]};
+    //myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
+    myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://ec2-52-41-231-16.us-west-2.compute.amazonaws.com:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
+
+    if (myMap.pointsLoaded()) {
+        myMap.removePoints();
+        myMap.removeTouchLocationMarker();
+    }
+
+    // make streets toggle button be only checked one
+    $("#streets").prop("checked", true);
+
+    for (var i = 1; i <= area.coords.num_chunks; i++) {
+        var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
+        myMap.tileJSON.vector_layers.push(layer);
+    }
+
+    myMap.initLayer(myMap.tileJSON, "streets");
+    myMap.map.style.on("load", function() {
+        window.setTimeout(function() {
+            myMap.map.flyTo({
+                center: [area.coords.latitude, area.coords.longitude],
+                zoom: 7
+            });
+        }, 1000);
+    });
+}
+
+function ToggleButton(id) {
+    var that = this;
+    this.toggleState = ToggleStates.off;
+    this.id = id;
+    this.onclick = null;
+    this.firstToggle = true;
+
+    this.toggle = function() {
+        $(that.id).toggleClass('toggle-button-selected');
+
+        if (that.toggleState == ToggleStates.ON) {
+            that.toggleState = ToggleStates.OFF;
+        } else {
+            that.toggleState = ToggleStates.ON;
+        }
+    };
+
+    this.set = function(state) {
+        if (state == "on") {
+            if (that.toggleState == ToggleStates.OFF) {
+                that.toggle();
+            }
+        } else if (state == "off") {
+            if (that.toggleState == ToggleStates.ON) {
+                that.toggle();
+            }
+        } else {
+            console.log("invalid toggle option");
+        }
+    }
+    this.onclick = function(clickFunction) {
+        $(that.id).on("click", function() {
+            // toggle states
+            that.toggle();
+
+            clickFunction();
+        });
+    };
+}
+
 var acc = document.getElementsByClassName("accordion");
 var i;
 
@@ -179,84 +257,6 @@ for (var i = 0; i < inputs.length; i++) {
     inputs[i].onclick = switchLayer;
 }
 
-function getGEOJSON(area) {
-    // currentPoint = 1;
-    currentArea = area;
-
-    // var query = {
-    //   "area": area,
-    //   "fileChunk": currentPoint
-    // }
-
-    // loadJSON(query, "file", myMap.JSONCallback);
-    //var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[]};
-    //myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
-    myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://insarvmcsc431.cloudapp.net:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
-
-    if (myMap.pointsLoaded()) {
-        myMap.removePoints();
-        myMap.removeTouchLocationMarker();
-    }
-
-    // make streets toggle button be only checked one
-    $("#streets").prop("checked", true);
-
-    for (var i = 1; i <= area.coords.num_chunks; i++) {
-        var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
-        myMap.tileJSON.vector_layers.push(layer);
-    }
-
-    myMap.initLayer(myMap.tileJSON, "streets");
-    myMap.map.style.on("load", function() {
-        window.setTimeout(function() {
-            myMap.map.flyTo({
-                center: [area.coords.latitude, area.coords.longitude],
-                zoom: 7
-            });
-        }, 1000);
-    });
-}
-
-function ToggleButton(id) {
-    var that = this;
-    this.toggleState = ToggleStates.off;
-    this.id = id;
-    this.onclick = null;
-    this.firstToggle = true;
-
-    this.toggle = function() {
-        $(that.id).toggleClass('toggle-button-selected');
-
-        if (that.toggleState == ToggleStates.ON) {
-            that.toggleState = ToggleStates.OFF;
-        } else {
-            that.toggleState = ToggleStates.ON;
-        }
-    };
-
-    this.set = function(state) {
-        if (state == "on") {
-            if (that.toggleState == ToggleStates.OFF) {
-                that.toggle();
-            }
-        } else if (state == "off") {
-            if (that.toggleState == ToggleStates.ON) {
-                that.toggle();
-            }
-        } else {
-            console.log("invalid toggle option");
-        }
-    }
-    this.onclick = function(clickFunction) {
-        $(that.id).on("click", function() {
-            // toggle states
-            that.toggle();
-
-            clickFunction();
-        });
-    };
-}
-
 // line connecting dots in chart on/off
 var dotToggleButton = new ToggleButton("#dot-toggle-button");
 dotToggleButton.onclick(function() {
@@ -287,6 +287,22 @@ dotToggleButton.onclick(function() {
         }
 
         firstToggle = false;
+    }
+});
+
+var secondGraphToggleButton = new ToggleButton("#second-graph-toggle-button");
+secondGraphToggleButton.onclick(function() {
+    if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
+        $("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
+    } else {
+        var layerID = "touchLocation2";
+        if (myMap.map.getLayer(layerID)) {
+            myMap.map.removeLayer(layerID);
+            myMap.map.removeSource(layerID);
+            myMap.touchLocationMarker2 = new mapboxgl.GeoJSONSource();
+        }
+
+        $("#chartContainer2").remove();
     }
 });
 

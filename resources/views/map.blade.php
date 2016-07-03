@@ -22,24 +22,22 @@
  <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
  <meta name="csrf-token" content="{{ csrf_token() }}" />
  <script type="text/javascript">
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
+  $.ajaxSetup({
+    headers: {
+      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    }
+  });
 </script>
 
- <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js"> </script>
- <!--boostrap-->
- <!-- Latest compiled and minified CSS -->
- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
- <!-- Latest compiled and minified JavaScript -->
- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
- <script type="text/javascript" src="js/fuse.js"></script>
- <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.js'></script>
- <link href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.css' rel='stylesheet' />
- <link href="css/mapbox-gl-draw.css" rel="stylesheet" />
- <script type="text/javascript" src="js/mapbox-gl-draw.js"></script>
+<script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js"> </script>
+<!--boostrap-->
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+<script type="text/javascript" src="js/fuse.js"></script>
+<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.css' rel='stylesheet' />
 </head>
 <body>
   <div id="map-container">
@@ -105,11 +103,19 @@
       </div> <!-- End menu -->
 
       <h2>Line-of-sight displacement time-series</h2>
-
-      <div id="chartContainer" class="side-item graph">
-        <!--<canvas id="chart"></canvas>-->
+      <div class="overlay_toggle">
+        <label>Second Graph</label>
+        <div class="toggle-button" id="second-graph-toggle-button">
+          <button></button>          
+        </div>
       </div>
 
+      <div id="charts">
+        <div id="chartContainer" class="side-item graph">
+        </div>
+        <!-- <div id="chartContainer2" class="side-item graph">
+        </div> -->
+      </div>
       <!-- <div class="side-item upload-button">
         {!! Form::open(array('action' => 'MyController@convertData','method'=>'POST', 'files'=>true)) !!}
         {!! Form::label('data', 'Upload File:') !!}
@@ -168,12 +174,12 @@
     </div> <!-- End side-item-box -->
   </div> <!-- End side-bar -->
   <?php
-    echo "
-      <script type=\"text/javascript\">
-        var fileName = \"$fileName\";
-      </script>
-      ";
-    ?>
+  echo "
+  <script type=\"text/javascript\">
+    var fileName = \"$fileName\";
+  </script>
+  ";
+  ?>
   <script type="text/javascript" src="js/SquareSelector.js"></script>
   <script type="text/javascript" src="js/mainMap.js"></script>
   <script type="text/javascript" src="js/mainPage.js"></script>
