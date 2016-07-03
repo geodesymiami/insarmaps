@@ -136,6 +136,11 @@ function Map(loadJSONFunc) {
         var long = feature.geometry.coordinates[0];
         var lat = feature.geometry.coordinates[1];
         var pointNumber = feature.properties.p;
+
+        if (!pointNumber) {
+            return;
+        }
+        
         var title = pointNumber.toString();
 
         var query = {

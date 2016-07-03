@@ -38,8 +38,6 @@
  <script type="text/javascript" src="js/fuse.js"></script>
  <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.js'></script>
  <link href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v1.0.0/mapbox-gl-geocoder.css' rel='stylesheet' />
- <link href="css/mapbox-gl-draw.css" rel="stylesheet" />
- <script type="text/javascript" src="js/mapbox-gl-draw.js"></script>
 </head>
 <body>
   <div id="map-container">
