@@ -1,0 +1,179 @@
+.slideout-menu {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100%;
+    background: #333;
+    z-index: 100;
+}
+
+.slideout-menu h3 {
+    position: relative;
+    padding: 12px 10px;
+    /*color: #fff;*/
+    font-size: 1.2em;
+    font-weight: 400;
+    /*border-bottom: 4px solid #222;*/
+}
+
+.slideout-menu .slideout-menu-toggle {
+    position: absolute;
+    top: 12px;
+    right: 10px;
+    display: inline-block;
+    padding: 6px 9px 5px;
+}
+
+.slideout-menu .slideout-menu-toggle:hover {
+    color: #fff;
+}
+
+.slideout-menu ul {
+    list-style: none;
+    font-weight: 300;
+    border-top: 1px solid #151515;
+    border-bottom: 1px solid #454545;
+}
+
+.slideout-menu ul li {
+    border-top: 1px solid #454545;
+    border-bottom: 1px solid #151515;
+}
+
+.slideout-menu ul li a {
+    position: relative;
+    display: block;
+    padding: 10px;
+    color: #999;
+    text-decoration: none;
+}
+
+.slideout-menu ul li a:hover {
+    background: #000;
+    color: #fff;
+}
+
+.slideout-menu ul li a i {
+    position: absolute;
+    top: 15px;
+    right: 10px;
+    opacity: .5;
+}
+
+.header {
+    padding: 15px;
+    background: #000;
+}
+
+.header .slideout-menu-toggle {
+    font-size: 1.2em;
+    color: #999;
+    text-decoration: none;
+}
+
+.header .slideout-menu-toggle:hover {
+    color: #fff;
+}
+
+.header .slideout-menu-toggle i {
+    vertical-align: top;
+    margin: 5px 3px 0 0;
+}
+
+.content {
+    width: 60%;
+    margin: 50px auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, .75);
+}
+
+.content h1 {
+    font-weight: 400;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.content h2 {
+    font-weight: 400;
+    text-transform: uppercase;
+    color: #fff;
+    margin: 0 0 20px;
+}
+
+.content p {
+    font-size: 1em;
+    font-weight: 300;
+    line-height: 1.5em;
+    color: #eee;
+    margin: 0 0 20px;
+}
+
+.content p:last-child {
+    margin: 0;
+}
+
+.content a.button {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #ff0;
+    color: #000;
+    text-decoration: none;
+}
+
+.content a.button:hover {
+    background: #000;
+    color: #ff0;
+}
+
+.content.yellow {
+    position: relative;
+    background: #ff0;
+}
+
+.content.yellow h1 {
+    color: #000;
+}
+
+.content.yellow h1 span.demo {
+    display: inline-block;
+    font-size: .5em;
+    padding: 5px 10px;
+    background: #000;
+    color: #ff0;
+    vertical-align: top;
+    margin: 7px 0 0;
+}
+
+.content.yellow .back-to-article {
+    position: absolute;
+    bottom: -20px;
+    left: 20px;
+}
+
+.content.yellow .back-to-article a {
+    padding: 10px 20px;
+    background: #f60;
+    color: #fff;
+    text-decoration: none;
+}
+
+.content.yellow .back-to-article a:hover {
+    background: #f90;
+}
+
+.content.yellow .back-to-article a i {
+    margin-left: 5px;
+}
+
+.content.black {
+    background: #000;
+}
+
+.content.black p {
+    color: #999;
+}
+
+.content.black p a {
+    color: #08c;
+}
