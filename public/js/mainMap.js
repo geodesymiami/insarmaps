@@ -191,6 +191,8 @@ function Map(loadJSONFunc) {
             });
         }
 
+        $("#point-details").html(lat + ", " + long);
+
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "point", function(response) {
             var json = JSON.parse(response);
@@ -353,12 +355,8 @@ function Map(loadJSONFunc) {
                 elevationGetter.getElevationForLocations({
                     "locations": [{ lat: lat, lng: long }]
                 }, function(results, status) {
-                    if (status === google.maps.ElevationStatus.OK) {
-                        that.elevationPopup.remove();
-
-                        that.elevationPopup.setLngLat(features[0].geometry.coordinates)
-                            .setHTML("Elevation: " + results[0].elevation + " meters")
-                            .addTo(that.map);
+                    if (status === google.maps.ElevationStatus.OK) {                        
+                        $("#point-details").append("<br>Elevation: " + results[0].elevation + " meters");
                     } else {
                         console.log(status);
                     }

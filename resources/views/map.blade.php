@@ -53,6 +53,7 @@
     <div id="reset-button">
       <button class="btn btn-primary-outline">Reset</button>
     </div>
+    <div id="point-details"></div>
   </div>
   <div class="side-bar">
     <div class="side-item-box">

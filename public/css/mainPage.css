@@ -432,3 +432,12 @@ label {
 #charts {
     margin-top: 70px;
 }
+
+#point-details {
+    position: absolute;
+    z-index: 99;
+    bottom: 0px;
+    left: 0px;
+    background-color: white;
+    opacity: 0.6;
+}
