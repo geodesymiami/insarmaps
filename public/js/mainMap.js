@@ -100,10 +100,14 @@ function Map(loadJSONFunc) {
     this.clickLocationMarker = new mapboxgl.GeoJSONSource();
     this.clickLocationMarker2 = new mapboxgl.GeoJSONSource();
     this.selector = null;
+    this.zoomOutZoom = 7.0;
+    this.showLocationMarkerZoom = 9.5;
+
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,
         closeOnClick: false
     });
+
     this.elevationPopup = new mapboxgl.Popup({
         closeButton: false,
         closeOnClick: false
@@ -151,44 +155,47 @@ function Map(loadJSONFunc) {
             "pointNumber": pointNumber
         };
 
-        if (!that.map.getLayer(layerID)) {
-            clickMarker.setData({
-                "type": "FeatureCollection",
-                "features": [{
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [long, lat]
-                    },
-                    "properties": {
-                        "marker-symbol": "cross"
-                    }
-                }]
-            });
-            that.map.addSource(layerID, clickMarker);
+        // show cross on clicked point, only if sufficiently zoomed in
+        if (that.map.getZoom() >= that.showLocationMarkerZoom) {
+            if (!that.map.getLayer(layerID)) {
+                clickMarker.setData({
+                    "type": "FeatureCollection",
+                    "features": [{
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [long, lat]
+                        },
+                        "properties": {
+                            "marker-symbol": "cross"
+                        }
+                    }]
+                });
+                that.map.addSource(layerID, clickMarker);
 
-            that.map.addLayer({
-                "id": layerID,
-                "type": "symbol",
-                "source": layerID,
-                "layout": {
-                    "icon-image": "{marker-symbol}-15",
-                }
-            });
-        } else {
-            clickMarker.setData({
-                "type": "FeatureCollection",
-                "features": [{
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [long, lat]
-                    },
-                    "properties": {
-                        "marker-symbol": "cross"
+                that.map.addLayer({
+                    "id": layerID,
+                    "type": "symbol",
+                    "source": layerID,
+                    "layout": {
+                        "icon-image": "{marker-symbol}-15",
                     }
-                }]
-            });
+                });
+            } else {
+                clickMarker.setData({
+                    "type": "FeatureCollection",
+                    "features": [{
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [long, lat]
+                        },
+                        "properties": {
+                            "marker-symbol": "cross"
+                        }
+                    }]
+                });
+            }
         }
 
         $("#point-details").html(lat + ", " + long);
@@ -355,7 +362,7 @@ function Map(loadJSONFunc) {
                 elevationGetter.getElevationForLocations({
                     "locations": [{ lat: lat, lng: long }]
                 }, function(results, status) {
-                    if (status === google.maps.ElevationStatus.OK) {                        
+                    if (status === google.maps.ElevationStatus.OK) {
                         $("#point-details").append("<br>Elevation: " + results[0].elevation + " meters");
                     } else {
                         console.log(status);
@@ -385,6 +392,13 @@ function Map(loadJSONFunc) {
         // remove cluster count check if you remove clustering
         if (!features.length || features[0].layer.id == "cluster-count") {
             return;
+        }
+
+        // memorize the zoom we clicked at, but only if it's more zoomed out than
+        // the flyTo zoom when an area is loaded
+        var currentZoom = that.map.getZoom();
+        if (currentZoom <= 7.0) {
+            that.zoomOutZoom = that.map.getZoom();
         }
 
         var feature = features[0];
@@ -646,8 +660,11 @@ function Map(loadJSONFunc) {
                 that.selector.recolorMap();
             }
 
+            if (that.map.getZoom() <= that.showLocationMarkerZoom) {
+                that.removeTouchLocationMarker();
+            }
             // reshow area markers once we zoom out enough
-            if (myMap.pointsLoaded() && myMap.map.getZoom() <= 3) {
+            if (that.pointsLoaded() && that.map.getZoom() <= that.zoomOutZoom) {
                 myMap.removePoints();
                 myMap.removeTouchLocationMarker();
                 myMap.elevationPopup.remove(); // incase it's up
