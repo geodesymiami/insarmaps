@@ -3,6 +3,7 @@
 <head>
  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
  <link rel="stylesheet" href="css/mainPage.css" />
+ <link rel="stylesheet" href="css/slideout.css" />
  <!--jQuery-->
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
  <!--leaflet-->
@@ -48,13 +49,21 @@
       <label for='satellite'>satellite</label>
     </div>
     <div id="polygon-button-div">
-      <button class="btn btn-primary-outline" data-toggle="tooltip" data-placement="right" title="Draw polygon" id="polygon-button">P</button>
+      <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Draw polygon" id="polygon-button">P</button>
     </div>
     <div id="reset-button">
       <button class="btn btn-primary-outline">Reset</button>
     </div>
+    <div class="slideout-menu-toggle" id="slideout-button">
+      <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Show Menu" id="polygon-button">M</button>
+    </div>
+    <div id="point-details"></div>
   </div>
-  <div class="side-bar">
+  <div class="slideout-menu">
+   <div class="slideout-menu-toggle" id="close-sidebar-button-div">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-sidebar-button"><span aria-hidden="true">×</span></button>
+  </div>
+  <div class="side-bar">    
     <div class="side-item-box">
       <!--div class="side-item move-button"></div-->
       <div class="side-item title">
@@ -114,8 +123,8 @@
         <div id="chartContainer" class="side-item graph">
         </div>
         <!-- <div id="chartContainer2" class="side-item graph">
-        </div> -->
-      </div>
+      </div> -->
+    </div>
       <!-- <div class="side-item upload-button">
         {!! Form::open(array('action' => 'MyController@convertData','method'=>'POST', 'files'=>true)) !!}
         {!! Form::label('data', 'Upload File:') !!}
@@ -125,37 +134,7 @@
 
       </div> -->
       <!--insert pop up button for selecting areas to view here-->
-      <div class='wrap'>
-        <div class='content'>
-         <div class="modal-header" id="close-button-parent">
-          <div id="close-button-child">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
-          </div>
-        </div>
-        <!--search bar-->
-        <div class="input-group">
-          <span class="input-group-btn">
-            <button class="btn btn-default" id="search-button" type="button">Search</button>
-          </span>
-          <input type="text" class="form-control" placeholder="Search for..." id="search-input">
-        </div>         
-          <!-- <div class="modal-header" id="close-button-parent">
-            <div id="close-button-child">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
-            </div>
-          </div> -->
-          <!-- table to select dataset from-->
-          <table class='table' id='myTable'>            
-            <thead>
-              <tr>
-                <th>Dataset</th>
-                <th>Reference</th>
-              </tr>
-            </thead>
-            <tbody id='tableBody'></tbody>
-          </table>          
-        </div>
-      </div>
+      
       <div class="overlay_toggle">
         <label>Connect dots</label>
         <div class="toggle-button" id="dot-toggle-button">
@@ -173,17 +152,49 @@
       </div>
     </div> <!-- End side-item-box -->
   </div> <!-- End side-bar -->
-  <?php
-  echo "
-  <script type=\"text/javascript\">
-    var fileName = \"$fileName\";
-  </script>
-  ";
-  ?>
-  <script type="text/javascript" src="js/SquareSelector.js"></script>
-  <script type="text/javascript" src="js/mainMap.js"></script>
-  <script type="text/javascript" src="js/mainPage.js"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBm77jFIq1iM3mpL5CgB1uvW6jGcefbIYs"
-  async defer></script>
-</body>
-</html>
+  <div class='wrap'>
+    <div class='content'>
+     <div class="modal-header" id="close-button-parent">
+      <div id="close-button-child">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
+      </div>
+    </div>
+    <!--search bar-->
+    <div class="input-group">
+      <span class="input-group-btn">
+        <button class="btn btn-default" id="search-button" type="button">Search</button>
+      </span>
+      <input type="text" class="form-control" placeholder="Search for..." id="search-input">
+    </div>         
+          <!-- <div class="modal-header" id="close-button-parent">
+            <div id="close-button-child">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
+            </div>
+          </div> -->
+          <!-- table to select dataset from-->
+          <table class='table' id='myTable'>            
+            <thead>
+              <tr>
+                <th>Dataset</th>
+                <th>Reference</th>
+              </tr>
+            </thead>
+            <tbody id='tableBody'></tbody>
+          </table>          
+        </div>
+      </div>
+    </div>
+    <?php
+    echo "
+    <script type=\"text/javascript\">
+      var fileName = \"$fileName\";
+    </script>
+    ";
+    ?>
+    <script type="text/javascript" src="js/SquareSelector.js"></script>
+    <script type="text/javascript" src="js/mainMap.js"></script>
+    <script type="text/javascript" src="js/mainPage.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBm77jFIq1iM3mpL5CgB1uvW6jGcefbIYs"
+    async defer></script>
+  </body>
+  </html>
