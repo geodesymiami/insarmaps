@@ -5,6 +5,7 @@ body {
     padding: 0;
     height: 100%;
     width: 100%
+    color: white;
 }
 
 button {
@@ -48,7 +49,7 @@ label {
 .side-bar {
     float: left;
     height: 100%;
-    width: 33%;
+    width: 100%;
     background-color: rgb(4, 53, 101);
     z-index: 10;
     overflow: auto;
@@ -87,7 +88,7 @@ label {
 
 #map-container {
     position: relative;
-    width: 67%;
+    width: 100%;
     height: 100%;
     /*position: absolute;*/
     z-index: 0;
@@ -95,7 +96,7 @@ label {
 }
 
 .wrap {
-    position: absolute;
+    position: fixed;
     overflow: hidden;
     top: 10%;
     right: 10%;
@@ -107,10 +108,14 @@ label {
     transform: translateY(20px);
     transition: all 0.5s;
     visibility: hidden;
+    background-color: white;
 }
 
 .wrap .content {
     opacity: 0;
+    margin: 0px !important;
+    background-color: white !important;
+    width: 100%;
 }
 
 #close-button-parent {
@@ -120,15 +125,20 @@ label {
 
 #close-button-child {
     position: absolute;
-    left: 50px;
-    top: -10px;
+    left: 70px;
+    top: -35px;
 }
 
-#close-button {
-    background: white;
+#close-button, #close-sidebar-button {
     border: none;
     color: red;
     font-size: 30px;
+}
+
+#close-sidebar-button-div {
+    position: absolute;
+    top: -5px;
+    right: 15px;
 }
 
 .wrap:before {
@@ -413,11 +423,20 @@ label {
     position: absolute;
     font-family: 'Open Sans', sans-serif;
     z-index: 99;
-    left: 10px;
-    top: 70px;
+    left: 45px;
+    top: 55px;
     border-radius: 10px;
 }
-#polygon-button-div button {
+
+#slideout-button {
+    position: absolute;
+    font-family: 'Open Sans', sans-serif;
+    z-index: 99;
+    left: 10px;
+    top: 55px;
+    border-radius: 10px;
+}
+.map-button {
     width: 30px;
     height: 30px;
     /*display: block;*/
