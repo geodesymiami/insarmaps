@@ -107,7 +107,7 @@ def convert_data():
 	# put dataset into area table
 	# area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country, "num_chunks": chunk_num, "dates": dataset_keys}
 	try:
-		con = psycopg2.connect("dbname='pgis' user='aterzishi' host='insarvmcsc431.cloudapp.net' password='abc123'")
+		con = psycopg2.connect("dbname='pgis' user='aterzishi' host='postgresdb.cpk4mk8rt0nu.us-west-2.rds.amazonaws.com' password='abc123howilikemyabc'")
 		cur = con.cursor()
 		query = 'INSERT INTO area VALUES (' + "'" + area + "','" + str(mid_lat) + "','" + str(mid_long) + "','" + country + "','" + str(chunk_num) + "','" + string_dates_sql + "','" + decimal_dates_sql + "')"
 		cur.execute(query)
@@ -137,7 +137,7 @@ def make_json_file(chunk_num, points):
 	json_file.close()
 
 	# insert json file to pgsql using ogr2ogr - folder_name = area name
-	command = 'ogr2ogr -append -f "PostgreSQL" PG:"dbname=pgis host=insarvmcsc431.cloudapp.net user=aterzishi password=abc123" -nln ' + folder_name + " "
+	command = 'ogr2ogr -append -f "PostgreSQL" PG:"dbname=pgis host=postgresdb.cpk4mk8rt0nu.us-west-2.rds.amazonaws.com user=aterzishi password=abc123howilikemyabc" --config PG_USE_COPY YES -nln ' + folder_name + " "
 	chunk_path = './mbtiles/' + folder_name + '/' + chunk
 	os.system(command + ' ' + chunk_path)
 	print "inserted chunk " + str(chunk_num) + " to db"
@@ -216,7 +216,7 @@ except:
 	print json_path + " already exists"
 
 try:	# connect to databse
-	con = psycopg2.connect("dbname='pgis' user='aterzishi' host='insarvmcsc431.cloudapp.net' password='abc123'")
+	con = psycopg2.connect("dbname='pgis' user='aterzishi' host='postgresdb.cpk4mk8rt0nu.us-west-2.rds.amazonaws.com' password='abc123howilikemyabc'")
 	cur = con.cursor()
 	# create area table if not exist - limit for number of dates is 200
 	cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, latitude double precision, longitude double precision, country varchar, numchunks integer, stringdates varchar[200], decimaldates double precision[200] );")
