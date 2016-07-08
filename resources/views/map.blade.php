@@ -42,22 +42,34 @@
 </head>
 <body>
   <div id="map-container">
-    <div id="map-type-menu">
-      <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
-      <label for='streets'>streets</label>
-      <input id='satellite' type='radio' name='rtoggle' value='satellite'>
-      <label for='satellite'>satellite</label>
-    </div>
-    <div id="polygon-button-div">
-      <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Draw polygon" id="polygon-button">P</button>
-    </div>
-    <div id="reset-button">
-      <button class="btn btn-primary-outline">Reset</button>
+    <div id="top-map-buttons">
+      <div id="map-type-menu">
+        <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
+        <label for='streets'>streets</label>
+        <input id='satellite' type='radio' name='rtoggle' value='satellite'>
+        <label for='satellite'>satellite</label>
+      </div>
+      <div id="overlay-options-wrapper">
+        <div id="overlay-options">
+          <div class="overlay_toggle">
+            <label>Turn on/off data overlay</label>
+            <div id="overlay-toggle-button" class="toggle-button">
+              <button></button>
+            </div>
+          </div>
+          <div id="overlay-slider"></div>
+        </div>
+      </div>
+      <div id="reset-button">
+        <button class="btn btn-primary-outline">Reset</button>
+      </div>
     </div>
     <div class="slideout-menu-toggle" id="slideout-button">
       <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Show Menu" id="polygon-button">M</button>
     </div>
-    <div id="point-details"></div>
+    <div id="polygon-button-div">
+      <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Draw polygon" id="polygon-button">P</button>
+    </div>    
   </div>
   <div class="slideout-menu">
    <div class="slideout-menu-toggle" id="close-sidebar-button-div">
@@ -68,14 +80,7 @@
       <!--div class="side-item move-button"></div-->
       <div class="side-item title">
         <h3>University of Miami’s inSAR Time Series Viewer</h3>
-      </div>
-      <div class="overlay_toggle">
-        <label>Turn on/off data overlay</label>
-        <div id="overlay-toggle-button" class="toggle-button">
-          <button></button>
-        </div>
-      </div>
-      <div id="overlay-slider"></div>
+      </div>     
       <!--<div class="side-item description">
         <p>Description of inSAR map web application.</p>
       </div>-->
