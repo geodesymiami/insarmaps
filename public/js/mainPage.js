@@ -100,6 +100,7 @@ var overlayToggleButton = new ToggleButton("#overlay-toggle-button");
 overlayToggleButton.onclick(function() {
     // on? add layers, otherwise remove them
     if (overlayToggleButton.toggleState == ToggleStates.ON) {
+        $("#overlay-slider").slider("value", 100);
         myMap.map.addSource("vector_layer_", {
             type: 'vector',
             tiles: myMap.tileJSON['tiles'],
@@ -154,10 +155,15 @@ overlayToggleButton.onclick(function() {
 
             myMap.map.addLayer(layer);
         }
+
         console.log("added that");
     } else {
-        myMap.removePoints();
-        myMap.removeTouchLocationMarker();
+        if (myMap.pointsLoaded()) {
+            console.log("loaded");
+            $("#overlay-slider").slider("value", 0);
+            myMap.removePoints();
+            myMap.removeTouchLocationMarker();
+        }
     }
 });
 
@@ -310,24 +316,24 @@ secondGraphToggleButton.onclick(function() {
 $(window).load(function() {
     var NUM_CHUNKS = 300;
 
-    $('.slideout-menu-toggle').on('click', function(event){
+    $('.slideout-menu-toggle').on('click', function(event) {
         event.preventDefault();
         // create menu variables
         var slideoutMenu = $('.slideout-menu');
         var slideoutMenuWidth = $('.slideout-menu').width();
-        
+
         // toggle open class
         slideoutMenu.toggleClass("open");
-        
+
         // slide menu
         if (slideoutMenu.hasClass("open")) {
             slideoutMenu.animate({
                 left: "0px"
-            }); 
+            });
         } else {
             slideoutMenu.animate({
                 left: -slideoutMenuWidth
-            }, 250);    
+            }, 250);
         }
         console.log("did ti");
     });
