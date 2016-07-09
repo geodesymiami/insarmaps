@@ -709,6 +709,9 @@ function Map(loadJSONFunc) {
                 // remove click listener for selecting an area, and add new one for clicking on a point
                 that.map.off("click");
                 that.map.on('click', that.clickOnAnAreaMaker);
+
+                // remove popup which shows area attributes
+                $('.wrap#area-attributes-div').toggleClass('active');
             }
         });
     };
