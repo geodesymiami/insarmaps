@@ -25,6 +25,8 @@ function getGEOJSON(area) {
         myMap.tileJSON.vector_layers.push(layer);
     }
 
+    $('.wrap#area-attributes-div').toggleClass('active');
+
     myMap.initLayer(myMap.tileJSON, "streets");
     myMap.map.style.on("load", function() {
         window.setTimeout(function() {
@@ -34,6 +36,19 @@ function getGEOJSON(area) {
             });
         }, 1000);
     });
+}
+
+function goToTab(event, id) {
+    // first clear any visible tab
+    $(".tabcontent").each(function(index, obj) {
+        obj.style.display = "none";
+    });
+    $(".tablinks").each(function(index, obj) {
+        obj.className = obj.className.replace(" active", "");
+    });
+
+    $("#" + id).css("display", "block");
+    event.currentTarget.className += " active"
 }
 
 function ToggleButton(id) {
@@ -430,7 +445,7 @@ $(window).load(function() {
             console.log("area 1");
 
             // add our info in a table, first remove any old info
-            $(".wrap").find(".content").find("#myTable").find("#tableBody").empty();
+            $(".wrap#select-area-wrap").find(".content").find("#myTable").find("#tableBody").empty();
             for (var i = 0; i < countries.length; i++) {
                 var country = countries[i];
 
@@ -449,7 +464,7 @@ $(window).load(function() {
                         if (e.target.cellIndex == 0) {
                             clickedArea = country;
                             console.log(country);
-                            $('.wrap').toggleClass('active');
+                            $('.wrap#select-area-wrap').toggleClass('active');
                             getGEOJSON(country);
                         }
                     };
@@ -466,18 +481,18 @@ $(window).load(function() {
     });
 
     $("#close-button").on("click", function() {
-        $('.wrap').toggleClass('active');
+        $('.wrap#select-area-wrap').toggleClass('active');
     });
 
     $('#popupButton').on('click', function() {
-        $('.wrap').toggleClass('active');
+        $('.wrap#select-area-wrap').toggleClass('active');
 
         // get json response and put it in a table
         loadJSON("", "areas", function(response) {
             json = JSON.parse(response);
 
             // add our info in a table, first remove any old info
-            $(".wrap").find(".content").find("#myTable").find("#tableBody").empty();
+            $(".wrap#select-area-wrap").find(".content").find("#myTable").find("#tableBody").empty();
             for (var i = 0; i < json.areas.length; i++) {
                 var area = json.areas[i];
 
@@ -495,7 +510,7 @@ $(window).load(function() {
                         // don't load area if reference link is clicked
                         if (e.target.cellIndex == 0) {
                             clickedArea = area.name;
-                            $('.wrap').toggleClass('active');
+                            $('.wrap#select-area-wrap').toggleClass('active');
                             getGEOJSON(area);
                         }
                     };
@@ -509,6 +524,6 @@ $(window).load(function() {
     // cancel the popup
     $('#cancelPopupButton').on('click', function() {
         console.log("#cancel");
-        $('.wrap').toggleClass('active');
+        $('.wrap#select-area-wrap').toggleClass('active');
     });
 });

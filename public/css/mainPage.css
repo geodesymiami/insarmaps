@@ -95,13 +95,8 @@ label {
 }
 
 .wrap {
-    position: fixed;
-    overflow: hidden;
-    top: 10%;
-    right: 10%;
-    bottom: 85px;
-    left: 10%;
-    padding: 20px 50px;
+    overflow: hidden; 
+    /*padding: 20px 50px;*/
     display: block;
     border-radius: 4px;
     transform: translateY(20px);
@@ -117,6 +112,22 @@ label {
     width: 100%;
 }
 
+#select-area-wrap {
+    position: fixed;    
+    top: 10%;
+    right: 10%;
+    bottom: 85px;
+    left: 10%;
+}
+
+#area-attributes-div {
+    position: fixed;
+    bottom: 4%;
+    right: 0%;
+    height: 400px;
+    width: 330px;
+}
+
 #close-button-parent {
     float: right;
     position: relative;
@@ -124,8 +135,8 @@ label {
 
 #close-button-child {
     position: absolute;
-    left: 70px;
-    top: -35px;
+    left: 25px;
+    top: -15px;
 }
 
 #close-button,
@@ -486,4 +497,47 @@ label {
 
 #areas-under-mouse-table {
     margin: 0 !important;
+}
+
+/*area information popup with tabs*/
+ul.tab {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+ul.tab li {
+    float: left;
+    width: 33%;
+}
+
+ul.tab li a {
+    display: inline-block;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    transition: 0.3s;
+    font-size: 13px;
+}
+
+ul.tab li a:hover {background-color: #ddd;}
+
+ul.tab li a:focus, .active {background-color: #ccc;}
+
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+    font-size: 10px !important;
+}
+
+.tabcontent h3, .tabcontent p {
+    font-size: 14px;
+    font-family: sans-serif !important;
+    color: black !important;
 }

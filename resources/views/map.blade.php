@@ -69,7 +69,31 @@
     </div>
     <div id="polygon-button-div">
       <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Draw polygon" id="polygon-button">P</button>
-    </div>    
+    </div>
+    <div class="wrap" id="area-attributes-div">
+      <div class="content">
+        <ul class="tab">
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr1')">Attr1</a></li>
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr2')">Attr2</a></li>
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr3')">Attr3</a></li>
+        </ul>
+
+        <div id="Attr1" class="tabcontent">
+          <h3>Attri1</h3>
+          <p>This is attr1.</p>
+        </div>
+
+        <div id="Attr2" class="tabcontent">
+          <h3>Attr2</h3>
+          <p>This is attr2.</p> 
+        </div>
+
+        <div id="Attr3" class="tabcontent">
+          <h3>Attr2</h3>
+          <p>This is attr3.</p>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="slideout-menu">
    <div class="slideout-menu-toggle" id="close-sidebar-button-div">
@@ -157,7 +181,7 @@
       </div>
     </div> <!-- End side-item-box -->
   </div> <!-- End side-bar -->
-  <div class='wrap'>
+  <div class='wrap' id="select-area-wrap">
     <div class='content'>
      <div class="modal-header" id="close-button-parent">
       <div id="close-button-child">
