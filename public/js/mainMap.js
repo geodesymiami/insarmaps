@@ -495,7 +495,7 @@ function Map(loadJSONFunc) {
             var json = JSON.parse(response);
 
             var areaMarker = new mapboxgl.GeoJSONSource({
-                cluster: true,
+                cluster: false,
                 clusterRadius: 10
             });
             var features = [];
@@ -642,9 +642,44 @@ function Map(loadJSONFunc) {
             if (markerSymbol != null && typeof markerSymbol != "undefined" && markerSymbol != "cross") {
                 // Populate the areaPopup and set its coordinates
                 // based on the feature found.
+
+                var html = "<table class='table' id='areas-under-mouse-table'>";
+                // make the html table
+                for (var i = 0; i < features.length; i++) {
+                    var areaName = features[i].properties.name;
+                    html += "<tr id='" + areaName + "'><td value='" + areaName + "'>" + areaName + "</td></tr>";
+                }
+                html += "</table>";
                 that.areaPopup.setLngLat(features[0].geometry.coordinates)
-                    .setHTML(features[0].properties.name)
-                    .addTo(that.map);
+                    .setHTML(html).addTo(that.map);
+                // make table respond to clicks
+                for (var i = 0; i < features.length; i++) {
+                    var areaName = features[i].properties.name;
+                    var lat = features[i].geometry.coordinates[0];
+                    var long = features[i].geometry.coordinates[1];
+                    var num_chunks = features[i].properties.num_chunks;
+
+                    var markerArea = {
+                        "name": areaName,
+                        "coords": {
+                            "latitude": lat,
+                            "longitude": long,
+                            "num_chunks": num_chunks
+                        }
+                    };
+                    // make cursor change when mouse hovers over row
+                    $("#areas-under-mouse-table #" + areaName).css("cursor", "pointer");
+                    // ugly click function declaration to JS not using block scope
+                    $("#areas-under-mouse-table #" + areaName).click((function(area) {
+                        return function(e) {
+                            // don't load area if reference link is clicked
+                            if (e.target.cellIndex == 0) {
+                                clickedArea = area.name;
+                                getGEOJSON(area);
+                            }
+                        };
+                    })(markerArea));
+                }
             }
         });
 

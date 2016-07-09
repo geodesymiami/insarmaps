@@ -483,3 +483,7 @@ label {
     background-color: white;
     opacity: 0.6;
 }
+
+#areas-under-mouse-table {
+    margin: 0 !important;
+}
