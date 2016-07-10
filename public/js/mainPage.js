@@ -314,7 +314,12 @@ dotToggleButton.onclick(function() {
 var secondGraphToggleButton = new ToggleButton("#second-graph-toggle-button");
 secondGraphToggleButton.onclick(function() {
     if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-        $("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
+        //$("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
+        $("#chartContainer2").css("display", "block");
+        $("#chartContainer").width("50%");
+        var newWidth = $("#chartContainer").width();
+        var newHeight = $("#chartContainer").height();
+        $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
     } else {
         var layerID = "touchLocation2";
         if (myMap.map.getLayer(layerID)) {
@@ -323,7 +328,12 @@ secondGraphToggleButton.onclick(function() {
             myMap.touchLocationMarker2 = new mapboxgl.GeoJSONSource();
         }
 
-        $("#chartContainer2").remove();
+        //$("#chartContainer2").remove();
+        $("#chartContainer2").css("display", "none");
+        $("#chartContainer").width("100%");
+        var newWidth = $("#chartContainer").width();
+        var newHeight = $("#chartContainer").height();
+        $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
     }
 });
 
@@ -351,6 +361,10 @@ $(window).load(function() {
             }, 250);
         }
         console.log("did ti");
+    });
+
+    $("#graph-div-button").on("click", function(event) {
+        $(".wrap#charts").toggleClass("active");
     });
 
     $("#reset-button").on("click", function() {

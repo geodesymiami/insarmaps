@@ -75,8 +75,7 @@ label {
 }
 
 .side-item.graph {
-    height: 500px;
-    background-color: black;
+    height: 500px;    
     margin-bottom: 20px;
 }
 
@@ -150,6 +149,19 @@ label {
     position: absolute;
     top: -5px;
     right: 15px;
+}
+
+.close-button-div {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    z-index: 3;
+}
+
+#graph-div-button {
+    border: none;
+    color: red;
+    font-size: 30px;
 }
 
 .wrap:before {
@@ -483,7 +495,24 @@ label {
 }
 
 #charts {
+    position: fixed;
+    top: 10%;
+    left: 10%;
+    right: 10%;
     margin-top: 70px;
+}
+
+#chartContainer {
+    float: left;
+    width: 100%;
+    height: 100%;
+}
+
+#chartContainer2 {
+    float: left;
+    display: none;
+    width: 50%;
+    height: 100%;
 }
 
 #point-details {

@@ -65,7 +65,7 @@
       </div>
     </div>
     <div class="slideout-menu-toggle" id="slideout-button">
-      <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Show Menu" id="polygon-button">M</button>
+      <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="bottom" title="Show Menu">M</button>
     </div>
     <div id="polygon-button-div">
       <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Draw polygon" id="polygon-button">P</button>
@@ -93,6 +93,16 @@
           <p>This is attr3.</p>
         </div>
       </div>
+    </div>
+  </div>
+  <div class="wrap" id="charts">
+    <div class="close-button-div">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="graph-div-button"><span aria-hidden="true">&times;</span></button>
+    </div>
+    <div class="content">
+      <div id="chartContainer" class="side-item">
+      </div>
+      <div id="chartContainer2" class="side-item"></div>    
     </div>
   </div>
   <div class="slideout-menu">
@@ -148,12 +158,10 @@
         </div>
       </div>
 
-      <div id="charts">
+      <!-- <div id="charts">
         <div id="chartContainer" class="side-item graph">
-        </div>
-        <!-- <div id="chartContainer2" class="side-item graph">
-      </div> -->
-    </div>
+        </div>        
+    </div> -->
       <!-- <div class="side-item upload-button">
         {!! Form::open(array('action' => 'MyController@convertData','method'=>'POST', 'files'=>true)) !!}
         {!! Form::label('data', 'Upload File:') !!}
