@@ -65,7 +65,7 @@
       </div>
     </div>
     <div class="slideout-menu-toggle" id="slideout-button">
-      <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Show Menu" id="polygon-button">M</button>
+      <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="bottom" title="Show Menu" id="polygon-button">M</button>
     </div>
     <div id="polygon-button-div">
       <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Draw polygon" id="polygon-button">P</button>
