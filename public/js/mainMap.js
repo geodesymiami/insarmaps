@@ -202,6 +202,10 @@ function Map(loadJSONFunc) {
 
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "point", function(response) {
+            if (!$(".wrap#charts").hasClass("active")) {
+                $(".wrap#charts").toggleClass("active");
+            }
+
             var json = JSON.parse(response);
 
             var date_string_array = json.string_dates;
