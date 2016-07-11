@@ -316,7 +316,7 @@ secondGraphToggleButton.onclick(function() {
     if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
         //$("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
         $("#chartContainer2").css("display", "block");
-        $("#chartContainer").width("50%");
+        $("#chartContainer").height("50%");
         var newWidth = $("#chartContainer").width();
         var newHeight = $("#chartContainer").height();
         $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
@@ -330,7 +330,7 @@ secondGraphToggleButton.onclick(function() {
 
         //$("#chartContainer2").remove();
         $("#chartContainer2").css("display", "none");
-        $("#chartContainer").width("100%");
+        $("#chartContainer").height("100%");
         var newWidth = $("#chartContainer").width();
         var newHeight = $("#chartContainer").height();
         $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
