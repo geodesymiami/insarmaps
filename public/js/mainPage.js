@@ -372,11 +372,11 @@ $(window).load(function() {
         animateDuration: "fast",
         stop: function(event, ui) {
             var newWidth = ui.size.width;
-            var newHeight = ui.size.height;
+            var newHeight = ui.size.height - $("#map-options").height() - 100;
 
             // is the other graph going to be visible? reduce height of graphs by half
             if ($("#chartContainer2").css("display") == "block") {
-                newHeight /= 2;
+                newHeight /= 2; 
             }
 
             $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);

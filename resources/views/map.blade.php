@@ -102,7 +102,21 @@
     <div class="content">
       <div id="chartContainer" class="side-item">
       </div>
-      <div id="chartContainer2" class="side-item"></div>    
+      <div id="chartContainer2" class="side-item"></div>
+      <div id="map-options">
+        <div class="overlay_toggle">
+          <label>Second Graph</label>
+          <div class="toggle-button" id="second-graph-toggle-button">
+            <button></button>          
+          </div>
+        </div>
+        <div class="overlay_toggle">
+          <label>Connect dots</label>
+          <div class="toggle-button" id="dot-toggle-button">
+            <button></button>          
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="slideout-menu">
@@ -151,12 +165,6 @@
       </div> <!-- End menu -->
 
       <h2>Line-of-sight displacement time-series</h2>
-      <div class="overlay_toggle">
-        <label>Second Graph</label>
-        <div class="toggle-button" id="second-graph-toggle-button">
-          <button></button>          
-        </div>
-      </div>
 
       <!-- <div id="charts">
         <div id="chartContainer" class="side-item graph">
@@ -170,14 +178,7 @@
         {!! Form::close() !!}
 
       </div> -->
-      <!--insert pop up button for selecting areas to view here-->
-      
-      <div class="overlay_toggle">
-        <label>Connect dots</label>
-        <div class="toggle-button" id="dot-toggle-button">
-          <button></button>          
-        </div>
-      </div>
+      <!--insert pop up button for selecting areas to view here-->  
       <div>
         <button class="btn btn-primary-outline" id="popupButton">Select Dataset</button>
       </div>

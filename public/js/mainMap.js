@@ -366,7 +366,6 @@ function Map(loadJSONFunc) {
                 var width = $("#chartContainer").width();
                 var height = $("#chartContainer").height();
                 $("#" + chartContainer).highcharts().setSize(width, height, doAnimation = true);
-
                 // request elevation of point from google api
                 var elevationGetter = new google.maps.ElevationService;
                 elevationGetter.getElevationForLocations({
