@@ -367,6 +367,16 @@ $(window).load(function() {
         $(".wrap#charts").toggleClass("active");
     });
 
+    // chart div resizable
+    $(".wrap#charts").resizable({
+        stop: function(event, ui) {
+            var newWidth = ui.size.width;
+            var newHeight = ui.size.height;
+
+            $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
+        }
+    });
+
     $("#reset-button").on("click", function() {
         if (myMap.pointsLoaded()) {
             myMap.removePoints();
