@@ -70,6 +70,7 @@
     <div id="polygon-button-div">
       <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Draw polygon" id="polygon-button">P</button>
     </div>
+    <div id="point-details"></div>
     <div class="wrap" id="area-attributes-div">
       <div class="content">
         <ul class="tab">

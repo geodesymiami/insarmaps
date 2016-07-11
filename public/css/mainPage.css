@@ -220,16 +220,6 @@ label {
     font-family: 'Carter One', cursive;
 }
 
-
-/*.accordion,
-        .accordion dt,
-        .accordion dd,
-        .accordion figure{
-
-          margin:0;
-          padding:0;
-          }*/
-
 .accordion {
     background: DeepSkyBlue;
     border-bottom: 1px solid DodgerBlue;
@@ -369,7 +359,6 @@ label {
 .overlay_toggle {
     float: left;
     display: inline-block;
-/*    height: 40px;*/
     width: 50%;
 }
 
@@ -444,9 +433,10 @@ label {
 }
 
 #overlay-slider {
+    float: left;
     height: 10px;
     width: 95%;
-    top: 0px;
+    bottom: 5px;
     background: coral;
 }
 
@@ -483,7 +473,7 @@ label {
 #charts {
     position: fixed;
     left: 0%;
-    bottom: 1%;
+    bottom: 5%;
     margin-top: 70px;
     height: 70%;
     width: 40%;
