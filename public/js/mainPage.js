@@ -316,9 +316,10 @@ secondGraphToggleButton.onclick(function() {
     if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
         //$("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
         $("#chartContainer2").css("display", "block");
-        $("#chartContainer").width("50%");
+        $("#chartContainer").height("50%");
         var newWidth = $("#chartContainer").width();
         var newHeight = $("#chartContainer").height();
+        $("#chartContainer").height(newHeight);
         $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
     } else {
         var layerID = "touchLocation2";
@@ -330,7 +331,7 @@ secondGraphToggleButton.onclick(function() {
 
         //$("#chartContainer2").remove();
         $("#chartContainer2").css("display", "none");
-        $("#chartContainer").width("100%");
+        $("#chartContainer").height("100%");
         var newWidth = $("#chartContainer").width();
         var newHeight = $("#chartContainer").height();
         $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
@@ -360,11 +361,49 @@ $(window).load(function() {
                 left: -slideoutMenuWidth
             }, 250);
         }
-        console.log("did ti");
     });
 
     $("#graph-div-button").on("click", function(event) {
         $(".wrap#charts").toggleClass("active");
+    });
+
+    // chart div resizable
+    $(".wrap#charts").resizable({
+        animateDuration: "fast",
+        animateEasing: "linear",
+        start: function(event, ui) {
+            var chart = $("#chartContainer").highcharts();
+            var chart2 = $("#chartContainer2").highcharts();
+            if (chart !== undefined) {
+                chart.destroy();
+            }
+            if (chart2 !== undefined) {
+                chart2.destroy();
+            }
+        },
+        stop: function(event, ui) {
+            $("#chartContainer").highcharts(myMap.highChartsOpts["chartContainer"]);
+            if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
+                $("#chartContainer2").highcharts(myMap.highChartsOpts["chartContainer2"]);
+            }
+        }
+    }).draggable({
+        start: function(event, ui) {
+            var chart = $("#chartContainer").highcharts();
+            var chart2 = $("#chartContainer2").highcharts();
+            if (chart !== undefined) {
+                chart.destroy();
+            }
+            if (chart2 !== undefined) {
+                chart2.destroy();
+            }
+        },
+        stop: function(event, ui) {
+            $("#chartContainer").highcharts(myMap.highChartsOpts["chartContainer"]);
+            if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
+                $("#chartContainer2").highcharts(myMap.highChartsOpts["chartContainer2"]);
+            }
+        }
     });
 
     $("#reset-button").on("click", function() {

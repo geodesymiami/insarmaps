@@ -101,7 +101,10 @@ function Map(loadJSONFunc) {
     this.clickLocationMarker2 = new mapboxgl.GeoJSONSource();
     this.selector = null;
     this.zoomOutZoom = 7.0;
-    this.showLocationMarkerZoom = 9.5;
+
+    // move this to separate graph object later
+    // it's a dictionary, with key chart container name, value chart options object
+    this.highChartsOpts = [];
 
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,
@@ -155,47 +158,45 @@ function Map(loadJSONFunc) {
             "pointNumber": pointNumber
         };
 
-        // show cross on clicked point, only if sufficiently zoomed in
-        if (that.map.getZoom() >= that.showLocationMarkerZoom) {
-            if (!that.map.getLayer(layerID)) {
-                clickMarker.setData({
-                    "type": "FeatureCollection",
-                    "features": [{
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [long, lat]
-                        },
-                        "properties": {
-                            "marker-symbol": "cross"
-                        }
-                    }]
-                });
-                that.map.addSource(layerID, clickMarker);
-
-                that.map.addLayer({
-                    "id": layerID,
-                    "type": "symbol",
-                    "source": layerID,
-                    "layout": {
-                        "icon-image": "{marker-symbol}-15",
+        // show cross on clicked point
+        if (!that.map.getLayer(layerID)) {
+            clickMarker.setData({
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [long, lat]
+                    },
+                    "properties": {
+                        "marker-symbol": "cross"
                     }
-                });
-            } else {
-                clickMarker.setData({
-                    "type": "FeatureCollection",
-                    "features": [{
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [long, lat]
-                        },
-                        "properties": {
-                            "marker-symbol": "cross"
-                        }
-                    }]
-                });
-            }
+                }]
+            });
+            that.map.addSource(layerID, clickMarker);
+
+            that.map.addLayer({
+                "id": layerID,
+                "type": "symbol",
+                "source": layerID,
+                "layout": {
+                    "icon-image": "{marker-symbol}-15",
+                }
+            });
+        } else {
+            clickMarker.setData({
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [long, lat]
+                    },
+                    "properties": {
+                        "marker-symbol": "cross"
+                    }
+                }]
+            });
         }
 
         $("#point-details").html(lat + ", " + long);
@@ -228,8 +229,7 @@ function Map(loadJSONFunc) {
             $(function() {
                 firstToggle = true;
                 dotToggleButton.set("off");
-
-                $('#' + chartContainer).highcharts({
+                var chartOpts = {
                     title: {
                         text: 'Timeseries Displacement Chart'
                     },
@@ -359,8 +359,16 @@ function Map(loadJSONFunc) {
                     chart: {
                         marginRight: 50
                     }
-                });
+                };
 
+                $('#' + chartContainer).highcharts(chartOpts);
+                that.highChartsOpts[chartContainer] = chartOpts;
+
+                // this is hackish. due to bug which appears when we resize window before moving graph. jquery resizable
+                // size does weird stuff to the graph, so we have to set every new graph to the dimensions of the original graph
+                var width = $("#chartContainer").width();
+                var height = $("#chartContainer").height();
+                $("#" + chartContainer).highcharts().setSize(width, height, doAnimation = true);
                 // request elevation of point from google api
                 var elevationGetter = new google.maps.ElevationService;
                 elevationGetter.getElevationForLocations({
@@ -699,9 +707,6 @@ function Map(loadJSONFunc) {
                 that.selector.recolorMap();
             }
 
-            if (that.map.getZoom() <= that.showLocationMarkerZoom) {
-                that.removeTouchLocationMarker();
-            }
             // reshow area markers once we zoom out enough
             if (that.pointsLoaded() && that.map.getZoom() <= that.zoomOutZoom) {
                 myMap.removePoints();
