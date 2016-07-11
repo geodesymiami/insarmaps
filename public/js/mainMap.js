@@ -361,6 +361,12 @@ function Map(loadJSONFunc) {
                     }
                 });
 
+                // this is hackish. due to bug which appears when we resize window before moving graph. jquery resizable
+                // size does weird stuff to the graph, so we have to set every new graph to the dimensions of the original graph
+                var width = $("#chartContainer").width();
+                var height = $("#chartContainer").height();
+                $("#" + chartContainer).highcharts().setSize(width, height, doAnimation = true);
+
                 // request elevation of point from google api
                 var elevationGetter = new google.maps.ElevationService;
                 elevationGetter.getElevationForLocations({

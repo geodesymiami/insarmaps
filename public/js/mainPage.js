@@ -316,9 +316,9 @@ secondGraphToggleButton.onclick(function() {
     if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
         //$("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
         $("#chartContainer2").css("display", "block");
-        $("#chartContainer").height("50%");
         var newWidth = $("#chartContainer").width();
-        var newHeight = $("#chartContainer").height();
+        var newHeight = $("#chartContainer").height() / 2;
+         $("#chartContainer").height(newHeight);
         $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
     } else {
         var layerID = "touchLocation2";
@@ -369,13 +369,22 @@ $(window).load(function() {
 
     // chart div resizable
     $(".wrap#charts").resizable({
+        animateDuration: "fast",
         stop: function(event, ui) {
             var newWidth = ui.size.width;
             var newHeight = ui.size.height;
 
+            // is the other graph going to be visible? reduce height of graphs by half
+            if ($("#chartContainer2").css("display") == "block") {
+                newHeight /= 2;
+            }
+
             $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
+            if ($("#chartContainer2").highcharts() !== undefined) {
+                $("#chartContainer2").highcharts().setSize(newWidth, newHeight, doAnimation = true);
+            }
         }
-    });
+    }).draggable();
 
     $("#reset-button").on("click", function() {
         if (myMap.pointsLoaded()) {
