@@ -127,28 +127,11 @@ label {
     width: 330px;
 }
 
-#close-button-parent {
-    float: right;
-    position: relative;
-}
-
-#close-button-child {
-    position: absolute;
-    left: 25px;
-    top: -15px;
-}
-
 #close-button,
 #close-sidebar-button {
     border: none;
     color: red;
     font-size: 30px;
-}
-
-#close-sidebar-button-div {
-    position: absolute;
-    top: -5px;
-    right: 15px;
 }
 
 .close-button-div {
