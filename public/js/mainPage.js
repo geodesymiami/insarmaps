@@ -316,9 +316,10 @@ secondGraphToggleButton.onclick(function() {
     if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
         //$("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
         $("#chartContainer2").css("display", "block");
+        $("#chartContainer").height("50%");
         var newWidth = $("#chartContainer").width();
-        var newHeight = $("#chartContainer").height() / 2;
-         $("#chartContainer").height(newHeight);
+        var newHeight = $("#chartContainer").height();
+        $("#chartContainer").height(newHeight);
         $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
     } else {
         var layerID = "touchLocation2";
@@ -360,7 +361,6 @@ $(window).load(function() {
                 left: -slideoutMenuWidth
             }, 250);
         }
-        console.log("did ti");
     });
 
     $("#graph-div-button").on("click", function(event) {
@@ -370,21 +370,41 @@ $(window).load(function() {
     // chart div resizable
     $(".wrap#charts").resizable({
         animateDuration: "fast",
-        stop: function(event, ui) {
-            var newWidth = ui.size.width;
-            var newHeight = ui.size.height - $("#map-options").height() - 100;
-
-            // is the other graph going to be visible? reduce height of graphs by half
-            if ($("#chartContainer2").css("display") == "block") {
-                newHeight /= 2; 
+        animateEasing: "linear",
+        start: function(event, ui) {
+            var chart = $("#chartContainer").highcharts();
+            var chart2 = $("#chartContainer2").highcharts();
+            if (chart !== undefined) {
+                chart.destroy();
             }
-
-            $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
-            if ($("#chartContainer2").highcharts() !== undefined) {
-                $("#chartContainer2").highcharts().setSize(newWidth, newHeight, doAnimation = true);
+            if (chart2 !== undefined) {
+                chart2.destroy();
+            }
+        },
+        stop: function(event, ui) {
+            $("#chartContainer").highcharts(myMap.highChartsOpts["chartContainer"]);
+            if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
+                $("#chartContainer2").highcharts(myMap.highChartsOpts["chartContainer2"]);
             }
         }
-    }).draggable();
+    }).draggable({
+        start: function(event, ui) {
+            var chart = $("#chartContainer").highcharts();
+            var chart2 = $("#chartContainer2").highcharts();
+            if (chart !== undefined) {
+                chart.destroy();
+            }
+            if (chart2 !== undefined) {
+                chart2.destroy();
+            }
+        },
+        stop: function(event, ui) {
+            $("#chartContainer").highcharts(myMap.highChartsOpts["chartContainer"]);
+            if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
+                $("#chartContainer2").highcharts(myMap.highChartsOpts["chartContainer2"]);
+            }
+        }
+    });
 
     $("#reset-button").on("click", function() {
         if (myMap.pointsLoaded()) {

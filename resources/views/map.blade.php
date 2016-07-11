@@ -100,9 +100,11 @@
       <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="graph-div-button"><span aria-hidden="true">&times;</span></button>
     </div>
     <div class="content">
-      <div id="chartContainer" class="side-item">
+      <div id="chart-containers">
+        <div id="chartContainer" class="side-item">
+        </div>
+        <div id="chartContainer2" class="side-item"></div>
       </div>
-      <div id="chartContainer2" class="side-item"></div>
       <div id="map-options">
         <div class="overlay_toggle">
           <label>Second Graph</label>

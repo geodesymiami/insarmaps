@@ -103,6 +103,10 @@ function Map(loadJSONFunc) {
     this.zoomOutZoom = 7.0;
     this.showLocationMarkerZoom = 9.5;
 
+    // move this to separate graph object later
+    // it's a dictionary, with key chart container name, value chart options object
+    this.highChartsOpts = [];
+
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,
         closeOnClick: false
@@ -228,8 +232,7 @@ function Map(loadJSONFunc) {
             $(function() {
                 firstToggle = true;
                 dotToggleButton.set("off");
-
-                $('#' + chartContainer).highcharts({
+                var chartOpts = {
                     title: {
                         text: 'Timeseries Displacement Chart'
                     },
@@ -359,7 +362,10 @@ function Map(loadJSONFunc) {
                     chart: {
                         marginRight: 50
                     }
-                });
+                };
+
+                $('#' + chartContainer).highcharts(chartOpts);
+                that.highChartsOpts[chartContainer] = chartOpts;
 
                 // this is hackish. due to bug which appears when we resize window before moving graph. jquery resizable
                 // size does weird stuff to the graph, so we have to set every new graph to the dimensions of the original graph
