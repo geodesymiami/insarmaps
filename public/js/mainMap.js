@@ -84,24 +84,6 @@ function getDisplacementChartData(displacements, dates) {
     return data;
 }
 
-function setNavigatorHandlers() {
-    $(".highcharts-navigator").mouseenter(function() {
-        $(".wrap#charts").draggable("disable");        
-    }).mouseleave(function() {
-        $(".wrap#charts").draggable("enable");
-    });;
-    $(".highcharts-navigator-handle-left").mouseenter(function() {
-        $(".wrap#charts").draggable("disable");
-    }).mouseleave(function() {
-        $(".wrap#charts").draggable("enable");
-    });;
-    $(".highcharts-navigator-handle-right").mouseenter(function() {
-        $(".wrap#charts").draggable("disable");
-    }).mouseleave(function() {
-        $(".wrap#charts").draggable("enable");
-    });;
-}
-
 function Map(loadJSONFunc) {
     var that = this;
     // my mapbox api key
@@ -119,11 +101,7 @@ function Map(loadJSONFunc) {
     this.clickLocationMarker2 = new mapboxgl.GeoJSONSource();
     this.selector = null;
     this.zoomOutZoom = 7.0;
-
-    // move this to separate graph object later
-    // it's a dictionary, with key chart container name, value chart options object
-    this.highChartsOpts = [];
-    this.selectedGraph = "Top Graph";
+    this.graphsController = new GraphsController();
 
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,
@@ -181,13 +159,13 @@ function Map(loadJSONFunc) {
         var clickMarker = that.clickLocationMarker;
         var markerSymbol = "cross";
 
-        if (that.selectedGraph == "Bottom Graph") {
+        if (that.graphsController.selectedGraph == "Bottom Graph") {
             chartContainer = "chartContainer2";
             clickMarker = that.clickLocationMarker2;
             markerSymbol += "Red";
         }
 
-        var layerID = that.selectedGraph;
+        var layerID = that.graphsController.selectedGraph;
 
         // show cross on clicked point
         if (!that.map.getLayer(layerID)) {
@@ -393,9 +371,9 @@ function Map(loadJSONFunc) {
             };
 
             $('#' + chartContainer).highcharts(chartOpts);
-            that.highChartsOpts[chartContainer] = chartOpts;
+            that.graphsController.highChartsOpts[chartContainer] = chartOpts;
 
-            setNavigatorHandlers();
+            that.graphsController.setNavigatorHandlers();
 
             // this is hackish. due to bug which appears when we resize window before moving graph. jquery resizable
             // size does weird stuff to the graph, so we have to set every new graph to the dimensions of the original graph
