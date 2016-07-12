@@ -322,6 +322,7 @@ secondGraphToggleButton.onclick(function() {
         $("#chartContainer").height(newHeight);
         $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
         $("#select-graph-focus-div").css("display", "block");
+        myMap.selectedGraph = $("#select-graph-focus-div").find(":selected").text();
     } else {
         var layerID = "touchLocation2";
         if (myMap.map.getLayer(layerID)) {
@@ -337,6 +338,7 @@ secondGraphToggleButton.onclick(function() {
         var newHeight = $("#chartContainer").height();
         $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
         $("#select-graph-focus-div").css("display", "none");
+        myMap.selectedGraph = "Top Graph";
     }
 });
 
@@ -388,6 +390,12 @@ $(window).load(function() {
             }
         },
         stop: function(event, ui) {
+            var chartContainersNewHeight = $(".wrap").find(".content").find("#chart-containers").height() / 2;
+            
+            // resize chart container div's as they don't resize with jquery resizable
+            $("#chartContainer").height(chartContainersNewHeight);
+            $("#chartContainer2").height(chartContainersNewHeight);
+
             $("#chartContainer").highcharts(myMap.highChartsOpts["chartContainer"]);
             if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
                 $("#chartContainer2").highcharts(myMap.highChartsOpts["chartContainer2"]);

@@ -105,7 +105,7 @@ function Map(loadJSONFunc) {
     // move this to separate graph object later
     // it's a dictionary, with key chart container name, value chart options object
     this.highChartsOpts = [];
-    this.selectedGraph = "Graph 1";
+    this.selectedGraph = "Top Graph";
 
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,
@@ -163,7 +163,7 @@ function Map(loadJSONFunc) {
         var clickMarker = that.clickLocationMarker;
         var markerSymbol = "cross";
 
-        if (that.selectedGraph == "Graph 2") {            
+        if (that.selectedGraph == "Bottom Graph") {            
             chartContainer = "chartContainer2";
             clickMarker = that.clickLocationMarker2;
             markerSymbol += "Red";
@@ -234,7 +234,6 @@ function Map(loadJSONFunc) {
             var result = calcLinearRegression(displacement_array, decimal_dates);
             var slope = result["equation"][0];
             var y = result["equation"][1];
-            console.log(slope);
 
             // returns array for linear regression on chart
             var regression_data = getRegressionChartData(slope, y, decimal_dates, chart_data);

@@ -122,8 +122,8 @@
         <div id="select-graph-focus-div">
           Select for Graph:
           <select>            
-            <option value="graph1">Graph 1</option>
-            <option value="graph2">Graph 2</option>
+            <option value="graph1">Top Graph</option>
+            <option value="graph2" selected="selected">Bottom Graph</option>
           </select>
         </div>
       </div>
