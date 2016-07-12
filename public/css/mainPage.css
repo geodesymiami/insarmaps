@@ -4,8 +4,7 @@ body {
     margin: 0;
     padding: 0;
     height: 100%;
-    width: 100%
-    color: white;
+    width: 100% color: white;
 }
 
 button {
@@ -76,8 +75,7 @@ label {
 }
 
 .side-item.graph {
-    height: 500px;
-    background-color: black;
+    height: 500px;    
     margin-bottom: 20px;
 }
 
@@ -96,13 +94,8 @@ label {
 }
 
 .wrap {
-    position: fixed;
-    overflow: hidden;
-    top: 10%;
-    right: 10%;
-    bottom: 85px;
-    left: 10%;
-    padding: 20px 50px;
+    overflow: hidden; 
+    /*padding: 20px 50px;*/
     display: block;
     border-radius: 4px;
     transform: translateY(20px);
@@ -116,29 +109,44 @@ label {
     margin: 0px !important;
     background-color: white !important;
     width: 100%;
+    height: 100%;
+    padding: 20px 20px 5px 20px;
 }
 
-#close-button-parent {
-    float: right;
-    position: relative;
+#select-area-wrap {
+    position: fixed;    
+    top: 10%;
+    right: 10%;
+    bottom: 85px;
+    left: 10%;
 }
 
-#close-button-child {
-    position: absolute;
-    left: 70px;
-    top: -35px;
+#area-attributes-div {
+    position: fixed;
+    bottom: 4%;
+    right: 0%;
+    height: 400px;
+    width: 330px;
 }
 
-#close-button, #close-sidebar-button {
+#close-button,
+#close-sidebar-button {
     border: none;
     color: red;
     font-size: 30px;
 }
 
-#close-sidebar-button-div {
+.close-button-div {
     position: absolute;
-    top: -5px;
-    right: 15px;
+    top: 5px;
+    right: 10px;
+    z-index: 3;
+}
+
+#graph-div-button {
+    border: none;
+    color: red;
+    font-size: 30px;
 }
 
 .wrap:before {
@@ -212,16 +220,6 @@ label {
     font-family: 'Carter One', cursive;
 }
 
-
-/*.accordion,
-        .accordion dt,
-        .accordion dd,
-        .accordion figure{
-
-          margin:0;
-          padding:0;
-          }*/
-
 .accordion {
     background: DeepSkyBlue;
     border-bottom: 1px solid DodgerBlue;
@@ -289,29 +287,52 @@ div.menu {
     margin-top: 2em;
 }
 
-#map-type-menu {
+#top-map-buttons {
     position: absolute;
+    top: 6px;
+    left: 268px;
+    z-index: 99;
+    width: 50%;
+    height: 50px;
+}
+
+#map-type-menu {
     background: #fff;
     padding: 7px;
     font-family: 'Open Sans', sans-serif;
     z-index: 99;
-    left: 300px;
-    top: 6px;
     border-radius: 5px;
+    width: 27%;
+    float: left;
 }
 
 #reset-button {
-    position: absolute;
     font-family: 'Open Sans', sans-serif;
     z-index: 99;
-    left: 450px;
-    top: 6px;
     border-radius: 5px;
+    width: 23%;
+    float: left;
+    padding-left: 10px;
 }
 
 #reset-button button {
     background-color: white;
     color: coral;
+}
+
+#overlay-options-wrapper {
+    float: left;
+    width: 50%;
+    height: 100%;
+    padding-left: 10px;
+}
+
+#overlay-options {
+    font-family: 'Open Sans', sans-serif;
+    z-index: 99;
+    border-radius: 5px;
+    background-color: white;
+    height: 100%;
 }
 
 .logos {
@@ -336,15 +357,14 @@ label {
 }
 
 .overlay_toggle {
-    display: inline-block;
     float: left;
-    height: 40px;
-    width: 100%;
+    display: inline-block;
+    width: 50%;
 }
 
 .toggle-button {
     background-color: white;
-    margin: 10px 0 0 0;
+    margin: 3px 0 0 0;
     border-radius: 20px;
     border: 2px solid #D0D0D0;
     height: 14px;
@@ -368,11 +388,11 @@ label {
     display: block;
     position: absolute;
     left: 0;
-    top: 0;
+    top: -2px;
     border-radius: 100%;
     width: 20px;
     height: 20px;
-    background-color: white;
+    background-color: #f2dede;
     float: left;
     margin: -3px 0 0 -3px;
     border: 2px solid #D0D0D0;
@@ -387,7 +407,7 @@ label {
 
 .toggle-button-selected button {
     left: 37px;
-    top: 0;
+    top: -5px;
     margin: 0;
     border: none;
     width: 20px;
@@ -413,9 +433,10 @@ label {
 }
 
 #overlay-slider {
+    float: left;
     height: 10px;
-    margin: 10px;
-    top: 20px;
+    width: 95%;
+    bottom: 5px;
     background: coral;
 }
 
@@ -436,6 +457,7 @@ label {
     top: 55px;
     border-radius: 10px;
 }
+
 .map-button {
     width: 30px;
     height: 30px;
@@ -449,7 +471,34 @@ label {
 }
 
 #charts {
+    position: fixed;
+    left: 0%;
+    bottom: 5%;
     margin-top: 70px;
+    height: 70%;
+    width: 40%;
+}
+
+#chart-containers {
+    width: 100%;
+    height: 90%;
+}
+
+#chartContainer {
+    width: 100%;
+    height: 100%;
+}
+
+#chartContainer2 {
+    display: none;
+    width: 100%;
+    height: 50%;
+}
+
+#map-options {
+    width: 100%;
+    height: 10%;
+    max-height: 40px; 
 }
 
 #point-details {
@@ -459,4 +508,51 @@ label {
     left: 0px;
     background-color: white;
     opacity: 0.6;
+}
+
+#areas-under-mouse-table {
+    margin: 0 !important;
+}
+
+/*area information popup with tabs*/
+ul.tab {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+ul.tab li {
+    float: left;
+    width: 33%;
+}
+
+ul.tab li a {
+    display: inline-block;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    transition: 0.3s;
+    font-size: 13px;
+}
+
+ul.tab li a:hover {background-color: #ddd;}
+
+ul.tab li a:focus, .active {background-color: #ccc;}
+
+.tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+    font-size: 10px !important;
+}
+
+.tabcontent h3, .tabcontent p {
+    font-size: 14px;
+    font-family: sans-serif !important;
+    color: black !important;
 }

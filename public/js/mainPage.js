@@ -25,6 +25,8 @@ function getGEOJSON(area) {
         myMap.tileJSON.vector_layers.push(layer);
     }
 
+    $('.wrap#area-attributes-div').toggleClass('active');
+
     myMap.initLayer(myMap.tileJSON, "streets");
     myMap.map.style.on("load", function() {
         window.setTimeout(function() {
@@ -34,6 +36,19 @@ function getGEOJSON(area) {
             });
         }, 1000);
     });
+}
+
+function goToTab(event, id) {
+    // first clear any visible tab
+    $(".tabcontent").each(function(index, obj) {
+        obj.style.display = "none";
+    });
+    $(".tablinks").each(function(index, obj) {
+        obj.className = obj.className.replace(" active", "");
+    });
+
+    $("#" + id).css("display", "block");
+    event.currentTarget.className += " active"
 }
 
 function ToggleButton(id) {
@@ -100,6 +115,7 @@ var overlayToggleButton = new ToggleButton("#overlay-toggle-button");
 overlayToggleButton.onclick(function() {
     // on? add layers, otherwise remove them
     if (overlayToggleButton.toggleState == ToggleStates.ON) {
+        $("#overlay-slider").slider("value", 100);
         myMap.map.addSource("vector_layer_", {
             type: 'vector',
             tiles: myMap.tileJSON['tiles'],
@@ -154,10 +170,15 @@ overlayToggleButton.onclick(function() {
 
             myMap.map.addLayer(layer);
         }
+
         console.log("added that");
     } else {
-        myMap.removePoints();
-        myMap.removeTouchLocationMarker();
+        if (myMap.pointsLoaded()) {
+            console.log("loaded");
+            $("#overlay-slider").slider("value", 0);
+            myMap.removePoints();
+            myMap.removeTouchLocationMarker();
+        }
     }
 });
 
@@ -293,7 +314,13 @@ dotToggleButton.onclick(function() {
 var secondGraphToggleButton = new ToggleButton("#second-graph-toggle-button");
 secondGraphToggleButton.onclick(function() {
     if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-        $("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
+        //$("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
+        $("#chartContainer2").css("display", "block");
+        $("#chartContainer").height("50%");
+        var newWidth = $("#chartContainer").width();
+        var newHeight = $("#chartContainer").height();
+        $("#chartContainer").height(newHeight);
+        $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
     } else {
         var layerID = "touchLocation2";
         if (myMap.map.getLayer(layerID)) {
@@ -302,7 +329,12 @@ secondGraphToggleButton.onclick(function() {
             myMap.touchLocationMarker2 = new mapboxgl.GeoJSONSource();
         }
 
-        $("#chartContainer2").remove();
+        //$("#chartContainer2").remove();
+        $("#chartContainer2").css("display", "none");
+        $("#chartContainer").height("100%");
+        var newWidth = $("#chartContainer").width();
+        var newHeight = $("#chartContainer").height();
+        $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
     }
 });
 
@@ -310,26 +342,68 @@ secondGraphToggleButton.onclick(function() {
 $(window).load(function() {
     var NUM_CHUNKS = 300;
 
-    $('.slideout-menu-toggle').on('click', function(event){
+    $('.slideout-menu-toggle').on('click', function(event) {
         event.preventDefault();
         // create menu variables
         var slideoutMenu = $('.slideout-menu');
         var slideoutMenuWidth = $('.slideout-menu').width();
-        
+
         // toggle open class
         slideoutMenu.toggleClass("open");
-        
+
         // slide menu
         if (slideoutMenu.hasClass("open")) {
             slideoutMenu.animate({
                 left: "0px"
-            }); 
+            });
         } else {
             slideoutMenu.animate({
                 left: -slideoutMenuWidth
-            }, 250);    
+            }, 250);
         }
-        console.log("did ti");
+    });
+
+    $("#graph-div-button").on("click", function(event) {
+        $(".wrap#charts").toggleClass("active");
+    });
+
+    // chart div resizable
+    $(".wrap#charts").resizable({
+        animateDuration: "fast",
+        animateEasing: "linear",
+        start: function(event, ui) {
+            var chart = $("#chartContainer").highcharts();
+            var chart2 = $("#chartContainer2").highcharts();
+            if (chart !== undefined) {
+                chart.destroy();
+            }
+            if (chart2 !== undefined) {
+                chart2.destroy();
+            }
+        },
+        stop: function(event, ui) {
+            $("#chartContainer").highcharts(myMap.highChartsOpts["chartContainer"]);
+            if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
+                $("#chartContainer2").highcharts(myMap.highChartsOpts["chartContainer2"]);
+            }
+        }
+    }).draggable({
+        start: function(event, ui) {
+            var chart = $("#chartContainer").highcharts();
+            var chart2 = $("#chartContainer2").highcharts();
+            if (chart !== undefined) {
+                chart.destroy();
+            }
+            if (chart2 !== undefined) {
+                chart2.destroy();
+            }
+        },
+        stop: function(event, ui) {
+            $("#chartContainer").highcharts(myMap.highChartsOpts["chartContainer"]);
+            if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
+                $("#chartContainer2").highcharts(myMap.highChartsOpts["chartContainer2"]);
+            }
+        }
     });
 
     $("#reset-button").on("click", function() {
@@ -424,7 +498,7 @@ $(window).load(function() {
             console.log("area 1");
 
             // add our info in a table, first remove any old info
-            $(".wrap").find(".content").find("#myTable").find("#tableBody").empty();
+            $(".wrap#select-area-wrap").find(".content").find("#myTable").find("#tableBody").empty();
             for (var i = 0; i < countries.length; i++) {
                 var country = countries[i];
 
@@ -443,7 +517,7 @@ $(window).load(function() {
                         if (e.target.cellIndex == 0) {
                             clickedArea = country;
                             console.log(country);
-                            $('.wrap').toggleClass('active');
+                            $('.wrap#select-area-wrap').toggleClass('active');
                             getGEOJSON(country);
                         }
                     };
@@ -460,18 +534,18 @@ $(window).load(function() {
     });
 
     $("#close-button").on("click", function() {
-        $('.wrap').toggleClass('active');
+        $('.wrap#select-area-wrap').toggleClass('active');
     });
 
     $('#popupButton').on('click', function() {
-        $('.wrap').toggleClass('active');
+        $('.wrap#select-area-wrap').toggleClass('active');
 
         // get json response and put it in a table
         loadJSON("", "areas", function(response) {
             json = JSON.parse(response);
 
             // add our info in a table, first remove any old info
-            $(".wrap").find(".content").find("#myTable").find("#tableBody").empty();
+            $(".wrap#select-area-wrap").find(".content").find("#myTable").find("#tableBody").empty();
             for (var i = 0; i < json.areas.length; i++) {
                 var area = json.areas[i];
 
@@ -489,7 +563,7 @@ $(window).load(function() {
                         // don't load area if reference link is clicked
                         if (e.target.cellIndex == 0) {
                             clickedArea = area.name;
-                            $('.wrap').toggleClass('active');
+                            $('.wrap#select-area-wrap').toggleClass('active');
                             getGEOJSON(area);
                         }
                     };
@@ -503,6 +577,6 @@ $(window).load(function() {
     // cancel the popup
     $('#cancelPopupButton').on('click', function() {
         console.log("#cancel");
-        $('.wrap').toggleClass('active');
+        $('.wrap#select-area-wrap').toggleClass('active');
     });
 });

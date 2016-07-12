@@ -42,40 +42,96 @@
 </head>
 <body>
   <div id="map-container">
-    <div id="map-type-menu">
-      <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
-      <label for='streets'>streets</label>
-      <input id='satellite' type='radio' name='rtoggle' value='satellite'>
-      <label for='satellite'>satellite</label>
+    <div id="top-map-buttons">
+      <div id="map-type-menu">
+        <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
+        <label for='streets'>streets</label>
+        <input id='satellite' type='radio' name='rtoggle' value='satellite'>
+        <label for='satellite'>satellite</label>
+      </div>
+      <div id="overlay-options-wrapper">
+        <div id="overlay-options">
+          <div class="overlay_toggle">
+            <label>Turn on/off data overlay</label>
+            <div id="overlay-toggle-button" class="toggle-button">
+              <button></button>
+            </div>
+          </div>
+          <div id="overlay-slider"></div>
+        </div>
+      </div>
+      <div id="reset-button">
+        <button class="btn btn-primary-outline">Reset</button>
+      </div>
+    </div>
+    <div class="slideout-menu-toggle" id="slideout-button">
+      <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="bottom" title="Show Menu">M</button>
     </div>
     <div id="polygon-button-div">
       <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Draw polygon" id="polygon-button">P</button>
     </div>
-    <div id="reset-button">
-      <button class="btn btn-primary-outline">Reset</button>
-    </div>
-    <div class="slideout-menu-toggle" id="slideout-button">
-      <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Show Menu" id="polygon-button">M</button>
-    </div>
     <div id="point-details"></div>
-  </div>
-  <div class="slideout-menu">
-   <div class="slideout-menu-toggle" id="close-sidebar-button-div">
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-sidebar-button"><span aria-hidden="true">×</span></button>
-  </div>
-  <div class="side-bar">    
-    <div class="side-item-box">
-      <!--div class="side-item move-button"></div-->
-      <div class="side-item title">
-        <h3>University of Miami’s inSAR Time Series Viewer</h3>
-      </div>
-      <div class="overlay_toggle">
-        <label>Turn on/off data overlay</label>
-        <div id="overlay-toggle-button" class="toggle-button">
-          <button></button>
+    <div class="wrap" id="area-attributes-div">
+      <div class="content">
+        <ul class="tab">
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr1')">Attr1</a></li>
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr2')">Attr2</a></li>
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr3')">Attr3</a></li>
+        </ul>
+
+        <div id="Attr1" class="tabcontent">
+          <h3>Attri1</h3>
+          <p>This is attr1.</p>
+        </div>
+
+        <div id="Attr2" class="tabcontent">
+          <h3>Attr2</h3>
+          <p>This is attr2.</p> 
+        </div>
+
+        <div id="Attr3" class="tabcontent">
+          <h3>Attr2</h3>
+          <p>This is attr3.</p>
         </div>
       </div>
-      <div id="overlay-slider"></div>
+    </div>
+  </div>
+  <div class="wrap" id="charts">
+    <div class="close-button-div">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="graph-div-button"><span aria-hidden="true">&times;</span></button>
+    </div>
+    <div class="content">
+      <div id="chart-containers">
+        <div id="chartContainer" class="side-item">
+        </div>
+        <div id="chartContainer2" class="side-item"></div>
+      </div>
+      <div id="map-options">
+        <div class="overlay_toggle">
+          <label>Second Graph</label>
+          <div class="toggle-button" id="second-graph-toggle-button">
+            <button></button>          
+          </div>
+        </div>
+        <div class="overlay_toggle">
+          <label>Connect dots</label>
+          <div class="toggle-button" id="dot-toggle-button">
+            <button></button>          
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slideout-menu">
+    <div class="close-button-div slideout-menu-toggle">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-sidebar-button"><span aria-hidden="true">×</span></button>
+    </div>
+    <div class="side-bar">    
+      <div class="side-item-box">
+        <!--div class="side-item move-button"></div-->
+        <div class="side-item title">
+          <h3>University of Miami’s inSAR Time Series Viewer</h3>
+        </div>     
       <!--<div class="side-item description">
         <p>Description of inSAR map web application.</p>
       </div>-->
@@ -112,19 +168,11 @@
       </div> <!-- End menu -->
 
       <h2>Line-of-sight displacement time-series</h2>
-      <div class="overlay_toggle">
-        <label>Second Graph</label>
-        <div class="toggle-button" id="second-graph-toggle-button">
-          <button></button>          
-        </div>
-      </div>
 
-      <div id="charts">
+      <!-- <div id="charts">
         <div id="chartContainer" class="side-item graph">
-        </div>
-        <!-- <div id="chartContainer2" class="side-item graph">
+        </div>        
       </div> -->
-    </div>
       <!-- <div class="side-item upload-button">
         {!! Form::open(array('action' => 'MyController@convertData','method'=>'POST', 'files'=>true)) !!}
         {!! Form::label('data', 'Upload File:') !!}
@@ -133,14 +181,7 @@
         {!! Form::close() !!}
 
       </div> -->
-      <!--insert pop up button for selecting areas to view here-->
-      
-      <div class="overlay_toggle">
-        <label>Connect dots</label>
-        <div class="toggle-button" id="dot-toggle-button">
-          <button></button>          
-        </div>
-      </div>
+      <!--insert pop up button for selecting areas to view here-->  
       <div>
         <button class="btn btn-primary-outline" id="popupButton">Select Dataset</button>
       </div>
@@ -152,20 +193,18 @@
       </div>
     </div> <!-- End side-item-box -->
   </div> <!-- End side-bar -->
-  <div class='wrap'>
-    <div class='content'>
-     <div class="modal-header" id="close-button-parent">
-      <div id="close-button-child">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
-      </div>
+  <div class='wrap' id="select-area-wrap">
+    <div class="close-button-div">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
     </div>
-    <!--search bar-->
-    <div class="input-group">
-      <span class="input-group-btn">
-        <button class="btn btn-default" id="search-button" type="button">Search</button>
-      </span>
-      <input type="text" class="form-control" placeholder="Search for..." id="search-input">
-    </div>         
+    <div class='content'>
+      <!--search bar-->
+      <div class="input-group">
+        <span class="input-group-btn">
+          <button class="btn btn-default" id="search-button" type="button">Search</button>
+        </span>
+        <input type="text" class="form-control" placeholder="Search for..." id="search-input">
+      </div>         
           <!-- <div class="modal-header" id="close-button-parent">
             <div id="close-button-child">
               <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
