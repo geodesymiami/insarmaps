@@ -321,6 +321,7 @@ secondGraphToggleButton.onclick(function() {
         var newHeight = $("#chartContainer").height();
         $("#chartContainer").height(newHeight);
         $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
+        $("#select-graph-focus-div").css("display", "block");
     } else {
         var layerID = "touchLocation2";
         if (myMap.map.getLayer(layerID)) {
@@ -335,6 +336,7 @@ secondGraphToggleButton.onclick(function() {
         var newWidth = $("#chartContainer").width();
         var newHeight = $("#chartContainer").height();
         $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
+        $("#select-graph-focus-div").css("display", "none");
     }
 });
 
@@ -365,6 +367,10 @@ $(window).load(function() {
 
     $("#graph-div-button").on("click", function(event) {
         $(".wrap#charts").toggleClass("active");
+    });
+
+    $("#select-graph-focus-div ").change(function() {
+        myMap.selectedGraph = $("#select-graph-focus-div").find(":selected").text();
     });
 
     // chart div resizable

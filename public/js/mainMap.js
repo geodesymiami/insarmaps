@@ -105,6 +105,7 @@ function Map(loadJSONFunc) {
     // move this to separate graph object later
     // it's a dictionary, with key chart container name, value chart options object
     this.highChartsOpts = [];
+    this.selectedGraph = "Graph 1";
 
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,
@@ -127,7 +128,7 @@ function Map(loadJSONFunc) {
         that.map.scrollZoom.enable();
         that.map.doubleClickZoom.enable();
     };
-    this.clickOnAPoint = function(e, chartContainer, layerID, clickMarker) {
+    this.clickOnAPoint = function(e) {
         console.log("it is");
         console.log(e.point);
         var features = that.map.queryRenderedFeatures(e.point, {
@@ -158,6 +159,18 @@ function Map(loadJSONFunc) {
             "pointNumber": pointNumber
         };
 
+        var chartContainer = "chartContainer";
+        var clickMarker = that.clickLocationMarker;
+        var markerSymbol = "cross";
+
+        if (that.selectedGraph == "Graph 2") {            
+            chartContainer = "chartContainer2";
+            clickMarker = that.clickLocationMarker2;
+            markerSymbol += "Red";
+        }
+
+        var layerID = that.selectedGraph;
+
         // show cross on clicked point
         if (!that.map.getLayer(layerID)) {
             clickMarker.setData({
@@ -169,7 +182,7 @@ function Map(loadJSONFunc) {
                         "coordinates": [long, lat]
                     },
                     "properties": {
-                        "marker-symbol": "cross"
+                        "marker-symbol": markerSymbol
                     }
                 }]
             });
@@ -193,7 +206,7 @@ function Map(loadJSONFunc) {
                         "coordinates": [long, lat]
                     },
                     "properties": {
-                        "marker-symbol": "cross"
+                        "marker-symbol": markerSymbol
                     }
                 }]
             });
@@ -221,176 +234,176 @@ function Map(loadJSONFunc) {
             var result = calcLinearRegression(displacement_array, decimal_dates);
             var slope = result["equation"][0];
             var y = result["equation"][1];
+            console.log(slope);
 
             // returns array for linear regression on chart
             var regression_data = getRegressionChartData(slope, y, decimal_dates, chart_data);
 
             // now add the new regression line as a second dataset in the chart
-            $(function() {
-                firstToggle = true;
-                dotToggleButton.set("off");
-                var chartOpts = {
-                    title: {
-                        text: 'Timeseries Displacement Chart'
-                    },
-                    subtitle: {
-                        text: "velocity: " + slope.toString().substr(0, 8) + " m/yr"
-                    },
-                    navigator: {
-                        enabled: true
-                    },
-                    xAxis: {
-                        type: 'datetime',
-                        events: { // get dates for slider bounds
-                            afterSetExtremes: function(e) {
-                                var minDate = e.min;
-                                var maxDate = e.max;
+            firstToggle = true;
+            dotToggleButton.set("off");
 
-                                //console.log(Highcharts.dateFormat(null, e.min));
+            var chartOpts = {
+                title: {
+                    text: 'Timeseries Displacement Chart'
+                },
+                subtitle: {
+                    text: "velocity: " + slope.toString().substr(0, 8) + " m/yr"
+                },
+                navigator: {
+                    enabled: true
+                },
+                xAxis: {
+                    type: 'datetime',
+                    events: { // get dates for slider bounds
+                        afterSetExtremes: function(e) {
+                            var minDate = e.min;
+                            var maxDate = e.max;
 
-                                // lower limit index of subarray bounded by slider dates
-                                // must be >= minDate; upper limit <= maxDate                              
-                                var minIndex = 0;
-                                var maxIndex = 0;
+                            //console.log(Highcharts.dateFormat(null, e.min));
 
-                                for (var i = 0; i < date_array.length; i++) {
-                                    var currentDate = date_array[i];
-                                    if (currentDate > minDate) {
-                                        minIndex = i;
-                                        break;
-                                    }
+                            // lower limit index of subarray bounded by slider dates
+                            // must be >= minDate; upper limit <= maxDate                              
+                            var minIndex = 0;
+                            var maxIndex = 0;
+
+                            for (var i = 0; i < date_array.length; i++) {
+                                var currentDate = date_array[i];
+                                if (currentDate > minDate) {
+                                    minIndex = i;
+                                    break;
                                 }
-                                for (var i = 0; i < date_array.length; i++) {
-                                    var currentDate = date_array[i];
-                                    if (currentDate < maxDate) {
-                                        maxIndex = i + 1;
-                                    }
-                                }
-
-                                // get slope and y intercept of sub array
-                                that.selector.minIndex = minIndex;
-                                that.selector.maxIndex = maxIndex;
-
-                                var sub_displacements = displacement_array.slice(minIndex, maxIndex + 1);
-                                var sub_decimal_dates = decimal_dates.slice(minIndex, maxIndex + 1);
-                                var sub_result = calcLinearRegression(sub_displacements, sub_decimal_dates);
-
-                                // get linear regression data for sub array
-                                var sub_chart_data = chart_data.slice(minIndex, maxIndex + 1);
-                                var sub_slope = sub_result["equation"][0];
-                                var sub_y = sub_result["equation"][1];
-                                var sub_regression_data = getRegressionChartData(sub_slope, sub_y, sub_decimal_dates, sub_chart_data);
-
-
-                                // remove an existing sub array from chart
-                                var chart = $('#chartContainer').highcharts();
-                                var seriesLength = chart.series.length;
-
-                                for (var i = seriesLength - 1; i > -1; i--) {
-                                    if (chart.series[i].name == "Linear Regression") {
-                                        chart.series[i].remove();
-                                        break;
-                                    }
-                                }
-
-                                var date_range = Highcharts.dateFormat(null, minDate) + " - " + Highcharts.dateFormat(null, maxDate);
-                                chart.addSeries({
-                                    type: 'line',
-                                    name: 'Linear Regression',
-                                    color: '#808080',
-                                    data: sub_regression_data,
-                                    marker: {
-                                        enabled: false
-                                    }
-                                });
-
-                                chart.setTitle(null, {
-                                    text: "velocity: " + sub_slope.toString().substr(0, 8) + " m/yr"
-                                });
                             }
-                        },
-                        dateTimeLabelFormats: {
-                            month: '%e. %b',
-                            year: '%Y'
-                        },
-                        title: {
-                            text: 'Date'
-                        }
-                    },
-                    yAxis: {
-                        title: {
-                            text: 'Ground Displacement (m)'
-                        },
-                        legend: {
-                            layout: 'vertical',
-                            align: 'left',
-                            verticalAlign: 'top',
-                            x: 100,
-                            y: 70,
-                            floating: true,
-                            backgroundColor: '#FFFFFF',
-                            borderWidth: 1,
-                        },
-                        plotLines: [{
-                            value: 0,
-                            width: 1,
-                            color: '#808080'
-                        }]
-                    },
-                    tooltip: {
-                        headerFormat: '<b>{series.name}</b><br>',
-                        pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} m'
-                    },
-                    series: [{
-                        type: 'scatter',
-                        name: 'Displacement',
-                        data: chart_data,
-                        marker: {
-                            enabled: true
-                        }
-                    }, {
-                        type: 'line',
-                        name: 'Linear Regression',
-                        data: regression_data,
-                        marker: {
-                            enabled: false
-                        }
-                    }],
-                    chart: {
-                        marginRight: 50
-                    }
-                };
+                            for (var i = 0; i < date_array.length; i++) {
+                                var currentDate = date_array[i];
+                                if (currentDate < maxDate) {
+                                    maxIndex = i + 1;
+                                }
+                            }
 
-                $('#' + chartContainer).highcharts(chartOpts);
-                that.highChartsOpts[chartContainer] = chartOpts;
+                            // get slope and y intercept of sub array
+                            that.selector.minIndex = minIndex;
+                            that.selector.maxIndex = maxIndex;
 
-                // this is hackish. due to bug which appears when we resize window before moving graph. jquery resizable
-                // size does weird stuff to the graph, so we have to set every new graph to the dimensions of the original graph
-                var width = $("#chartContainer").width();
-                var height = $("#chartContainer").height();
-                $("#" + chartContainer).highcharts().setSize(width, height, doAnimation = true);
-                // request elevation of point from google api
-                var elevationGetter = new google.maps.ElevationService;
-                elevationGetter.getElevationForLocations({
-                    "locations": [{ lat: lat, lng: long }]
-                }, function(results, status) {
-                    if (status === google.maps.ElevationStatus.OK) {
-                        $("#point-details").append("<br>Elevation: " + results[0].elevation + " meters");
-                    } else {
-                        console.log(status);
+                            var sub_displacements = displacement_array.slice(minIndex, maxIndex + 1);
+                            var sub_decimal_dates = decimal_dates.slice(minIndex, maxIndex + 1);
+                            var sub_result = calcLinearRegression(sub_displacements, sub_decimal_dates);
+
+                            // get linear regression data for sub array
+                            var sub_chart_data = chart_data.slice(minIndex, maxIndex + 1);
+                            var sub_slope = sub_result["equation"][0];
+                            var sub_y = sub_result["equation"][1];
+                            var sub_regression_data = getRegressionChartData(sub_slope, sub_y, sub_decimal_dates, sub_chart_data);
+
+
+                            // remove an existing sub array from chart
+                            var chart = $('#' + chartContainer).highcharts();
+                            var seriesLength = chart.series.length;
+
+                            for (var i = seriesLength - 1; i > -1; i--) {
+                                if (chart.series[i].name == "Linear Regression") {
+                                    chart.series[i].remove();
+                                    break;
+                                }
+                            }
+
+                            var date_range = Highcharts.dateFormat(null, minDate) + " - " + Highcharts.dateFormat(null, maxDate);
+                            chart.addSeries({
+                                type: 'line',
+                                name: 'Linear Regression',
+                                color: '#808080',
+                                data: sub_regression_data,
+                                marker: {
+                                    enabled: false
+                                }
+                            });
+
+                            chart.setTitle(null, {
+                                text: "velocity: " + sub_slope.toString().substr(0, 8) + " m/yr"
+                            });
+                        }
+                    },
+                    dateTimeLabelFormats: {
+                        month: '%e. %b',
+                        year: '%Y'
+                    },
+                    title: {
+                        text: 'Date'
                     }
-                });
+                },
+                yAxis: {
+                    title: {
+                        text: 'Ground Displacement (m)'
+                    },
+                    legend: {
+                        layout: 'vertical',
+                        align: 'left',
+                        verticalAlign: 'top',
+                        x: 100,
+                        y: 70,
+                        floating: true,
+                        backgroundColor: '#FFFFFF',
+                        borderWidth: 1,
+                    },
+                    plotLines: [{
+                        value: 0,
+                        width: 1,
+                        color: '#808080'
+                    }]
+                },
+                tooltip: {
+                    headerFormat: '<b>{series.name}</b><br>',
+                    pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} m'
+                },
+                series: [{
+                    type: 'scatter',
+                    name: 'Displacement',
+                    data: chart_data,
+                    marker: {
+                        enabled: true
+                    }
+                }, {
+                    type: 'line',
+                    name: 'Linear Regression',
+                    data: regression_data,
+                    marker: {
+                        enabled: false
+                    }
+                }],
+                chart: {
+                    marginRight: 50
+                }
+            };
+
+            $('#' + chartContainer).highcharts(chartOpts);
+            that.highChartsOpts[chartContainer] = chartOpts;
+
+            // this is hackish. due to bug which appears when we resize window before moving graph. jquery resizable
+            // size does weird stuff to the graph, so we have to set every new graph to the dimensions of the original graph
+            var width = $("#chartContainer").width();
+            var height = $("#chartContainer").height();
+            $("#" + chartContainer).highcharts().setSize(width, height, doAnimation = true);
+            // request elevation of point from google api
+            var elevationGetter = new google.maps.ElevationService;
+            elevationGetter.getElevationForLocations({
+                "locations": [{ lat: lat, lng: long }]
+            }, function(results, status) {
+                if (status === google.maps.ElevationStatus.OK) {
+                    $("#point-details").append("<br>Elevation: " + results[0].elevation + " meters");
+                } else {
+                    console.log(status);
+                }
             });
         });
     };
 
     this.leftClickOnAPoint = function(e) {
-        that.clickOnAPoint(e, "chartContainer", "touchLocation", that.clickLocationMarker);
+        that.clickOnAPoint(e);
     };
 
     this.rightClickOnAPoint = function(e) {
         if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-            that.clickOnAPoint(e, "chartContainer2", "touchLocation2", that.clickLocationMarker2);
+            that.clickOnAPoint(e);
         }
     };
 
@@ -635,7 +648,7 @@ function Map(loadJSONFunc) {
 
         that.map.on('click', that.clickOnAnAreaMaker);
 
-        that.map.on("contextmenu", that.rightClickOnAPoint);
+        //that.map.on("contextmenu", that.rightClickOnAPoint);
 
         // Use the same approach as above to indicate that the symbols are clickable
         // by changing the cursor style to 'pointer'.
@@ -651,7 +664,7 @@ function Map(loadJSONFunc) {
             // a better way is to have two mousemove callbacks like we do with select area vs select marker
             var markerSymbol = features[0].properties["marker-symbol"];
 
-            if (markerSymbol != null && typeof markerSymbol != "undefined" && markerSymbol != "cross") {
+            if (markerSymbol != null && typeof markerSymbol != "undefined" && markerSymbol != "cross" && markerSymbol != "crossRed") {
                 // Populate the areaPopup and set its coordinates
                 // based on the feature found.
 
