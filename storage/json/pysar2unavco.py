@@ -3,10 +3,13 @@ import numpy as np
 import datetime
 from datetime import date
 import sys
+import os
 from osgeo import ogr
 import getopt
 import re
 
+# COMMAND I USE TO RUN SCRIPT: 
+# python ~/Desktop/Software_Eng_Make_Website_Work/pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d DEM_error.h5 -c temporal_coherence.h5 -m mask.h5 
 # ---------------------------------------------------------------------------------------
 # FUNCTIONS
 # ---------------------------------------------------------------------------------------
@@ -69,7 +72,7 @@ attributes = group.attrs
 dates = group.keys()
 dates.sort()
 
-# create unavco formatted h5 file
+# create unavco timeseries file - will change name of file to proper format later in script
 unavco = "unavco_test.h5"
 unavco_file = h5py.File(unavco, "w")
 print "created test file"
@@ -104,8 +107,8 @@ group = unavco_file['timeseries']
 # 1) mission = last chars of a folder name - SinabungT495F40_50AlosA -> mission = Alos
 group.attrs['mission'] = mission
 
-# 2) beam_mode = Yunjun said leave naN for now, ask Falk later
-group.attrs['beam_mode'] = np.nan
+# 2) beam_mode = Yunjun said SM (stripmap) for now, later read from encoded timeseries.h5
+group.attrs['beam_mode'] = 'SM'
 
 # 3) beam_swath = Yunjun said SM (stripmap) for now
 group.attrs['beam_swath'] = 'SM'
@@ -113,10 +116,8 @@ group.attrs['beam_swath'] = 'SM'
 # 4) relative_orbit = number after T -> in case of Sinabung example above, 495
 group.attrs['relative_orbit'] = int(track_number)
 
-# 5) first_date
+# 5 + 6) first_date and last date of timeseries datasets
 group.attrs['first_date'] = get_date(dates[0]).isoformat()
-
-# 6) last_date
 group.attrs['last_date'] = get_date(dates[len(dates)-1]).isoformat()
 
 # 7) scene footprint = wkt polygon
@@ -153,13 +154,14 @@ group.attrs['flight_direction'] = attributes['ORBIT_DIRECTION'][0].upper()
 group.attrs['look_direction'] = 'R'
 
 # polarization = naN (Yunjun doesn't care for this attribute)
-group.attrs['polarization'] = np.nan
+# group.attrs['polarization'] = np.nan
 
 # attribute in yunjun/falk's h5 files: prf, wavelength
 group.attrs['prf'] = attributes['PRF']
 group.attrs['wavelength'] = attributes['WAVELENGTH']
 
-# atmos_correct_method = ? - check with Falk
+# atmos_correct_method = 'ECMWF' harcode for now, later read from timeseries.h5 after Yunjun encodes attribute
+group.attrs['atmos_correct_method'] = 'ECMWF'
 
 # processing_dem = yunjun is adding attribute to geo_timeseries.h5, wait for now
 
@@ -265,12 +267,18 @@ mask_file.close()
 
 # CLOSE UNAVCO FILE
 unavco_file.close()
+
+# IMPORTANT: RENAME UNAVCO file to proper format based on file attributes
+# example - pysar file is called Kyushu T 80 F 245_246 JersD.h5
+# UNAVCO timeseries file is called JERS_SM_80_245_246_<first date>_<last date>.h5 since we dont need TBASE or BPERP for timeseries
+unavco_name = mission + '_SM_' + track_number + '_' + frames + '_' + dates[0] + '_' + dates[len(dates)-1] + '.h5'
+os.rename(unavco, "./" + unavco_name)
 # ---------------------------------------------------------------------------------------
 #  TEST THE UNAVCO FILE FOR DATASETS
 # ---------------------------------------------------------------------------------------
 # open unavco h5 file that was created earlier for testing
-f = h5py.File(unavco, "r")
-print "opened unavco h5 file"
+f = h5py.File(unavco_name, "r")
+print "opened "  + unavco_name
 print 'trying to print group timeseries'
 group = f['timeseries']
 print group
