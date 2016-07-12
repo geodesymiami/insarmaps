@@ -84,6 +84,24 @@ function getDisplacementChartData(displacements, dates) {
     return data;
 }
 
+function setNavigatorHandlers() {
+    $(".highcharts-navigator").mouseenter(function() {
+        $(".wrap#charts").draggable("disable");        
+    }).mouseleave(function() {
+        $(".wrap#charts").draggable("enable");
+    });;
+    $(".highcharts-navigator-handle-left").mouseenter(function() {
+        $(".wrap#charts").draggable("disable");
+    }).mouseleave(function() {
+        $(".wrap#charts").draggable("enable");
+    });;
+    $(".highcharts-navigator-handle-right").mouseenter(function() {
+        $(".wrap#charts").draggable("disable");
+    }).mouseleave(function() {
+        $(".wrap#charts").draggable("enable");
+    });;
+}
+
 function Map(loadJSONFunc) {
     var that = this;
     // my mapbox api key
@@ -163,7 +181,7 @@ function Map(loadJSONFunc) {
         var clickMarker = that.clickLocationMarker;
         var markerSymbol = "cross";
 
-        if (that.selectedGraph == "Bottom Graph") {            
+        if (that.selectedGraph == "Bottom Graph") {
             chartContainer = "chartContainer2";
             clickMarker = that.clickLocationMarker2;
             markerSymbol += "Red";
@@ -376,6 +394,8 @@ function Map(loadJSONFunc) {
 
             $('#' + chartContainer).highcharts(chartOpts);
             that.highChartsOpts[chartContainer] = chartOpts;
+
+            setNavigatorHandlers();
 
             // this is hackish. due to bug which appears when we resize window before moving graph. jquery resizable
             // size does weird stuff to the graph, so we have to set every new graph to the dimensions of the original graph

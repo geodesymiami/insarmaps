@@ -390,16 +390,21 @@ $(window).load(function() {
             }
         },
         stop: function(event, ui) {
-            var chartContainersNewHeight = $(".wrap").find(".content").find("#chart-containers").height() / 2;
+            var chartContainersNewHeight = $(".wrap").find(".content").find("#chart-containers").height();
             
-            // resize chart container div's as they don't resize with jquery resizable
-            $("#chartContainer").height(chartContainersNewHeight);
-            $("#chartContainer2").height(chartContainersNewHeight);
-
-            $("#chartContainer").highcharts(myMap.highChartsOpts["chartContainer"]);
             if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
+                chartContainersNewHeight /= 2;
+                // resize chart container div's as they don't resize with jquery resizable
+                $("#chartContainer2").height(chartContainersNewHeight);
                 $("#chartContainer2").highcharts(myMap.highChartsOpts["chartContainer2"]);
             }
+
+            // resize chart container div's as they don't resize with jquery resizable
+            $("#chartContainer").height(chartContainersNewHeight);
+
+            $("#chartContainer").highcharts(myMap.highChartsOpts["chartContainer"]);
+
+            setNavigatorHandlers();
         }
     }).draggable({
         start: function(event, ui) {
@@ -417,6 +422,8 @@ $(window).load(function() {
             if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
                 $("#chartContainer2").highcharts(myMap.highChartsOpts["chartContainer2"]);
             }
+
+            setNavigatorHandlers();
         }
     });
 
