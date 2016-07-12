@@ -119,6 +119,12 @@
             <button></button>          
           </div>
         </div>
+        <div class="overlay_toggle">
+          <label>Regression</label>
+          <div class="toggle-button" id="regression-toggle-button">
+            <button></button>          
+          </div>
+        </div>
         <div id="select-graph-focus-div">
           Select for Graph:
           <select>            

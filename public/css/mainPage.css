@@ -359,7 +359,7 @@ label {
 .overlay_toggle {
     float: left;
     display: inline-block;
-    width: 50%;
+    width: 33%;
 }
 
 .toggle-button {

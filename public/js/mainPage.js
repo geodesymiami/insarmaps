@@ -342,6 +342,23 @@ secondGraphToggleButton.onclick(function() {
     }
 });
 
+var regressionToggleButton = new ToggleButton("#regression-toggle-button");
+regressionToggleButton.onclick(function() {
+    if (regressionToggleButton.toggleState == ToggleStates.ON) {
+        myMap.graphsController.addRegressionLine("chartContainer");
+        var chart2 = $("#chartContainer2").highcharts();
+        if (chart2 !== undefined) {
+            myMap.graphsController.addRegressionLine("chartContainer2");
+        }
+    } else {
+        myMap.graphsController.removeRegressionLine("chartContainer");
+        var chart2 = $("#chartContainer2").highcharts();
+        if (chart2 !== undefined) {
+            myMap.graphsController.removeRegressionLine("chartContainer2");
+        }
+    }
+});
+
 // when site loads, turn toggle on
 $(window).load(function() {
     var NUM_CHUNKS = 300;

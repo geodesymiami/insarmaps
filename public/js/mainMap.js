@@ -223,6 +223,11 @@ function Map(loadJSONFunc) {
             var decimal_dates = json.decimal_dates;
             var displacement_array = json.displacements;
 
+            that.graphsController.graphSettings[chartContainer].date_string_array = date_string_array;
+            that.graphsController.graphSettings[chartContainer].date_array = date_array;
+            that.graphsController.graphSettings[chartContainer].decimal_dates = decimal_dates;
+            that.graphsController.graphSettings[chartContainer].displacement_array = displacement_array;
+
             // returns array for displacement on chart
             chart_data = getDisplacementChartData(displacement_array, date_string_array);
 
@@ -252,70 +257,74 @@ function Map(loadJSONFunc) {
                     type: 'datetime',
                     events: { // get dates for slider bounds
                         afterSetExtremes: function(e) {
-                            var minDate = e.min;
-                            var maxDate = e.max;
+                            // var minDate = e.min;
+                            // var maxDate = e.max;
 
-                            //console.log(Highcharts.dateFormat(null, e.min));
+                            // //console.log(Highcharts.dateFormat(null, e.min));
 
-                            // lower limit index of subarray bounded by slider dates
-                            // must be >= minDate; upper limit <= maxDate                              
-                            var minIndex = 0;
-                            var maxIndex = 0;
+                            // // lower limit index of subarray bounded by slider dates
+                            // // must be >= minDate; upper limit <= maxDate                              
+                            // var minIndex = 0;
+                            // var maxIndex = 0;
 
-                            for (var i = 0; i < date_array.length; i++) {
-                                var currentDate = date_array[i];
-                                if (currentDate > minDate) {
-                                    minIndex = i;
-                                    break;
-                                }
+                            // for (var i = 0; i < date_array.length; i++) {
+                            //     var currentDate = date_array[i];
+                            //     if (currentDate > minDate) {
+                            //         minIndex = i;
+                            //         break;
+                            //     }
+                            // }
+                            // for (var i = 0; i < date_array.length; i++) {
+                            //     var currentDate = date_array[i];
+                            //     if (currentDate < maxDate) {
+                            //         maxIndex = i + 1;
+                            //     }
+                            // }
+
+                            // // get slope and y intercept of sub array
+                            // that.selector.minIndex = minIndex;
+                            // that.selector.maxIndex = maxIndex;
+
+                            // var sub_displacements = displacement_array.slice(minIndex, maxIndex + 1);
+                            // var sub_decimal_dates = decimal_dates.slice(minIndex, maxIndex + 1);
+                            // var sub_result = calcLinearRegression(sub_displacements, sub_decimal_dates);
+
+                            // // get linear regression data for sub array
+                            // var sub_chart_data = chart_data.slice(minIndex, maxIndex + 1);
+                            // var sub_slope = sub_result["equation"][0];
+                            // var sub_y = sub_result["equation"][1];
+                            // var sub_regression_data = getRegressionChartData(sub_slope, sub_y, sub_decimal_dates, sub_chart_data);
+
+
+                            // // remove an existing sub array from chart
+                            // var chart = $('#' + chartContainer).highcharts();
+                            // var seriesLength = chart.series.length;
+
+                            // for (var i = seriesLength - 1; i > -1; i--) {
+                            //     if (chart.series[i].name == "Linear Regression") {
+                            //         chart.series[i].remove();
+                            //         break;
+                            //     }
+                            // }
+
+                            // var date_range = Highcharts.dateFormat(null, minDate) + " - " + Highcharts.dateFormat(null, maxDate);
+                            // chart.addSeries({
+                            //     type: 'line',
+                            //     name: 'Linear Regression',
+                            //     color: '#808080',
+                            //     data: sub_regression_data,
+                            //     marker: {
+                            //         enabled: false
+                            //     }
+                            // });
+
+                            // chart.setTitle(null, {
+                            //     text: "velocity: " + sub_slope.toString().substr(0, 8) + " m/yr"
+                            // });
+                            that.graphsController.graphSettings[chartContainer].navigatorEvent = e;
+                            if (regressionToggleButton.toggleState == ToggleStates.ON) {
+                                that.graphsController.addRegressionLine(chartContainer);
                             }
-                            for (var i = 0; i < date_array.length; i++) {
-                                var currentDate = date_array[i];
-                                if (currentDate < maxDate) {
-                                    maxIndex = i + 1;
-                                }
-                            }
-
-                            // get slope and y intercept of sub array
-                            that.selector.minIndex = minIndex;
-                            that.selector.maxIndex = maxIndex;
-
-                            var sub_displacements = displacement_array.slice(minIndex, maxIndex + 1);
-                            var sub_decimal_dates = decimal_dates.slice(minIndex, maxIndex + 1);
-                            var sub_result = calcLinearRegression(sub_displacements, sub_decimal_dates);
-
-                            // get linear regression data for sub array
-                            var sub_chart_data = chart_data.slice(minIndex, maxIndex + 1);
-                            var sub_slope = sub_result["equation"][0];
-                            var sub_y = sub_result["equation"][1];
-                            var sub_regression_data = getRegressionChartData(sub_slope, sub_y, sub_decimal_dates, sub_chart_data);
-
-
-                            // remove an existing sub array from chart
-                            var chart = $('#' + chartContainer).highcharts();
-                            var seriesLength = chart.series.length;
-
-                            for (var i = seriesLength - 1; i > -1; i--) {
-                                if (chart.series[i].name == "Linear Regression") {
-                                    chart.series[i].remove();
-                                    break;
-                                }
-                            }
-
-                            var date_range = Highcharts.dateFormat(null, minDate) + " - " + Highcharts.dateFormat(null, maxDate);
-                            chart.addSeries({
-                                type: 'line',
-                                name: 'Linear Regression',
-                                color: '#808080',
-                                data: sub_regression_data,
-                                marker: {
-                                    enabled: false
-                                }
-                            });
-
-                            chart.setTitle(null, {
-                                text: "velocity: " + sub_slope.toString().substr(0, 8) + " m/yr"
-                            });
                         }
                     },
                     dateTimeLabelFormats: {
@@ -356,13 +365,6 @@ function Map(loadJSONFunc) {
                     data: chart_data,
                     marker: {
                         enabled: true
-                    }
-                }, {
-                    type: 'line',
-                    name: 'Linear Regression',
-                    data: regression_data,
-                    marker: {
-                        enabled: false
                     }
                 }],
                 chart: {
