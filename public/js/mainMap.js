@@ -149,7 +149,6 @@ function Map(loadJSONFunc) {
         }
 
         var title = pointNumber.toString();
-
         var query = {
             "area": currentArea.name,
             "pointNumber": pointNumber
@@ -241,7 +240,6 @@ function Map(loadJSONFunc) {
 
             // now add the new regression line as a second dataset in the chart
             firstToggle = true;
-            dotToggleButton.set("off");
 
             var chartOpts = {
                 title: {
@@ -321,6 +319,7 @@ function Map(loadJSONFunc) {
                             // chart.setTitle(null, {
                             //     text: "velocity: " + sub_slope.toString().substr(0, 8) + " m/yr"
                             // });
+                            // we get called when graph is created
                             that.graphsController.graphSettings[chartContainer].navigatorEvent = e;
                             if (regressionToggleButton.toggleState == ToggleStates.ON) {
                                 that.graphsController.addRegressionLine(chartContainer);
@@ -376,6 +375,13 @@ function Map(loadJSONFunc) {
             that.graphsController.highChartsOpts[chartContainer] = chartOpts;
 
             that.graphsController.setNavigatorHandlers();
+            if (dotToggleButton.toggleState == ToggleStates.ON) {
+                that.graphsController.toggleDots();
+            }
+
+            if (regressionToggleButton.toggleState == ToggleStates.ON) {
+                that.graphsController.addRegressionLine(chartContainer);
+            }
 
             // this is hackish. due to bug which appears when we resize window before moving graph. jquery resizable
             // size does weird stuff to the graph, so we have to set every new graph to the dimensions of the original graph

@@ -9,7 +9,8 @@ function GraphsController() {
             date_array: null,
             decimal_dates: null,
             displacement_array: null,
-            mavigatorEvent: null
+            mavigatorEvent: null,
+            firstToggle
         },
         "chartContainer2": {
             regressionOn: false,
@@ -17,7 +18,8 @@ function GraphsController() {
             date_array: null,
             decimal_dates: null,
             displacement_array: null,
-            navigatorEvent: null
+            navigatorEvent: null,
+            firstToggle
         }
     };
 
@@ -78,7 +80,8 @@ function GraphsController() {
             data: regression_data,
             marker: {
                 enabled: false
-            }
+            },
+            color: "#ffa500"
         };
 
         chart.addSeries(regressionSeries);
@@ -114,14 +117,199 @@ function GraphsController() {
         });;
     };
 
+    this.connectDots = function() {
+        var chart = $("#chartContainer").highcharts();
+
+        chart.series[0].update({
+            type: "line"
+        });
+
+        // prevents bug resulting from toggling line connecting points on the graph
+        // without this, this function gets called the first time, but for some reason,
+        // the loop below to delete the linear regression line doesn't get deleted, resulting in two of them
+        // i suspect that high charts is doing something with the series array when you use update, resulting in that
+        // issue, since the loop works afterwards (when user actually uses the navigator) as normal
+        if (that.graphSettings["chartContainer"].firstToggle) {
+            var seriesLength = chart.series.length;
+
+            for (var i = seriesLength - 1; i > -1; i--) {
+                if (chart.series[i].name == "Linear Regression") {
+                    chart.series[i].remove();
+                    break;
+                }
+            }
+
+            that.graphSettings["chartContainer"].firstToggle = false;
+        }
+
+        // repeat for other chart
+        chart = $("#chartContainer2").highcharts();
+
+        if (chart === undefined) {
+            return;
+        }
+        chart.series[0].update({
+            type: "line"
+        });
+
+        // prevents bug resulting from toggling line connecting points on the graph
+        // without this, this function gets called the first time, but for some reason,
+        // the loop below to delete the linear regression line doesn't get deleted, resulting in two of them
+        // i suspect that high charts is doing something with the series array when you use update, resulting in that
+        // issue, since the loop works afterwards (when user actually uses the navigator) as normal
+        if (that.graphSettings["chartContainer2"].firstToggle) {
+            var seriesLength = chart.series.length;
+
+            for (var i = seriesLength - 1; i > -1; i--) {
+                if (chart.series[i].name == "Linear Regression") {
+                    chart.series[i].remove();
+                    break;
+                }
+            }
+            that.graphSettings["chartContainer2"].firstToggle = false;
+        }
+    };
+
+    this.disconnectDots = function() {
+        var chart = $("#chartContainer").highcharts();
+
+        chart.series[0].update({
+            type: "scatter"
+        });
+
+        // prevents bug resulting from toggling line connecting points on the graph
+        // without this, this function gets called the first time, but for some reason,
+        // the loop below to delete the linear regression line doesn't get deleted, resulting in two of them
+        // i suspect that high charts is doing something with the series array when you use update, resulting in that
+        // issue, since the loop works afterwards (when user actually uses the navigator) as normal
+        if (that.graphSettings["chartContainer"].firstToggle) {
+            var seriesLength = chart.series.length;
+
+            for (var i = seriesLength - 1; i > -1; i--) {
+                if (chart.series[i].name == "Linear Regression") {
+                    chart.series[i].remove();
+                    break;
+                }
+            }
+
+            that.graphSettings["chartContainer"].firstToggle = false;
+        }
+
+        // repeat for other chart
+        chart = $("#chartContainer2").highcharts();
+
+        if (chart === undefined) {
+            return;
+        }
+        chart.series[0].update({
+            type: "scatter"
+        });
+
+        // prevents bug resulting from toggling line connecting points on the graph
+        // without this, this function gets called the first time, but for some reason,
+        // the loop below to delete the linear regression line doesn't get deleted, resulting in two of them
+        // i suspect that high charts is doing something with the series array when you use update, resulting in that
+        // issue, since the loop works afterwards (when user actually uses the navigator) as normal
+        if (that.graphSettings["chartContainer2"].firstToggle) {
+            var seriesLength = chart.series.length;
+
+            for (var i = seriesLength - 1; i > -1; i--) {
+                if (chart.series[i].name == "Linear Regression") {
+                    chart.series[i].remove();
+                    break;
+                }
+            }
+            that.graphSettings["chartContainer2"].firstToggle = false;
+        }
+    };
+
+    this.toggleDots = function() {
+        var chart = $("#chartContainer").highcharts();
+
+        if (dotToggleButton.toggleState == ToggleStates.ON) {
+            that.connectDots();
+        } else {
+            that.disconnectDots();
+        }
+    };
+
+    this.addRegressionLines = function() {
+        that.addRegressionLine("chartContainer");
+        var chart2 = $("#chartContainer2").highcharts();
+        if (chart2 !== undefined) {            
+            that.addRegressionLine("chartContainer2");
+        }
+    };
+
+    this.removeRegressionLines = function() {
+        that.removeRegressionLine("chartContainer");
+        var chart2 = $("#chartContainer2").highcharts();
+        if (chart2 !== undefined) {
+            that.removeRegressionLine("chartContainer2");
+        }
+    };
+
+    this.toggleRegressionLines = function() {
+        if (regressionToggleButton.toggleState == ToggleStates.ON) {
+            that.addRegressionLines();
+        } else {
+            that.removeRegressionLines();
+        }
+    };
+
+    this.prepareForSecondGraph = function() {
+        //$("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
+        $("#chartContainer2").css("display", "block");
+        $("#chartContainer").height("50%");
+        var newWidth = $("#chartContainer").width();
+        var newHeight = $("#chartContainer").height();
+        $("#chartContainer").height(newHeight);
+        $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
+        $("#select-graph-focus-div").css("display", "block");
+        that.selectedGraph = $("#select-graph-focus-div").find(":selected").text();
+    };
+
+    this.removeSecondGraph = function() {
+        var layerID = "touchLocation2";
+        if (myMap.map.getLayer(layerID)) {
+            myMap.map.removeLayer(layerID);
+            myMap.map.removeSource(layerID);
+            myMap.touchLocationMarker2 = new mapboxgl.GeoJSONSource();
+        }
+
+        //$("#chartContainer2").remove();
+        $("#chartContainer2").css("display", "none");
+        $("#chartContainer").height("100%");
+        var newWidth = $("#chartContainer").width();
+        var newHeight = $("#chartContainer").height();
+        $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
+        $("#select-graph-focus-div").css("display", "none");
+        that.selectedGraph = "Top Graph";
+    };
+
+    this.toggleSecondGraph = function() {
+        if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
+            that.prepareForSecondGraph();
+        } else {
+            that.removeSecondGraph();
+        }
+    };
+
     // recreates graphs, preserving the selected ranges on the high charts navigator
-    this.recreateGraphs = function() {
+    this.recreateGraphs = function() {        
         var chart = $("#chartContainer").highcharts(that.highChartsOpts["chartContainer"]);
-        
+
         if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
             var chart2 = $("#chartContainer2").highcharts(that.highChartsOpts["chartContainer2"]);
         }
 
+        if (dotToggleButton.toggleState == ToggleStates.ON) {
+            that.connectDots();
+        }
+
+        if (regressionToggleButton.toggleState == ToggleStates.ON) {
+            that.addRegressionLines();
+        }
         that.setNavigatorHandlers();
     };
 }
