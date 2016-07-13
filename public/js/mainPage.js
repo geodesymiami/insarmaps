@@ -281,64 +281,28 @@ for (var i = 0; i < inputs.length; i++) {
 // line connecting dots in chart on/off
 var dotToggleButton = new ToggleButton("#dot-toggle-button");
 dotToggleButton.onclick(function() {
-    var chart = $("#chartContainer").highcharts();
-
     if (dotToggleButton.toggleState == ToggleStates.ON) {
-        chart.series[0].update({
-            type: "line"
-        });
+        myMap.graphsController.connectDots();
     } else {
-        chart.series[0].update({
-            type: "scatter"
-        });
-    }
-    // prevents bug resulting from toggling line connecting points on the graph
-    // without this, this function gets called the first time, but for some reason,
-    // the loop below to delete the linear regression line doesn't get deleted, resulting in two of them
-    // i suspect that high charts is doing something with the series array when you use update, resulting in that
-    // issue, since the loop works afterwards (when user actually uses the navigator) as normal
-    if (firstToggle) {
-        var seriesLength = chart.series.length;
-
-        for (var i = seriesLength - 1; i > -1; i--) {
-            if (chart.series[i].name == "Linear Regression") {
-                chart.series[i].remove();
-                break;
-            }
-        }
-
-        firstToggle = false;
+        myMap.graphsController.disconnectDots();
     }
 });
 
 var secondGraphToggleButton = new ToggleButton("#second-graph-toggle-button");
 secondGraphToggleButton.onclick(function() {
     if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-        //$("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
-        $("#chartContainer2").css("display", "block");
-        $("#chartContainer").height("50%");
-        var newWidth = $("#chartContainer").width();
-        var newHeight = $("#chartContainer").height();
-        $("#chartContainer").height(newHeight);
-        $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
-        $("#select-graph-focus-div").css("display", "block");
-        myMap.selectedGraph = $("#select-graph-focus-div").find(":selected").text();
+        myMap.graphsController.prepareForSecondGraph();
     } else {
-        var layerID = "touchLocation2";
-        if (myMap.map.getLayer(layerID)) {
-            myMap.map.removeLayer(layerID);
-            myMap.map.removeSource(layerID);
-            myMap.touchLocationMarker2 = new mapboxgl.GeoJSONSource();
-        }
+        myMap.graphsController.removeSecondGraph();
+    }
+});
 
-        //$("#chartContainer2").remove();
-        $("#chartContainer2").css("display", "none");
-        $("#chartContainer").height("100%");
-        var newWidth = $("#chartContainer").width();
-        var newHeight = $("#chartContainer").height();
-        $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
-        $("#select-graph-focus-div").css("display", "none");
-        myMap.selectedGraph = "Top Graph";
+var regressionToggleButton = new ToggleButton("#regression-toggle-button");
+regressionToggleButton.onclick(function() {
+    if (regressionToggleButton.toggleState == ToggleStates.ON) {
+        myMap.graphsController.addRegressionLines();
+    } else {
+        myMap.graphsController.removeRegressionLines();
     }
 });
 
@@ -372,7 +336,7 @@ $(window).load(function() {
     });
 
     $("#select-graph-focus-div ").change(function() {
-        myMap.selectedGraph = $("#select-graph-focus-div").find(":selected").text();
+        myMap.graphsController.selectedGraph = $("#select-graph-focus-div").find(":selected").text();
     });
 
     // chart div resizable
@@ -390,16 +354,18 @@ $(window).load(function() {
             }
         },
         stop: function(event, ui) {
-            var chartContainersNewHeight = $(".wrap").find(".content").find("#chart-containers").height() / 2;
-            
+            var chartContainersNewHeight = $(".wrap").find(".content").find("#chart-containers").height();
+
+            if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
+                chartContainersNewHeight /= 2;
+                // resize chart container div's as they don't resize with jquery resizable
+                $("#chartContainer2").height(chartContainersNewHeight);
+            }
+
             // resize chart container div's as they don't resize with jquery resizable
             $("#chartContainer").height(chartContainersNewHeight);
-            $("#chartContainer2").height(chartContainersNewHeight);
 
-            $("#chartContainer").highcharts(myMap.highChartsOpts["chartContainer"]);
-            if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-                $("#chartContainer2").highcharts(myMap.highChartsOpts["chartContainer2"]);
-            }
+            myMap.graphsController.recreateGraphs();
         }
     }).draggable({
         start: function(event, ui) {
@@ -413,10 +379,7 @@ $(window).load(function() {
             }
         },
         stop: function(event, ui) {
-            $("#chartContainer").highcharts(myMap.highChartsOpts["chartContainer"]);
-            if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-                $("#chartContainer2").highcharts(myMap.highChartsOpts["chartContainer2"]);
-            }
+            myMap.graphsController.recreateGraphs();
         }
     });
 
