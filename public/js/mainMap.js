@@ -251,74 +251,13 @@ function Map(loadJSONFunc) {
                 navigator: {
                     enabled: true
                 },
+                scrollbar: {
+                    liveRedraw: false
+                },
                 xAxis: {
                     type: 'datetime',
                     events: { // get dates for slider bounds
-                        afterSetExtremes: function(e) {
-                            // var minDate = e.min;
-                            // var maxDate = e.max;
-
-                            // //console.log(Highcharts.dateFormat(null, e.min));
-
-                            // // lower limit index of subarray bounded by slider dates
-                            // // must be >= minDate; upper limit <= maxDate                              
-                            // var minIndex = 0;
-                            // var maxIndex = 0;
-
-                            // for (var i = 0; i < date_array.length; i++) {
-                            //     var currentDate = date_array[i];
-                            //     if (currentDate > minDate) {
-                            //         minIndex = i;
-                            //         break;
-                            //     }
-                            // }
-                            // for (var i = 0; i < date_array.length; i++) {
-                            //     var currentDate = date_array[i];
-                            //     if (currentDate < maxDate) {
-                            //         maxIndex = i + 1;
-                            //     }
-                            // }
-
-                            // // get slope and y intercept of sub array
-                            // that.selector.minIndex = minIndex;
-                            // that.selector.maxIndex = maxIndex;
-
-                            // var sub_displacements = displacement_array.slice(minIndex, maxIndex + 1);
-                            // var sub_decimal_dates = decimal_dates.slice(minIndex, maxIndex + 1);
-                            // var sub_result = calcLinearRegression(sub_displacements, sub_decimal_dates);
-
-                            // // get linear regression data for sub array
-                            // var sub_chart_data = chart_data.slice(minIndex, maxIndex + 1);
-                            // var sub_slope = sub_result["equation"][0];
-                            // var sub_y = sub_result["equation"][1];
-                            // var sub_regression_data = getRegressionChartData(sub_slope, sub_y, sub_decimal_dates, sub_chart_data);
-
-
-                            // // remove an existing sub array from chart
-                            // var chart = $('#' + chartContainer).highcharts();
-                            // var seriesLength = chart.series.length;
-
-                            // for (var i = seriesLength - 1; i > -1; i--) {
-                            //     if (chart.series[i].name == "Linear Regression") {
-                            //         chart.series[i].remove();
-                            //         break;
-                            //     }
-                            // }
-
-                            // var date_range = Highcharts.dateFormat(null, minDate) + " - " + Highcharts.dateFormat(null, maxDate);
-                            // chart.addSeries({
-                            //     type: 'line',
-                            //     name: 'Linear Regression',
-                            //     color: '#808080',
-                            //     data: sub_regression_data,
-                            //     marker: {
-                            //         enabled: false
-                            //     }
-                            // });
-
-                            // chart.setTitle(null, {
-                            //     text: "velocity: " + sub_slope.toString().substr(0, 8) + " m/yr"
-                            // });
+                        afterSetExtremes: function(e) {    
                             // we get called when graph is created
                             that.graphsController.graphSettings[chartContainer].navigatorEvent = e;
                             if (regressionToggleButton.toggleState == ToggleStates.ON) {

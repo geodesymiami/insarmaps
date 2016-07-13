@@ -9,7 +9,7 @@ function GraphsController() {
             date_array: null,
             decimal_dates: null,
             displacement_array: null,
-            mavigatorEvent: null,
+            navigatorEvent: null,
             firstToggle
         },
         "chartContainer2": {
@@ -36,7 +36,7 @@ function GraphsController() {
 
         // returns array for linear regression on chart
         var regression_data = getRegressionChartData(slope, y, graphSettings.decimal_dates, chart_data);
-        // calculate regression based on current range
+        // calculate regression based on current range        
         if (graphSettings.navigatorEvent != null) {
             // lower limit index of subarray bounded by slider dates
             // must be >= minDate; upper limit <= maxDate                              
@@ -57,6 +57,7 @@ function GraphsController() {
                     maxIndex = i + 1;
                 }
             }
+            console.log(maxIndex);
             var sub_displacements = graphSettings.displacement_array.slice(minIndex, maxIndex + 1);
             var sub_decimal_dates = graphSettings.decimal_dates.slice(minIndex, maxIndex + 1);
             var sub_result = calcLinearRegression(sub_displacements, sub_decimal_dates);
@@ -297,10 +298,16 @@ function GraphsController() {
 
     // recreates graphs, preserving the selected ranges on the high charts navigator
     this.recreateGraphs = function() {        
-        var chart = $("#chartContainer").highcharts(that.highChartsOpts["chartContainer"]);
+        $("#chartContainer").highcharts(that.highChartsOpts["chartContainer"]);
+        var chart = $("#chartContainer").highcharts();
+        var graphSettings = that.graphSettings["chartContainer"];
 
+        chart.xAxis[0].setExtremes(graphSettings.navigatorEvent.min, graphSettings.navigatorEvent.max);
         if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-            var chart2 = $("#chartContainer2").highcharts(that.highChartsOpts["chartContainer2"]);
+            graphSettings = that.graphSettings["chartContainer2"];
+            $("#chartContainer2").highcharts(that.highChartsOpts["chartContainer2"]);
+            var chart2 = $("#chartContainer2").highcharts();
+            chart2.xAxis[0].setExtremes(graphSettings.navigatorEvent.min, graphSettings.navigatorEvent.max);
         }
 
         if (dotToggleButton.toggleState == ToggleStates.ON) {
