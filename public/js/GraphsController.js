@@ -141,7 +141,7 @@ function GraphsController() {
     this.connectDots = function() {
         var graphOpts = that.highChartsOpts["chartContainer"];
         graphOpts.series[0].type = "line";
-        $("#chartContainer").highcharts(graphOpts);
+        that.recreateGraph("chartContainer");
         var chart = $("#chartContainer").highcharts();
 
         // prevents bug resulting from toggling line connecting points on the graph
@@ -171,7 +171,7 @@ function GraphsController() {
 
         var graphOpts = that.highChartsOpts["chartContainer2"];
         graphOpts.series[0].type = "line";
-        $("#chartContainer2").highcharts(graphOpts);
+        that.recreateGraph("chartContainer2");
         chart = $("#chartContainer2").highcharts();
 
         // prevents bug resulting from toggling line connecting points on the graph
@@ -195,7 +195,7 @@ function GraphsController() {
     this.disconnectDots = function() {
         var graphOpts = that.highChartsOpts["chartContainer"];
         graphOpts.series[0].type = "scatter";
-        $("#chartContainer").highcharts(graphOpts);      
+        that.recreateGraph("chartContainer");
         var chart = $("#chartContainer").highcharts(graphOpts);
 
         // prevents bug resulting from toggling line connecting points on the graph
@@ -224,7 +224,7 @@ function GraphsController() {
         }
         var graphOpts = that.highChartsOpts["chartContainer2"];
         graphOpts.series[0].type = "scatter";
-        $("#chartContainer2").highcharts(graphOpts);
+        that.recreateGraph("chartContainer2");
         chart = $("#chartContainer2").highcharts();
 
         // prevents bug resulting from toggling line connecting points on the graph
@@ -288,7 +288,15 @@ function GraphsController() {
         $("#chartContainer").height(newHeight);
         var graphOpts = that.highChartsOpts["chartContainer"];
         graphOpts.navigator.enabled = false;
-        $("#chartContainer").highcharts(graphOpts);
+        
+        that.recreateGraph("chartContainer");
+
+        // if chart is already rendered but just hidden, recreate it to resize
+        var chart2 = $("#chartContainer2").highcharts();
+        if (chart2 !== undefined) {
+            that.recreateGraph("chartContainer2");
+        }
+
         $("#select-graph-focus-div").css("display", "block");
         that.selectedGraph = $("#select-graph-focus-div").find(":selected").text();
     };
@@ -308,7 +316,9 @@ function GraphsController() {
         var newHeight = $("#chartContainer").height();
         var graphOpts = that.highChartsOpts["chartContainer"];
         graphOpts.navigator.enabled = true;
-        $("#chartContainer").highcharts(graphOpts);
+        
+        that.recreateGraph("chartContainer");
+
         $("#select-graph-focus-div").css("display", "none");
         that.selectedGraph = "Top Graph";
     };
@@ -321,31 +331,31 @@ function GraphsController() {
         }
     };
 
-    // recreates graphs, preserving the selected ranges on the high charts navigator
-    this.recreateGraphs = function() {
-        var graphSettings = that.graphSettings["chartContainer"];
-        var graphOpts = that.highChartsOpts["chartContainer"];
-        $("#chartContainer").highcharts(graphOpts);
-        var chart = $("#chartContainer").highcharts();        
+    this.recreateGraph = function(chartContainer) {
+        var graphSettings = that.graphSettings[chartContainer];
+        var graphOpts = that.highChartsOpts[chartContainer];
+        $("#" + chartContainer).highcharts(graphOpts);
+        var chart = $("#" + chartContainer).highcharts();
+
+        if (!chart) {
+            return;
+        }
 
         chart.xAxis[0].setExtremes(graphSettings.navigatorEvent.min, graphSettings.navigatorEvent.max);
-        if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-            graphSettings = that.graphSettings["chartContainer2"];
-            graphOpts = that.highChartsOpts["chartContainer2"];
-            $("#chartContainer2").highcharts(graphOpts);
-            var chart2 = $("#chartContainer2").highcharts();
-            if (chart2 !== undefined) {
-                chart2.xAxis[0].setExtremes(graphSettings.navigatorEvent.min, graphSettings.navigatorEvent.max);
-            }
+        if (regressionToggleButton.toggleState == ToggleStates.ON) {
+            that.addRegressionLines();
         }
+    };
 
-        if (dotToggleButton.toggleState == ToggleStates.ON) {
-            that.connectDots();
-        }
+    // recreates graphs, preserving the selected ranges on the high charts navigator
+    this.recreateGraphs = function() {
+        that.recreateGraph("chartContainer");
+        that.recreateGraph("chartContainer2");
 
         if (regressionToggleButton.toggleState == ToggleStates.ON) {
             that.addRegressionLines();
         }
+
         that.setNavigatorHandlers();
     };
 }
