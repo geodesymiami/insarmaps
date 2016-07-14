@@ -37,6 +37,17 @@ var getDaysElapsed = function(date) {
     return Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
 }
 
+// take displacements, decimal dates, and slope of linear regression line
+// returns array of numbers = (displacements - slope * decimal dates)
+var getlinearDetrend = function(displacements,decimal_dates,slope) {
+    detrend_array = [];
+    for (i = 0; i < decimal_dates.length; i++) {
+        detrend = displacements[i] - (slope * decimal_dates[i]);
+        detrend_array.push(detrend);
+    }
+    return detrend_array;
+}
+
 // convert date in decimal - for example, 20060131 is Jan 31, 2006
 // 31 days have passed so decimal format = [2006 + (31/365)] = 2006.0849
 // take an array of date objects and return an array of date decimals

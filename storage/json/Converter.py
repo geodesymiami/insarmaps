@@ -166,7 +166,7 @@ except:
 # start clock to track how long conversion process takes
 start_time = time.clock()
 
-# get the attributes of the group
+# get the attributes for calculating latitude and longitude
 x_step = float(group.attrs["X_STEP"])
 y_step = float(group.attrs["Y_STEP"])
 x_first = float(group.attrs["X_FIRST"])
@@ -175,6 +175,9 @@ num_columns = int(group.attrs["WIDTH"])
 num_rows = int(group.attrs["FILE_LENGTH"])
 print "columns: %d" % num_columns
 print "rows: %d" % num_rows
+
+# get all attributes to be ecn
+attributes = group.attrs
 
 # get keys
 dataset_keys = group.keys()
