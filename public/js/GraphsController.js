@@ -321,7 +321,9 @@ function GraphsController() {
             graphSettings = that.graphSettings["chartContainer2"];
             $("#chartContainer2").highcharts(that.highChartsOpts["chartContainer2"]);
             var chart2 = $("#chartContainer2").highcharts();
-            chart2.xAxis[0].setExtremes(graphSettings.navigatorEvent.min, graphSettings.navigatorEvent.max);
+            if (chart2 !== undefined) {
+                chart2.xAxis[0].setExtremes(graphSettings.navigatorEvent.min, graphSettings.navigatorEvent.max);
+            }
         }
 
         if (dotToggleButton.toggleState == ToggleStates.ON) {
