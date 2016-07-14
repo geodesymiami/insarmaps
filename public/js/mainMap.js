@@ -257,9 +257,11 @@ function Map(loadJSONFunc) {
                 xAxis: {
                     type: 'datetime',
                     events: { // get dates for slider bounds
-                        afterSetExtremes: function(e) {    
+                        afterSetExtremes: function(e) {
                             // we get called when graph is created
                             that.graphsController.graphSettings[chartContainer].navigatorEvent = e;
+                            that.graphsController.getValideDatesFromNavigatorExtremes(chartContainer);
+
                             if (regressionToggleButton.toggleState == ToggleStates.ON) {
                                 that.graphsController.addRegressionLine(chartContainer);
                             }
