@@ -312,6 +312,10 @@ function Map(loadJSONFunc) {
                 }
             };
 
+            if (chartContainer == "chartContainer2") {
+                chartOpts.navigator.enabled = false;
+            }
+
             $('#' + chartContainer).highcharts(chartOpts);
             that.graphsController.highChartsOpts[chartContainer] = chartOpts;
 

@@ -1,3 +1,9 @@
+// for every graph operation, we simply re create the graph.
+// set size was playing weird games when the div was resized, and chart.series[0].update
+// was playing even weirder games when chart type was being changed. this: http://jsfiddle.net/P8hrN/
+// had promise, but it required us using a stockchart, which in turn required us re styling the
+// stock chart to look like a regular graph. To save headaches, we simply re create the graph... performance
+// penalty is not noticeable.
 function GraphsController() {
     var that = this;
     this.highChartsOpts = [];
@@ -133,11 +139,10 @@ function GraphsController() {
     };
 
     this.connectDots = function() {
+        var graphOpts = that.highChartsOpts["chartContainer"];
+        graphOpts.series[0].type = "line";
+        $("#chartContainer").highcharts(graphOpts);
         var chart = $("#chartContainer").highcharts();
-
-        chart.series[0].update({
-            type: "line"
-        });
 
         // prevents bug resulting from toggling line connecting points on the graph
         // without this, this function gets called the first time, but for some reason,
@@ -157,15 +162,17 @@ function GraphsController() {
             that.graphSettings["chartContainer"].firstToggle = false;
         }
 
-        // repeat for other chart
+        // repeat for other chart        
         chart = $("#chartContainer2").highcharts();
 
         if (chart === undefined) {
             return;
         }
-        chart.series[0].update({
-            type: "line"
-        });
+
+        var graphOpts = that.highChartsOpts["chartContainer2"];
+        graphOpts.series[0].type = "line";
+        $("#chartContainer2").highcharts(graphOpts);
+        chart = $("#chartContainer2").highcharts();
 
         // prevents bug resulting from toggling line connecting points on the graph
         // without this, this function gets called the first time, but for some reason,
@@ -186,11 +193,10 @@ function GraphsController() {
     };
 
     this.disconnectDots = function() {
-        var chart = $("#chartContainer").highcharts();
-
-        chart.series[0].update({
-            type: "scatter"
-        });
+        var graphOpts = that.highChartsOpts["chartContainer"];
+        graphOpts.series[0].type = "scatter";
+        $("#chartContainer").highcharts(graphOpts);      
+        var chart = $("#chartContainer").highcharts(graphOpts);
 
         // prevents bug resulting from toggling line connecting points on the graph
         // without this, this function gets called the first time, but for some reason,
@@ -210,15 +216,16 @@ function GraphsController() {
             that.graphSettings["chartContainer"].firstToggle = false;
         }
 
-        // repeat for other chart
+        // repeat for other chart        
         chart = $("#chartContainer2").highcharts();
 
         if (chart === undefined) {
             return;
         }
-        chart.series[0].update({
-            type: "scatter"
-        });
+        var graphOpts = that.highChartsOpts["chartContainer2"];
+        graphOpts.series[0].type = "scatter";
+        $("#chartContainer2").highcharts(graphOpts);
+        chart = $("#chartContainer2").highcharts();
 
         // prevents bug resulting from toggling line connecting points on the graph
         // without this, this function gets called the first time, but for some reason,
@@ -279,7 +286,9 @@ function GraphsController() {
         var newWidth = $("#chartContainer").width();
         var newHeight = $("#chartContainer").height();
         $("#chartContainer").height(newHeight);
-        $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
+        var graphOpts = that.highChartsOpts["chartContainer"];
+        graphOpts.navigator.enabled = false;
+        $("#chartContainer").highcharts(graphOpts);
         $("#select-graph-focus-div").css("display", "block");
         that.selectedGraph = $("#select-graph-focus-div").find(":selected").text();
     };
@@ -297,7 +306,9 @@ function GraphsController() {
         $("#chartContainer").height("100%");
         var newWidth = $("#chartContainer").width();
         var newHeight = $("#chartContainer").height();
-        $("#chartContainer").highcharts().setSize(newWidth, newHeight, doAnimation = true);
+        var graphOpts = that.highChartsOpts["chartContainer"];
+        graphOpts.navigator.enabled = true;
+        $("#chartContainer").highcharts(graphOpts);
         $("#select-graph-focus-div").css("display", "none");
         that.selectedGraph = "Top Graph";
     };
@@ -312,14 +323,16 @@ function GraphsController() {
 
     // recreates graphs, preserving the selected ranges on the high charts navigator
     this.recreateGraphs = function() {
-        $("#chartContainer").highcharts(that.highChartsOpts["chartContainer"]);
-        var chart = $("#chartContainer").highcharts();
         var graphSettings = that.graphSettings["chartContainer"];
+        var graphOpts = that.highChartsOpts["chartContainer"];
+        $("#chartContainer").highcharts(graphOpts);
+        var chart = $("#chartContainer").highcharts();        
 
         chart.xAxis[0].setExtremes(graphSettings.navigatorEvent.min, graphSettings.navigatorEvent.max);
         if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
             graphSettings = that.graphSettings["chartContainer2"];
-            $("#chartContainer2").highcharts(that.highChartsOpts["chartContainer2"]);
+            graphOpts = that.highChartsOpts["chartContainer2"];
+            $("#chartContainer2").highcharts(graphOpts);
             var chart2 = $("#chartContainer2").highcharts();
             if (chart2 !== undefined) {
                 chart2.xAxis[0].setExtremes(graphSettings.navigatorEvent.min, graphSettings.navigatorEvent.max);
