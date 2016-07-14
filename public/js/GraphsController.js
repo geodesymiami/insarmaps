@@ -1,6 +1,6 @@
 // for every graph operation, we simply re create the graph.
 // set size was playing weird games when the div was resized, and chart.series[0].update
-// was playing even weirder games when chart type was being changed. this: http://jsfiddle.net/P8hrN/
+// was playing even weirder games when chart type was being changed. this: http://jsfiddle.net/4r4g327g/4/
 // had promise, but it required us using a stockchart, which in turn required us re styling the
 // stock chart to look like a regular graph. To save headaches, we simply re create the graph... performance
 // penalty is not noticeable.
