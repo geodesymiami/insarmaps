@@ -312,6 +312,8 @@ function Map(loadJSONFunc) {
                 }
             };
 
+            that.graphsController.graphSettings[chartContainer].navigatorEvent = e;
+
             if (chartContainer == "chartContainer2") {
                 chartOpts.navigator.enabled = false;
             }
