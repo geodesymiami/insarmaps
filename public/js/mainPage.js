@@ -29,6 +29,8 @@ function getGEOJSON(area) {
 
     myMap.initLayer(myMap.tileJSON, "streets");
     myMap.map.style.on("load", function() {
+        overlayToggleButton.set("on");
+
         window.setTimeout(function() {
             myMap.map.flyTo({
                 center: [area.coords.latitude, area.coords.longitude],
@@ -53,18 +55,18 @@ function goToTab(event, id) {
 
 function ToggleButton(id) {
     var that = this;
-    this.toggleState = ToggleStates.off;
     this.id = id;
+    this.toggleState = $(this.id).prop('checked') ? ToggleStates.ON : ToggleStates.OFF;
     this.onclick = null;
     this.firstToggle = true;
 
     this.toggle = function() {
-        $(that.id).toggleClass('toggle-button-selected');
-
         if (that.toggleState == ToggleStates.ON) {
             that.toggleState = ToggleStates.OFF;
+            $(this.id).prop('checked', false);
         } else {
             that.toggleState = ToggleStates.ON;
+            $(this.id).prop('checked', true);
         }
     };
 
@@ -433,8 +435,6 @@ $(window).load(function() {
             }
         });
     });
-    $("#overlay-toggle-button").toggleClass('toggle-button-selected');
-    overlayToggleButton.toggleState = ToggleStates.ON;
 
     // enter key triggers go button for search
     $("#search-input").keyup(function(event) {

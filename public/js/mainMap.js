@@ -718,10 +718,8 @@ function Map(loadJSONFunc) {
     this.removeTouchLocationMarkers = function() {
         // remove selected point marker if it exists, and create a new GeoJSONSource for it
         // prevents crash of "cannot read property 'send' of undefined"
-        console.log("gonna");
         var layerID = "Top Graph";
         if (that.map.getLayer(layerID)) {
-            console.log("remove");
             that.map.removeLayer(layerID);
             that.map.removeSource(layerID);
 
@@ -751,7 +749,10 @@ function Map(loadJSONFunc) {
         // remove popup which shows area attributes
         $('.wrap#area-attributes-div').toggleClass('active');
         // and the graphs
-        $('.wrap#charts').toggleClass('active');
+        if ($('.wrap#charts').hasClass('active')) {
+            $('.wrap#charts').toggleClass('active');
+        }
+        overlayToggleButton.set("off");
     };
 }
 

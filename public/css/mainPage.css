@@ -362,7 +362,7 @@ label {
     width: 33%;
 }
 
-.toggle-button {
+/*.toggle-button {
     background-color: white;
     margin: 3px 0 0 0;
     border-radius: 20px;
@@ -414,7 +414,7 @@ label {
     height: 22px;
     box-shadow: 0 0 0px rgba(0, 0, 0, 0.1);
 }
-
+*/
 
 /*disable compass in nav controls*/
 

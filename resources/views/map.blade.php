@@ -53,9 +53,7 @@
         <div id="overlay-options">
           <div class="overlay_toggle">
             <label>Turn on/off data overlay</label>
-            <div id="overlay-toggle-button" class="toggle-button">
-              <button></button>
-            </div>
+            <input id = "overlay-toggle-button" type="checkbox" name="overlayToggle"/>
           </div>
           <div id="overlay-slider"></div>
         </div>
@@ -109,21 +107,15 @@
       <div id="map-options">
         <div class="overlay_toggle">
           <label>Second Graph</label>
-          <div class="toggle-button" id="second-graph-toggle-button">
-            <button></button>          
-          </div>
+          <input id = "second-graph-toggle-button" type="checkbox" name="overlayToggle"/>          
         </div>
         <div class="overlay_toggle">
           <label>Connect dots</label>
-          <div class="toggle-button" id="dot-toggle-button">
-            <button></button>          
-          </div>
+          <input id = "dot-toggle-button" type="checkbox" name="overlayToggle"/>          
         </div>
         <div class="overlay_toggle">
           <label>Regression</label>
-          <div class="toggle-button" id="regression-toggle-button">
-            <button></button>          
-          </div>
+          <input id = "regression-toggle-button" type="checkbox" name="overlayToggle"/>          
         </div>
         <div id="select-graph-focus-div">
           Select for Graph:
