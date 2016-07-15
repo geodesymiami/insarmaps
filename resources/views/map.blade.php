@@ -52,7 +52,7 @@
       <div id="overlay-options-wrapper">
         <div id="overlay-options">
           <div class="overlay_toggle">
-            <label>Turn on/off data overlay</label>
+            <label>Data overlay</label>
             <input id = "overlay-toggle-button" type="checkbox" name="overlayToggle"/>
           </div>
           <div id="overlay-slider"></div>
