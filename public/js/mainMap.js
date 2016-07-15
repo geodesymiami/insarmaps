@@ -39,7 +39,7 @@ var getDaysElapsed = function(date) {
 
 // take displacements, decimal dates, and slope of linear regression line
 // returns array of numbers = (displacements - slope * decimal dates)
-var getlinearDetrend = function(displacements,decimal_dates,slope) {
+var getlinearDetrend = function(displacements, decimal_dates, slope) {
     detrend_array = [];
     for (i = 0; i < decimal_dates.length; i++) {
         detrend = displacements[i] - (slope * decimal_dates[i]);
@@ -386,7 +386,12 @@ function Map(loadJSONFunc) {
         // the flyTo zoom when an area is loaded
         var currentZoom = that.map.getZoom();
         if (currentZoom <= 7.0) {
-            that.zoomOutZoom = that.map.getZoom();
+            // prevent zoom below 1.0, as floating point inaccuracies can cause bugs at most zoomed out level
+            if (currentZoom <= 1.0) {
+                that.zoomOutZoom = 1.0;
+            } else {
+                that.zoomOutZoom = that.map.getZoom();
+            }
         }
 
         var feature = features[0];
@@ -685,18 +690,7 @@ function Map(loadJSONFunc) {
 
             // reshow area markers once we zoom out enough
             if (that.pointsLoaded() && that.map.getZoom() <= that.zoomOutZoom) {
-                myMap.removePoints();
-                myMap.removeTouchLocationMarker();
-                myMap.elevationPopup.remove(); // incase it's up
-
-                that.loadAreaMarkers();
-
-                // remove click listener for selecting an area, and add new one for clicking on a point
-                that.map.off("click");
-                that.map.on('click', that.clickOnAnAreaMaker);
-
-                // remove popup which shows area attributes
-                $('.wrap#area-attributes-div').toggleClass('active');
+                that.reset();
             }
         });
     };
@@ -721,24 +715,43 @@ function Map(loadJSONFunc) {
         that.layers_ = that.layers_.slice(0, 1);
     }
 
-    this.removeTouchLocationMarker = function() {
+    this.removeTouchLocationMarkers = function() {
         // remove selected point marker if it exists, and create a new GeoJSONSource for it
         // prevents crash of "cannot read property 'send' of undefined"
-        var layerID = "touchLocation";
+        console.log("gonna");
+        var layerID = "Top Graph";
         if (that.map.getLayer(layerID)) {
+            console.log("remove");
             that.map.removeLayer(layerID);
             that.map.removeSource(layerID);
 
             that.clickLocationMarker = new mapboxgl.GeoJSONSource();
         }
 
-        layerID = "touchLocation2";
+        layerID = "Bottom Graph";
         if (that.map.getLayer(layerID)) {
             that.map.removeLayer(layerID);
             that.map.removeSource(layerID);
 
             that.clickLocationMarker2 = new mapboxgl.GeoJSONSource();
         }
+    };
+
+    this.reset = function() {
+        myMap.removePoints();
+        myMap.removeTouchLocationMarkers();
+        myMap.elevationPopup.remove(); // incase it's up
+
+        that.loadAreaMarkers();
+
+        // remove click listener for selecting an area, and add new one for clicking on a point
+        that.map.off("click");
+        that.map.on('click', that.clickOnAnAreaMaker);
+
+        // remove popup which shows area attributes
+        $('.wrap#area-attributes-div').toggleClass('active');
+        // and the graphs
+        $('.wrap#charts').toggleClass('active');
     };
 }
 

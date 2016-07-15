@@ -14,7 +14,7 @@ function getGEOJSON(area) {
 
     if (myMap.pointsLoaded()) {
         myMap.removePoints();
-        myMap.removeTouchLocationMarker();
+        myMap.removeTouchLocationMarkers();
     }
 
     // make streets toggle button be only checked one
@@ -177,7 +177,7 @@ overlayToggleButton.onclick(function() {
             console.log("loaded");
             $("#overlay-slider").slider("value", 0);
             myMap.removePoints();
-            myMap.removeTouchLocationMarker();
+            myMap.removeTouchLocationMarkers();
         }
     }
 });
@@ -204,7 +204,7 @@ function switchLayer(layer) {
             long = markerCoords[1];
             mapHadClickLocationMarker = true;
 
-            myMap.removeTouchLocationMarker();
+            myMap.removeTouchLocationMarkers();
         }
 
         myMap.map.setStyle({
@@ -385,15 +385,7 @@ $(window).load(function() {
 
     $("#reset-button").on("click", function() {
         if (myMap.pointsLoaded()) {
-            myMap.removePoints();
-            myMap.removeTouchLocationMarker();
-            myMap.elevationPopup.remove(); // incase it's up
-
-            myMap.loadAreaMarkers();
-
-            // remove click listener for selecting an area, and add new one for clicking on a point
-            myMap.map.off("click");
-            myMap.map.on('click', myMap.clickOnAnAreaMaker);
+            myMap.reset();
         }
 
         myMap.map.flyTo({
