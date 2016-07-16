@@ -444,11 +444,15 @@ $(window).load(function() {
             $("#search-button").click();
         }
     });
-    var json = null;
+    
     var clickedArea = null;
     // logic for search button
     $("#search-button").on("click", function() {
+        var json = myMap.areas;
         console.log(json);
+        if (!$('.wrap#select-area-wrap').hasClass('active')) {
+            $('.wrap#select-area-wrap').toggleClass('active');
+        }
         if (json != null) {
             // TODO: dummy search for paper, add actual paper later on when we get attribute    
             query = $("#search-input").val();
@@ -498,49 +502,13 @@ $(window).load(function() {
 
         } else {
             console.log("No such areas");
+            $("#tableBody").html("No areas found");
         }
 
     });
 
     $("#close-button").on("click", function() {
         $('.wrap#select-area-wrap').toggleClass('active');
-    });
-
-    $('#popupButton').on('click', function() {
-        $('.wrap#select-area-wrap').toggleClass('active');
-
-        // get json response and put it in a table
-        loadJSON("", "areas", function(response) {
-            json = JSON.parse(response);
-
-            // add our info in a table, first remove any old info
-            $(".wrap#select-area-wrap").find(".content").find("#myTable").find("#tableBody").empty();
-            for (var i = 0; i < json.areas.length; i++) {
-                var area = json.areas[i];
-
-                $("#tableBody").append("<tr id=" + area.name + "><td value='" + area.name + "''>" + area.name +
-                    "</td><td value='reference'><a href='http://www.rsmas.miami.edu/personal/famelung/Publications_files/ChaussardAmelungAoki_VolcanoCycles_JGR_2013.pdf' target='_blank'>" +
-                    "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288.</a></td></tr>");
-
-                // make cursor change when mouse hovers over row
-                $("#" + area.name).css("cursor", "pointer");
-                // set the on click callback function for this row
-
-                // ugly click function declaration to JS not using block scope
-                $("#" + area.name).click((function(area) {
-                    return function(e) {
-                        // don't load area if reference link is clicked
-                        if (e.target.cellIndex == 0) {
-                            clickedArea = area.name;
-                            $('.wrap#select-area-wrap').toggleClass('active');
-                            getGEOJSON(area);
-                        }
-                    };
-                })(area));
-            }
-        });
-
-        return false;
     });
 
     // cancel the popup

@@ -113,6 +113,7 @@ function Map(loadJSONFunc) {
     this.selector = null;
     this.zoomOutZoom = 7.0;
     this.graphsController = new GraphsController();
+    this.areas = null;
 
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,
@@ -486,6 +487,7 @@ function Map(loadJSONFunc) {
     this.loadAreaMarkers = function() {
         loadJSONFunc("", "areas", function(response) {
             var json = JSON.parse(response);
+            that.areas = json;
 
             var areaMarker = new mapboxgl.GeoJSONSource({
                 cluster: false,
@@ -607,7 +609,6 @@ function Map(loadJSONFunc) {
         });
 
         that.map.addControl(new mapboxgl.Navigation());
-        that.map.addControl(new mapboxgl.Geocoder());
 
         // disable rotation gesture
         that.map.dragRotate.disable();

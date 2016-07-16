@@ -284,6 +284,17 @@ div.menu {
     margin-top: 2em;
 }
 
+#search-bar {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 99;
+}
+#search-bar .input-group {
+    margin: 10px 0 0 10px;
+    max-width: 240px;
+}
+
 #top-map-buttons {
     position: absolute;
     top: 6px;
@@ -436,7 +447,7 @@ div.menu {
     position: absolute;
     font-family: 'Open Sans', sans-serif;
     z-index: 99;
-    left: 45px;
+    left: 10px;
     top: 55px;
     border-radius: 10px;
 }
