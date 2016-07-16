@@ -20,7 +20,7 @@ function getGEOJSON(area) {
     // make streets toggle button be only checked one
     $("#streets").prop("checked", true);
 
-    for (var i = 1; i <= area.coords.num_chunks; i++) {
+    for (var i = 1; i <= area.num_chunks; i++) {
         var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
         myMap.tileJSON.vector_layers.push(layer);
     }
@@ -470,7 +470,7 @@ $(window).load(function() {
             // new sublist of areas that match query
             var match_areas = [];
 
-            var fuse = new Fuse(areas, { keys: ["coords.country", "name", "reference"] });
+            var fuse = new Fuse(areas, { keys: ["country", "name", "reference"] });
             var countries = fuse.search(query);
 
             console.log("area 1");

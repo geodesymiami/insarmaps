@@ -409,8 +409,8 @@ function Map(loadJSONFunc) {
             "coords": {
                 "latitude": lat,
                 "longitude": long,
-                "num_chunks": num_chunks
-            }
+            },
+            "num_chunks": num_chunks
         };
 
         getGEOJSON(markerArea);
@@ -510,7 +510,7 @@ function Map(loadJSONFunc) {
                     "properties": {
                         "marker-symbol": "marker",
                         "name": area.name,
-                        "num_chunks": area.coords.num_chunks
+                        "num_chunks": area.num_chunks
                     }
                 };
 
