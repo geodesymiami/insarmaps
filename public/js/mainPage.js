@@ -200,19 +200,30 @@ function switchLayer(layer) {
         // if (myMap.map.getLayer(layerID)) {
 
         // }
-        var layerID = "touchLocation";
-        var lat = 0.0;
-        var long = 0.0;
-        var mapHadClickLocationMarker = false;
+        var layerIDTop = "Top Graph";
+        var latTop = 0.0;
+        var longTop = 0.0;
+        var mapHadClickLocationMarkerTop = false;
+        var layerIDBot = "Bottom Graph";
+        var latBot = 0.0;
+        var longBot = 0.0;
+        var mapHadClickLocationMarkerBot = false;
 
-        if (myMap.map.getLayer(layerID)) {
+        if (myMap.map.getLayer(layerIDTop)) {
             var markerCoords = myMap.clickLocationMarker._data.features[0].geometry.coordinates;
-            lat = markerCoords[0];
-            long = markerCoords[1];
-            mapHadClickLocationMarker = true;
+            latTop = markerCoords[0];
+            longTop = markerCoords[1];
+            mapHadClickLocationMarkerTop = true;
+
+            if (myMap.map.getLayer(layerIDBot)) {
+                var markerCoords = myMap.clickLocationMarker2._data.features[0].geometry.coordinates;
+                latBot = markerCoords[0];
+                longBot = markerCoords[1];
+                mapHadClickLocationMarkerBot = true;
+            }
 
             myMap.removeTouchLocationMarkers();
-        }
+        }        
 
         myMap.map.setStyle({
             version: 8,
@@ -238,26 +249,52 @@ function switchLayer(layer) {
         // finally, add back the click location marker, do on load of style to prevent
         // style not done loading error
         myMap.map.style.on("load", function() {
-            if (mapHadClickLocationMarker) {
+            if (mapHadClickLocationMarkerTop) {
                 myMap.clickLocationMarker.setData({
                     "type": "FeatureCollection",
                     "features": [{
                         "type": "Feature",
                         "geometry": {
                             "type": "Point",
-                            "coordinates": [lat, long]
+                            "coordinates": [latTop, longTop]
                         },
                         "properties": {
                             "marker-symbol": "cross"
                         }
                     }]
                 });
-                myMap.map.addSource(layerID, myMap.clickLocationMarker);
+                myMap.map.addSource(layerIDTop, myMap.clickLocationMarker);
 
                 myMap.map.addLayer({
-                    "id": layerID,
+                    "id": layerIDTop,
                     "type": "symbol",
-                    "source": layerID,
+                    "source": layerIDTop,
+                    "layout": {
+                        "icon-image": "{marker-symbol}-15",
+                    }
+                });
+            }
+
+            if (mapHadClickLocationMarkerBot) {
+                myMap.clickLocationMarker2.setData({
+                    "type": "FeatureCollection",
+                    "features": [{
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [latBot, longBot]
+                        },
+                        "properties": {
+                            "marker-symbol": "crossRed"
+                        }
+                    }]
+                });
+                myMap.map.addSource(layerIDBot, myMap.clickLocationMarker2);
+
+                myMap.map.addLayer({
+                    "id": layerIDBot,
+                    "type": "symbol",
+                    "source": layerIDBot,
                     "layout": {
                         "icon-image": "{marker-symbol}-15",
                     }
@@ -449,7 +486,7 @@ $(window).load(function() {
             $("#search-button").click();
         }
     });
-    
+
     var clickedArea = null;
     // logic for search button
     $("#search-button").on("click", function() {

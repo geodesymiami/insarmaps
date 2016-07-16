@@ -203,6 +203,7 @@ function Map(loadJSONFunc) {
                     "icon-image": "{marker-symbol}-15",
                 }
             });
+            console.log("we added " + layerID);
         } else {
             clickMarker.setData({
                 "type": "FeatureCollection",
@@ -326,7 +327,8 @@ function Map(loadJSONFunc) {
 
             that.graphsController.graphSettings[chartContainer].navigatorEvent = e;
 
-            if (chartContainer == "chartContainer2") {
+            // take out navigator not only if this is the bottom graph, but if the second graph toggle is on, period
+            if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
                 chartOpts.navigator.enabled = false;
             }
 
