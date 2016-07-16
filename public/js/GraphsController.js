@@ -15,8 +15,7 @@ function GraphsController() {
             date_array: null,
             decimal_dates: null,
             displacement_array: null,
-            navigatorEvent: null,
-            firstToggle
+            navigatorEvent: null
         },
         "chartContainer2": {
             regressionOn: false,
@@ -24,8 +23,7 @@ function GraphsController() {
             date_array: null,
             decimal_dates: null,
             displacement_array: null,
-            navigatorEvent: null,
-            firstToggle
+            navigatorEvent: null
         }
     };
 
