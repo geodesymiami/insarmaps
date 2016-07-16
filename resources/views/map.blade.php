@@ -5,9 +5,7 @@
  <link rel="stylesheet" href="css/mainPage.css" />
  <link rel="stylesheet" href="css/slideout.css" />
  <!--jQuery-->
- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
- <!--leaflet-->
- <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script> 
  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.0/mapbox-gl.js'></script>
  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.20.0/mapbox-gl.css' rel='stylesheet' />
  
@@ -135,14 +133,7 @@
     <div class="close-button-div">
       <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
     </div>
-    <div class='content'>
-      <!--search bar-->
-      <div class="input-group">
-        <span class="input-group-btn">
-          <button class="btn btn-default" id="search-button" type="button">Search</button>
-        </span>
-        <input type="text" class="form-control" placeholder="Search for..." id="search-input">
-      </div>                   
+    <div class='content'>                       
       <!-- table to select dataset from-->
       <table class='table' id='myTable'>            
         <thead>
