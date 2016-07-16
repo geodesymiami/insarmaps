@@ -17,25 +17,22 @@ h1.title {
 }
 
 h1 {
-    font-family: 'Carter One', cursive !important;
-    color: coral !important;
+    font-family: 'Myriad Pro', 'Calibri' !important;
 }
 
 h2 {
-    font-family: 'Carter One', cursive !important;
+    font-family: 'Myriad Pro', 'calibri' !important;
     margin-top: 20px;
-    color: coral !important;
 }
 
 h3 {
-    font-family: 'Carter One', cursive !important;
+    font-family: 'Myriad Pro', 'calibri' !important;
     margin-top: 20px;
-    color: coral !important;
 }
 
-label {
-    color: coral !important;
-    font-family: 'Carter One', cursive !important;
+label {    
+    font-family: 'Myriad Pro', 'calibri' !important;
+    color: Black;
 }
 
 .page-container {
@@ -276,7 +273,7 @@ div.panel.show > p {
 }
 
 button {
-    font-family: 'Carter One', cursive !important;
+    font-family: 'Myriad Pro', 'calibri'
 }
 
 p.ul {
@@ -285,6 +282,17 @@ p.ul {
 
 div.menu {
     margin-top: 2em;
+}
+
+#search-bar {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 99;
+}
+#search-bar .input-group {
+    margin: 10px 0 0 10px;
+    max-width: 240px;
 }
 
 #top-map-buttons {
@@ -316,8 +324,7 @@ div.menu {
 }
 
 #reset-button button {
-    background-color: white;
-    color: coral;
+    background-color: white;    
 }
 
 #overlay-options-wrapper {
@@ -343,26 +350,22 @@ div.menu {
     margin-left: 4em;
 }
 
-label {
-    color: white;
-}
-
 .funding {
     color: white;
     margin-left: 2em;
 }
 
-#map-type-menu input[type="radio"]:checked + label {
-    color: coral;
-}
-
 .overlay_toggle {
     float: left;
     display: inline-block;
+    width: 100%;
+}
+
+#map-options .overlay_toggle {
     width: 33%;
 }
 
-.toggle-button {
+/*.toggle-button {
     background-color: white;
     margin: 3px 0 0 0;
     border-radius: 20px;
@@ -414,7 +417,7 @@ label {
     height: 22px;
     box-shadow: 0 0 0px rgba(0, 0, 0, 0.1);
 }
-
+*/
 
 /*disable compass in nav controls*/
 
@@ -436,7 +439,7 @@ label {
     float: left;
     height: 10px;
     width: 95%;
-    bottom: 5px;
+    bottom: 0px;
     background: coral;
 }
 
@@ -444,7 +447,7 @@ label {
     position: absolute;
     font-family: 'Open Sans', sans-serif;
     z-index: 99;
-    left: 45px;
+    left: 10px;
     top: 55px;
     border-radius: 10px;
 }

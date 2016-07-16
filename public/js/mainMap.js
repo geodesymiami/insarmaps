@@ -37,6 +37,17 @@ var getDaysElapsed = function(date) {
     return Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
 }
 
+// take displacements, decimal dates, and slope of linear regression line
+// returns array of numbers = (displacements - slope * decimal dates)
+var getlinearDetrend = function(displacements, decimal_dates, slope) {
+    detrend_array = [];
+    for (i = 0; i < decimal_dates.length; i++) {
+        detrend = displacements[i] - (slope * decimal_dates[i]);
+        detrend_array.push(detrend);
+    }
+    return detrend_array;
+}
+
 // convert date in decimal - for example, 20060131 is Jan 31, 2006
 // 31 days have passed so decimal format = [2006 + (31/365)] = 2006.0849
 // take an array of date objects and return an array of date decimals
@@ -102,6 +113,7 @@ function Map(loadJSONFunc) {
     this.selector = null;
     this.zoomOutZoom = 7.0;
     this.graphsController = new GraphsController();
+    this.areas = null;
 
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,
@@ -375,7 +387,12 @@ function Map(loadJSONFunc) {
         // the flyTo zoom when an area is loaded
         var currentZoom = that.map.getZoom();
         if (currentZoom <= 7.0) {
-            that.zoomOutZoom = that.map.getZoom();
+            // prevent zoom below 1.0, as floating point inaccuracies can cause bugs at most zoomed out level
+            if (currentZoom <= 1.0) {
+                that.zoomOutZoom = 1.0;
+            } else {
+                that.zoomOutZoom = that.map.getZoom();
+            }
         }
 
         var feature = features[0];
@@ -470,6 +487,7 @@ function Map(loadJSONFunc) {
     this.loadAreaMarkers = function() {
         loadJSONFunc("", "areas", function(response) {
             var json = JSON.parse(response);
+            that.areas = json;
 
             var areaMarker = new mapboxgl.GeoJSONSource({
                 cluster: false,
@@ -591,7 +609,6 @@ function Map(loadJSONFunc) {
         });
 
         that.map.addControl(new mapboxgl.Navigation());
-        that.map.addControl(new mapboxgl.Geocoder());
 
         // disable rotation gesture
         that.map.dragRotate.disable();
@@ -674,18 +691,7 @@ function Map(loadJSONFunc) {
 
             // reshow area markers once we zoom out enough
             if (that.pointsLoaded() && that.map.getZoom() <= that.zoomOutZoom) {
-                myMap.removePoints();
-                myMap.removeTouchLocationMarker();
-                myMap.elevationPopup.remove(); // incase it's up
-
-                that.loadAreaMarkers();
-
-                // remove click listener for selecting an area, and add new one for clicking on a point
-                that.map.off("click");
-                that.map.on('click', that.clickOnAnAreaMaker);
-
-                // remove popup which shows area attributes
-                $('.wrap#area-attributes-div').toggleClass('active');
+                that.reset();
             }
         });
     };
@@ -710,10 +716,10 @@ function Map(loadJSONFunc) {
         that.layers_ = that.layers_.slice(0, 1);
     }
 
-    this.removeTouchLocationMarker = function() {
+    this.removeTouchLocationMarkers = function() {
         // remove selected point marker if it exists, and create a new GeoJSONSource for it
         // prevents crash of "cannot read property 'send' of undefined"
-        var layerID = "touchLocation";
+        var layerID = "Top Graph";
         if (that.map.getLayer(layerID)) {
             that.map.removeLayer(layerID);
             that.map.removeSource(layerID);
@@ -721,13 +727,34 @@ function Map(loadJSONFunc) {
             that.clickLocationMarker = new mapboxgl.GeoJSONSource();
         }
 
-        layerID = "touchLocation2";
+        layerID = "Bottom Graph";
         if (that.map.getLayer(layerID)) {
             that.map.removeLayer(layerID);
             that.map.removeSource(layerID);
 
             that.clickLocationMarker2 = new mapboxgl.GeoJSONSource();
         }
+    };
+
+    this.reset = function() {
+        myMap.removePoints();
+        myMap.removeTouchLocationMarkers();
+        myMap.elevationPopup.remove(); // incase it's up
+
+        that.loadAreaMarkers();
+
+        // remove click listener for selecting an area, and add new one for clicking on a point
+        that.map.off("click");
+        that.map.on('click', that.clickOnAnAreaMaker);
+
+        // remove popup which shows area attributes
+        $('.wrap#area-attributes-div').toggleClass('active');
+        // and the graphs
+        if ($('.wrap#charts').hasClass('active')) {
+            $('.wrap#charts').toggleClass('active');
+        }
+        overlayToggleButton.set("off");
+        myMap.tileJSON = null;
     };
 }
 

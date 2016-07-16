@@ -14,7 +14,7 @@ function getGEOJSON(area) {
 
     if (myMap.pointsLoaded()) {
         myMap.removePoints();
-        myMap.removeTouchLocationMarker();
+        myMap.removeTouchLocationMarkers();
     }
 
     // make streets toggle button be only checked one
@@ -29,6 +29,8 @@ function getGEOJSON(area) {
 
     myMap.initLayer(myMap.tileJSON, "streets");
     myMap.map.style.on("load", function() {
+        overlayToggleButton.set("on");
+
         window.setTimeout(function() {
             myMap.map.flyTo({
                 center: [area.coords.latitude, area.coords.longitude],
@@ -53,18 +55,18 @@ function goToTab(event, id) {
 
 function ToggleButton(id) {
     var that = this;
-    this.toggleState = ToggleStates.off;
     this.id = id;
+    this.toggleState = $(this.id).prop('checked') ? ToggleStates.ON : ToggleStates.OFF;
     this.onclick = null;
     this.firstToggle = true;
 
     this.toggle = function() {
-        $(that.id).toggleClass('toggle-button-selected');
-
         if (that.toggleState == ToggleStates.ON) {
             that.toggleState = ToggleStates.OFF;
+            $(this.id).prop('checked', false);
         } else {
             that.toggleState = ToggleStates.ON;
+            $(this.id).prop('checked', true);
         }
     };
 
@@ -115,6 +117,11 @@ var overlayToggleButton = new ToggleButton("#overlay-toggle-button");
 overlayToggleButton.onclick(function() {
     // on? add layers, otherwise remove them
     if (overlayToggleButton.toggleState == ToggleStates.ON) {
+        if (!myMap.tileJSON) {
+            overlayToggleButton.set("off");
+            return;
+        }
+
         $("#overlay-slider").slider("value", 100);
         myMap.map.addSource("vector_layer_", {
             type: 'vector',
@@ -177,7 +184,7 @@ overlayToggleButton.onclick(function() {
             console.log("loaded");
             $("#overlay-slider").slider("value", 0);
             myMap.removePoints();
-            myMap.removeTouchLocationMarker();
+            myMap.removeTouchLocationMarkers();
         }
     }
 });
@@ -204,7 +211,7 @@ function switchLayer(layer) {
             long = markerCoords[1];
             mapHadClickLocationMarker = true;
 
-            myMap.removeTouchLocationMarker();
+            myMap.removeTouchLocationMarkers();
         }
 
         myMap.map.setStyle({
@@ -385,15 +392,7 @@ $(window).load(function() {
 
     $("#reset-button").on("click", function() {
         if (myMap.pointsLoaded()) {
-            myMap.removePoints();
-            myMap.removeTouchLocationMarker();
-            myMap.elevationPopup.remove(); // incase it's up
-
-            myMap.loadAreaMarkers();
-
-            // remove click listener for selecting an area, and add new one for clicking on a point
-            myMap.map.off("click");
-            myMap.map.on('click', myMap.clickOnAnAreaMaker);
+            myMap.reset();
         }
 
         myMap.map.flyTo({
@@ -441,8 +440,6 @@ $(window).load(function() {
             }
         });
     });
-    $("#overlay-toggle-button").toggleClass('toggle-button-selected');
-    overlayToggleButton.toggleState = ToggleStates.ON;
 
     // enter key triggers go button for search
     $("#search-input").keyup(function(event) {
@@ -452,11 +449,15 @@ $(window).load(function() {
             $("#search-button").click();
         }
     });
-    var json = null;
+    
     var clickedArea = null;
     // logic for search button
     $("#search-button").on("click", function() {
+        var json = myMap.areas;
         console.log(json);
+        if (!$('.wrap#select-area-wrap').hasClass('active')) {
+            $('.wrap#select-area-wrap').toggleClass('active');
+        }
         if (json != null) {
             // TODO: dummy search for paper, add actual paper later on when we get attribute    
             query = $("#search-input").val();
@@ -506,49 +507,13 @@ $(window).load(function() {
 
         } else {
             console.log("No such areas");
+            $("#tableBody").html("No areas found");
         }
 
     });
 
     $("#close-button").on("click", function() {
         $('.wrap#select-area-wrap').toggleClass('active');
-    });
-
-    $('#popupButton').on('click', function() {
-        $('.wrap#select-area-wrap').toggleClass('active');
-
-        // get json response and put it in a table
-        loadJSON("", "areas", function(response) {
-            json = JSON.parse(response);
-
-            // add our info in a table, first remove any old info
-            $(".wrap#select-area-wrap").find(".content").find("#myTable").find("#tableBody").empty();
-            for (var i = 0; i < json.areas.length; i++) {
-                var area = json.areas[i];
-
-                $("#tableBody").append("<tr id=" + area.name + "><td value='" + area.name + "''>" + area.name +
-                    "</td><td value='reference'><a href='http://www.rsmas.miami.edu/personal/famelung/Publications_files/ChaussardAmelungAoki_VolcanoCycles_JGR_2013.pdf' target='_blank'>" +
-                    "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288.</a></td></tr>");
-
-                // make cursor change when mouse hovers over row
-                $("#" + area.name).css("cursor", "pointer");
-                // set the on click callback function for this row
-
-                // ugly click function declaration to JS not using block scope
-                $("#" + area.name).click((function(area) {
-                    return function(e) {
-                        // don't load area if reference link is clicked
-                        if (e.target.cellIndex == 0) {
-                            clickedArea = area.name;
-                            $('.wrap#select-area-wrap').toggleClass('active');
-                            getGEOJSON(area);
-                        }
-                    };
-                })(area));
-            }
-        });
-
-        return false;
     });
 
     // cancel the popup

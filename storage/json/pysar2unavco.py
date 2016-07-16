@@ -100,10 +100,12 @@ track_index = project_name.find('T')
 frame_index = project_name.find('F')
 track_number = project_name[track_index+1:frame_index]
 frames = re.search("\d+_\d+", project_name).group(0)
+first_frame = frames.split("_")[0]
+last_frame = frames.split("_")[1]
 mission_index = project_name.find(frames) + len(frames)
 mission = project_name[mission_index:len(project_name)-1]
 
-group = unavco_file['timeseries']
+group = unavco_file['/']
 # 1) mission = last chars of a folder name - SinabungT495F40_50AlosA -> mission = Alos
 group.attrs['mission'] = mission
 
@@ -119,6 +121,7 @@ group.attrs['relative_orbit'] = int(track_number)
 # 5 + 6) first_date and last date of timeseries datasets
 group.attrs['first_date'] = get_date(dates[0]).isoformat()
 group.attrs['last_date'] = get_date(dates[len(dates)-1]).isoformat()
+print "type of last_date: " + str(type(get_date(dates[len(dates)-1]).isoformat()))
 
 # 7) scene footprint = wkt polygon
 # Create polygon square with boundaries of datasets
@@ -144,21 +147,24 @@ group.attrs['history'] = datetime.datetime.now().date().isoformat()
 # ---------------------------------------------------------------------------------------
 #  ENCODE RECOMMENDED ATTRIBUTES FROM TIMESERIES FILE INTO UNAVCO
 # ---------------------------------------------------------------------------------------
-# UNAVCO wants this to be an int but we have multiple frames from x-y so we have to store as string
-group.attrs['frame'] = frames
+# UNAVCO wants this to be an int but we have multiple frames so we have two frame attributes
+group.attrs['first_frame'] = int(first_frame)
+group.attrs['last_frame'] = int(last_frame)
 
 # flight_direction = A or D (ascending or descending)
-group.attrs['flight_direction'] = attributes['ORBIT_DIRECTION'][0].upper()
+# tried to encode as char but python seems to only know string
+group.attrs['flight_direction'] = chr(ord(attributes['ORBIT_DIRECTION'][0].upper()))
 
 # for now, all falks files are Right (R)
-group.attrs['look_direction'] = 'R'
+# tried to encode as char but python seems to only know string
+group.attrs['look_direction'] = chr(ord('R'))
 
 # polarization = naN (Yunjun doesn't care for this attribute)
 # group.attrs['polarization'] = np.nan
 
 # attribute in yunjun/falk's h5 files: prf, wavelength
-group.attrs['prf'] = attributes['PRF']
-group.attrs['wavelength'] = attributes['WAVELENGTH']
+group.attrs['prf'] = float(attributes['PRF'])
+group.attrs['wavelength'] = float(attributes['WAVELENGTH'])
 
 # atmos_correct_method = 'ECMWF' harcode for now, later read from timeseries.h5 after Yunjun encodes attribute
 group.attrs['atmos_correct_method'] = 'ECMWF'
@@ -176,8 +182,8 @@ group.attrs['post_processing_method'] = 'PySAR'
 # baseline_perp = attribute called P_BASELINE_TIMESERIES
 # UNAVCO format pdf says: This really only applies to interferograms, but for 
 # time series or velocity products this could be the min and max bperp.
-group.attrs['min_baseline_perp'] = attributes['P_BASELINE_BOTTOM_HDR']
-group.attrs['max_baseline_perp'] = attributes['P_BASELINE_TOP_HDR']
+group.attrs['min_baseline_perp'] = float(attributes['P_BASELINE_BOTTOM_HDR'])
+group.attrs['max_baseline_perp'] = float(attributes['P_BASELINE_TOP_HDR'])
 
 timeseries_file.close()
 
@@ -279,6 +285,11 @@ os.rename(unavco, "./" + unavco_name)
 # open unavco h5 file that was created earlier for testing
 f = h5py.File(unavco_name, "r")
 print "opened "  + unavco_name
+
+print 'trying to print the attribute types'
+attributes = f['/'].attrs.items()
+for k, v in attributes:
+	print "key: " + k + ", value: " + str(v) + ", type: " + str(type(v)) + "\n"
 print 'trying to print group timeseries'
 group = f['timeseries']
 print group
@@ -286,9 +297,6 @@ print group
 print 'trying to print last dataset of timeseries'
 dataset = group[dates[len(dates)-1]]
 print dataset
-
-print 'trying to print attributes of timeseries'
-print group.attrs.items()
 
 print 'trying to print dataset incidence_angle'
 dataset = f['timeseries/incidence_angle']
