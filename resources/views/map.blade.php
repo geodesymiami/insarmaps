@@ -129,6 +129,30 @@
           </select>
         </div>
       </div>
+    </div> 
+  </div>
+  <div class='wrap' id="select-area-wrap">
+    <div class="close-button-div">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
+    </div>
+    <div class='content'>
+      <!--search bar-->
+      <div class="input-group">
+        <span class="input-group-btn">
+          <button class="btn btn-default" id="search-button" type="button">Search</button>
+        </span>
+        <input type="text" class="form-control" placeholder="Search for..." id="search-input">
+      </div>                   
+      <!-- table to select dataset from-->
+      <table class='table' id='myTable'>            
+        <thead>
+          <tr>
+            <th>Dataset</th>
+            <th>Reference</th>
+          </tr>
+        </thead>
+        <tbody id='tableBody'></tbody>
+      </table>          
     </div>
   </div>
   <?php
