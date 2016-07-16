@@ -117,6 +117,11 @@ var overlayToggleButton = new ToggleButton("#overlay-toggle-button");
 overlayToggleButton.onclick(function() {
     // on? add layers, otherwise remove them
     if (overlayToggleButton.toggleState == ToggleStates.ON) {
+        if (!myMap.tileJSON) {
+            overlayToggleButton.set("off");
+            return;
+        }
+
         $("#overlay-slider").slider("value", 100);
         myMap.map.addSource("vector_layer_", {
             type: 'vector',

@@ -754,6 +754,7 @@ function Map(loadJSONFunc) {
             $('.wrap#charts').toggleClass('active');
         }
         overlayToggleButton.set("off");
+        myMap.tileJSON = null;
     };
 }
 
