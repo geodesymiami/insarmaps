@@ -106,6 +106,20 @@
         </div>
         <div id="chartContainer2" class="side-item"></div>
       </div>
+      <div id="graph-select-div">
+        <div class="overlay_toggle">
+          <div id="top-graph-focus-div">
+            <label>Select Graph</label>
+            <input id = "top-graph-toggle-button" type="checkbox" name="overlayToggle"/>
+          </div>
+        </div>
+        <div class="overlay_toggle">
+          <div id="bottom-graph-focus-div">
+            <label>Select Graph</label>
+            <input id = "bottom-graph-toggle-button" type="checkbox" name="overlayToggle"/>
+          </div>
+        </div>
+      </div>
       <div id="map-options">
         <div class="overlay_toggle">
           <label>Second Graph</label>
@@ -119,13 +133,13 @@
           <label>Regression</label>
           <input id = "regression-toggle-button" type="checkbox" name="overlayToggle"/>          
         </div>
-        <div id="select-graph-focus-div">
+        <!-- <div id="select-graph-focus-div">
           Select for Graph:
           <select>            
             <option value="graph1">Top Graph</option>
             <option value="graph2" selected="selected">Bottom Graph</option>
           </select>
-        </div>
+        </div> -->
       </div>
     </div> 
   </div>

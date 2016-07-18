@@ -279,6 +279,9 @@ function GraphsController() {
 
     this.prepareForSecondGraph = function() {
         //$("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
+        $("#chart-containers").width("90%");
+        $("#graph-select-div").css("display", "block");
+        topGraphToggleButton.set("on");
         $("#chartContainer2").css("display", "block");
         $("#chartContainer").height("50%");
         var newWidth = $("#chartContainer").width();
