@@ -501,18 +501,18 @@ div.menu {
 
 #graph-select-div {
     display: none;
-    width: 10%;
+    width: 5%;
     height: 90%;
     float: left;
 }
 
-#graph-select-div * {
+#graph-select-div div {
     position: relative;
     height: 50%;
 }
 
 #top-graph-focus-div, #bottom-graph-focus-div {
-    position: absolute;
+    position: absolute !important;
     bottom: 0px;
 }
 

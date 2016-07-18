@@ -279,9 +279,8 @@ function GraphsController() {
 
     this.prepareForSecondGraph = function() {
         //$("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
-        $("#chart-containers").width("90%");
+        $("#chart-containers").width("95%");
         $("#graph-select-div").css("display", "block");
-        topGraphToggleButton.set("on");
         $("#chartContainer2").css("display", "block");
         $("#chartContainer").height("50%");
         var newWidth = $("#chartContainer").width();
@@ -299,7 +298,8 @@ function GraphsController() {
         }
 
         $("#select-graph-focus-div").css("display", "block");
-        that.selectedGraph = $("#select-graph-focus-div").find(":selected").text();
+        that.selectedGraph = "Bottom Graph";
+        bottomGraphToggleButton.set("on");
     };
 
     this.removeSecondGraph = function() {
@@ -311,6 +311,8 @@ function GraphsController() {
         }
 
         //$("#chartContainer2").remove();
+        $("#chart-containers").width("100%");
+        $("#graph-select-div").css("display", "none");
         $("#chartContainer2").css("display", "none");
         $("#chartContainer").height("100%");
         var newWidth = $("#chartContainer").width();
@@ -320,7 +322,6 @@ function GraphsController() {
         
         that.recreateGraph("chartContainer");
 
-        $("#select-graph-focus-div").css("display", "none");
         that.selectedGraph = "Top Graph";
     };
 

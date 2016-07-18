@@ -203,7 +203,6 @@ function Map(loadJSONFunc) {
                     "icon-image": "{marker-symbol}-15",
                 }
             });
-            console.log("we added " + layerID);
         } else {
             clickMarker.setData({
                 "type": "FeatureCollection",

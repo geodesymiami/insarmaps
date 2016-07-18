@@ -223,7 +223,7 @@ function switchLayer(layer) {
             }
 
             myMap.removeTouchLocationMarkers();
-        }        
+        }
 
         myMap.map.setStyle({
             version: 8,
@@ -352,7 +352,6 @@ regressionToggleButton.onclick(function() {
 
 var topGraphToggleButton = new ToggleButton("#top-graph-toggle-button");
 topGraphToggleButton.onclick(function() {
-    console.log("hi2");
     if (topGraphToggleButton.toggleState == ToggleStates.ON) {
         myMap.graphsController.selectedGraph = "Top Graph";
         bottomGraphToggleButton.set("off");
@@ -360,12 +359,11 @@ topGraphToggleButton.onclick(function() {
         myMap.graphsController.selectedGraph = "Bottom Graph";
     }
 });
-
 var bottomGraphToggleButton = new ToggleButton("#bottom-graph-toggle-button");
 bottomGraphToggleButton.onclick(function() {
     if (bottomGraphToggleButton.toggleState == ToggleStates.ON) {
-       myMap.graphsController.selectedGraph = "Bottom Graph";
-       topGraphToggleButton.set("off");
+        myMap.graphsController.selectedGraph = "Bottom Graph";
+        topGraphToggleButton.set("off");
     } else {
         myMap.graphsController.selectedGraph = "Top Graph";
     }
@@ -398,10 +396,6 @@ $(window).load(function() {
     $("#graph-div-button").on("click", function(event) {
         $(".wrap#charts").toggleClass("active");
     });
-
-    // $("#select-graph-focus-div ").change(function() {
-    //     myMap.graphsController.selectedGraph = $("#select-graph-focus-div").find(":selected").text();
-    // });
 
     // chart div resizable
     $(".wrap#charts").resizable({
