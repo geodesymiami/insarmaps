@@ -42,7 +42,7 @@ var getDaysElapsed = function(date) {
 var getlinearDetrend = function(displacements, decimal_dates, slope) {
     detrend_array = [];
     for (i = 0; i < decimal_dates.length; i++) {
-        detrend = displacements[i] - (slope * decimal_dates[i]);
+        detrend = displacements[i] - (slope * (decimal_dates[i] - decimal_dates[0]);
         detrend_array.push(detrend);
     }
     return detrend_array;
