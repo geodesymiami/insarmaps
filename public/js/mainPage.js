@@ -397,6 +397,29 @@ $(window).load(function() {
         $(".wrap#charts").toggleClass("active");
     });
 
+    var oldGraphDivHeight = 0;
+
+    $("#graph-div-minimize-button").on("click", function(event) {
+        if ($(".wrap#charts").hasClass("toggled")) {
+            $(".wrap#charts").animate({ "height": oldGraphDivHeight }).removeClass("toggled");
+            myMap.graphsController.recreateGraphs();
+        } else {
+            oldGraphDivHeight = $(".wrap#charts").height();
+            $(".wrap#charts").animate({ "height": "5%" }).addClass("toggled");
+        }
+    });
+
+    var oldAttributeDivHeight = 0;
+
+    $("#area-attributes-div-minimize-button").on("click", function(event) {
+        if ($(".wrap#area-attributes-div").hasClass("toggled")) {
+            $(".wrap#area-attributes-div").animate({ "height": oldAttributeDivHeight }).removeClass("toggled");
+        } else {
+            oldAttributeDivHeight = $(".wrap#area-attributes-div").height();
+            $(".wrap#area-attributes-div").animate({ "height": "5%" }).addClass("toggled");
+        }
+    });
+
     // chart div resizable
     $(".wrap#charts").resizable({
         animateDuration: "fast",
@@ -566,6 +589,8 @@ $(window).load(function() {
     $("#close-button").on("click", function() {
         $('.wrap#select-area-wrap').toggleClass('active');
     });
+
+    $("")
 
     // cancel the popup
     $('#cancelPopupButton').on('click', function() {

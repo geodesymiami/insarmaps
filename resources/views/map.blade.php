@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
- <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
  <link rel="stylesheet" href="css/mainPage.css" />
  <link rel="stylesheet" href="css/slideout.css" />
  <!--jQuery-->
@@ -71,7 +70,10 @@
       <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Draw polygon" id="polygon-button">P</button>
     </div>
     <div id="point-details"></div>
-    <div class="wrap" id="area-attributes-div">
+    <div class="wrap" id="area-attributes-div">    
+      <div class="top-right-buttons">
+        <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"><span aria-hidden="true">__</span></button>
+      </div>
       <div class="content">
         <ul class="tab">
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr1')">Attr1</a></li>
@@ -97,8 +99,9 @@
     </div>
   </div>
   <div class="wrap" id="charts">
-    <div class="close-button-div">
+    <div class="top-right-buttons">
       <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="graph-div-button"><span aria-hidden="true">&times;</span></button>
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="graph-div-minimize-button"><span aria-hidden="true">__</span></button>
     </div>
     <div class="content">
       <div id="chart-containers">
@@ -137,7 +140,7 @@
     </div> 
   </div>
   <div class='wrap' id="select-area-wrap">
-    <div class="close-button-div">
+    <div class="top-right-buttons">
       <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
     </div>
     <div class='content'>                       

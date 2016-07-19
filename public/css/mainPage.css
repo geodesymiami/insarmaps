@@ -126,6 +126,10 @@ label {
     width: 330px;
 }
 
+.wrap#area-attributes-div .top-right-buttons {
+    top: -5px;
+}
+
 #close-button,
 #close-sidebar-button {
     border: none;
@@ -133,7 +137,7 @@ label {
     font-size: 30px;
 }
 
-.close-button-div {
+.top-right-buttons {
     position: absolute;
     top: 5px;
     right: 10px;
@@ -189,6 +193,10 @@ label {
     z-index: 2;
     opacity: 1;
     transition: all 600ms cubic-bezier(0.55, 0.055, 0.675, 0.19);
+}
+
+.wrap.active.toggled .content {
+    display: none;
 }
 
 #popupButton {
@@ -365,60 +373,6 @@ div.menu {
     width: 33%;
 }
 
-/*.toggle-button {
-    background-color: white;
-    margin: 3px 0 0 0;
-    border-radius: 20px;
-    border: 2px solid #D0D0D0;
-    height: 14px;
-    cursor: pointer;
-    width: 50px;
-    position: relative;
-    display: inline-block;
-    user-select: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-    -moz-user-select: none;
-    margin-left: 2em;
-    z-index: 1;
-    background-color: white;
-    padding-top: 10px;
-}
-
-.toggle-button button {
-    cursor: pointer;
-    outline: 0;
-    display: block;
-    position: absolute;
-    left: 0;
-    top: -2px;
-    border-radius: 100%;
-    width: 20px;
-    height: 20px;
-    background-color: #f2dede;
-    float: left;
-    margin: -3px 0 0 -3px;
-    border: 2px solid #D0D0D0;
-    transition: left 0.3s;
-    z-index: 1;
-}
-
-.toggle-button-selected {
-    background-color: coral;
-    border: 2px solid coral;
-}
-
-.toggle-button-selected button {
-    left: 37px;
-    top: -5px;
-    margin: 0;
-    border: none;
-    width: 20px;
-    height: 22px;
-    box-shadow: 0 0 0px rgba(0, 0, 0, 0.1);
-}
-*/
-
 /*disable compass in nav controls*/
 
 .mapboxgl-ctrl-compass {
@@ -482,6 +436,10 @@ div.menu {
     width: 40%;
 }
 
+#graph-div-minimize-button {
+    padding-right: 10px;
+}
+
 #chart-containers {
     width: 100%;
     height: 90%;
@@ -524,6 +482,16 @@ div.menu {
     width: 100%;
     height: 10%;
     max-height: 40px; 
+}
+
+.hidden {
+    width: 30%;
+    height: 10%;
+    background-color: white;
+}
+
+.hidden * {
+    display: none;
 }
 
 #point-details {
