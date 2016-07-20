@@ -377,6 +377,61 @@ bottomGraphToggleButton.onclick(function() {
         myMap.graphsController.selectedGraph = "Top Graph";
     }
 });
+
+var contourToggleButton = new ToggleButton("#contour-toggle-button");
+contourToggleButton.onclick(function() {
+    if (contourToggleButton.toggleState == ToggleStates.ON) {
+        myMap.map.addLayer({
+            'id': 'contours',
+            'type': 'line',
+            'source': 'Mapbox Terrain V2',
+            'source-layer': 'contour',
+            'layout': {
+                'visibility': 'visible',
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            'paint': {
+                'line-color': '#877b59',
+                'line-width': 1
+            }
+        });
+        myMap.map.addLayer({
+            "id": "contour_label",
+            "type": "symbol",
+            "source": "Mapbox Terrain V2",
+            "source-layer": "contour",
+            "minzoom": 0,
+            "maxzoom": 22,
+            "filter": ["all", ["==", "$type", "Polygon"],
+                ["==", "index", 5]
+            ],
+            "layout": {
+                "symbol-placement": "line",
+                "text-field": "{ele}",
+                "text-font": ["Open Sans Regular,   Arial Unicode MS Regular"],
+                "text-letter-spacing": 0,
+                "text-line-height": 1.6,
+                "text-max-angle": 10,
+                "text-rotation-alignment": "map"
+            },
+            "paint": {
+                //"text-size": 0
+            },
+            "paint.contours": {
+                "text-opacity": 1,
+                "text-halo-blur": 0,
+                //"text-size": 12,
+                "text-halo-width": 1,
+                "text-halo-color": "#333",
+                "text-color": "#00fcdc"
+            }
+        });
+    } else {
+        myMap.map.removeLayer("contour_label");
+        myMap.map.removeLayer("contours");
+    }
+});
 // when site loads, turn toggle on
 $(window).load(function() {
     var NUM_CHUNKS = 300;
