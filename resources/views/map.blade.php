@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
- <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
  <link rel="stylesheet" href="css/mainPage.css" />
  <link rel="stylesheet" href="css/slideout.css" />
  <!--jQuery-->
@@ -71,7 +70,10 @@
       <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Draw polygon" id="polygon-button">P</button>
     </div>
     <div id="point-details"></div>
-    <div class="wrap" id="area-attributes-div">
+    <div class="wrap" id="area-attributes-div">    
+      <div class="top-right-buttons">
+        <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"><span aria-hidden="true">__</span></button>
+      </div>
       <div class="content">
         <ul class="tab">
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr1')">Attr1</a></li>
@@ -97,14 +99,29 @@
     </div>
   </div>
   <div class="wrap" id="charts">
-    <div class="close-button-div">
+    <div class="top-right-buttons">
       <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="graph-div-button"><span aria-hidden="true">&times;</span></button>
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="graph-div-minimize-button"><span aria-hidden="true">__</span></button>
     </div>
     <div class="content">
       <div id="chart-containers">
         <div id="chartContainer" class="side-item">
         </div>
         <div id="chartContainer2" class="side-item"></div>
+      </div>
+      <div id="graph-select-div">
+        <div class="overlay_toggle">
+          <div id="top-graph-focus-div">
+            Select
+            <input id = "top-graph-toggle-button" type="checkbox" name="overlayToggle"/>
+          </div>
+        </div>
+        <div class="overlay_toggle">
+          <div id="bottom-graph-focus-div">
+            Select
+            <input id = "bottom-graph-toggle-button" type="checkbox" name="overlayToggle"/>
+          </div>
+        </div>
       </div>
       <div id="map-options">
         <div class="overlay_toggle">
@@ -119,18 +136,15 @@
           <label>Regression</label>
           <input id = "regression-toggle-button" type="checkbox" name="overlayToggle"/>          
         </div>
-        <div id="select-graph-focus-div">
-          Select for Graph:
-          <select>            
-            <option value="graph1">Top Graph</option>
-            <option value="graph2" selected="selected">Bottom Graph</option>
-          </select>
+        <div class="overlay_toggle">
+          <label>Detrend</label>
+          <input id = "detrend-toggle-button" type="checkbox" name="overlayToggle"/>          
         </div>
       </div>
     </div> 
   </div>
   <div class='wrap' id="select-area-wrap">
-    <div class="close-button-div">
+    <div class="top-right-buttons">
       <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
     </div>
     <div class='content'>                       

@@ -223,7 +223,7 @@ function switchLayer(layer) {
             }
 
             myMap.removeTouchLocationMarkers();
-        }        
+        }
 
         myMap.map.setStyle({
             version: 8,
@@ -350,6 +350,33 @@ regressionToggleButton.onclick(function() {
     }
 });
 
+var detrendToggleButton = new ToggleButton("#detrend-toggle-button");
+detrendToggleButton.onclick(function() {
+    if (detrendToggleButton.toggleState == ToggleStates.ON) {
+        myMap.graphsController.detrendData();
+    } else {
+        myMap.graphsController.removeDetrend();
+    }
+});
+
+var topGraphToggleButton = new ToggleButton("#top-graph-toggle-button");
+topGraphToggleButton.onclick(function() {
+    if (topGraphToggleButton.toggleState == ToggleStates.ON) {
+        myMap.graphsController.selectedGraph = "Top Graph";
+        bottomGraphToggleButton.set("off");
+    } else {
+        myMap.graphsController.selectedGraph = "Bottom Graph";
+    }
+});
+var bottomGraphToggleButton = new ToggleButton("#bottom-graph-toggle-button");
+bottomGraphToggleButton.onclick(function() {
+    if (bottomGraphToggleButton.toggleState == ToggleStates.ON) {
+        myMap.graphsController.selectedGraph = "Bottom Graph";
+        topGraphToggleButton.set("off");
+    } else {
+        myMap.graphsController.selectedGraph = "Top Graph";
+    }
+});
 // when site loads, turn toggle on
 $(window).load(function() {
     var NUM_CHUNKS = 300;
@@ -379,8 +406,27 @@ $(window).load(function() {
         $(".wrap#charts").toggleClass("active");
     });
 
-    $("#select-graph-focus-div ").change(function() {
-        myMap.graphsController.selectedGraph = $("#select-graph-focus-div").find(":selected").text();
+    var oldGraphDivHeight = 0;
+
+    $("#graph-div-minimize-button").on("click", function(event) {
+        if ($(".wrap#charts").hasClass("toggled")) {
+            $(".wrap#charts").animate({ "height": oldGraphDivHeight }).removeClass("toggled");
+            myMap.graphsController.recreateGraphs();
+        } else {
+            oldGraphDivHeight = $(".wrap#charts").height();
+            $(".wrap#charts").animate({ "height": "5%" }).addClass("toggled");
+        }
+    });
+
+    var oldAttributeDivHeight = 0;
+
+    $("#area-attributes-div-minimize-button").on("click", function(event) {
+        if ($(".wrap#area-attributes-div").hasClass("toggled")) {
+            $(".wrap#area-attributes-div").animate({ "height": oldAttributeDivHeight }).removeClass("toggled");
+        } else {
+            oldAttributeDivHeight = $(".wrap#area-attributes-div").height();
+            $(".wrap#area-attributes-div").animate({ "height": "5%" }).addClass("toggled");
+        }
     });
 
     // chart div resizable
@@ -552,6 +598,8 @@ $(window).load(function() {
     $("#close-button").on("click", function() {
         $('.wrap#select-area-wrap').toggleClass('active');
     });
+
+    $("")
 
     // cancel the popup
     $('#cancelPopupButton').on('click', function() {
