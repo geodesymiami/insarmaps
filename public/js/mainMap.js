@@ -42,7 +42,7 @@ var getDaysElapsed = function(date) {
 var getlinearDetrend = function(displacements, decimal_dates, slope) {
     detrend_array = [];
     for (i = 0; i < decimal_dates.length; i++) {
-        detrend = displacements[i] - (slope * (decimal_dates[i] - decimal_dates[0]);
+        detrend = displacements[i] - (slope * (decimal_dates[i] - decimal_dates[0]))
         detrend_array.push(detrend);
     }
     return detrend_array;
@@ -246,7 +246,7 @@ function Map(loadJSONFunc) {
             var result = calcLinearRegression(displacement_array, decimal_dates);
             var slope = result["equation"][0];
             var y = result["equation"][1];
-
+            
             // returns array for linear regression on chart
             var regression_data = getRegressionChartData(slope, y, decimal_dates, chart_data);
 
@@ -257,8 +257,8 @@ function Map(loadJSONFunc) {
                 title: {
                     text: 'Timeseries Displacement Chart'
                 },
-                subtitle: {
-                    text: "velocity: " + slope.toString().substr(0, 8) + " m/yr"
+                subtitle: {                    
+                    text: "velocity: " + slope.toFixed(8).toString() + " m/yr"
                 },
                 navigator: {
                     enabled: true
@@ -275,7 +275,9 @@ function Map(loadJSONFunc) {
                             that.graphsController.getValideDatesFromNavigatorExtremes(chartContainer);
 
                             if (regressionToggleButton.toggleState == ToggleStates.ON) {
-                                that.graphsController.addRegressionLine(chartContainer);
+                                var graphSettings = that.graphsController.graphSettings[chartContainer];
+                                var displacements_array = detrendToggleButton.toggleState == ToggleStates.ON ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
+                                that.graphsController.addRegressionLine(chartContainer, displacements_array);
                             }
                         }
                     },

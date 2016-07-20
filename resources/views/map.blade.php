@@ -136,6 +136,10 @@
           <label>Regression</label>
           <input id = "regression-toggle-button" type="checkbox" name="overlayToggle"/>          
         </div>
+        <div class="overlay_toggle">
+          <label>Detrend</label>
+          <input id = "detrend-toggle-button" type="checkbox" name="overlayToggle"/>          
+        </div>
       </div>
     </div> 
   </div>

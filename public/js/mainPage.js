@@ -350,6 +350,15 @@ regressionToggleButton.onclick(function() {
     }
 });
 
+var detrendToggleButton = new ToggleButton("#detrend-toggle-button");
+detrendToggleButton.onclick(function() {
+    if (detrendToggleButton.toggleState == ToggleStates.ON) {
+        myMap.graphsController.detrendData();
+    } else {
+        myMap.graphsController.removeDetrend();
+    }
+});
+
 var topGraphToggleButton = new ToggleButton("#top-graph-toggle-button");
 topGraphToggleButton.onclick(function() {
     if (topGraphToggleButton.toggleState == ToggleStates.ON) {

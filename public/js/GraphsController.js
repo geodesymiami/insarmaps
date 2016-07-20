@@ -15,6 +15,7 @@ function GraphsController() {
             date_array: null,
             decimal_dates: null,
             displacement_array: null,
+            detrend_displacement_array: null,
             navigatorEvent: null
         },
         "chartContainer2": {
@@ -23,6 +24,7 @@ function GraphsController() {
             date_array: null,
             decimal_dates: null,
             displacement_array: null,
+            detrend_displacement_array: null,
             navigatorEvent: null
         }
     };
@@ -59,14 +61,14 @@ function GraphsController() {
         };
     };
 
-    this.addRegressionLine = function(chartContainer) {
+    this.addRegressionLine = function(chartContainer, displacement_array) {
         var graphSettings = that.graphSettings[chartContainer];
         var chart = $("#" + chartContainer).highcharts();
 
         // returns array for displacement on chart
-        var chart_data = getDisplacementChartData(graphSettings.displacement_array, graphSettings.date_string_array);
+        var chart_data = getDisplacementChartData(displacement_array, graphSettings.date_string_array);
         // calculate and render a linear regression of those dates and displacements
-        var result = calcLinearRegression(graphSettings.displacement_array, graphSettings.decimal_dates);
+        var result = calcLinearRegression(displacement_array, graphSettings.decimal_dates);
         var slope = result["equation"][0];
         var y = result["equation"][1];
 
@@ -76,7 +78,7 @@ function GraphsController() {
         if (graphSettings.navigatorEvent != null) {
             var validDates = this.getValideDatesFromNavigatorExtremes(chartContainer);
 
-            var sub_displacements = graphSettings.displacement_array.slice(validDates.minIndex, validDates.maxIndex + 1);
+            var sub_displacements = displacement_array.slice(validDates.minIndex, validDates.maxIndex + 1);
             var sub_decimal_dates = graphSettings.decimal_dates.slice(validDates.minIndex, validDates.maxIndex + 1);
             var sub_result = calcLinearRegression(sub_displacements, sub_decimal_dates);
             // get linear regression data for sub array
@@ -89,7 +91,7 @@ function GraphsController() {
 
             var date_range = Highcharts.dateFormat(null, validDates.minDate) + " - " + Highcharts.dateFormat(null, validDates.maxDate);
             chart.setTitle(null, {
-                text: "velocity: " + sub_slope.toString().substr(0, 8) + " m/yr"
+                text: "velocity: " + sub_slope.toFixed(8).toString() + " m/yr"
             });
         }
 
@@ -254,10 +256,14 @@ function GraphsController() {
     };
 
     this.addRegressionLines = function() {
-        that.addRegressionLine("chartContainer");
+        var graphSettings = that.graphSettings["chartContainer"];
+        var displacements_array = detrendToggleButton.toggleState == ToggleStates.ON ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
+        that.addRegressionLine("chartContainer", displacements_array);
         var chart2 = $("#chartContainer2").highcharts();
         if (chart2 !== undefined) {
-            that.addRegressionLine("chartContainer2");
+            graphSettings = that.graphSettings["chartContainer2"];
+            displacements_array = detrendToggleButton.toggleState == ToggleStates.ON ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
+            that.addRegressionLine("chartContainer2", displacements_array);
         }
     };
 
@@ -288,7 +294,7 @@ function GraphsController() {
         $("#chartContainer").height(newHeight);
         var graphOpts = that.highChartsOpts["chartContainer"];
         graphOpts.navigator.enabled = false;
-        
+
         that.recreateGraph("chartContainer");
 
         // if chart is already rendered but just hidden, recreate it to resize
@@ -319,7 +325,7 @@ function GraphsController() {
         var newHeight = $("#chartContainer").height();
         var graphOpts = that.highChartsOpts["chartContainer"];
         graphOpts.navigator.enabled = true;
-        
+
         that.recreateGraph("chartContainer");
 
         that.selectedGraph = "Top Graph";
@@ -333,6 +339,59 @@ function GraphsController() {
         }
     };
 
+    this.detrendDataForGraph = function(chartContainer) {
+        var graphSettings = that.graphSettings[chartContainer];
+        // returns array for displacement on chart
+        var chart_data = getDisplacementChartData(graphSettings.displacement_array, graphSettings.date_string_array);
+
+        // calculate and render a linear regression of those dates and displacements
+        var result = calcLinearRegression(graphSettings.displacement_array, graphSettings.decimal_dates);
+        var slope = result["equation"][0];
+        var y = result["equation"][1];
+
+        graphSettings.detrend_displacement_array = getlinearDetrend(graphSettings.displacement_array, graphSettings.decimal_dates, slope)
+        // calculate and render a linear regression of those dates and displacements
+        result = calcLinearRegression(graphSettings.detrend_displacement_array, graphSettings.decimal_dates);
+        slope = result["equation"][0];
+        y = result["equation"][1];
+
+        chart_data = getDisplacementChartData(graphSettings.detrend_displacement_array, graphSettings.date_string_array);
+        that.highChartsOpts[chartContainer].series[0].data = chart_data;        
+        that.highChartsOpts[chartContainer].subtitle.text = "velocity: " + slope.toFixed(8).toString() + " m/yr";
+        that.recreateGraphs();
+    };
+
+    this.removeDetrendForGraph = function(chartContainer) {
+        var graphSettings = that.graphSettings[chartContainer];
+        // returns array for displacement on chart
+        var chart_data = getDisplacementChartData(graphSettings.displacement_array, graphSettings.date_string_array);
+
+        // calculate and render a linear regression of those dates and displacements
+        var result = calcLinearRegression(graphSettings.displacement_array, graphSettings.decimal_dates);
+        var slope = result["equation"][0];
+        var y = result["equation"][1]; 
+        chart_data = getDisplacementChartData(graphSettings.displacement_array, graphSettings.date_string_array);
+        that.highChartsOpts[chartContainer].series[0].data = chart_data;
+        that.highChartsOpts[chartContainer].subtitle.text = "velocity: " + slope.toString().substr(0, 8) + " m/yr";
+        that.recreateGraphs();
+    };
+
+    this.detrendData = function() {
+        that.detrendDataForGraph("chartContainer");
+        var chart2 = $("#chartContainer2").highcharts();
+        if (chart2 !== undefined) {
+            that.detrendDataForGraph("chartContainer2");
+        }
+    };
+
+    this.removeDetrend = function() {
+        that.removeDetrendForGraph("chartContainer");
+        var chart2 = $("#chartContainer2").highcharts();
+        if (chart2 !== undefined) {
+            that.removeDetrendForGraph("chartContainer2");
+        }
+    };
+
     this.recreateGraph = function(chartContainer) {
         var graphSettings = that.graphSettings[chartContainer];
         var graphOpts = that.highChartsOpts[chartContainer];
@@ -342,7 +401,6 @@ function GraphsController() {
         if (!chart) {
             return;
         }
-
         chart.xAxis[0].setExtremes(graphSettings.navigatorEvent.min, graphSettings.navigatorEvent.max);
         if (regressionToggleButton.toggleState == ToggleStates.ON) {
             that.addRegressionLines();
