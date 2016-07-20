@@ -222,6 +222,7 @@ function GraphsController() {
         if (chart === undefined) {
             return;
         }
+
         var graphOpts = that.highChartsOpts["chartContainer2"];
         graphOpts.series[0].type = "scatter";
         that.recreateGraph("chartContainer2");
@@ -339,6 +340,7 @@ function GraphsController() {
         }
     };
 
+    // TODO: make detrend data functions not call recreate
     this.detrendDataForGraph = function(chartContainer) {
         var graphSettings = that.graphSettings[chartContainer];
         // returns array for displacement on chart
