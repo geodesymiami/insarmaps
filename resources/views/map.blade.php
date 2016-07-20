@@ -59,6 +59,10 @@
             <label>Data overlay</label>
             <input id = "overlay-toggle-button" type="checkbox" name="overlayToggle"/>
           </div>
+          <div class="overlay-toggle">
+            <label>Contour Lines</label>
+            <input id = "contour-toggle-button" type="checkbox" name="overlayToggle"/>
+          </div>
           <div id="overlay-slider"></div>
         </div>
       </div>

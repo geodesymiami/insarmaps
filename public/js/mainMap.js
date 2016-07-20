@@ -346,7 +346,7 @@ function Map(loadJSONFunc) {
 
             if (dotToggleButton.toggleState == ToggleStates.ON) {
                 that.graphsController.toggleDots();
-            }           
+            }
 
             // this is hackish. due to bug which appears when we resize window before moving graph. jquery resizable
             // size does weird stuff to the graph, so we have to set every new graph to the dimensions of the original graph
@@ -471,6 +471,10 @@ function Map(loadJSONFunc) {
                     "type": "raster",
                     "url": "mapbox://" + tileset,
                     "tileSize": 256
+                },                
+                'Mapbox Terrain V2': {
+                    type: 'vector',
+                    url: 'mapbox://mapbox.mapbox-terrain-v2'
                 },
                 'vector_layer_': {
                     type: 'vector',
@@ -609,6 +613,10 @@ function Map(loadJSONFunc) {
                     "type": "raster",
                     "url": "mapbox://" + tileset,
                     "tileSize": 256
+                },
+                'Mapbox Terrain V2': {
+                    type: 'vector',
+                    url: 'mapbox://mapbox.mapbox-terrain-v2'
                 }
             },
             layers: that.layers_
