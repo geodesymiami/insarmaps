@@ -246,7 +246,7 @@ function Map(loadJSONFunc) {
             var result = calcLinearRegression(displacement_array, decimal_dates);
             var slope = result["equation"][0];
             var y = result["equation"][1];
-            
+
             // returns array for linear regression on chart
             var regression_data = getRegressionChartData(slope, y, decimal_dates, chart_data);
 
@@ -257,7 +257,7 @@ function Map(loadJSONFunc) {
                 title: {
                     text: 'Timeseries Displacement Chart'
                 },
-                subtitle: {                    
+                subtitle: {
                     text: "velocity: " + slope.toFixed(8).toString() + " m/yr"
                 },
                 navigator: {
@@ -337,13 +337,16 @@ function Map(loadJSONFunc) {
             that.graphsController.highChartsOpts[chartContainer] = chartOpts;
 
             that.graphsController.setNavigatorHandlers();
-            if (dotToggleButton.toggleState == ToggleStates.ON) {
-                that.graphsController.toggleDots();
+
+            // this calls recreate in the background.
+            // TODO: make detrend data functions not call recreate
+            if (detrendToggleButton.toggleState == ToggleStates.ON) {
+                that.graphsController.detrendDataForGraph(chartContainer);
             }
 
-            if (regressionToggleButton.toggleState == ToggleStates.ON) {
-                that.graphsController.addRegressionLine(chartContainer);
-            }
+            if (dotToggleButton.toggleState == ToggleStates.ON) {
+                that.graphsController.toggleDots();
+            }           
 
             // this is hackish. due to bug which appears when we resize window before moving graph. jquery resizable
             // size does weird stuff to the graph, so we have to set every new graph to the dimensions of the original graph
