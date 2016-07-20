@@ -342,6 +342,10 @@ div.menu {
     padding-left: 10px;
 }
 
+#overlay-options-wrapper .overlay_toggle {
+    width: 50%;
+}
+
 #overlay-options {
     font-family: 'Open Sans', sans-serif;
     z-index: 99;
