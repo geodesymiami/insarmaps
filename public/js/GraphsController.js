@@ -102,7 +102,8 @@ function GraphsController() {
             marker: {
                 enabled: false
             },
-            color: "#ffa500"
+            color: "#ffa500",
+            showInLegend: false
         };
 
         chart.addSeries(regressionSeries);

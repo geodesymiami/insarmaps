@@ -319,7 +319,8 @@ function Map(loadJSONFunc) {
                     data: chart_data,
                     marker: {
                         enabled: true
-                    }
+                    },
+                    showInLegend: false
                 }],
                 chart: {
                     marginRight: 50
