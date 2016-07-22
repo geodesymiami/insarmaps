@@ -17,21 +17,21 @@ h1.title {
 }
 
 h1 {
-    font-family: 'Myriad Pro', 'Calibri' !important;
+    font-family: 'Open Sans', 'Calibri' !important;
 }
 
 h2 {
-    font-family: 'Myriad Pro', 'calibri' !important;
+    font-family: 'Open Sans', 'calibri' !important;
     margin-top: 20px;
 }
 
 h3 {
-    font-family: 'Myriad Pro', 'calibri' !important;
+    font-family: 'Open Sans', 'calibri' !important;
     margin-top: 20px;
 }
 
 label {    
-    font-family: 'Myriad Pro', 'calibri' !important;
+    font-family: 'Open Sans', 'calibri' !important;
     color: Black;
 }
 
@@ -222,7 +222,7 @@ label {
 
 #input {
     color: coral;
-    font-family: 'Carter One', cursive;
+    font-family: 'Open Sans', cursive;
 }
 
 .accordion {
@@ -281,7 +281,7 @@ div.panel.show > p {
 }
 
 button {
-    font-family: 'Myriad Pro', 'calibri'
+    font-family: 'Open Sans', 'calibri'
 }
 
 p.ul {
@@ -556,6 +556,6 @@ ul.tab li a:focus, .active {background-color: #ccc;}
 
 .tabcontent h3, .tabcontent p {
     font-size: 14px;
-    font-family: sans-serif !important;
+    font-family: "Open Sans" !important;
     color: black !important;
 }
