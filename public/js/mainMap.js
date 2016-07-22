@@ -471,7 +471,7 @@ function Map(loadJSONFunc) {
                     "type": "raster",
                     "url": "mapbox://" + tileset,
                     "tileSize": 256
-                },                
+                },
                 'Mapbox Terrain V2': {
                     type: 'vector',
                     url: 'mapbox://mapbox.mapbox-terrain-v2'
@@ -769,6 +769,55 @@ function Map(loadJSONFunc) {
         }
         overlayToggleButton.set("off");
         myMap.tileJSON = null;
+    };
+
+    this.addContourLines = function() {
+        that.map.addLayer({
+            'id': 'contours',
+            'type': 'line',
+            'source': 'Mapbox Terrain V2',
+            'source-layer': 'contour',
+            'layout': {
+                'visibility': 'visible',
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            'paint': {
+                'line-color': '#877b59',
+                'line-width': 1
+            }
+        });
+        that.map.addLayer({
+            "id": "contour_label",
+            "type": "symbol",
+            "source": "Mapbox Terrain V2",
+            "source-layer": "contour",
+            "minzoom": 0,
+            "maxzoom": 22,
+            "filter": ["all", ["==", "$type", "Polygon"],
+                ["==", "index", 5]
+            ],
+            "layout": {
+                "symbol-placement": "line",
+                "text-field": "{ele}",
+                "text-font": ["Open Sans Regular,   Arial Unicode MS Regular"],
+                "text-letter-spacing": 0,
+                "text-line-height": 1.6,
+                "text-max-angle": 10,
+                "text-rotation-alignment": "map"
+            },
+            "paint": {
+                //"text-size": 0
+            },
+            "paint.contours": {
+                "text-opacity": 1,
+                "text-halo-blur": 0,
+                //"text-size": 12,
+                "text-halo-width": 1,
+                "text-halo-color": "#333",
+                "text-color": "#00fcdc"
+            }
+        });
     };
 }
 
