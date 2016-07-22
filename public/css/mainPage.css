@@ -5,6 +5,7 @@ body {
     padding: 0;
     height: 100%;
     width: 100% color: white;
+    font-family: 'Open Sans', 'Calibri'
 }
 
 button {
@@ -21,17 +22,17 @@ h1 {
 }
 
 h2 {
-    font-family: 'Open Sans', 'calibri' !important;
+    font-family: 'Open Sans', 'Calibri' !important;
     margin-top: 20px;
 }
 
 h3 {
-    font-family: 'Open Sans', 'calibri' !important;
+    font-family: 'Open Sans', 'Calibri' !important;
     margin-top: 20px;
 }
 
 label {    
-    font-family: 'Open Sans', 'calibri' !important;
+    font-family: 'Open Sans', 'Calibri' !important;
     color: Black;
     font-weight: normal !important;
 }
@@ -282,7 +283,7 @@ div.panel.show > p {
 }
 
 button {
-    font-family: 'Open Sans', 'calibri'
+    font-family: 'Open Sans', 'Calibri'
 }
 
 p.ul {
@@ -325,15 +326,35 @@ div.menu {
 }
 
 #reset-button {
-    font-family: 'Open Sans', sans-serif;
     z-index: 99;
     border-radius: 5px;
-    width: 23%;
+    width: 10%;
     float: left;
     padding-left: 10px;
 }
 
-#reset-button button {
+#information-button {
+    z-index: 99;
+    border-radius: 5px;
+    width: 5%;
+    float: left;
+    padding-left: 10px;
+}
+
+#information-div {
+    display: none;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    opacity: 0.5;
+    z-index: 99;
+}
+
+#information-div.active {
+    display: block;
+}
+
+#top-map-buttons button {
     background-color: white;    
 }
 

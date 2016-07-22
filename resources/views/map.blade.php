@@ -71,6 +71,9 @@
       <div id="reset-button">
         <button class="btn btn-primary-outline">Reset</button>
       </div>
+      <div id="information-button">                
+        <button class="btn btn-primary-outline">I</button>
+      </div>
     </div>    
     <div id="polygon-button-div">
       <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Draw polygon" id="polygon-button">P</button>
@@ -165,6 +168,9 @@
         <tbody id='tableBody'></tbody>
       </table>          
     </div>
+  </div>
+  <div id="information-div">
+    hi
   </div>
   <?php
   echo "
