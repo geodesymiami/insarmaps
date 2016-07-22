@@ -156,7 +156,7 @@ function Map(loadJSONFunc) {
         var lat = feature.geometry.coordinates[1];
         var pointNumber = feature.properties.p;
 
-        if (!pointNumber) {
+        if (!pointNumber || feature.layer.id == "contours" || feature.layer.id == "contour_label") {
             return;
         }
 
@@ -385,7 +385,7 @@ function Map(loadJSONFunc) {
         var layerID = "touchLocation";
 
         // remove cluster count check if you remove clustering
-        if (!features.length || features[0].layer.id == "cluster-count") {
+        if (!features.length || features[0].layer.id == "cluster-count" || features[0].layer.id == "contours" || features[0].layer.id == "contour_label") {
             return;
         }
 
@@ -471,7 +471,7 @@ function Map(loadJSONFunc) {
                     "type": "raster",
                     "url": "mapbox://" + tileset,
                     "tileSize": 256
-                },                
+                },
                 'Mapbox Terrain V2': {
                     type: 'vector',
                     url: 'mapbox://mapbox.mapbox-terrain-v2'
@@ -637,8 +637,9 @@ function Map(loadJSONFunc) {
         // by changing the cursor style to 'pointer'.
         that.map.on('mousemove', function(e) {
             var features = that.map.queryRenderedFeatures(e.point, { layers: that.layers });
-            that.map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
-
+            that.map.getCanvas().style.cursor =
+                (features.length && !(features[0].layer.id == "contours") && !(features[0].layer.id == "contour_label")) ? 'pointer' : '';
+                
             if (!features.length) {
                 that.areaPopup.remove();
                 return;
@@ -728,6 +729,11 @@ function Map(loadJSONFunc) {
 
         // remove all layers but the first, base layer
         that.layers_ = that.layers_.slice(0, 1);
+
+        // re add contours otherwise crash and map freezes as gl js removes it when we remove the points
+        if (contourToggleButton.toggleState == ToggleStates.ON) {
+            that.addContourLines();
+        }
     }
 
     this.removeTouchLocationMarkers = function() {
@@ -769,6 +775,55 @@ function Map(loadJSONFunc) {
         }
         overlayToggleButton.set("off");
         myMap.tileJSON = null;
+    };
+
+    this.addContourLines = function() {
+        that.map.addLayer({
+            'id': 'contours',
+            'type': 'line',
+            'source': 'Mapbox Terrain V2',
+            'source-layer': 'contour',
+            'layout': {
+                'visibility': 'visible',
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            'paint': {
+                'line-color': '#877b59',
+                'line-width': 1
+            }
+        });
+        that.map.addLayer({
+            "id": "contour_label",
+            "type": "symbol",
+            "source": "Mapbox Terrain V2",
+            "source-layer": "contour",
+            "minzoom": 0,
+            "maxzoom": 22,
+            "filter": ["all", ["==", "$type", "Polygon"],
+                ["==", "index", 5]
+            ],
+            "layout": {
+                "symbol-placement": "line",
+                "text-field": "{ele}",
+                "text-font": ["Open Sans Regular,   Arial Unicode MS Regular"],
+                "text-letter-spacing": 0,
+                "text-line-height": 1.6,
+                "text-max-angle": 10,
+                "text-rotation-alignment": "map"
+            },
+            "paint": {
+                //"text-size": 0
+            },
+            "paint.contours": {
+                "text-opacity": 1,
+                "text-halo-blur": 0,
+                //"text-size": 12,
+                "text-halo-width": 1,
+                "text-halo-color": "#333",
+                "text-color": "#00fcdc"
+            }
+        });
     };
 }
 
