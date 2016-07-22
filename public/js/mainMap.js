@@ -156,7 +156,7 @@ function Map(loadJSONFunc) {
         var lat = feature.geometry.coordinates[1];
         var pointNumber = feature.properties.p;
 
-        if (!pointNumber || feature.layer.id == "contours" || feature.layer.id == "contour_label") {
+        if (pointNumber === undefined || pointNumber === null || feature.layer.id == "contours" || feature.layer.id == "contour_label") {
             return;
         }
 
