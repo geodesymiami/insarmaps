@@ -508,9 +508,13 @@ $(window).load(function() {
     });
 
     $("#information-button").on("click", function() {
-        console.log("clicked");
         $("#information-div").toggleClass("active");
     });
+
+    $("#close-information-button").on("click", function() {
+        $("#information-div").toggleClass("active");
+    });
+
     $(function() {
         $('[data-toggle="tooltip"]').tooltip()
     });

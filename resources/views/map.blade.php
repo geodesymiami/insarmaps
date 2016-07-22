@@ -170,7 +170,11 @@
     </div>
   </div>
   <div id="information-div">
-    hi
+    <div id="information-div-contents">
+      <div id="close-information-button">
+        <button class="btn btn-primary-outline">Done</button>
+      </div>
+    </div>
   </div>
   <?php
   echo "
