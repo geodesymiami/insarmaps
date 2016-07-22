@@ -255,7 +255,7 @@ function Map(loadJSONFunc) {
 
             var chartOpts = {
                 title: {
-                    text: 'Timeseries Displacement Chart'
+                    text: null
                 },
                 subtitle: {
                     text: "velocity: " + slope.toFixed(8).toString() + " m/yr"
