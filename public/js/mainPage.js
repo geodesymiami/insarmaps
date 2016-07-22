@@ -30,6 +30,10 @@ function getGEOJSON(area) {
     myMap.initLayer(myMap.tileJSON, "streets");
     myMap.map.style.on("load", function() {
         overlayToggleButton.set("on");
+        
+        if (contourToggleButton.toggleState == ToggleStates.ON) {
+            myMap.addContourLines();
+        }
 
         window.setTimeout(function() {
             myMap.map.flyTo({

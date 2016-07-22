@@ -637,7 +637,9 @@ function Map(loadJSONFunc) {
         // by changing the cursor style to 'pointer'.
         that.map.on('mousemove', function(e) {
             var features = that.map.queryRenderedFeatures(e.point, { layers: that.layers });
-            that.map.getCanvas().style.cursor = (features.length && !(features[0].layer.id == "contours") && !(features[0].layer.id == "contour_label")) ? 'pointer' : '';
+            that.map.getCanvas().style.cursor =
+                (features.length && !(features[0].layer.id == "contours") && !(features[0].layer.id == "contour_label")) ? 'pointer' : '';
+                
             if (!features.length) {
                 that.areaPopup.remove();
                 return;
@@ -772,7 +774,7 @@ function Map(loadJSONFunc) {
             $('.wrap#charts').toggleClass('active');
         }
         overlayToggleButton.set("off");
-        myMap.tileJSON = null;        
+        myMap.tileJSON = null;
     };
 
     this.addContourLines = function() {
