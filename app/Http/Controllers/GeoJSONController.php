@@ -150,7 +150,8 @@ public function getAreas() {
       $currentArea["coords"]["longitude"] = $area->longitude;                
       $currentArea["num_chunks"] = $area->numchunks;
       $currentArea["country"] = $area->country;
-
+      $currentArea["attributekeys"] = $area->attributekeys;
+      $currentArea["attributevalues"] = $area->attributevalues;
       array_push($json["areas"], $currentArea);
     }
 
