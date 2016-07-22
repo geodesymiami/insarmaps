@@ -727,6 +727,11 @@ function Map(loadJSONFunc) {
 
         // remove all layers but the first, base layer
         that.layers_ = that.layers_.slice(0, 1);
+
+        // re add contours otherwise crash and map freezes as gl js removes it when we remove the points
+        if (contourToggleButton.toggleState == ToggleStates.ON) {
+            that.addContourLines();
+        }
     }
 
     this.removeTouchLocationMarkers = function() {
@@ -767,7 +772,7 @@ function Map(loadJSONFunc) {
             $('.wrap#charts').toggleClass('active');
         }
         overlayToggleButton.set("off");
-        myMap.tileJSON = null;
+        myMap.tileJSON = null;        
     };
 
     this.addContourLines = function() {
