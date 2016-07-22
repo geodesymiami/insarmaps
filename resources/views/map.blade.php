@@ -49,9 +49,9 @@
     <div id="top-map-buttons">
       <div id="map-type-menu">
         <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
-        <label for='streets'>streets</label>
+        <label for='streets'>Streets</label>
         <input id='satellite' type='radio' name='rtoggle' value='satellite'>
-        <label for='satellite'>satellite</label>
+        <label for='satellite'>Satellite</label>
       </div>
       <div id="overlay-options-wrapper">
         <div id="overlay-options">
@@ -61,7 +61,7 @@
               <input id = "overlay-toggle-button" type="checkbox" name="overlayToggle"/>
             </div>
             <div class="overlay-toggle">
-              <label>Contour Lines</label>
+              <label>Contour lines</label>
               <input id = "contour-toggle-button" type="checkbox" name="overlayToggle"/>
             </div>
           </div>
@@ -131,7 +131,7 @@
       </div>
       <div id="map-options">
         <div class="overlay_toggle">
-          <label>Second Graph</label>
+          <label>Second graph</label>
           <input id = "second-graph-toggle-button" type="checkbox" name="overlayToggle"/>          
         </div>
         <div class="overlay_toggle">

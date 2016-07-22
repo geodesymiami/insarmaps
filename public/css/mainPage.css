@@ -33,6 +33,7 @@ h3 {
 label {    
     font-family: 'Open Sans', 'calibri' !important;
     color: Black;
+    font-weight: normal !important;
 }
 
 .page-container {
