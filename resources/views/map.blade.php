@@ -55,13 +55,15 @@
       </div>
       <div id="overlay-options-wrapper">
         <div id="overlay-options">
-          <div class="overlay_toggle">
-            <label>Data overlay</label>
-            <input id = "overlay-toggle-button" type="checkbox" name="overlayToggle"/>
-          </div>
-          <div class="overlay-toggle">
-            <label>Contour Lines</label>
-            <input id = "contour-toggle-button" type="checkbox" name="overlayToggle"/>
+          <div id="overlay-options-toggles">
+            <div class="overlay_toggle">
+              <label>Data overlay</label>
+              <input id = "overlay-toggle-button" type="checkbox" name="overlayToggle"/>
+            </div>
+            <div class="overlay-toggle">
+              <label>Contour Lines</label>
+              <input id = "contour-toggle-button" type="checkbox" name="overlayToggle"/>
+            </div>
           </div>
           <div id="overlay-slider"></div>
         </div>
