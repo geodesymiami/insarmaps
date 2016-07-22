@@ -156,7 +156,7 @@ function Map(loadJSONFunc) {
         var lat = feature.geometry.coordinates[1];
         var pointNumber = feature.properties.p;
 
-        if (!pointNumber) {
+        if (!pointNumber || feature.layer.id == "contours" || feature.layer.id == "contour_label") {
             return;
         }
 
@@ -385,7 +385,7 @@ function Map(loadJSONFunc) {
         var layerID = "touchLocation";
 
         // remove cluster count check if you remove clustering
-        if (!features.length || features[0].layer.id == "cluster-count") {
+        if (!features.length || features[0].layer.id == "cluster-count" || features[0].layer.id == "contours" || features[0].layer.id == "contour_label") {
             return;
         }
 
@@ -637,8 +637,7 @@ function Map(loadJSONFunc) {
         // by changing the cursor style to 'pointer'.
         that.map.on('mousemove', function(e) {
             var features = that.map.queryRenderedFeatures(e.point, { layers: that.layers });
-            that.map.getCanvas().style.cursor = (features.length) ? 'pointer' : '';
-
+            that.map.getCanvas().style.cursor = (features.length && !(features[0].layer.id == "contours") && !(features[0].layer.id == "contour_label")) ? 'pointer' : '';
             if (!features.length) {
                 that.areaPopup.remove();
                 return;
