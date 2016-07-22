@@ -234,6 +234,11 @@ function Map(loadJSONFunc) {
             var decimal_dates = json.decimal_dates;
             var displacement_array = json.displacements;
 
+            // convert from m to cm
+            displacement_array.forEach(function(element, index, array) {
+                array[index] = 100 * array[index];
+            });
+
             that.graphsController.graphSettings[chartContainer].date_string_array = date_string_array;
             that.graphsController.graphSettings[chartContainer].date_array = date_array;
             that.graphsController.graphSettings[chartContainer].decimal_dates = decimal_dates;
@@ -258,7 +263,7 @@ function Map(loadJSONFunc) {
                     text: null
                 },
                 subtitle: {
-                    text: "velocity: " + slope.toFixed(8).toString() + " m/yr"
+                    text: "velocity: " + slope.toFixed(2).toString() + " mm/yr"
                 },
                 navigator: {
                     enabled: true
@@ -291,7 +296,7 @@ function Map(loadJSONFunc) {
                 },
                 yAxis: {
                     title: {
-                        text: 'Ground Displacement (m)'
+                        text: 'Ground Displacement (cm)'
                     },
                     legend: {
                         layout: 'vertical',

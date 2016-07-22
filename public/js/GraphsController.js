@@ -91,7 +91,7 @@ function GraphsController() {
 
             var date_range = Highcharts.dateFormat(null, validDates.minDate) + " - " + Highcharts.dateFormat(null, validDates.maxDate);
             chart.setTitle(null, {
-                text: "velocity: " + sub_slope.toFixed(8).toString() + " m/yr"
+                text: "velocity: " + sub_slope.toFixed(2).toString() + " mm/yr"
             });
         }
 
