@@ -80,7 +80,7 @@ function GraphsController() {
         
         var lineData = {
             linearRegressionData: sub_result,
-            regressionData: regression_data
+            regressionDataForHighcharts: regression_data
         };
 
         return lineData;
@@ -114,7 +114,7 @@ function GraphsController() {
         var regressionSeries = {
             type: 'line',
             name: 'Linear Regression',
-            data: regression_data.regressionData,
+            data: regression_data.regressionDataForHighcharts,
             marker: {
                 enabled: false
             },
