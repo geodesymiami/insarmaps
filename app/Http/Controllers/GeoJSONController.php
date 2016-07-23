@@ -95,7 +95,7 @@ class GeoJSONController extends Controller {
       $pointsArray = array_slice($parameters, 1, $offset);
 
       $pointsArrayLen = count($pointsArray);
-      $query = "SELECT decimaldates, stringdates FROM area WHERE name='" . $area . "'";
+      $query = "SELECT decimaldates, stringdates FROM area WHERE area.name like '" . $area . "'";
       $dateInfos = DB::select($query);
 
       foreach ($dateInfos as $dateInfo) {

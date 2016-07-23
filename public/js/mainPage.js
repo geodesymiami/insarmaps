@@ -511,6 +511,15 @@ $(window).load(function() {
             zoom: 0
         });
     });
+
+    $("#information-button").on("click", function() {
+        $("#information-div").toggleClass("active");
+    });
+
+    $("#close-information-button").on("click", function() {
+        $("#information-div").toggleClass("active");
+    });
+
     $(function() {
         $('[data-toggle="tooltip"]').tooltip()
     });

@@ -5,6 +5,8 @@ body {
     padding: 0;
     height: 100%;
     width: 100% color: white;
+    font-family: 'Open Sans', 'Calibri';
+    overflow: auto;
 }
 
 button {
@@ -17,22 +19,23 @@ h1.title {
 }
 
 h1 {
-    font-family: 'Myriad Pro', 'Calibri' !important;
+    font-family: 'Open Sans', 'Calibri' !important;
 }
 
 h2 {
-    font-family: 'Myriad Pro', 'calibri' !important;
+    font-family: 'Open Sans', 'Calibri' !important;
     margin-top: 20px;
 }
 
 h3 {
-    font-family: 'Myriad Pro', 'calibri' !important;
+    font-family: 'Open Sans', 'Calibri' !important;
     margin-top: 20px;
 }
 
-label {    
-    font-family: 'Myriad Pro', 'calibri' !important;
+label {
+    font-family: 'Open Sans', 'Calibri' !important;
     color: Black;
+    font-weight: normal !important;
 }
 
 .page-container {
@@ -72,7 +75,7 @@ label {
 }
 
 .side-item.graph {
-    height: 500px;    
+    height: 500px;
     margin-bottom: 20px;
 }
 
@@ -91,7 +94,7 @@ label {
 }
 
 .wrap {
-    overflow: hidden; 
+    overflow: hidden;
     /*padding: 20px 50px;*/
     display: block;
     border-radius: 4px;
@@ -111,7 +114,7 @@ label {
 }
 
 #select-area-wrap {
-    position: fixed;    
+    position: fixed;
     top: 10%;
     right: 10%;
     bottom: 85px;
@@ -222,7 +225,7 @@ label {
 
 #input {
     color: coral;
-    font-family: 'Carter One', cursive;
+    font-family: 'Open Sans', cursive;
 }
 
 .accordion {
@@ -281,7 +284,7 @@ div.panel.show > p {
 }
 
 button {
-    font-family: 'Myriad Pro', 'calibri'
+    font-family: 'Open Sans', 'Calibri'
 }
 
 p.ul {
@@ -298,6 +301,7 @@ div.menu {
     left: 0px;
     z-index: 99;
 }
+
 #search-bar .input-group {
     margin: 10px 0 0 10px;
     max-width: 240px;
@@ -305,7 +309,7 @@ div.menu {
 
 #top-map-buttons {
     position: absolute;
-    top: 6px;
+    top: 10px;
     left: 268px;
     z-index: 99;
     width: 50%;
@@ -317,39 +321,75 @@ div.menu {
     padding: 7px;
     font-family: 'Open Sans', sans-serif;
     z-index: 99;
-    border-radius: 5px;
+    border-radius: 4px;
     width: 27%;
     float: left;
+    height: 34px;
 }
 
 #reset-button {
-    font-family: 'Open Sans', sans-serif;
     z-index: 99;
     border-radius: 5px;
-    width: 23%;
+    width: 10%;
     float: left;
     padding-left: 10px;
 }
 
-#reset-button button {
-    background-color: white;    
+#information-button {
+    z-index: 99;
+    border-radius: 5px;
+    width: 5%;
+    float: left;
+    padding-left: 10px;
+}
+
+#information-div {
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    opacity: 0.5;
+    z-index: 99;
+}
+
+#information-div.active {
+    display: block;
+}
+
+#information-div-contents {
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto 0 auto;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#top-map-buttons button {
+    background-color: white;
 }
 
 #overlay-options-wrapper {
     float: left;
     width: 50%;
-    height: 100%;
+    height: 34px;
     padding-left: 10px;
 }
 
-#overlay-options-wrapper .overlay_toggle {
+#overlay-options-toggles {
+    float: left;
+    width: 50%;
+}
+
+#overlay-options-toggles .overlay_toggle {
     width: 50%;
 }
 
 #overlay-options {
     font-family: 'Open Sans', sans-serif;
     z-index: 99;
-    border-radius: 5px;
+    border-radius: 4px;
     background-color: white;
     height: 100%;
 }
@@ -377,6 +417,7 @@ div.menu {
     width: 25%;
 }
 
+
 /*disable compass in nav controls*/
 
 .mapboxgl-ctrl-compass {
@@ -396,7 +437,7 @@ div.menu {
 #overlay-slider {
     float: left;
     height: 10px;
-    width: 95%;
+    width: 50%;
     bottom: 0px;
     background: coral;
 }
@@ -473,7 +514,8 @@ div.menu {
     height: 50%;
 }
 
-#top-graph-focus-div, #bottom-graph-focus-div {
+#top-graph-focus-div,
+#bottom-graph-focus-div {
     position: absolute !important;
     bottom: 0px;
 }
@@ -485,7 +527,7 @@ div.menu {
 #map-options {
     width: 100%;
     height: 10%;
-    max-height: 40px; 
+    max-height: 40px;
 }
 
 .hidden {
@@ -511,7 +553,9 @@ div.menu {
     margin: 0 !important;
 }
 
+
 /*area information popup with tabs*/
+
 ul.tab {
     list-style-type: none;
     margin: 0;
@@ -536,9 +580,14 @@ ul.tab li a {
     font-size: 13px;
 }
 
-ul.tab li a:hover {background-color: #ddd;}
+ul.tab li a:hover {
+    background-color: #ddd;
+}
 
-ul.tab li a:focus, .active {background-color: #ccc;}
+ul.tab li a:focus,
+.active {
+    background-color: #ccc;
+}
 
 .tabcontent {
     display: none;
@@ -548,8 +597,9 @@ ul.tab li a:focus, .active {background-color: #ccc;}
     font-size: 10px !important;
 }
 
-.tabcontent h3, .tabcontent p {
+.tabcontent h3,
+.tabcontent p {
     font-size: 14px;
-    font-family: sans-serif !important;
+    font-family: "Open Sans" !important;
     color: black !important;
 }

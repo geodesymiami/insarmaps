@@ -156,7 +156,7 @@ function Map(loadJSONFunc) {
         var lat = feature.geometry.coordinates[1];
         var pointNumber = feature.properties.p;
 
-        if (!pointNumber || feature.layer.id == "contours" || feature.layer.id == "contour_label") {
+        if (pointNumber === undefined || pointNumber === null || feature.layer.id == "contours" || feature.layer.id == "contour_label") {
             return;
         }
 
@@ -249,7 +249,7 @@ function Map(loadJSONFunc) {
 
             // calculate and render a linear regression of those dates and displacements
             var result = calcLinearRegression(displacement_array, decimal_dates);
-            var slope = result["equation"][0];
+            var slope = result["equation"][0] * 10; // slope in mm
             var y = result["equation"][1];
 
             // returns array for linear regression on chart
