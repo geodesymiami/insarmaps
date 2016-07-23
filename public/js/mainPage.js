@@ -30,7 +30,6 @@ function getGEOJSON(area) {
     myMap.initLayer(myMap.tileJSON, "streets");
     myMap.map.style.on("load", function() {
         overlayToggleButton.set("on");
-        
         if (contourToggleButton.toggleState == ToggleStates.ON) {
             myMap.addContourLines();
         }
@@ -41,6 +40,12 @@ function getGEOJSON(area) {
                 zoom: 7
             });
         }, 1000);
+
+        // put the attribute keys and values on table 
+        attributekeys = area.attributekeys;
+        attributevalues = area.attributevalues;
+        console.log(attributekeys);
+        console.log(attributevalues);
     });
 }
 
