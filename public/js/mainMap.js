@@ -279,6 +279,14 @@ function Map(loadJSONFunc) {
                             that.graphsController.graphSettings[chartContainer].navigatorEvent = e;
                             that.graphsController.getValideDatesFromNavigatorExtremes(chartContainer);
 
+                            // update velocity, even if we don't have a linear regression line
+                            var regression_data = that.graphsController.getLinearRegressionLine(chartContainer, displacement_array);
+                            var sub_slope = regression_data.linearRegressionData["equation"][0] * 10;
+                            var chart = $("#" + chartContainer).highcharts();
+                            chart.setTitle(null, {
+                                text: "velocity: " + sub_slope.toFixed(2).toString() + " mm/yr"
+                            });
+
                             if (regressionToggleButton.toggleState == ToggleStates.ON) {
                                 var graphSettings = that.graphsController.graphSettings[chartContainer];
                                 var displacements_array = detrendToggleButton.toggleState == ToggleStates.ON ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
@@ -315,7 +323,7 @@ function Map(loadJSONFunc) {
                     }]
                 },
                 tooltip: {
-                    headerFormat: '<b>{series.name}</b><br>',
+                    headerFormat: '',
                     pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} m'
                 },
                 series: [{
@@ -645,7 +653,7 @@ function Map(loadJSONFunc) {
             var features = that.map.queryRenderedFeatures(e.point, { layers: that.layers });
             that.map.getCanvas().style.cursor =
                 (features.length && !(features[0].layer.id == "contours") && !(features[0].layer.id == "contour_label")) ? 'pointer' : '';
-                
+
             if (!features.length) {
                 that.areaPopup.remove();
                 return;

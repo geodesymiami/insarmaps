@@ -61,6 +61,31 @@ function GraphsController() {
         };
     };
 
+    this.getLinearRegressionLine = function(chartContainer, displacement_array) {
+        var graphSettings = that.graphSettings[chartContainer];
+        var validDates = this.getValideDatesFromNavigatorExtremes(chartContainer);
+         // returns array for displacement on chart
+        var chart_data = getDisplacementChartData(displacement_array, graphSettings.date_string_array);
+
+        var sub_displacements = displacement_array.slice(validDates.minIndex, validDates.maxIndex + 1);
+        var sub_decimal_dates = graphSettings.decimal_dates.slice(validDates.minIndex, validDates.maxIndex + 1);
+        var sub_result = calcLinearRegression(sub_displacements, sub_decimal_dates);
+        // get linear regression data for sub array
+        var sub_chart_data = chart_data.slice(validDates.minIndex, validDates.maxIndex + 1);
+        var sub_slope = sub_result["equation"][0];
+        var sub_y = sub_result["equation"][1];
+        var regression_data = getRegressionChartData(sub_slope, sub_y, sub_decimal_dates, sub_chart_data);
+
+        var date_range = Highcharts.dateFormat(null, validDates.minDate) + " - " + Highcharts.dateFormat(null, validDates.maxDate);
+        
+        var lineData = {
+            linearRegressionData: sub_result,
+            regressionDataForHighcharts: regression_data
+        };
+
+        return lineData;
+    };
+
     this.addRegressionLine = function(chartContainer, displacement_array) {
         var graphSettings = that.graphSettings[chartContainer];
         var chart = $("#" + chartContainer).highcharts();
@@ -74,22 +99,13 @@ function GraphsController() {
 
         // returns array for linear regression on chart
         var regression_data = getRegressionChartData(slope, y, graphSettings.decimal_dates, chart_data);
+        var regression_data = that.getLinearRegressionLine(chartContainer, displacement_array);
         // calculate regression based on current range        
-        if (graphSettings.navigatorEvent != null) {
-            var validDates = this.getValideDatesFromNavigatorExtremes(chartContainer);
-
-            var sub_displacements = displacement_array.slice(validDates.minIndex, validDates.maxIndex + 1);
-            var sub_decimal_dates = graphSettings.decimal_dates.slice(validDates.minIndex, validDates.maxIndex + 1);
-            var sub_result = calcLinearRegression(sub_displacements, sub_decimal_dates);
-            // get linear regression data for sub array
-            var sub_chart_data = chart_data.slice(validDates.minIndex, validDates.maxIndex + 1);
-            var sub_slope = sub_result["equation"][0];
-            var sub_y = sub_result["equation"][1];
-            regression_data = getRegressionChartData(sub_slope, sub_y, sub_decimal_dates, sub_chart_data);
+        if (graphSettings.navigatorEvent != null) {    
+            var sub_slope = regression_data.linearRegressionData["equation"][0] * 10;
             // remove an existing sub array from chart
             that.removeRegressionLine(chartContainer);
 
-            var date_range = Highcharts.dateFormat(null, validDates.minDate) + " - " + Highcharts.dateFormat(null, validDates.maxDate);
             chart.setTitle(null, {
                 text: "velocity: " + sub_slope.toFixed(2).toString() + " mm/yr"
             });
@@ -98,7 +114,7 @@ function GraphsController() {
         var regressionSeries = {
             type: 'line',
             name: 'Linear Regression',
-            data: regression_data,
+            data: regression_data.regressionDataForHighcharts,
             marker: {
                 enabled: false
             },
@@ -353,13 +369,13 @@ function GraphsController() {
         var y = result["equation"][1];
 
         graphSettings.detrend_displacement_array = getlinearDetrend(graphSettings.displacement_array, graphSettings.decimal_dates, slope)
-        // calculate and render a linear regression of those dates and displacements
+            // calculate and render a linear regression of those dates and displacements
         result = calcLinearRegression(graphSettings.detrend_displacement_array, graphSettings.decimal_dates);
         slope = result["equation"][0];
         y = result["equation"][1];
 
         chart_data = getDisplacementChartData(graphSettings.detrend_displacement_array, graphSettings.date_string_array);
-        that.highChartsOpts[chartContainer].series[0].data = chart_data;        
+        that.highChartsOpts[chartContainer].series[0].data = chart_data;
         that.highChartsOpts[chartContainer].subtitle.text = "velocity: " + slope.toFixed(8).toString() + " m/yr";
         that.recreateGraphs();
     };
@@ -372,7 +388,7 @@ function GraphsController() {
         // calculate and render a linear regression of those dates and displacements
         var result = calcLinearRegression(graphSettings.displacement_array, graphSettings.decimal_dates);
         var slope = result["equation"][0];
-        var y = result["equation"][1]; 
+        var y = result["equation"][1];
         chart_data = getDisplacementChartData(graphSettings.displacement_array, graphSettings.date_string_array);
         that.highChartsOpts[chartContainer].series[0].data = chart_data;
         that.highChartsOpts[chartContainer].subtitle.text = "velocity: " + slope.toString().substr(0, 8) + " m/yr";
