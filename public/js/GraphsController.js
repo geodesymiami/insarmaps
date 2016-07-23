@@ -69,7 +69,7 @@ function GraphsController() {
         var chart_data = getDisplacementChartData(displacement_array, graphSettings.date_string_array);
         // calculate and render a linear regression of those dates and displacements
         var result = calcLinearRegression(displacement_array, graphSettings.decimal_dates);
-        var slope = result["equation"][0];
+        var slope = result["equation"][0] * 10; // slope in mm
         var y = result["equation"][1];
 
         // returns array for linear regression on chart
@@ -91,7 +91,7 @@ function GraphsController() {
 
             var date_range = Highcharts.dateFormat(null, validDates.minDate) + " - " + Highcharts.dateFormat(null, validDates.maxDate);
             chart.setTitle(null, {
-                text: "velocity: " + sub_slope.toFixed(8).toString() + " m/yr"
+                text: "velocity: " + sub_slope.toFixed(2).toString() + " mm/yr"
             });
         }
 
@@ -102,7 +102,8 @@ function GraphsController() {
             marker: {
                 enabled: false
             },
-            color: "#ffa500"
+            color: "#ffa500",
+            showInLegend: false
         };
 
         chart.addSeries(regressionSeries);

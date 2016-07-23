@@ -156,7 +156,7 @@ function Map(loadJSONFunc) {
         var lat = feature.geometry.coordinates[1];
         var pointNumber = feature.properties.p;
 
-        if (!pointNumber || feature.layer.id == "contours" || feature.layer.id == "contour_label") {
+        if (pointNumber === undefined || pointNumber === null || feature.layer.id == "contours" || feature.layer.id == "contour_label") {
             return;
         }
 
@@ -234,6 +234,11 @@ function Map(loadJSONFunc) {
             var decimal_dates = json.decimal_dates;
             var displacement_array = json.displacements;
 
+            // convert from m to cm
+            displacement_array.forEach(function(element, index, array) {
+                array[index] = 100 * array[index];
+            });
+
             that.graphsController.graphSettings[chartContainer].date_string_array = date_string_array;
             that.graphsController.graphSettings[chartContainer].date_array = date_array;
             that.graphsController.graphSettings[chartContainer].decimal_dates = decimal_dates;
@@ -244,7 +249,7 @@ function Map(loadJSONFunc) {
 
             // calculate and render a linear regression of those dates and displacements
             var result = calcLinearRegression(displacement_array, decimal_dates);
-            var slope = result["equation"][0];
+            var slope = result["equation"][0] * 10; // slope in mm
             var y = result["equation"][1];
 
             // returns array for linear regression on chart
@@ -255,10 +260,10 @@ function Map(loadJSONFunc) {
 
             var chartOpts = {
                 title: {
-                    text: 'Timeseries Displacement Chart'
+                    text: null
                 },
                 subtitle: {
-                    text: "velocity: " + slope.toFixed(8).toString() + " m/yr"
+                    text: "velocity: " + slope.toFixed(2).toString() + " mm/yr"
                 },
                 navigator: {
                     enabled: true
@@ -291,7 +296,7 @@ function Map(loadJSONFunc) {
                 },
                 yAxis: {
                     title: {
-                        text: 'Ground Displacement (m)'
+                        text: 'Ground Displacement (cm)'
                     },
                     legend: {
                         layout: 'vertical',
@@ -319,7 +324,8 @@ function Map(loadJSONFunc) {
                     data: chart_data,
                     marker: {
                         enabled: true
-                    }
+                    },
+                    showInLegend: false
                 }],
                 chart: {
                     marginRight: 50

@@ -95,7 +95,7 @@ class GeoJSONController extends Controller {
       $pointsArray = array_slice($parameters, 1, $offset);
 
       $pointsArrayLen = count($pointsArray);
-      $query = "SELECT decimaldates, stringdates FROM area WHERE name='" . $area . "'";
+      $query = "SELECT decimaldates, stringdates FROM area WHERE area.name like '" . $area . "'";
       $dateInfos = DB::select($query);
 
       foreach ($dateInfos as $dateInfo) {
@@ -150,7 +150,8 @@ public function getAreas() {
       $currentArea["coords"]["longitude"] = $area->longitude;                
       $currentArea["num_chunks"] = $area->numchunks;
       $currentArea["country"] = $area->country;
-
+      $currentArea["attributekeys"] = $area->attributekeys;
+      $currentArea["attributevalues"] = $area->attributevalues;
       array_push($json["areas"], $currentArea);
     }
 
