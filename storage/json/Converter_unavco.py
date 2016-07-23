@@ -33,10 +33,6 @@ def convert_data():
 	siu_man = []
 	displacement_values = []
 	displacements = '{'
-	# np array of decimal dates, x parameter in linear regression equation
-	x = decimal_dates
-	A = np.vstack([x, np.ones(len(x))]).T
-	y = []
 	chunk_num = 1
 	point_num = 0
 
@@ -54,16 +50,11 @@ def convert_data():
 				displacement_values.append(float(displacement))
 			displacements = displacements[:len(displacements)-2] + '}'
 
-			# np array of displacement values, y parameter in linear regression equation
-			y = displacement_values
-
-			# y = mx + c -> we want m = slope of the linear regression line 
-			m, c = np.linalg.lstsq(A, y)[0]
-
+			# put point object in json format
 			data = {
    			"type": "Feature",
    			"geometry": {"type": "Point", "coordinates": [latitude, longitude]},	
-   			"properties": {"d": displacement_values, "m": m, "p": point_num}
+   			"properties": {"d": displacement_values, "p": point_num} # removed m - slope
 			}	
 			# allocate memory space for siu_man array in beginning 
 			siu_man.append(data)
@@ -132,7 +123,6 @@ def make_json_file(chunk_num, points):
 
 	data = {
 	"type": "FeatureCollection",
-	# "dates": dataset_keys, 
 	"dates": dataset_keys, 
 	"features": points
 	}
