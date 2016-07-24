@@ -29,7 +29,6 @@ function GraphsController() {
         }
     };
 
-
     // do as name says, return struct with min and max dates to be optionally used
     this.getValideDatesFromNavigatorExtremes = function(chartContainer) {
         var graphSettings = that.graphSettings[chartContainer];
@@ -323,6 +322,8 @@ function GraphsController() {
 
         $("#select-graph-focus-div").css("display", "block");
         that.selectedGraph = "Bottom Graph";
+        
+        topGraphToggleButton.set("off");
         bottomGraphToggleButton.set("on");
     };
 
