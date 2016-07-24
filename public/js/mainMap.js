@@ -178,46 +178,36 @@ function Map(loadJSONFunc) {
 
         var layerID = that.graphsController.selectedGraph;
 
+        clickMarker.setData({
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [long, lat]
+                },
+                "properties": {
+                    "marker-symbol": markerSymbol
+                }
+            }]
+        });
         // show cross on clicked point
         if (!that.map.getLayer(layerID)) {
-            clickMarker.setData({
-                "type": "FeatureCollection",
-                "features": [{
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [long, lat]
-                    },
-                    "properties": {
-                        "marker-symbol": markerSymbol
-                    }
-                }]
-            });
             that.map.addSource(layerID, clickMarker);
-
-            that.map.addLayer({
-                "id": layerID,
-                "type": "symbol",
-                "source": layerID,
-                "layout": {
-                    "icon-image": "{marker-symbol}-15",
-                }
-            });
+        // already there? then remove it as we are going to add a new layer every time
+        // so geojson sources overlayed on top of the vector tiles don't obscure our crosses
         } else {
-            clickMarker.setData({
-                "type": "FeatureCollection",
-                "features": [{
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [long, lat]
-                    },
-                    "properties": {
-                        "marker-symbol": markerSymbol
-                    }
-                }]
-            });
+            that.map.removeLayer(layerID);
         }
+
+        that.map.addLayer({
+            "id": layerID,
+            "type": "symbol",
+            "source": layerID,
+            "layout": {
+                "icon-image": "{marker-symbol}-15",
+            }
+        });
 
         $("#point-details").html(lat.toFixed(5) + ", " + long.toFixed(5));
 
