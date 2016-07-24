@@ -531,6 +531,19 @@ $(window).load(function() {
         if (!myMap.selector.polygonButtonSelected) {
             myMap.bbox = null;
         }
+
+        var buttonColor = "blue";
+        var opacity = 0.7;
+
+        if (!myMap.selector.polygonButtonSelected) {
+            buttonColor = "white";
+            opacity = 1.0;
+        }
+
+        $("#polygon-button").animate({
+            backgroundColor: buttonColor,
+            opacity: opacity
+        }, 200);
     });
 
     $(function() {
