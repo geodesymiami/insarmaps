@@ -76,7 +76,9 @@
       </div>
     </div>    
     <div id="polygon-button-div">
-      <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Draw polygon" id="polygon-button">P</button>
+      <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="polygon-button">
+        <img src="img/polygon.svg" alt="polygon.svg">
+      </button>
     </div>
     <div id="point-details"></div>
     <div class="wrap" id="area-attributes-div">    

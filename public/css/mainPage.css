@@ -451,6 +451,10 @@ div.menu {
     border-radius: 10px;
 }
 
+#polygon-button {
+    padding: 0 !important;
+}
+
 #slideout-button {
     position: absolute;
     font-family: 'Open Sans', sans-serif;
