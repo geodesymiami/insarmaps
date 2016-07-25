@@ -239,7 +239,7 @@ function Map(loadJSONFunc) {
 
             // calculate and render a linear regression of those dates and displacements
             var result = calcLinearRegression(displacement_array, decimal_dates);
-            var slope = result["equation"][0] * 10; // slope in mm
+            var slope = result["equation"][0];
             var y = result["equation"][1];
 
             // returns array for linear regression on chart
@@ -253,7 +253,7 @@ function Map(loadJSONFunc) {
                     text: null
                 },
                 subtitle: {
-                    text: "velocity: " + slope.toFixed(2).toString() + " mm/yr"
+                    text: "velocity: " + (slope * 10).toFixed(2).toString() + " mm/yr" // slope in mm
                 },
                 navigator: {
                     enabled: true
@@ -271,10 +271,10 @@ function Map(loadJSONFunc) {
 
                             // update velocity, even if we don't have a linear regression line
                             var regression_data = that.graphsController.getLinearRegressionLine(chartContainer, displacement_array);
-                            var sub_slope = regression_data.linearRegressionData["equation"][0] * 10;
+                            var sub_slope = regression_data.linearRegressionData["equation"][0];
                             var chart = $("#" + chartContainer).highcharts();
                             chart.setTitle(null, {
-                                text: "velocity: " + sub_slope.toFixed(2).toString() + " mm/yr"
+                                text: "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr" // slope in mm
                             });
 
                             if (regressionToggleButton.toggleState == ToggleStates.ON) {

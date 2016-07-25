@@ -63,7 +63,7 @@ function GraphsController() {
     this.getLinearRegressionLine = function(chartContainer, displacement_array) {
         var graphSettings = that.graphSettings[chartContainer];
         var validDates = this.getValideDatesFromNavigatorExtremes(chartContainer);
-         // returns array for displacement on chart
+        // returns array for displacement on chart
         var chart_data = getDisplacementChartData(displacement_array, graphSettings.date_string_array);
 
         var sub_displacements = displacement_array.slice(validDates.minIndex, validDates.maxIndex + 1);
@@ -76,7 +76,7 @@ function GraphsController() {
         var regression_data = getRegressionChartData(sub_slope, sub_y, sub_decimal_dates, sub_chart_data);
 
         var date_range = Highcharts.dateFormat(null, validDates.minDate) + " - " + Highcharts.dateFormat(null, validDates.maxDate);
-        
+
         var lineData = {
             linearRegressionData: sub_result,
             regressionDataForHighcharts: regression_data
@@ -93,20 +93,20 @@ function GraphsController() {
         var chart_data = getDisplacementChartData(displacement_array, graphSettings.date_string_array);
         // calculate and render a linear regression of those dates and displacements
         var result = calcLinearRegression(displacement_array, graphSettings.decimal_dates);
-        var slope = result["equation"][0] * 10; // slope in mm
+        var slope = result["equation"][0];
         var y = result["equation"][1];
 
         // returns array for linear regression on chart
         var regression_data = getRegressionChartData(slope, y, graphSettings.decimal_dates, chart_data);
         var regression_data = that.getLinearRegressionLine(chartContainer, displacement_array);
         // calculate regression based on current range        
-        if (graphSettings.navigatorEvent != null) {    
-            var sub_slope = regression_data.linearRegressionData["equation"][0] * 10;
+        if (graphSettings.navigatorEvent != null) {
+            var sub_slope = regression_data.linearRegressionData["equation"][0];
             // remove an existing sub array from chart
             that.removeRegressionLine(chartContainer);
 
             chart.setTitle(null, {
-                text: "velocity: " + sub_slope.toFixed(2).toString() + " mm/yr"
+                text: "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr" // slope in mm
             });
         }
 
@@ -322,7 +322,7 @@ function GraphsController() {
 
         $("#select-graph-focus-div").css("display", "block");
         that.selectedGraph = "Bottom Graph";
-        
+
         topGraphToggleButton.set("off");
         bottomGraphToggleButton.set("on");
     };
@@ -377,7 +377,7 @@ function GraphsController() {
 
         chart_data = getDisplacementChartData(graphSettings.detrend_displacement_array, graphSettings.date_string_array);
         that.highChartsOpts[chartContainer].series[0].data = chart_data;
-        that.highChartsOpts[chartContainer].subtitle.text = "velocity: " + slope.toFixed(8).toString() + " m/yr";
+        that.highChartsOpts[chartContainer].subtitle.text = "velocity: " + (slope * 10).toFixed(2).toString() + " mm/yr" // slope in mm
         that.recreateGraphs();
     };
 
@@ -392,7 +392,7 @@ function GraphsController() {
         var y = result["equation"][1];
         chart_data = getDisplacementChartData(graphSettings.displacement_array, graphSettings.date_string_array);
         that.highChartsOpts[chartContainer].series[0].data = chart_data;
-        that.highChartsOpts[chartContainer].subtitle.text = "velocity: " + slope.toString().substr(0, 8) + " m/yr";
+        that.highChartsOpts[chartContainer].subtitle.text = "velocity: " + (slope * 10).toFixed(2).toString() + " mm/yr" // slope in mm
         that.recreateGraphs();
     };
 
@@ -421,7 +421,12 @@ function GraphsController() {
         if (!chart) {
             return;
         }
+        console.log(graphOpts.subtitle.text);
         chart.xAxis[0].setExtremes(graphSettings.navigatorEvent.min, graphSettings.navigatorEvent.max);
+        chart.setTitle(null, {
+            text: graphOpts.subtitle.text
+        });
+
         if (regressionToggleButton.toggleState == ToggleStates.ON) {
             that.addRegressionLines();
         }
