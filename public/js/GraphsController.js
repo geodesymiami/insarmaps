@@ -231,6 +231,10 @@ function GraphsController() {
 
             that.graphSettings["chartContainer"].firstToggle = false;
         }
+        // no idea why disconnecting dots requires an extra call to setExtremes (without this), the extremes are the max...
+        var graphDOM = $("#chartContainer").highcharts();
+        var graphSettings = that.graphSettings["chartContainer"];
+        graphDOM.xAxis[0].setExtremes(graphSettings.navigatorEvent.min, graphSettings.navigatorEvent.max);
 
         // repeat for other chart        
         chart = $("#chartContainer2").highcharts();
@@ -260,6 +264,9 @@ function GraphsController() {
             }
             that.graphSettings["chartContainer2"].firstToggle = false;
         }
+        graphDOM = $("#chartContainer2").highcharts();
+        graphSettings = that.graphSettings["chartContainer2"];
+        graphDOM.xAxis[0].setExtremes(graphSettings.navigatorEvent.min, graphSettings.navigatorEvent.max);
     };
 
     this.toggleDots = function() {
@@ -421,7 +428,6 @@ function GraphsController() {
         if (!chart) {
             return;
         }
-        console.log(graphOpts.subtitle.text);
         chart.xAxis[0].setExtremes(graphSettings.navigatorEvent.min, graphSettings.navigatorEvent.max);
         chart.setTitle(null, {
             text: graphOpts.subtitle.text

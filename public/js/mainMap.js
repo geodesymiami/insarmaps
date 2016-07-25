@@ -275,8 +275,12 @@ function Map(loadJSONFunc) {
                             var regression_data = that.graphsController.getLinearRegressionLine(chartContainer, displacements);
                             var sub_slope = regression_data.linearRegressionData["equation"][0];
                             var chart = $("#" + chartContainer).highcharts();
+                            var velocityText = "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr"; // slope in mm
+
+                            that.graphsController.highChartsOpts[chartContainer].subtitle.text = velocityText;
+
                             chart.setTitle(null, {
-                                text: "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr" // slope in mm
+                                text: velocityText 
                             });
 
                             if (regressionToggleButton.toggleState == ToggleStates.ON) {

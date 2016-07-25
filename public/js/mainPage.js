@@ -346,7 +346,7 @@ dotToggleButton.onclick(function() {
     if (dotToggleButton.toggleState == ToggleStates.ON) {
         myMap.graphsController.connectDots();
     } else {
-        myMap.graphsController.disconnectDots();
+        myMap.graphsController.disconnectDots();        
     }
 });
 
