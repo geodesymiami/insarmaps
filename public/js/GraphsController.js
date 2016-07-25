@@ -93,7 +93,7 @@ function GraphsController() {
         var chart_data = getDisplacementChartData(displacement_array, graphSettings.date_string_array);
         // calculate and render a linear regression of those dates and displacements
         var result = calcLinearRegression(displacement_array, graphSettings.decimal_dates);
-        var slope = result["equation"][0] * 10; // slope in mm
+        var slope = result["equation"][0];
         var y = result["equation"][1];
 
         // returns array for linear regression on chart
@@ -101,12 +101,12 @@ function GraphsController() {
         var regression_data = that.getLinearRegressionLine(chartContainer, displacement_array);
         // calculate regression based on current range        
         if (graphSettings.navigatorEvent != null) {
-            var sub_slope = regression_data.linearRegressionData["equation"][0] * 10;
+            var sub_slope = regression_data.linearRegressionData["equation"][0];
             // remove an existing sub array from chart
             that.removeRegressionLine(chartContainer);
 
             chart.setTitle(null, {
-                text: "velocity: " + sub_slope.toFixed(2).toString() + " mm/yr"
+                text: "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr" // slope in mm
             });
         }
 
@@ -377,7 +377,7 @@ function GraphsController() {
 
         chart_data = getDisplacementChartData(graphSettings.detrend_displacement_array, graphSettings.date_string_array);
         that.highChartsOpts[chartContainer].series[0].data = chart_data;
-        that.highChartsOpts[chartContainer].subtitle.text = "velocity: " + slope.toFixed(2).toString() + " mm/yr"
+        that.highChartsOpts[chartContainer].subtitle.text = "velocity: " + (slope * 10).toFixed(2).toString() + " mm/yr" // slope in mm
         that.recreateGraphs();
     };
 
@@ -392,7 +392,7 @@ function GraphsController() {
         var y = result["equation"][1];
         chart_data = getDisplacementChartData(graphSettings.displacement_array, graphSettings.date_string_array);
         that.highChartsOpts[chartContainer].series[0].data = chart_data;
-        that.highChartsOpts[chartContainer].subtitle.text = "velocity: " + slope.toFixed(2).toString() + " mm/yr"
+        that.highChartsOpts[chartContainer].subtitle.text = "velocity: " + (slope * 10).toFixed(2).toString() + " mm/yr" // slope in mm
         that.recreateGraphs();
     };
 
