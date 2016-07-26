@@ -346,7 +346,7 @@ dotToggleButton.onclick(function() {
     if (dotToggleButton.toggleState == ToggleStates.ON) {
         myMap.graphsController.connectDots();
     } else {
-        myMap.graphsController.disconnectDots();        
+        myMap.graphsController.disconnectDots();
     }
 });
 
@@ -529,7 +529,10 @@ $(window).load(function() {
 
         // reset bounding box
         if (!myMap.selector.polygonButtonSelected) {
-            myMap.bbox = null;
+            myMap.selector.bbox = null;
+            // Remove these events now that finish has been called.
+            myMap.selector.polygonButtonSelected = false;
+            myMap.map.dragPan.enable();
         }
 
         var buttonColor = "blue";
