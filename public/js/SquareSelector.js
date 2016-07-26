@@ -3,7 +3,10 @@ function SquareSelector(map) {
     this.map = map;
     this.minIndex = -1;
     this.maxIndex = -1;
+    this.lastMinIndex = -1;
+    this.lastMaxIndex = -1;
     this.bbox = null;
+    this.lastbbox = null;
     this.recoloringInProgress = false;
 
     this.canvas = map.map.getCanvasContainer();
@@ -81,10 +84,6 @@ function SquareSelector(map) {
     this.canvas.addEventListener('mousedown', this.mouseDown, true);
 
     this.finish = function(bbox) {
-        // Remove these events now that finish has been called.
-        that.polygonButtonSelected = false;
-        that.map.map.dragPan.enable();
-
         document.removeEventListener('mousemove', that.onMouseMove);
         document.removeEventListener('keydown', that.onKeyDown);
         document.removeEventListener('mouseup', that.onMouseUp);
@@ -101,13 +100,27 @@ function SquareSelector(map) {
     };
 
     this.recolorMap = function() {
+        if (that.bbox == null) {
+            return;
+        }
+
         // haven't selected min and max, so exit
         if (that.minIndex == -1 || that.maxIndex == -1) {
             return;
         }
+
+        // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
+        if (that.lastbbox == that.bbox && that.lastMinIndex == that.minIndex && that.lastMaxIndex == that.maxIndex) {
+            return;
+        }        
+
         if (that.recoloringInProgress) {
             return;
         }
+
+        that.lastMinIndex = that.minIndex;
+        that.lastMaxIndex = that.maxIndex;
+        that.lastbbox = that.bbox;
 
         if (that.map.map.getSource("onTheFlyJSON")) {
             that.map.map.removeSource("onTheFlyJSON");

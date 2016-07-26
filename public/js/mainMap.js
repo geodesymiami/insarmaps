@@ -288,6 +288,8 @@ function Map(loadJSONFunc) {
                                 var displacements_array = detrendToggleButton.toggleState == ToggleStates.ON ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
                                 that.graphsController.addRegressionLine(chartContainer, displacements_array);
                             }
+
+                            that.selector.recolorMap();
                         }
                     },
                     dateTimeLabelFormats: {
