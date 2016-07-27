@@ -72,7 +72,7 @@ def convert_data():
 			displacement_values = []
 			displacements = '{'
 			point_num += 1
-			break;	# for testing purposes convert only 1 point
+			#break;	# for testing purposes convert only 1 point
 
 			# if chunk_size limit is reached, write chunk into a json file
 			# then increment chunk number and clear siu_man array
@@ -113,8 +113,8 @@ def convert_data():
  			s = "\,"
  			v = s.join(arr)
  		attribute_values += (str(v) + ',')
- 	attribute_keys = attribute_keys[:len(attribute_keys)-2] + '}'
- 	attribute_values = attribute_values[:len(attribute_values)-2] + '}'
+ 	attribute_keys = attribute_keys[:len(attribute_keys)-1] + '}'
+ 	attribute_values = attribute_values[:len(attribute_values)-1] + '}'
 
 	# put dataset into area table
 	# area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country, "num_chunks": chunk_num, "dates": dataset_keys}
