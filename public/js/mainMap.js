@@ -446,6 +446,7 @@ function Map(loadJSONFunc) {
         getGEOJSON(markerArea);
     };
 
+    // extremas: current min = -0.02 (blue), current max = 0.02 (red)
     this.initLayer = function(data, mapType) {
         var layer;
         var layerList = document.getElementById('layerList');

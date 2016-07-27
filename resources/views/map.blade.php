@@ -115,6 +115,7 @@
           <p>This is attr3.</p>
         </div> -->
         <img src="img/matlab_colorscale.png" alt="matlab_colorscale.png" height="200" width="200">
+        <p>min: -2cm, max: 2cm</p>
       </div>
     </div>
   </div>
