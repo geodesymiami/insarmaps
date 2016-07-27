@@ -194,8 +194,8 @@ function Map(loadJSONFunc) {
         // show cross on clicked point
         if (!that.map.getLayer(layerID)) {
             that.map.addSource(layerID, clickMarker);
-        // already there? then remove it as we are going to add a new layer every time
-        // so geojson sources overlayed on top of the vector tiles don't obscure our crosses
+            // already there? then remove it as we are going to add a new layer every time
+            // so geojson sources overlayed on top of the vector tiles don't obscure our crosses
         } else {
             that.map.removeLayer(layerID);
         }
@@ -280,7 +280,7 @@ function Map(loadJSONFunc) {
                             that.graphsController.highChartsOpts[chartContainer].subtitle.text = velocityText;
 
                             chart.setTitle(null, {
-                                text: velocityText 
+                                text: velocityText
                             });
 
                             if (regressionToggleButton.toggleState == ToggleStates.ON) {
@@ -420,6 +420,8 @@ function Map(loadJSONFunc) {
         var lat = feature.geometry.coordinates[0];
         var long = feature.geometry.coordinates[1];
         var num_chunks = feature.properties.num_chunks;
+        var attributeKeys = feature.properties.attributekeys;
+        var attributeValues = feature.properties.attributevalues;
 
         // needed as mapbox doesn't return original feature
         var markerArea = {
@@ -428,7 +430,9 @@ function Map(loadJSONFunc) {
                 "latitude": lat,
                 "longitude": long,
             },
-            "num_chunks": num_chunks
+            "num_chunks": num_chunks,
+            "attributekeys": attributeKeys,
+            "attributevalues": attributeValues
         };
 
         getGEOJSON(markerArea);
@@ -532,7 +536,9 @@ function Map(loadJSONFunc) {
                     "properties": {
                         "marker-symbol": "marker",
                         "name": area.name,
-                        "num_chunks": area.num_chunks
+                        "num_chunks": area.num_chunks,
+                        "attributekeys": area.attributekeys,
+                        "attributevalues": area.attributevalues
                     }
                 };
 
@@ -680,14 +686,20 @@ function Map(loadJSONFunc) {
                     var long = features[i].geometry.coordinates[1];
                     var num_chunks = features[i].properties.num_chunks;
 
+                    var attributeKeys = features[i].properties.attributekeys;
+                    var attributeValues = features[i].properties.attributevalues;
+
                     var markerArea = {
                         "name": areaName,
                         "coords": {
                             "latitude": lat,
                             "longitude": long,
-                            "num_chunks": num_chunks
-                        }
+                        },
+                        "num_chunks": num_chunks,
+                        "attributekeys": attributeKeys,
+                        "attributevalues": attributeValues
                     };
+
                     // make cursor change when mouse hovers over row
                     $("#areas-under-mouse-table #" + areaName).css("cursor", "pointer");
                     // ugly click function declaration to JS not using block scope
