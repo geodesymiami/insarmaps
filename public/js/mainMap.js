@@ -278,8 +278,8 @@ function Map(loadJSONFunc) {
                             that.graphsController.getValideDatesFromNavigatorExtremes(chartContainer);
 
                             var graphSettings = that.graphsController.graphSettings[chartContainer];
-                            // update velocity, even if we don't have a linear regression line
-                            var displacements = detrendToggleButton.toggleState == ToggleStates.ON ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
+                            // update velocity, even if we don't have a linear regression line, needed the extra check as this library calls this function when graph is created... sigh
+                            var displacements = (detrendToggleButton.toggleState == ToggleStates.ON && graphSettings.detrend_displacement_array) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
                             var regression_data = that.graphsController.getLinearRegressionLine(chartContainer, displacements);
                             var sub_slope = regression_data.linearRegressionData["equation"][0];
                             var chart = $("#" + chartContainer).highcharts();
