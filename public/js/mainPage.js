@@ -26,6 +26,7 @@ function getGEOJSON(area) {
     }
 
     $('.wrap#area-attributes-div').toggleClass('active');
+    
     // $(".wrap#area-attributes-div").find(".content").find("#Attr1").empty();
     var tableHTML = "";
     var attributekeys = area.attributekeys.split(",");
