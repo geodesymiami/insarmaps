@@ -39,7 +39,7 @@ function getGEOJSON(area) {
         tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
     }
 
-    $("#area-attributes-table").html(tableHTML);
+    $("#area-attributes-table-body").html(tableHTML);
 
     myMap.initLayer(myMap.tileJSON, "streets");
     myMap.map.style.on("load", function() {

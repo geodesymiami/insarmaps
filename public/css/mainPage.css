@@ -597,7 +597,7 @@ ul.tab li a:focus,
 }
 
 .tabcontent {
-    display: none;
+    /*display: none;*/
     padding: 6px 12px;
     border: 1px solid #ccc;
     border-top: none;

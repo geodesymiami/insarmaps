@@ -86,14 +86,13 @@
         <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"><span aria-hidden="true">__</span></button>
       </div>
       <div class="content">
-        <ul class="tab">
+        <!-- <ul class="tab">
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr1')">Attr1</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr2')">Attr2</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr3')">Attr3</a></li>
-        </ul>
+        </ul> -->
 
         <div id="Attr1" class="tabcontent">
-          <h3>Attri1</h3>
           <table class="table" id="area-attributes-table">
             <thead>
               <tr>
@@ -101,12 +100,12 @@
                 <th>Value</th>
               </tr>
             </thead>
-            <tbody>            
+            <tbody id="area-attributes-table-body">            
             </tbody>          
           </table>
         </div>
 
-        <div id="Attr2" class="tabcontent">
+        <!-- <div id="Attr2" class="tabcontent">
           <h3>Attr2</h3>
           <p>This is attr2.</p> 
         </div>
@@ -114,7 +113,7 @@
         <div id="Attr3" class="tabcontent">
           <h3>Attr2</h3>
           <p>This is attr3.</p>
-        </div>
+        </div> -->
         <img src="img/matlab_colorscale.png" alt="matlab_colorscale.png" height="200" width="200">
       </div>
     </div>
