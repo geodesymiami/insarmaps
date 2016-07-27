@@ -13,8 +13,16 @@ var currentPoint = 1;
 var currentArea = null;
 var file = "/home/vagrant/code/insar_map_mvc/public/json/geo_timeseries_masked.h5test_chunk_";
 var firstToggle = true;
-
 var myPolygon = null;
+
+// take an array of velocity values and return standard deviation
+var getvelocitystd = function(velocity_arr, slope) {
+    var v_std = 0.0;
+    for (i = 0; i < velocity_arr.length; i++) {
+        v_std += Math.abs(slope - velocity_arr[i]);
+    }
+    return v_std / (velocity_arr.length - 1);
+}
 
 // falk's date string is in format yyyymmdd - ex: 20090817 
 // take an array of these strings and return an array of date objects
