@@ -94,7 +94,16 @@
 
         <div id="Attr1" class="tabcontent">
           <h3>Attri1</h3>
-          <p>This is attr1.</p>
+          <table class="table" id="area-attributes-table">
+            <thead>
+              <tr>
+                <th>Attribute</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>            
+            </tbody>          
+          </table>
         </div>
 
         <div id="Attr2" class="tabcontent">

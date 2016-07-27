@@ -119,6 +119,7 @@ label {
     right: 10%;
     bottom: 85px;
     left: 10%;
+    border-radius: 0 !important;
 }
 
 #area-attributes-div {
@@ -127,6 +128,8 @@ label {
     right: 0%;
     height: 400px;
     width: 330px;
+    overflow-y: auto;
+    background-color: white !important;
 }
 
 .wrap#area-attributes-div .top-right-buttons {
