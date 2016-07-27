@@ -114,8 +114,16 @@
           <h3>Attr2</h3>
           <p>This is attr3.</p>
         </div> -->
-        <img src="img/matlab_colorscale.png" alt="matlab_colorscale.png" height="200" width="200">
-        <p>min: -2cm, max: 2cm</p>
+        
+        <div id="color-scale">
+          <div id="left-scale-minimum">
+            min: -2cm
+          </div>
+          <div id="right-scale-maximum">
+            max: 2
+          </div>
+          <img src="img/matlab_colorscale.png" alt="matlab_colorscale.png" width="200">
+        </div>
       </div>
     </div>
   </div>
