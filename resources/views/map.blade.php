@@ -115,6 +115,7 @@
           <h3>Attr2</h3>
           <p>This is attr3.</p>
         </div>
+        <img src="img/matlab_colorscale.png" alt="matlab_colorscale.png" height="200" width="200">
       </div>
     </div>
   </div>
