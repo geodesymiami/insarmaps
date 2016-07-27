@@ -174,6 +174,9 @@
   <div id="information-div">
     <div id="information-div-contents">
       <div id="close-information-button">
+        <p>This website started as a Software Engineering class project lead by two students from the University of Miami, Alfredo Terrero and Zishi Wu. Their client, Professor Falk Amelung, wanted a graphical interface to display a large amount of timeseries data quickly. They would like to thank their teachers, Mr. Julio Perez and Mr. Chris Mader, for giving advice on how to develop the necessary infrastructure for the website. Furthermore, they would like to thank NASA for funding the project.</p>
+        <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto">
+        <img src="img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
         <button class="btn btn-primary-outline">Done</button>
       </div>
     </div>
