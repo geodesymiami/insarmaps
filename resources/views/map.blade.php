@@ -86,18 +86,26 @@
         <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"><span aria-hidden="true">__</span></button>
       </div>
       <div class="content">
-        <ul class="tab">
+        <!-- <ul class="tab">
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr1')">Attr1</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr2')">Attr2</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr3')">Attr3</a></li>
-        </ul>
+        </ul> -->
 
         <div id="Attr1" class="tabcontent">
-          <h3>Attri1</h3>
-          <p>This is attr1.</p>
+          <table class="table" id="area-attributes-table">
+            <thead>
+              <tr>
+                <th>Attribute</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody id="area-attributes-table-body">            
+            </tbody>          
+          </table>
         </div>
 
-        <div id="Attr2" class="tabcontent">
+        <!-- <div id="Attr2" class="tabcontent">
           <h3>Attr2</h3>
           <p>This is attr2.</p> 
         </div>
@@ -105,6 +113,16 @@
         <div id="Attr3" class="tabcontent">
           <h3>Attr2</h3>
           <p>This is attr3.</p>
+        </div> -->
+        
+        <div id="color-scale">
+          <div id="left-scale-minimum">
+            min: -2cm
+          </div>
+          <div id="right-scale-maximum">
+            max: 2
+          </div>
+          <img src="img/matlab_colorscale.png" alt="matlab_colorscale.png" width="200">
         </div>
       </div>
     </div>
@@ -174,6 +192,9 @@
   <div id="information-div">
     <div id="information-div-contents">
       <div id="close-information-button">
+        <p>This website started as a Software Engineering class project lead by two students from the University of Miami, Alfredo Terrero and Zishi Wu. Their client, Professor Falk Amelung, wanted a graphical interface to display a large amount of timeseries data quickly. They would like to thank their teachers, Mr. Julio Perez and Mr. Chris Mader, for giving advice on how to develop the necessary infrastructure for the website. Furthermore, they would like to thank NASA for funding the project.</p>
+        <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto">
+        <img src="img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
         <button class="btn btn-primary-outline">Done</button>
       </div>
     </div>

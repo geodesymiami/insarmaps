@@ -119,6 +119,7 @@ label {
     right: 10%;
     bottom: 85px;
     left: 10%;
+    border-radius: 0 !important;
 }
 
 #area-attributes-div {
@@ -127,6 +128,8 @@ label {
     right: 0%;
     height: 400px;
     width: 330px;
+    overflow-y: auto;
+    background-color: white !important;
 }
 
 .wrap#area-attributes-div .top-right-buttons {
@@ -217,6 +220,7 @@ label {
     transform: rotate(135deg);
     transition: transform 0.5s;
 }
+
 
 #map {
     width: 100%;
@@ -364,6 +368,15 @@ div.menu {
     position: relative;
     top: 50%;
     transform: translateY(-50%);
+}
+
+#left-scale-minimum {
+    width: 50%;
+    float: left;
+}
+#right-scale-maximum {
+    width: 50%;
+    float: left;
 }
 
 #top-map-buttons button {
@@ -594,7 +607,7 @@ ul.tab li a:focus,
 }
 
 .tabcontent {
-    display: none;
+    /*display: none;*/
     padding: 6px 12px;
     border: 1px solid #ccc;
     border-top: none;

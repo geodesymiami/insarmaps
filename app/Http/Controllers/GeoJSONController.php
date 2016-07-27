@@ -33,7 +33,26 @@ class GeoJSONController extends Controller {
     $postgresStr = trim($pgArray, "{}");
     $elmts = explode(",", $postgresStr);
 
-    return $elmts;
+    $arrayToReturn = [];
+    $arrayLen = count($elmts);
+
+    for ($i = 0; $i < $arrayLen; $i++) {
+      $curString = $elmts[$i];      
+
+      if (strpos($curString, "POLYGON") !== false) {
+        $curString = substr($curString, 1);
+        $curString = $curString . " " . $elmts[$i + 1];
+        $curString = $curString . " " . $elmts[$i + 2];
+        $curString = $curString . " " . $elmts[$i + 3];
+        $curString = substr($curString, 0, strlen($curString) - 1);
+
+        $i += 3;
+      }
+
+      array_push($arrayToReturn, $curString);
+    }
+
+    return $arrayToReturn;
   }
 
   private function stringArrayToFloatArray($array) {    
@@ -150,8 +169,8 @@ public function getAreas() {
       $currentArea["coords"]["longitude"] = $area->longitude;                
       $currentArea["num_chunks"] = $area->numchunks;
       $currentArea["country"] = $area->country;
-      $currentArea["attributekeys"] = $area->attributekeys;
-      $currentArea["attributevalues"] = $area->attributevalues;
+      $currentArea["attributekeys"] = $this->postgresToPHPArray($area->attributekeys);
+      $currentArea["attributevalues"] = $this->postgresToPHPArray($area->attributevalues);
       array_push($json["areas"], $currentArea);
     }
 

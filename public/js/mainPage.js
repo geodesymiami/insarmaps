@@ -26,6 +26,21 @@ function getGEOJSON(area) {
     }
 
     $('.wrap#area-attributes-div').toggleClass('active');
+    
+    // $(".wrap#area-attributes-div").find(".content").find("#Attr1").empty();
+    var tableHTML = "";
+    var attributekeys = area.attributekeys.split(",");
+    var attributevalues = area.attributevalues.split(",");
+
+    for (var i = 0; i < attributekeys.length; i++) {
+        curKey = attributekeys[i];
+        curValue = attributevalues[i];
+
+        tableHTML += "<tr><td value=" + curKey + ">" + curKey+ "</td>";                    
+        tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
+    }
+
+    $("#area-attributes-table-body").html(tableHTML);
 
     myMap.initLayer(myMap.tileJSON, "streets");
     myMap.map.style.on("load", function() {
@@ -40,12 +55,6 @@ function getGEOJSON(area) {
                 zoom: 7
             });
         }, 1000);
-
-        // put the attribute keys and values on table 
-        attributekeys = area.attributekeys;
-        attributevalues = area.attributevalues;
-        console.log(attributekeys);
-        console.log(attributevalues);
     });
 }
 
