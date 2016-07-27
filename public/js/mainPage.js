@@ -28,9 +28,12 @@ function getGEOJSON(area) {
     $('.wrap#area-attributes-div').toggleClass('active');
     // $(".wrap#area-attributes-div").find(".content").find("#Attr1").empty();
     var tableHTML = "";
-    for (var i = 0; i < area.attributekeys.length; i++) {
-        curKey = area.attributekeys[i];
-        curValue = area.attributevalues[i];
+    var attributekeys = area.attributekeys.split(",");
+    var attributevalues = area.attributevalues.split(",");
+
+    for (var i = 0; i < attributekeys.length; i++) {
+        curKey = attributekeys[i];
+        curValue = attributevalues[i];
 
         tableHTML += "<tr><td value=" + curKey + ">" + curKey+ "</td>";                    
         tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
