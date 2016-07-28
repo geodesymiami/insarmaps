@@ -74,12 +74,14 @@ function GraphsController() {
         var sub_slope = sub_result["equation"][0];
         var sub_y = sub_result["equation"][1];
         var regression_data = getRegressionChartData(sub_slope, sub_y, sub_decimal_dates, sub_chart_data);
+        var stdDev = getStandardDeviation(sub_displacements, sub_slope);
 
         var date_range = Highcharts.dateFormat(null, validDates.minDate) + " - " + Highcharts.dateFormat(null, validDates.maxDate);
 
         var lineData = {
             linearRegressionData: sub_result,
-            regressionDataForHighcharts: regression_data
+            regressionDataForHighcharts: regression_data,
+            stdDev: stdDev
         };
 
         return lineData;
@@ -102,11 +104,12 @@ function GraphsController() {
         // calculate regression based on current range        
         if (graphSettings.navigatorEvent != null) {
             var sub_slope = regression_data.linearRegressionData["equation"][0];
+            var velocity_std = getStandardDeviation(graphSettings.displacement_array, sub_slope);
             // remove an existing sub array from chart
             that.removeRegressionLine(chartContainer);
 
             chart.setTitle(null, {
-                text: "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr" // slope in mm
+                text: "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"
             });
         }
 

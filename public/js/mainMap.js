@@ -15,13 +15,13 @@ var file = "/home/vagrant/code/insar_map_mvc/public/json/geo_timeseries_masked.h
 var firstToggle = true;
 var myPolygon = null;
 
-// take an array of velocity values and return standard deviation
-var getvelocitystd = function(velocity_arr, slope) {
+// take an array of displacement values and return velocity standard deviation (confuses the heck out of me)
+var getStandardDeviation = function(displacements, slope) {
     var v_std = 0.0;
-    for (i = 0; i < velocity_arr.length; i++) {
-        v_std += Math.abs(slope - velocity_arr[i]);
+    for (i = 0; i < displacements.length; i++) {
+        v_std += (Math.abs(slope - displacements[i]) * Math.abs(slope - displacements[i]));
     }
-    return v_std / (velocity_arr.length - 1);
+    return Math.sqrt(v_std / (displacements.length-1));
 }
 
 // falk's date string is in format yyyymmdd - ex: 20090817 
@@ -250,6 +250,10 @@ function Map(loadJSONFunc) {
             var slope = result["equation"][0];
             var y = result["equation"][1];
 
+            // testing standard deviation calculation - we are using slope of linear reg line
+            // as mean which gives different answer from taking mean of displacements
+            var velocity_std = getStandardDeviation(displacement_array, slope);
+
             // returns array for linear regression on chart
             var regression_data = getRegressionChartData(slope, y, decimal_dates, chart_data);
 
@@ -261,7 +265,7 @@ function Map(loadJSONFunc) {
                     text: null
                 },
                 subtitle: {
-                    text: "velocity: " + (slope * 10).toFixed(2).toString() + " mm/yr" // slope in mm
+                    text: "velocity: " + (slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"
                 },
                 navigator: {
                     enabled: true
@@ -282,8 +286,9 @@ function Map(loadJSONFunc) {
                             var displacements = (detrendToggleButton.toggleState == ToggleStates.ON && graphSettings.detrend_displacement_array) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
                             var regression_data = that.graphsController.getLinearRegressionLine(chartContainer, displacements);
                             var sub_slope = regression_data.linearRegressionData["equation"][0];
+                            var velocity_std = regression_data.stdDev;
                             var chart = $("#" + chartContainer).highcharts();
-                            var velocityText = "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr"; // slope in mm
+                            var velocityText = "velocity: " + (slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"
 
                             that.graphsController.highChartsOpts[chartContainer].subtitle.text = velocityText;
 
