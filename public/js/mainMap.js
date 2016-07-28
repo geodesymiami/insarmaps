@@ -288,7 +288,7 @@ function Map(loadJSONFunc) {
                             var sub_slope = regression_data.linearRegressionData["equation"][0];
                             var velocity_std = regression_data.stdDev;
                             var chart = $("#" + chartContainer).highcharts();
-                            var velocityText = "velocity: " + (slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"
+                            var velocityText = "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"
 
                             that.graphsController.highChartsOpts[chartContainer].subtitle.text = velocityText;
 

@@ -104,12 +104,13 @@ function GraphsController() {
         // calculate regression based on current range        
         if (graphSettings.navigatorEvent != null) {
             var sub_slope = regression_data.linearRegressionData["equation"][0];
-            var velocity_std = getStandardDeviation(graphSettings.displacement_array, sub_slope);
+            var velocity_std = regression_data.stdDev;
             // remove an existing sub array from chart
             that.removeRegressionLine(chartContainer);
-
+            var velocityText = "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr";
+            that.highChartsOpts[chartContainer].subtitle.text = velocityText;
             chart.setTitle(null, {
-                text: "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"
+                text: velocityText
             });
         }
 
@@ -284,12 +285,12 @@ function GraphsController() {
 
     this.addRegressionLines = function() {
         var graphSettings = that.graphSettings["chartContainer"];
-        var displacements_array = detrendToggleButton.toggleState == ToggleStates.ON ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
+        var displacements_array = (detrendToggleButton.toggleState == ToggleStates.ON && graphSettings.detrend_displacement_array) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
         that.addRegressionLine("chartContainer", displacements_array);
         var chart2 = $("#chartContainer2").highcharts();
         if (chart2 !== undefined) {
             graphSettings = that.graphSettings["chartContainer2"];
-            displacements_array = detrendToggleButton.toggleState == ToggleStates.ON ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
+            displacements_array = (detrendToggleButton.toggleState == ToggleStates.ON && graphSettings.detrend_displacement_array) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
             that.addRegressionLine("chartContainer2", displacements_array);
         }
     };
