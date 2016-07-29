@@ -320,31 +320,59 @@ div.menu {
     height: 50px;
 }
 
+#top-map-buttons > div {
+    margin-left: 10px
+}
+
 #map-type-menu {
-    background: #fff;
-    padding: 7px;
+    background: #fff;    
     font-family: 'Open Sans', sans-serif;
     z-index: 99;
     border-radius: 4px;
-    width: 27%;
+    width: 120px;
     float: left;
+    min-height: 34px;
+}
+
+#overlay-options-wrapper {
+    float: left;
+    width: 200px;
     height: 34px;
+}
+
+#overlay-options-toggles {
+    width: 100%;
+}
+
+#overlay-options-toggles .overlay_toggle {
+    width: 50%;
+}
+
+#overlay-options {
+    font-family: 'Open Sans', sans-serif;
+    z-index: 99;
+    border-radius: 4px;
+    background-color: white;
+    height: 100%;
+}
+
+#overlay-slider {
+    height: 10px;
+    width: 50px;
+    bottom: 0px;
+    background: coral;
 }
 
 #reset-button {
     z-index: 99;
     border-radius: 5px;
-    width: 10%;
-    float: left;
-    padding-left: 10px;
+    float: left; 
 }
 
 #information-button {
     z-index: 99;
     border-radius: 5px;
-    width: 5%;
     float: left;
-    padding-left: 10px;
 }
 
 #information-div {
@@ -381,30 +409,6 @@ div.menu {
 
 #top-map-buttons button {
     background-color: white;
-}
-
-#overlay-options-wrapper {
-    float: left;
-    width: 50%;
-    height: 34px;
-    padding-left: 10px;
-}
-
-#overlay-options-toggles {
-    float: left;
-    width: 50%;
-}
-
-#overlay-options-toggles .overlay_toggle {
-    width: 50%;
-}
-
-#overlay-options {
-    font-family: 'Open Sans', sans-serif;
-    z-index: 99;
-    border-radius: 4px;
-    background-color: white;
-    height: 100%;
 }
 
 .logos {
@@ -445,14 +449,6 @@ div.menu {
     left: 0;
     width: 0;
     height: 0;
-}
-
-#overlay-slider {
-    float: left;
-    height: 10px;
-    width: 50%;
-    bottom: 0px;
-    background: coral;
 }
 
 #polygon-button-div {
