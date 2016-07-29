@@ -72,7 +72,7 @@ def convert_data():
 			displacement_values = []
 			displacements = '{'
 			point_num += 1
-			#break;	# for testing purposes convert only 1 point
+			break;	# for testing purposes convert only 1 point
 
 			# if chunk_size limit is reached, write chunk into a json file
 			# then increment chunk number and clear siu_man array
@@ -129,6 +129,21 @@ def convert_data():
 		print "error inserting into area"
 		print e
 		sys.exit()
+
+	# create index to speed up queries:
+	print "Creating index"
+	try:
+		con = psycopg2.connect("dbname='pgis' user='aterzishi' host='postgresdb.cpk4mk8rt0nu.us-west-2.rds.amazonaws.com' password='abc123howilikemyabc'")
+		cur = con.cursor()
+		query = 'CREATE INDEX p ON ' + area + ' (p)'
+		cur.execute(query)
+		con.commit()
+		con.close()
+	except Exception, e:
+		print "error creating index on p"
+		print e
+		#sys.exit() Don't exit, as what if the index already exists
+	print "Done creating index"
 	
 # ---------------------------------------------------------------------------------------
 # create a json file out of siu man array
