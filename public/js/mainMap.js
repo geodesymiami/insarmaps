@@ -21,7 +21,7 @@ var getStandardDeviation = function(displacements, slope) {
     for (i = 0; i < displacements.length; i++) {
         v_std += (Math.abs(slope - displacements[i]) * Math.abs(slope - displacements[i]));
     }
-    return Math.sqrt(v_std / (displacements.length-1));
+    return Math.sqrt(v_std / (displacements.length - 1));
 }
 
 // falk's date string is in format yyyymmdd - ex: 20090817 
@@ -565,6 +565,15 @@ function Map(loadJSONFunc) {
                 "features": features
             });
             var id = "areas";
+
+            if (that.map.getSource(id)) {
+                that.map.removeSource(id);
+            }
+
+            if (that.map.getLayer(id)) {
+                that.map.removeLayer(id);
+            }
+
             that.map.addSource(id, areaMarker);
 
             that.map.addLayer({
@@ -743,8 +752,17 @@ function Map(loadJSONFunc) {
             }
 
             // reshow area markers once we zoom out enough
-            if (that.pointsLoaded() && that.map.getZoom() <= that.zoomOutZoom) {
-                that.reset();
+            if (that.map.getZoom() <= that.zoomOutZoom) {
+                if (that.pointsLoaded()) {
+                    that.reset();
+                // otherwise, points aren't loaded, but area previously was active
+                } else if (that.tileJSON != null) {
+                    that.removeAreaPopups();
+                    that.loadAreaMarkers();
+                    // remove click listener for selecting an area, and add new one for clicking on a point
+                    that.map.off("click");
+                    that.map.on('click', that.clickOnAnAreaMaker);
+                }
             }
         });
     };
@@ -772,6 +790,11 @@ function Map(loadJSONFunc) {
         if (contourToggleButton.toggleState == ToggleStates.ON) {
             that.addContourLines();
         }
+
+        if (that.map.getSource("onTheFlyJSON")) {
+            that.map.removeSource("onTheFlyJSON");
+            that.map.removeLayer("onTheFlyJSON");
+        }
     }
 
     this.removeTouchLocationMarkers = function() {
@@ -794,6 +817,17 @@ function Map(loadJSONFunc) {
         }
     };
 
+    this.removeAreaPopups = function() {
+        // remove popup which shows area attributes
+        if ($('.wrap#area-attributes-div').hasClass('active')) {
+            $('.wrap#area-attributes-div').toggleClass('active');
+        }
+        // and the graphs
+        if ($('.wrap#charts').hasClass('active')) {
+            $('.wrap#charts').toggleClass('active');
+        }
+    };
+
     this.reset = function() {
         myMap.removePoints();
         myMap.removeTouchLocationMarkers();
@@ -805,12 +839,8 @@ function Map(loadJSONFunc) {
         that.map.off("click");
         that.map.on('click', that.clickOnAnAreaMaker);
 
-        // remove popup which shows area attributes
-        $('.wrap#area-attributes-div').toggleClass('active');
-        // and the graphs
-        if ($('.wrap#charts').hasClass('active')) {
-            $('.wrap#charts').toggleClass('active');
-        }
+        that.removeAreaPopups();
+
         overlayToggleButton.set("off");
         myMap.tileJSON = null;
     };
