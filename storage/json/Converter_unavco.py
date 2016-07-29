@@ -72,7 +72,7 @@ def convert_data():
 			displacement_values = []
 			displacements = '{'
 			point_num += 1
-			break;	# for testing purposes convert only 1 point
+			#break;	# for testing purposes convert only 1 point
 
 			# if chunk_size limit is reached, write chunk into a json file
 			# then increment chunk number and clear siu_man array
