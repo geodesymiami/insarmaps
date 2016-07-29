@@ -72,7 +72,7 @@
         <button class="btn btn-primary-outline">Reset</button>
       </div>
       <div id="information-button">                
-        <button class="btn btn-primary-outline">I</button>
+        <button class="btn btn-primary-outline">About</button>
       </div>
     </div>    
     <div id="polygon-button-div">
@@ -192,7 +192,10 @@
   <div id="information-div">
     <div id="information-div-contents">
       <div id="close-information-button">
-        <p>This website started as a Software Engineering class project lead by two students from the University of Miami, Alfredo Terrero and Zishi Wu. Their client, Professor Falk Amelung, wanted a graphical interface to display a large amount of timeseries data quickly. They would like to thank their teachers, Mr. Julio Perez and Mr. Chris Mader, for giving advice on how to develop the necessary infrastructure for the website. Furthermore, they would like to thank NASA for funding the project.</p>
+        <p>This website provides InSAR displacement time-series produced by the University of Miami Geodesy Laboratory,   which is supported by NASA and the NSF. To identify data sets from published papers please search for the author's names.<p>
+
+        <p>This website was created by  University of Miami. Computer Science students Alfredo Terrero and Zishi Wu It started as a class project of ECE999, taught by  Chris Mader and Julio Perez of the University of Miami’s Center for Computational Sciences (CCS).
+        </p>
         <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto">
         <img src="img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
         <button class="btn btn-primary-outline">Done</button>
