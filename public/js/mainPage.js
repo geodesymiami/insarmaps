@@ -29,8 +29,18 @@ function getGEOJSON(area) {
     
     // $(".wrap#area-attributes-div").find(".content").find("#Attr1").empty();
     var tableHTML = "";
-    var attributekeys = area.attributekeys.split(",");
-    var attributevalues = area.attributevalues.split(",");
+    var attributekeys = null;
+    var attributevalues = null;
+
+    // if we click on an area marker, we get a string as the mapbox feature can't seem to store an array and converts it to a string
+    if (typeof area.attributekeys == "string" || typeof area.attributevalues == "string") {
+        attributekeys = area.attributekeys.split(",");
+        attributevalues = area.attributevalues.split(",");
+    // otherwise, we get arrays from the server (clicked on area not through an area marker feature)
+    } else {
+        attributekeys = area.attributekeys;
+        attributevalues = area.attributevalues;
+    }
 
     for (var i = 0; i < attributekeys.length; i++) {
         curKey = attributekeys[i];
