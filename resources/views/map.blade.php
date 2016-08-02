@@ -80,6 +80,15 @@
         <img src="img/polygon.svg" alt="polygon.svg">
       </button>
     </div>
+    <div id="color-scale">
+      <div id="left-scale-minimum">
+        min: -2cm/yr
+      </div>
+      <div id="right-scale-maximum">
+        max: 2cm/yr
+      </div>
+      <img src="img/matlab_colorscale.png" alt="matlab_colorscale.png" width="200">
+    </div>
     <div id="point-details"></div>
     <div class="wrap" id="area-attributes-div">    
       <div class="top-right-buttons">
@@ -113,17 +122,7 @@
         <div id="Attr3" class="tabcontent">
           <h3>Attr2</h3>
           <p>This is attr3.</p>
-        </div> -->
-        
-        <div id="color-scale">
-          <div id="left-scale-minimum">
-            min: -2cm
-          </div>
-          <div id="right-scale-maximum">
-            max: 2
-          </div>
-          <img src="img/matlab_colorscale.png" alt="matlab_colorscale.png" width="200">
-        </div>
+        </div> -->        
       </div>
     </div>
   </div>
@@ -193,26 +192,26 @@
     <div id="information-div-contents">
       <p>This website provides InSAR displacement time-series produced by the University of Miami Geodesy Laboratory,   which is supported by NASA and the NSF. To identify data sets from published papers please search for the author's names.<p>
 
-      <p>This website was created by  University of Miami. Computer Science students Alfredo Terrero and Zishi Wu. It started as a class project of CSC 431, taught by  Chris Mader and Julio Perez of the University of Miami’s Center for Computational Sciences (CCS). The data processing is conducted using the University of Miami’s High Performance Computing systems
-      </p>
-      <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto">
-      <img src="img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
-      <div id="close-information-button">       
-        <button class="btn btn-primary-outline">Done</button>
+        <p>This website was created by  University of Miami. Computer Science students Alfredo Terrero and Zishi Wu. It started as a class project of CSC 431, taught by  Chris Mader and Julio Perez of the University of Miami’s Center for Computational Sciences (CCS). The data processing is conducted using the University of Miami’s High Performance Computing systems
+        </p>
+        <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto">
+        <img src="img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
+        <div id="close-information-button">       
+          <button class="btn btn-primary-outline">Done</button>
+        </div>
       </div>
     </div>
-  </div>
-  <?php
-  echo "
-  <script type=\"text/javascript\">
-    var fileName = \"$fileName\";
-  </script>
-  ";
-  ?>
-  <script type="text/javascript" src="js/SquareSelector.js"></script>
-  <script type="text/javascript" src="js/mainMap.js"></script>
-  <script type="text/javascript" src="js/mainPage.js"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBm77jFIq1iM3mpL5CgB1uvW6jGcefbIYs"
-  async defer></script>
-</body>
-</html>
+    <?php
+    echo "
+    <script type=\"text/javascript\">
+      var fileName = \"$fileName\";
+    </script>
+    ";
+    ?>
+    <script type="text/javascript" src="js/SquareSelector.js"></script>
+    <script type="text/javascript" src="js/mainMap.js"></script>
+    <script type="text/javascript" src="js/mainPage.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBm77jFIq1iM3mpL5CgB1uvW6jGcefbIYs"
+    async defer></script>
+  </body>
+  </html>

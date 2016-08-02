@@ -755,7 +755,7 @@ function Map(loadJSONFunc) {
             if (that.map.getZoom() <= that.zoomOutZoom) {
                 if (that.pointsLoaded()) {
                     that.reset();
-                // otherwise, points aren't loaded, but area previously was active
+                    // otherwise, points aren't loaded, but area previously was active
                 } else if (that.tileJSON != null) {
                     that.removeAreaPopups();
                     that.loadAreaMarkers();
@@ -825,6 +825,11 @@ function Map(loadJSONFunc) {
         // and the graphs
         if ($('.wrap#charts').hasClass('active')) {
             $('.wrap#charts').toggleClass('active');
+        }
+
+        // and color scale
+        if ($("#color-scale").hasClass("active")) {
+            $("#color-scale").toggleClass("active");
         }
     };
 

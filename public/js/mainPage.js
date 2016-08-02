@@ -50,6 +50,8 @@ function getGEOJSON(area) {
         tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
     }
 
+    $("#color-scale").toggleClass("active");
+
     $("#area-attributes-table-body").html(tableHTML);
 
     myMap.initLayer(myMap.tileJSON, "streets");
