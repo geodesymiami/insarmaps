@@ -40,9 +40,9 @@
     <!--search bar-->
     <div id="search-bar">
       <div class="input-group">
-        <span class="input-group-btn">
+        <!-- <span class="input-group-btn">
           <button class="btn btn-default" id="search-button" type="button">Search</button>
-        </span>
+        </span> -->
         <input type="text" class="form-control" placeholder="Search for..." id="search-input">
       </div>
     </div>
