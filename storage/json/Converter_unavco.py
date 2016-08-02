@@ -135,7 +135,7 @@ def convert_data():
 	try:
 		con = psycopg2.connect("dbname='pgis' user='aterzishi' host='postgresdb.cpk4mk8rt0nu.us-west-2.rds.amazonaws.com' password='abc123howilikemyabc'")
 		cur = con.cursor()
-		query = 'CREATE INDEX p ON ' + area + ' (p)'
+		query = 'CREATE INDEX ON ' + area + ' (p)'
 		cur.execute(query)
 		con.commit()
 		con.close()
