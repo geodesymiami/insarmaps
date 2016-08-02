@@ -99,9 +99,24 @@ project_name = attributes["PROJECT_NAME"]
 track_index = project_name.find('T')
 frame_index = project_name.find('F')
 track_number = project_name[track_index+1:frame_index]
-frames = re.search("\d+_\d+", project_name).group(0)
-first_frame = frames.split("_")[0]
-last_frame = frames.split("_")[1]
+
+# sometimes there is only one frame number instead of framenumber_framenumber - look for "_"
+multipleFrames = False
+try:
+	underscore = re.search("_", project_name).group(0)
+	frameFound = True
+except:
+	pass
+
+if multipleFrames:
+	frames = re.search("\d+_\d+", project_name).group(0)
+	first_frame = frames.split("_")[0]
+	last_frame = frames.split("_")[1]
+else:
+	frames = re.search("\d+", project_name[frame_index+1:]).group(0)
+	first_frame = frames
+	last_frame = frames
+
 mission_index = project_name.find(frames) + len(frames)
 mission = project_name[mission_index:len(project_name)-1]
 
@@ -185,8 +200,17 @@ group.attrs['post_processing_method'] = 'PySAR'
 group.attrs['min_baseline_perp'] = float(attributes['P_BASELINE_BOTTOM_HDR'])
 group.attrs['max_baseline_perp'] = float(attributes['P_BASELINE_TOP_HDR'])
 
-timeseries_file.close()
+# ---------------------------------------------------------------------------------------
+#  ENCODE ATTRIBUTES FROM FALK'S FILES TO CALCULATE LATITUDE AND LONGITUDE - NOT IN UNAVCO DOC
+# ---------------------------------------------------------------------------------------
+group.attrs['X_STEP'] = x_step
+group.attrs['Y_STEP'] = y_step
+group.attrs['X_FIRST'] = x_first
+group.attrs['Y_FIRST'] = y_first
+group.attrs['WIDTH'] = num_columns
+group.attrs['FILE_LENGTH'] = num_rows
 
+timeseries_file.close()
 # ---------------------------------------------------------------------------------------
 #  GET INCIDENCE_ANGLE FILE INTO UNAVCO
 # ---------------------------------------------------------------------------------------
