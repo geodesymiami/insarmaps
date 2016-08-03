@@ -42,12 +42,35 @@ function getGEOJSON(area) {
         attributevalues = area.attributevalues;
     }
 
+    // set like object
+    var attributesToDisplay = {
+        "mission": true,
+        "beam_mode": true,
+        "beam_swath": true,
+        "relative_orbit": true,
+        "first_date": true,
+        "last_date": true,
+        "processing_type": true,
+        "processing_software": true,
+        "history": true,
+        "first_frame": true,
+        "last_frame": true,
+        "flight_direction": true,
+        "look_direction": true,
+        "atmos_correct_method": true,
+        "unwrap_method": true,
+        "post_processing_method": true
+    };
+
     for (var i = 0; i < attributekeys.length; i++) {
         curKey = attributekeys[i];
-        curValue = attributevalues[i];
 
-        tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
-        tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
+        if (curKey in attributesToDisplay) {
+            curValue = attributevalues[i];
+
+            tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
+            tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
+        }
     }
 
     $("#color-scale").toggleClass("active");
@@ -676,8 +699,6 @@ $(window).load(function() {
     $("#close-button").on("click", function() {
         $('.wrap#select-area-wrap').toggleClass('active');
     });
-
-    $("")
 
     // cancel the popup
     $('#cancelPopupButton').on('click', function() {
