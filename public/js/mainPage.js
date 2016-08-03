@@ -464,11 +464,13 @@ function search() {
         // TODO: remove, this is placeholder
         for (var i = 0; i < areas.length; i++) {
             areas[i].reference = "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288";
+            // add mission so it's fuse searchable
+            areas[i].mission = areas[i].attributevalues[0];
         }
         // new sublist of areas that match query
         var match_areas = [];
 
-        var fuse = new Fuse(areas, { keys: ["country", "name", "reference", "region"] });
+        var fuse = new Fuse(areas, { keys: ["country", "name", "region", "mission"] });
         var countries = fuse.search(query);
 
         console.log("area 1");
