@@ -9,7 +9,7 @@ import getopt
 import re
 
 # COMMAND I USE TO RUN SCRIPT: 
-# python ~/Desktop/Software_Eng_Make_Website_Work/pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d DEM_error.h5 -c temporal_coherence.h5 -m mask.h5 
+# python ~/code/insar_map_mvc/storage/json/pysar2unavco_back.py -t timeseries.h5 -i incidence_angle.h5 -d DEM_error.h5 -c temporal_coherence.h5 -m mask.h5 
 # ---------------------------------------------------------------------------------------
 # FUNCTIONS
 # ---------------------------------------------------------------------------------------
@@ -49,12 +49,7 @@ for o, a in opts:
 	else:
 		assert False, "unhandled option - exit"
 		sys.exit()
-'''
-# check if all operations for UNAVCO format are inputted
-if len(list(operations)) != 5:
-	print 'incorrect number of arguments'
-	sys.exit()
-'''
+
 # ---------------------------------------------------------------------------------------
 #  GET TIMESERIES FILE INTO UNAVCO and encode attributes to timeseries group in unavco file
 # ---------------------------------------------------------------------------------------
@@ -77,11 +72,12 @@ unavco = "unavco_test.h5"
 unavco_file = h5py.File(unavco, "w")
 print "created test file"
 
-# copy datasets from timeseries file into  unavco file
-unavco_file.create_group('timeseries')
+# copy datasets from timeseries file into unavco file - main group key is 'GEOCODE'
+# similar format key to the interferogram files found in unavco portal
+unavco_file.create_group('/GEOCODE/timeseries')
 for d in dates:
-	old_key = 'timeseries/' + d
-	timeseries_file.copy(old_key, unavco_file['/timeseries'], d)
+	old_key = '/timeseries/' + d
+	timeseries_file.copy(old_key, unavco_file['/GEOCODE/timeseries'], d)
 
 # ---------------------------------------------------------------------------------------
 #  ENCODE REQURIED ATTRIBUTES FROM TIMESERIES FILE INTO UNAVCO
@@ -99,9 +95,25 @@ project_name = attributes["PROJECT_NAME"]
 track_index = project_name.find('T')
 frame_index = project_name.find('F')
 track_number = project_name[track_index+1:frame_index]
-frames = re.search("\d+_\d+", project_name).group(0)
-first_frame = frames.split("_")[0]
-last_frame = frames.split("_")[1]
+region_name = project_name[:track_index]
+
+# sometimes there is only one frame number instead of framenumber_framenumber - look for "_"
+multipleFrames = False
+try:
+	underscore = re.search("_", project_name).group(0)
+	multipleFrames = True
+except:
+	pass
+
+if multipleFrames:
+	frames = re.search("\d+_\d+", project_name).group(0)
+	first_frame = frames.split("_")[0]
+	last_frame = frames.split("_")[1]
+else:
+	frames = re.search("\d+", project_name[frame_index+1:]).group(0)
+	first_frame = frames
+	last_frame = frames
+
 mission_index = project_name.find(frames) + len(frames)
 mission = project_name[mission_index:len(project_name)-1]
 
@@ -185,8 +197,17 @@ group.attrs['post_processing_method'] = 'PySAR'
 group.attrs['min_baseline_perp'] = float(attributes['P_BASELINE_BOTTOM_HDR'])
 group.attrs['max_baseline_perp'] = float(attributes['P_BASELINE_TOP_HDR'])
 
-timeseries_file.close()
+# ---------------------------------------------------------------------------------------
+#  ENCODE ATTRIBUTES FROM FALK'S FILES TO CALCULATE LATITUDE AND LONGITUDE - NOT IN UNAVCO DOC
+# ---------------------------------------------------------------------------------------
+group.attrs['X_STEP'] = x_step
+group.attrs['Y_STEP'] = y_step
+group.attrs['X_FIRST'] = x_first
+group.attrs['Y_FIRST'] = y_first
+group.attrs['WIDTH'] = num_columns
+group.attrs['FILE_LENGTH'] = num_rows
 
+timeseries_file.close()
 # ---------------------------------------------------------------------------------------
 #  GET INCIDENCE_ANGLE FILE INTO UNAVCO
 # ---------------------------------------------------------------------------------------
@@ -216,7 +237,7 @@ if not is_open:
 # less verbose
 for k in group.keys():
 	old_key = key + "/" + k
-	incidence_angle_file.copy(old_key, unavco_file['/timeseries'], 'incidence_angle')
+	incidence_angle_file.copy(old_key, unavco_file['/GEOCODE'], 'incidence_angle')
 
 incidence_angle_file.close()
 
@@ -233,7 +254,7 @@ except:
 
 for k in group.keys():
 	old_key = key + "/" + k
-	dem_file.copy(old_key, unavco_file['/timeseries'], key)
+	dem_file.copy(old_key, unavco_file['/GEOCODE'], key)
 
 dem_file.close()
 
@@ -250,7 +271,7 @@ except:
 
 for k in group.keys():
 	old_key = key + "/" + k
-	temporal_coherence_file.copy(old_key, unavco_file['/timeseries'], key)
+	temporal_coherence_file.copy(old_key, unavco_file['/GEOCODE'], key)
 
 temporal_coherence_file.close()
 
@@ -267,7 +288,7 @@ except:
 
 for k in group.keys():
 	old_key = key + "/" + k
-	mask_file.copy(old_key, unavco_file['/timeseries'], key)
+	mask_file.copy(old_key, unavco_file['/GEOCODE'], key)
 
 mask_file.close()
 
@@ -279,6 +300,13 @@ unavco_file.close()
 # UNAVCO timeseries file is called JERS_SM_80_245_246_<first date>_<last date>.h5 since we dont need TBASE or BPERP for timeseries
 unavco_name = mission + '_SM_' + track_number + '_' + frames + '_' + dates[0] + '_' + dates[len(dates)-1] + '.h5'
 os.rename(unavco, "./" + unavco_name)
+
+# create a text file to store region (ex: Kyushu) needed for database but not unavco format
+attributes_file_name = unavco_name[:len(unavco_name)-3] + '_region.txt'
+attributes_file = open(attributes_file_name, "w")
+attributes_file.write(region_name)
+attributes_file.close()
+
 # ---------------------------------------------------------------------------------------
 #  TEST THE UNAVCO FILE FOR DATASETS
 # ---------------------------------------------------------------------------------------
@@ -290,8 +318,13 @@ print 'trying to print the attribute types'
 attributes = f['/'].attrs.items()
 for k, v in attributes:
 	print "key: " + k + ", value: " + str(v) + ", type: " + str(type(v)) + "\n"
+
+print 'trying to print main group GEOCODE'
+geocode = f["GEOCODE"]
+print geocode
+
 print 'trying to print group timeseries'
-group = f['timeseries']
+group = f['GEOCODE/timeseries']
 print group
 
 print 'trying to print last dataset of timeseries'
@@ -299,19 +332,19 @@ dataset = group[dates[len(dates)-1]]
 print dataset
 
 print 'trying to print dataset incidence_angle'
-dataset = f['timeseries/incidence_angle']
+dataset = f['GEOCODE/incidence_angle']
 print dataset
 
 print 'trying to print dataset dem'
-dataset = f['timeseries/dem']
+dataset = f['GEOCODE/dem']
 print dataset
 
 print 'trying to print dataset temporal_coherence'
-dataset = f['timeseries/temporal_coherence']
+dataset = f['GEOCODE/temporal_coherence']
 print dataset
 
 print 'trying to print dataset mask'
-dataset = f['timeseries/mask']
+dataset = f['GEOCODE/mask']
 print dataset
 
 f.close()

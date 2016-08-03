@@ -9,6 +9,8 @@ import sys
 import psycopg2
 import geocoder
 
+# ex: python Converter_unavco.py Alos_SM_73_2980_2990_20070107_20110420.h5
+
 # This script takes a UNAVCO format timeseries h5 file, converts to mbtiles, 
 # and sends to database which allows website to make queries and display data
 # ---------------------------------------------------------------------------------------
@@ -72,7 +74,7 @@ def convert_data():
 			displacement_values = []
 			displacements = '{'
 			point_num += 1
-			#break;	# for testing purposes convert only 1 point
+			# break;	# for testing purposes convert only 1 point
 
 			# if chunk_size limit is reached, write chunk into a json file
 			# then increment chunk number and clear siu_man array
@@ -103,7 +105,7 @@ def convert_data():
  	decimal_dates_sql = decimal_dates_sql[:len(decimal_dates_sql)-2] + '}'
 
  	# scene_footprint attribute uses a wkt geometry type with format that confuses postgresql database
- 	# thus we have to add "Polygon(coordinates, coordinates, coordinates, coordinates"
+ 	# thus we have to add "Polygon(coordinates, coordinates, coordinates, coordinates)" as string
  	attribute_keys = '{'
  	attribute_values = '{'
  	for k, v in attributes_dictionary:
@@ -116,12 +118,24 @@ def convert_data():
  	attribute_keys = attribute_keys[:len(attribute_keys)-1] + '}'
  	attribute_values = attribute_values[:len(attribute_values)-1] + '}'
 
+	try:	# connect to databse
+		con = psycopg2.connect("dbname='pgis' user='aterzishi' host='postgresdb.cpk4mk8rt0nu.us-west-2.rds.amazonaws.com' password='abc123howilikemyabc'")
+		cur = con.cursor()
+		# create area table if not exist - limit for number of dates is 200, limt for number of attribute keys/values is 100
+		cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, latitude double precision, longitude double precision, country varchar, region varchar, numchunks integer, attributekeys varchar[100], attributevalues varchar[100], stringdates varchar[200], decimaldates double precision[200] );")
+		con.commit()
+		print 'created area table'
+	except Exception, e:
+		print "unable to connect to the database"
+		print e
+		sys.exit()
+
 	# put dataset into area table
 	# area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country, "num_chunks": chunk_num, "dates": dataset_keys}
 	try:
 		con = psycopg2.connect("dbname='pgis' user='aterzishi' host='postgresdb.cpk4mk8rt0nu.us-west-2.rds.amazonaws.com' password='abc123howilikemyabc'")
 		cur = con.cursor()
-		query = 'INSERT INTO area VALUES (' + "'" + area + "','" + str(mid_lat) + "','" + str(mid_long) + "','" + country + "','" + str(chunk_num) + "','" + attribute_keys + "','" + attribute_values + "','" + string_dates_sql + "','" + decimal_dates_sql + "')"
+		query = 'INSERT INTO area VALUES (' + "'" + area + "','" + str(mid_lat) + "','" + str(mid_long) + "','" + country + "','" + region + "','" + str(chunk_num) + "','" + attribute_keys + "','" + attribute_values + "','" + string_dates_sql + "','" + decimal_dates_sql + "')"
 		cur.execute(query)
 		con.commit()
 		con.close()
@@ -135,7 +149,7 @@ def convert_data():
 	try:
 		con = psycopg2.connect("dbname='pgis' user='aterzishi' host='postgresdb.cpk4mk8rt0nu.us-west-2.rds.amazonaws.com' password='abc123howilikemyabc'")
 		cur = con.cursor()
-		query = 'CREATE INDEX p ON ' + area + ' (p)'
+		query = 'CREATE INDEX ON ' + area + ' (p)'
 		cur.execute(query)
 		con.commit()
 		con.close()
@@ -173,26 +187,31 @@ def make_json_file(chunk_num, points):
 # get name of h5 file and the groupname of that file's data
 if (len(sys.argv) != 2):
 	print "Incorrect number of arguments - see correct example below:"
-	print "example: python Converter.py geo_timeseries_masked.h5"
+	print "python Converter_unavco.py Alos_SM_73_2980_2990_20070107_20110420.h5"
 	sys.exit()
 
 file_name = sys.argv[1]
 path_name = file_name[:len(file_name)-3]
+region_file_name = file_name[:len(file_name)-3] + '_region.txt'
 # ---------------------------------------------------------------------------------------
 # start clock to track how long conversion process takes
 start_time = time.clock()
 
+# search for region file - if exist get first line which is region name
+region_file = None
+region = "null"
+try: 
+	region_file = open(region_file_name, "r")
+	region = region_file.readline()
+	region_file.close()
+except:
+	pass
+
 # use h5py to open specified group(s) in the h5 file 
 # then read datasets from h5 file into memory for faster reading of data
-# depending on UNAVCO format, the main key to access groups might change from timeseries to something else
+# depending on UNAVCO format, the main key to access groups might be '/GEOCODE'
 file = h5py.File(file_name,  "r")
-print 'trying to print group timeseries'
-try: 
-	group = file["timeseries"]
-	print "opened file: " + file_name
-except: 
-	print "not a timeseries file"
-	sys.exit()
+group = file['GEOCODE/timeseries']	# assuming there is only one main key called 'GEOCODE'
 
 # get attributes (stored at root) of UNAVCO timeseries file
 attributes = file['/'].attrs
@@ -250,18 +269,6 @@ try: # create path for json
 	os.mkdir(json_path)
 except:
 	print json_path + " already exists"
-
-try:	# connect to databse
-	con = psycopg2.connect("dbname='pgis' user='aterzishi' host='postgresdb.cpk4mk8rt0nu.us-west-2.rds.amazonaws.com' password='abc123howilikemyabc'")
-	cur = con.cursor()
-	# create area table if not exist - limit for number of dates is 200, limt for number of attribute keys/values is 100
-	cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, latitude double precision, longitude double precision, country varchar, numchunks integer, attributekeys varchar[100], attributevalues varchar[100], stringdates varchar[200], decimaldates double precision[200] );")
-	con.commit()
-	print 'created area table'
-except Exception, e:
-	print "unable to connect to the database"
-	print e
-	sys.exit()
 
 # read and convert the datasets, then write them into json files and insert into database
 convert_data()

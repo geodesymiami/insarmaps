@@ -314,7 +314,7 @@ div.menu {
 #top-map-buttons {
     position: absolute;
     top: 10px;
-    left: 268px;
+    left: 205px;
     z-index: 99;
     width: 50%;
     height: 50px;
@@ -463,6 +463,18 @@ div.menu {
     padding: 0 !important;
 }
 
+#color-scale {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    z-index: 99;
+}
+
+#color-scale.active {
+    display: block;
+}
+
 #slideout-button {
     position: absolute;
     font-family: 'Open Sans', sans-serif;
@@ -597,7 +609,7 @@ ul.tab li a:hover {
 }
 
 ul.tab li a:focus,
-.active {
+.tablinks.active {
     background-color: #ccc;
 }
 
