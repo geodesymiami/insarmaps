@@ -26,7 +26,7 @@ function getGEOJSON(area) {
     }
 
     $('.wrap#area-attributes-div').toggleClass('active');
-    
+
     // $(".wrap#area-attributes-div").find(".content").find("#Attr1").empty();
     var tableHTML = "";
     var attributekeys = null;
@@ -36,18 +36,41 @@ function getGEOJSON(area) {
     if (typeof area.attributekeys == "string" || typeof area.attributevalues == "string") {
         attributekeys = area.attributekeys.split(",");
         attributevalues = area.attributevalues.split(",");
-    // otherwise, we get arrays from the server (clicked on area not through an area marker feature)
+        // otherwise, we get arrays from the server (clicked on area not through an area marker feature)
     } else {
         attributekeys = area.attributekeys;
         attributevalues = area.attributevalues;
     }
 
+    // set like object
+    var attributesToDisplay = {
+        "mission": true,
+        "beam_mode": true,
+        "beam_swath": true,
+        "relative_orbit": true,
+        "first_date": true,
+        "last_date": true,
+        "processing_type": true,
+        "processing_software": true,
+        "history": true,
+        "first_frame": true,
+        "last_frame": true,
+        "flight_direction": true,
+        "look_direction": true,
+        "atmos_correct_method": true,
+        "unwrap_method": true,
+        "post_processing_method": true
+    };
+
     for (var i = 0; i < attributekeys.length; i++) {
         curKey = attributekeys[i];
-        curValue = attributevalues[i];
 
-        tableHTML += "<tr><td value=" + curKey + ">" + curKey+ "</td>";                    
-        tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
+        if (curKey in attributesToDisplay) {
+            curValue = attributevalues[i];
+
+            tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
+            tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
+        }
     }
 
     $("#color-scale").toggleClass("active");
@@ -426,6 +449,68 @@ contourToggleButton.onclick(function() {
         myMap.map.removeLayer("contours");
     }
 });
+
+function search() {
+    var json = myMap.areas;
+    console.log(json);
+    if (!$('.wrap#select-area-wrap').hasClass('active')) {
+        $('.wrap#select-area-wrap').toggleClass('active');
+    }
+    if (json != null) {
+        // TODO: dummy search for paper, add actual paper later on when we get attribute    
+        query = $("#search-input").val();
+        // full list of areas
+        var areas = json.areas;
+        // TODO: remove, this is placeholder
+        for (var i = 0; i < areas.length; i++) {
+            areas[i].reference = "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288";
+            // add mission so it's fuse searchable
+            areas[i].mission = areas[i].attributevalues[0];
+        }
+        // new sublist of areas that match query
+        var match_areas = [];
+
+        var fuse = new Fuse(areas, { keys: ["country", "name", "region", "mission"] });
+        var countries = fuse.search(query);
+
+        console.log("area 1");
+
+        // add our info in a table, first remove any old info
+        $(".wrap#select-area-wrap").find(".content").find("#myTable").find("#tableBody").empty();
+        for (var i = 0; i < countries.length; i++) {
+            var country = countries[i];
+
+            $("#tableBody").append("<tr id=" + country.name + "><td value='" + country.name + "''>" +
+                country.name + "</td><td value='reference'><a href='http://www.rsmas.miami.edu/personal/famelung/Publications_files/ChaussardAmelungAoki_VolcanoCycles_JGR_2013.pdf' target='_blank'>" +
+                "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288.</a></td></tr>");
+
+            // make cursor change when mouse hovers over row
+            $("#" + country.name).css("cursor", "pointer");
+            // set the on click callback function for this row
+
+            // ugly click function declaration to JS not using block scope
+            $("#" + country.name).click((function(country) {
+                return function(e) {
+                    // don't load area if reference link is clicked
+                    if (e.target.cellIndex == 0) {
+                        clickedArea = country;
+                        console.log(country);
+                        $('.wrap#select-area-wrap').toggleClass('active');
+                        getGEOJSON(country);
+                    }
+                };
+            })(country));
+        }
+
+        // now get only datasets from countries array with query search
+        // for (i = 0; i < areas.length; i++) {}
+
+    } else {
+        console.log("No such areas");
+        $("#tableBody").html("No areas found");
+    }
+}
+
 // when site loads, turn toggle on
 $(window).load(function() {
     var NUM_CHUNKS = 300;
@@ -603,77 +688,19 @@ $(window).load(function() {
         var ENTER_KEY = 13;
 
         if (event.keyCode == ENTER_KEY) {
-            $("#search-button").click();
+            search();
         }
     });
 
     var clickedArea = null;
     // logic for search button
     $("#search-button").on("click", function() {
-        var json = myMap.areas;
-        console.log(json);
-        if (!$('.wrap#select-area-wrap').hasClass('active')) {
-            $('.wrap#select-area-wrap').toggleClass('active');
-        }
-        if (json != null) {
-            // TODO: dummy search for paper, add actual paper later on when we get attribute    
-            query = $("#search-input").val();
-            // full list of areas
-            var areas = json.areas;
-            // TODO: remove, this is placeholder
-            for (var i = 0; i < areas.length; i++) {
-                areas[i].reference = "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288";
-            }
-            // new sublist of areas that match query
-            var match_areas = [];
-
-            var fuse = new Fuse(areas, { keys: ["country", "name", "reference"] });
-            var countries = fuse.search(query);
-
-            console.log("area 1");
-
-            // add our info in a table, first remove any old info
-            $(".wrap#select-area-wrap").find(".content").find("#myTable").find("#tableBody").empty();
-            for (var i = 0; i < countries.length; i++) {
-                var country = countries[i];
-
-                $("#tableBody").append("<tr id=" + country.name + "><td value='" + country.name + "''>" +
-                    country.name + "</td><td value='reference'><a href='http://www.rsmas.miami.edu/personal/famelung/Publications_files/ChaussardAmelungAoki_VolcanoCycles_JGR_2013.pdf' target='_blank'>" +
-                    "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288.</a></td></tr>");
-
-                // make cursor change when mouse hovers over row
-                $("#" + country.name).css("cursor", "pointer");
-                // set the on click callback function for this row
-
-                // ugly click function declaration to JS not using block scope
-                $("#" + country.name).click((function(country) {
-                    return function(e) {
-                        // don't load area if reference link is clicked
-                        if (e.target.cellIndex == 0) {
-                            clickedArea = country;
-                            console.log(country);
-                            $('.wrap#select-area-wrap').toggleClass('active');
-                            getGEOJSON(country);
-                        }
-                    };
-                })(country));
-            }
-
-            // now get only datasets from countries array with query search
-            // for (i = 0; i < areas.length; i++) {}
-
-        } else {
-            console.log("No such areas");
-            $("#tableBody").html("No areas found");
-        }
-
+        search();
     });
 
     $("#close-button").on("click", function() {
         $('.wrap#select-area-wrap').toggleClass('active');
     });
-
-    $("")
 
     // cancel the popup
     $('#cancelPopupButton').on('click', function() {
