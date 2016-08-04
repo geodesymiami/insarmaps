@@ -382,8 +382,6 @@ function switchLayer(layer) {
         var id = "areas";
 
         if (myMap.areaFeatures != null) {
-            console.log("gonna add it");
-
             myMap.map.style.on("load", function() {
                 var areaMarker = new mapboxgl.GeoJSONSource({
                     cluster: false,
