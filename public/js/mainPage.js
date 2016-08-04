@@ -247,6 +247,7 @@ function switchLayer(layer) {
 
     var tileset = 'mapbox.' + layerId;
 
+    // we assume in this case that an area has been clicked
     if (overlayToggleButton.toggleState == ToggleStates.ON && myMap.tileJSON != null) {
         // remove selected point marker if it exists, and create a new GeoJSONSource for it
         // prevents crash of "cannot read property 'send' of undefined"
@@ -377,6 +378,31 @@ function switchLayer(layer) {
             },
             layers: myMap.layers_
         });
+
+        var id = "areas";
+
+        if (myMap.areaFeatures != null) {
+            myMap.map.style.on("load", function() {
+                var areaMarker = new mapboxgl.GeoJSONSource({
+                    cluster: false,
+                    clusterRadius: 10
+                }); // add the markers representing the available areas
+                areaMarker.setData({
+                    "type": "FeatureCollection",
+                    "features": myMap.areaFeatures
+                });
+                myMap.map.addSource(id, areaMarker);
+                myMap.map.addLayer({
+                    "id": id,
+                    "type": "symbol",
+                    "source": id,
+                    "layout": {
+                        "icon-image": "{marker-symbol}-15",
+                        "icon-allow-overlap": true
+                    }
+                });
+            });
+        }
     }
 }
 
