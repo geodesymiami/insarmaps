@@ -122,6 +122,7 @@ function Map(loadJSONFunc) {
     this.zoomOutZoom = 7.0;
     this.graphsController = new GraphsController();
     this.areas = null;
+    this.areaFeatures = null;
 
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,
@@ -558,6 +559,8 @@ function Map(loadJSONFunc) {
 
                 features.push(feature);
             };
+
+            that.areaFeatures = features;
 
             // add the markers representing the available areas
             areaMarker.setData({
