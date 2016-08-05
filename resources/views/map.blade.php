@@ -92,11 +92,11 @@
     <div id="color-scale">
       <div id="left-scale-minimum">
         min: -2cm/yr
-      </div>
+      </div>      
+      <img src="img/matlab_colorscale.jpg" alt="matlab_colorscale.jpg">
       <div id="right-scale-maximum">
         max: 2cm/yr
       </div>
-      <img src="img/matlab_colorscale.png" alt="matlab_colorscale.png" width="200">
     </div>
     <div id="point-details"></div>
     <div class="wrap" id="area-attributes-div">    

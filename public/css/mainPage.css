@@ -384,15 +384,6 @@ div.menu {
     transform: translateY(-50%);
 }
 
-#left-scale-minimum {
-    width: 50%;
-    float: left;
-}
-#right-scale-maximum {
-    width: 50%;
-    float: left;
-}
-
 #top-map-buttons button {
     background-color: white;
 }
@@ -460,6 +451,7 @@ div.menu {
 
 #color-scale.active {
     display: block;
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 #slideout-button {
