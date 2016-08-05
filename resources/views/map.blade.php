@@ -74,6 +74,15 @@
       <div id="information-button">                
         <button class="btn btn-primary-outline">About</button>
       </div>
+      @if (Auth::guest())
+        <div id="login-logout-button">
+          <button class="btn btn-primary-outline">Login</button>
+        </div>
+      @else
+        <div class="logged-in" id="login-logout-button">
+         <button class="btn btn-primary-outline">Logout</button>
+        </div>
+      @endif      
     </div>    
     <div id="polygon-button-div">
       <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="polygon-button">

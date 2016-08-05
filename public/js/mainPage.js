@@ -733,4 +733,12 @@ $(window).load(function() {
         console.log("#cancel");
         $('.wrap#select-area-wrap').toggleClass('active');
     });
+
+    $("#login-logout-button").on('click', function() {
+        if ($("#login-logout-button").hasClass("logged-in")) {
+            window.location = "/logout";
+        } else {
+            window.location = "/auth/login";
+        }
+    });
 });

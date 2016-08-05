@@ -321,21 +321,20 @@ div.menu {
 }
 
 #top-map-buttons > div {
-    margin-left: 10px
+    margin-left: 10px;
+    border-radius: 5px;
+    float: left;
+    z-index: 99;
 }
 
 #map-type-menu {
     background: #fff;    
     font-family: 'Open Sans', sans-serif;
-    z-index: 99;
-    border-radius: 4px;
     width: 120px;
-    float: left;
     min-height: 34px;
 }
 
 #overlay-options-wrapper {
-    float: left;
     width: 200px;
     height: 34px;
 }
@@ -361,18 +360,6 @@ div.menu {
     width: 50px;
     bottom: 0px;
     background: coral;
-}
-
-#reset-button {
-    z-index: 99;
-    border-radius: 5px;
-    float: left; 
-}
-
-#information-button {
-    z-index: 99;
-    border-radius: 5px;
-    float: left;
 }
 
 #information-div {
