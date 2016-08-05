@@ -21,3 +21,7 @@ Route::get("/file/{area}/{fileChunkNumber}", "GeoJSONController@getJSONFileChunk
 Route::get("/point/{area}/{point}", "GeoJSONController@getDataForPoint")->name("getDataForPoint");
 Route::get("/areas/", "GeoJSONController@getAreas")->name("getAreas");
 Route::post("/points", "GeoJSONController@getPoints");
+Route::controllers([
+    'auth' => 'Auth\AuthController'
+    // 'password' => 'Auth\PasswordController',
+]);
