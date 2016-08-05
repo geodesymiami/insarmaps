@@ -572,6 +572,10 @@ $(window).load(function() {
         $(".wrap#charts").toggleClass("active");
     });
 
+    // set up tooltips on graph div and area attributes div
+    $(".wrap#charts").tooltip("disable");
+    $(".wrap#area-attributes-div").tooltip("disable");
+
     var oldGraphDiv = new DivState();
 
     $("#graph-div-minimize-button").on("click", function(event) {
@@ -586,6 +590,7 @@ $(window).load(function() {
                 "height": oldGraphDiv.height, "width": oldGraphDiv.width
             }, {
                 done: function() {
+                    chartWrap.tooltip("disable");
                     oldGraphDiv.animating = false;                   
                 }
             }).removeClass("toggled");
@@ -609,6 +614,7 @@ $(window).load(function() {
                 "bottom": "5%"
             }, {
                 done: function() {
+                    chartWrap.tooltip("enable");
                     oldGraphDiv.animating = false;
                 }
             }).addClass("toggled");
@@ -627,6 +633,7 @@ $(window).load(function() {
                 "width": oldAttributeDiv.width
             }, {
                 done: function() {
+                    areaAttributesWrap.tooltip("disable");
                     oldAttributeDiv.animating = false;
                 }
             }).removeClass("toggled");
@@ -640,6 +647,7 @@ $(window).load(function() {
                 "width": topRightButtonsWidth
             }, {
                 done: function() {
+                    areaAttributesWrap.tooltip("enable");
                     oldAttributeDiv.animating = false
                 }
             }).addClass("toggled");

@@ -99,7 +99,7 @@
       </div>
     </div>
     <div id="point-details"></div>
-    <div class="wrap" id="area-attributes-div">    
+    <div class="wrap" id="area-attributes-div" title="Attributes">    
       <div class="top-right-buttons">
         <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"><span aria-hidden="true">__</span></button>
       </div>
@@ -135,7 +135,7 @@
       </div>
     </div>
   </div>
-  <div class="wrap" id="charts">
+  <div class="wrap" id="charts" title="Displacement time-series">
     <div class="top-right-buttons">
       <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="graph-div-button"><span aria-hidden="true">&times;</span></button>
       <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="graph-div-minimize-button"><span aria-hidden="true">__</span></button>
