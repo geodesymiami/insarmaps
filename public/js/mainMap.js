@@ -734,6 +734,7 @@ function Map(loadJSONFunc) {
                             // don't load area if reference link is clicked
                             if (e.target.cellIndex == 0) {
                                 clickedArea = area.name;
+                                that.areaPopup.remove();
                                 getGEOJSON(area);
                             }
                         };
