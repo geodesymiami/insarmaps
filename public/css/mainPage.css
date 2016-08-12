@@ -321,21 +321,20 @@ div.menu {
 }
 
 #top-map-buttons > div {
-    margin-left: 10px
+    margin-left: 10px;
+    border-radius: 5px;
+    float: left;
+    z-index: 99;
 }
 
 #map-type-menu {
     background: #fff;    
     font-family: 'Open Sans', sans-serif;
-    z-index: 99;
-    border-radius: 4px;
     width: 120px;
-    float: left;
     min-height: 34px;
 }
 
 #overlay-options-wrapper {
-    float: left;
     width: 200px;
     height: 34px;
 }
@@ -363,18 +362,6 @@ div.menu {
     background: coral;
 }
 
-#reset-button {
-    z-index: 99;
-    border-radius: 5px;
-    float: left; 
-}
-
-#information-button {
-    z-index: 99;
-    border-radius: 5px;
-    float: left;
-}
-
 #information-div {
     display: none;
     position: absolute;
@@ -395,15 +382,6 @@ div.menu {
     position: relative;
     top: 50%;
     transform: translateY(-50%);
-}
-
-#left-scale-minimum {
-    width: 50%;
-    float: left;
-}
-#right-scale-maximum {
-    width: 50%;
-    float: left;
 }
 
 #top-map-buttons button {
@@ -473,6 +451,7 @@ div.menu {
 
 #color-scale.active {
     display: block;
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 #slideout-button {
@@ -497,7 +476,7 @@ div.menu {
 }
 
 #charts {
-    position: fixed;
+    position: absolute;
     left: 0%;
     bottom: 5%;
     margin-top: 70px;

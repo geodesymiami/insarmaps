@@ -423,6 +423,18 @@ function GraphsController() {
         }
     };
 
+    this.resizeChartContainers = function() {
+        var chartContainersNewHeight = $(".wrap").find(".content").find("#chart-containers").height();
+        if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
+            chartContainersNewHeight /= 2;
+            // resize chart container div's as they don't resize with jquery resizable
+            $("#chartContainer2").height(chartContainersNewHeight);
+        }
+
+        // resize chart container div's as they don't resize with jquery resizable
+        $("#chartContainer").height(chartContainersNewHeight);
+    };
+
     this.recreateGraph = function(chartContainer) {
         var graphSettings = that.graphSettings[chartContainer];
         var graphOpts = that.highChartsOpts[chartContainer];

@@ -537,6 +537,12 @@ function search() {
     }
 }
 
+function DivState() {
+    this.height = 0;
+    this.width = 0;
+    this.animating = false;
+}
+
 // when site loads, turn toggle on
 $(window).load(function() {
     var NUM_CHUNKS = 300;
@@ -566,26 +572,85 @@ $(window).load(function() {
         $(".wrap#charts").toggleClass("active");
     });
 
-    var oldGraphDivHeight = 0;
+    // set up tooltips on graph div and area attributes div
+    $(".wrap#charts").tooltip("disable");
+    $(".wrap#area-attributes-div").tooltip("disable");
+
+    var oldGraphDiv = new DivState();
 
     $("#graph-div-minimize-button").on("click", function(event) {
-        if ($(".wrap#charts").hasClass("toggled")) {
-            $(".wrap#charts").animate({ "height": oldGraphDivHeight }).removeClass("toggled");
-            myMap.graphsController.recreateGraphs();
+        if (oldGraphDiv.animating) {
+            return;
+        }
+
+        var chartWrap = $(".wrap#charts");        
+        oldGraphDiv.animating = true;
+        if (chartWrap.hasClass("toggled")) {
+            chartWrap.animate({
+                "height": oldGraphDiv.height, "width": oldGraphDiv.width
+            }, {
+                done: function() {
+                    chartWrap.tooltip("disable");
+                    oldGraphDiv.animating = false;                   
+                }
+            }).removeClass("toggled");
+            
+            $(".wrap#charts").resizable("enable");
+            $(".wrap#charts").draggable("enable");
         } else {
-            oldGraphDivHeight = $(".wrap#charts").height();
-            $(".wrap#charts").animate({ "height": "5%" }).addClass("toggled");
+            oldGraphDiv.height = chartWrap.height();
+            oldGraphDiv.width = chartWrap.width();
+            var topRightButtonsWidth = chartWrap.find(".top-right-buttons").width() + 10;
+            var oldBottom = chartWrap.css("bottom");
+            chartWrap.css("bottom", oldBottom);
+            chartWrap.css("top", "auto");
+
+            $(".wrap#charts").resizable("disable");
+            $(".wrap#charts").draggable("disable");
+            chartWrap.animate({
+                "height": "5%",
+                "width": topRightButtonsWidth,
+                "left": "0",
+                "bottom": "5%"
+            }, {
+                done: function() {
+                    chartWrap.tooltip("enable");
+                    oldGraphDiv.animating = false;
+                }
+            }).addClass("toggled");
         }
     });
 
-    var oldAttributeDivHeight = 0;
+    var oldAttributeDiv = new DivState();
 
     $("#area-attributes-div-minimize-button").on("click", function(event) {
-        if ($(".wrap#area-attributes-div").hasClass("toggled")) {
-            $(".wrap#area-attributes-div").animate({ "height": oldAttributeDivHeight }).removeClass("toggled");
+        var areaAttributesWrap = $(".wrap#area-attributes-div");
+        areaAttributesWrap.css("overflow-y", "auto");        
+        oldAttributeDiv.animating = true;
+        if (areaAttributesWrap.hasClass("toggled")) {
+            areaAttributesWrap.animate({
+                "height": oldAttributeDiv.height,
+                "width": oldAttributeDiv.width
+            }, {
+                done: function() {
+                    areaAttributesWrap.tooltip("disable");
+                    oldAttributeDiv.animating = false;
+                }
+            }).removeClass("toggled");
         } else {
-            oldAttributeDivHeight = $(".wrap#area-attributes-div").height();
-            $(".wrap#area-attributes-div").animate({ "height": "5%" }).addClass("toggled");
+            oldAttributeDiv.width = areaAttributesWrap.width();
+            oldAttributeDiv.height = areaAttributesWrap.height();
+            var topRightButtonsWidth = areaAttributesWrap.find(".top-right-buttons").width() + 10;
+            areaAttributesWrap.css("overflow-y", "hidden");
+            $(".wrap#area-attributes-div").animate({
+                "height": "5%",
+                "width": topRightButtonsWidth
+            }, {
+                done: function() {
+                    areaAttributesWrap.tooltip("enable");
+                    oldAttributeDiv.animating = false
+                }
+            }).addClass("toggled");
         }
     });
 
@@ -604,16 +669,7 @@ $(window).load(function() {
             }
         },
         stop: function(event, ui) {
-            var chartContainersNewHeight = $(".wrap").find(".content").find("#chart-containers").height();
-
-            if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-                chartContainersNewHeight /= 2;
-                // resize chart container div's as they don't resize with jquery resizable
-                $("#chartContainer2").height(chartContainersNewHeight);
-            }
-
-            // resize chart container div's as they don't resize with jquery resizable
-            $("#chartContainer").height(chartContainersNewHeight);
+            myMap.graphsController.resizeChartContainers(); 
 
             myMap.graphsController.recreateGraphs();
         }
@@ -629,6 +685,7 @@ $(window).load(function() {
             }
         },
         stop: function(event, ui) {
+            myMap.graphsController.resizeChartContainers();
             myMap.graphsController.recreateGraphs();
         }
     });
@@ -732,5 +789,13 @@ $(window).load(function() {
     $('#cancelPopupButton').on('click', function() {
         console.log("#cancel");
         $('.wrap#select-area-wrap').toggleClass('active');
+    });
+
+    $("#login-logout-button").on('click', function() {
+        if ($("#login-logout-button").hasClass("logged-in")) {
+            window.location = "/auth/logout";
+        } else {
+            window.location = "/auth/login";
+        }
     });
 });
