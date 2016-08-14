@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class PermissionsTableCreator extends Migration
+class AreaAllowedPermissionsCreator extends Migration
 {
     /**
      * Run the migrations.
@@ -12,9 +12,9 @@ class PermissionsTableCreator extends Migration
      */
     public function up()
     {
-        Schema::create('permissions', function (Blueprint $table) {
+        Schema::create('area_allowed_permissions', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer("userID");
+            $table->string("area_name");
             $table->string("permission");
             $table->timestamps();
         });
@@ -27,6 +27,6 @@ class PermissionsTableCreator extends Migration
      */
     public function down()
     {
-        Schema::drop('Permissions');
+        Schema::drop('area_allowed_permissions');
     }
 }
