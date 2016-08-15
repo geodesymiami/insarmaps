@@ -195,6 +195,7 @@ public function getAreas() {
           $currentArea["attributevalues"] = $this->postgresToPHPArray($area->attributevalues);
           $currentArea["region"] = $area->region;
           array_push($json["areas"], $currentArea);
+          continue;
         }
       }
     }
