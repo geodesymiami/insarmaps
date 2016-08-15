@@ -11,7 +11,7 @@ class UserPermissionsTableSeeder extends Seeder
      */
     public function run()
     {
-        //
+        // 
         DB::table('user_permissions')->insert([
             'userID' => 1,
             'permission' => "rsmas"
