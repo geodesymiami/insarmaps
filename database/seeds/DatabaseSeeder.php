@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('rsmastest'),
         ]);
         // $this->call(UsersTableSeeder::class);
-        $this->call(PermissionsTableSeeder::class);
+        $this->call(UserPermissionsTableSeeder::class);
+        $this->call(AreaAllowedPermissionsSeeder::class);
     }
 }
