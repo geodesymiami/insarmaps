@@ -76,19 +76,13 @@ class AuthController extends Controller
         // ]);
     }
 
-    public function getLogout() {
-        Auth::logout();
-        Session::flush();
-
-        return redirect("/");
-    }
-
     // don't allow registration for now
-    public function showRegistrationForm() {
+    public function getRegister() {
         return redirect("/auth/login");
+
     }
 
-    public function register() {
+    public function postRegister() {        
         return;
     }
 }
