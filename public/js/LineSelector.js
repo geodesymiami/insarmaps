@@ -17,8 +17,8 @@ function LineSelector(map) {
         } else {
             that.current = that.mousePos(e);
             that.setStartPoint = false;
-
-            that.finish([that.start, that.current]);
+            var polygonCoordinates = that.getPolygonBbox(that.start, that.current);
+            that.finish(polygonCoordinates);
         }
     };
 
@@ -37,19 +37,79 @@ function LineSelector(map) {
     };
 
     this.initialBearing = function(start, end) {
-        return (that.bearingInDegrees(start, end) + 360) % 360; 
+        return (that.bearingInDegrees(start, end) + 360) % 360;
     };
 
-    this.getLineBoundingBox = function(start, end, offset) {
-        var startProjected = that.map.map.project(start);
-        var endProjected = that.map.map.project(end);
+    // this.getLineBoundingBox = function(start, end, offset) {
+    //     var RAD_TO_DEG = 180.0 / Math.PI;
+    //     var startProjected = that.map.map.project(start);
+    //     var endProjected = that.map.map.project(end);
 
-       
+    //     var dy = end.lat - start.lat;
+    //     var dx = end.lng - start.lng;
 
+    //     var angle = Math.atan(dx / dy);
+    //     angle = (Math.PI / 2.0) - angle;
+    //     console.log("dy: " + dy);
+    //     console.log("dx: " + dx);
+    //     console.log("angle: " + angle * RAD_TO_DEG);
+
+    //     // endProjected.x = endProjected.x + offset * Math.cos(angle);
+    //     // endProjected.y = endProjected.y - offset * Math.sin(angle);
+
+    //     var newEnd = that.map.map.unproject(endProjected);
+
+    //     return end;
+    // };
+    this.getPolygonBbox = function(start, end) {
+        var DISTANCE = that.lineWidth; // to be made dynamic
+
+        var RAD_TO_DEG = 180.0 / Math.PI;
+        var startPoint = that.map.map.unproject(start);
+        var endPoint = that.map.map.unproject(end);
+
+        var dy = endPoint.lat - startPoint.lat;
+        var dx = endPoint.lng - startPoint.lng;
+
+        var angle = Math.atan(dx / dy);
+       // angle = (Math.PI / 2.0) - angle;
+        console.log(start);
+        console.log("dy: " + dy);
+        console.log("dx: " + dx);
+        console.log("angle: " + angle * RAD_TO_DEG);
+
+        var otherStart = [start.x + (DISTANCE * Math.cos(angle)), start.y + (DISTANCE * Math.sin(angle))];
+        var otherEnd = [end.x + (DISTANCE * Math.cos(angle)), end.y + (DISTANCE * Math.sin(angle))];
+        console.log("cos is : " + Math.cos(angle));
+        console.log(start);
+        console.log(otherStart);
+        var otherStartUnprojected = that.map.map.unproject(otherStart);
+        var otherEndUnprojected = that.map.map.unproject(otherEnd);
+
+        var polygonCoordinates = [
+            [
+                [startPoint.lng, startPoint.lat],
+                [endPoint.lng, endPoint.lat],
+                [otherEndUnprojected.lng, otherEndUnprojected.lat],
+                [otherStartUnprojected.lng, otherStartUnprojected.lat]
+            ]
+        ]; // no idea why 3D array, just see their api
+        // console.log(startPoint.lat + ", " + startPoint.lng);
+        // console.log(otherStartLat + ", " + otherStartLong);
+        // console.log("----------------");
+        // console.log(endPoint.lat + ", " + endPoint.lng);
+        // console.log(otherEndLat + ", " + otherEndLong);
+
+        return polygonCoordinates;
     };
 
     this.bearingToUnitCirlcleAngle = function(bearing) {
-        var bearingQuadrants =[[0, 90], [270, 360], [180, 270], [90, 180]];
+        var bearingQuadrants = [
+            [0, 90],
+            [270, 360],
+            [180, 270],
+            [90, 180]
+        ];
 
         var bearingQuadrant = 1;
 
@@ -91,54 +151,45 @@ function LineSelector(map) {
             that.map.map.removeSource("test");
         }
 
-        var line = new mapboxgl.GeoJSONSource();
-        var startPoint = that.map.map.unproject(bbox[0]);
-        var endPoint = that.map.map.unproject(bbox[1]);
-
-        that.lineJSON = {
-            "type": "Feature",
-            "properties": {},
-            "geometry": {
-                "type": "LineString",
-                "coordinates": [
-                    [startPoint.lng, startPoint.lat],
-                    [endPoint.lng, endPoint.lat]
-                ]
-            }
-        };
-
-        line.setData(that.lineJSON);
-
-        that.map.map.addSource('topographyLine', line);
-
-        that.map.map.addLayer({
-            "id": "topographyLine",
-            "type": "line",
-            "source": "topographyLine",
-            "layout": {
-                "line-join": "round",
-                "line-cap": "round"
-            },
-            "paint": {
-                "line-color": "#000",
-                "line-width": that.lineWidth
+        that.map.map.addSource('topographyLine', {
+            'type': 'geojson',
+            'data': {
+                'type': 'Feature',
+                'geometry': {
+                    'type': 'Polygon',
+                    'coordinates': bbox
+                }
             }
         });
 
-        var bearing = that.initialBearing(startPoint, endPoint);
-        console.log("bearing is " + bearing);
-        
-        var unitDegrees = that.bearingToUnitCirlcleAngle(bearing);
-        console.log("unit circle degrees is " + unitDegrees);
+        that.map.map.addLayer({
+            'id': 'topographyLine',
+            'type': 'fill',
+            'source': 'topographyLine',
+            'layout': {},
+            'paint': {
+                'fill-color': '#088',
+                'fill-opacity': 0.8
+            }
+        });
 
-        var pointCoords = that.getLineBoundingBox(startPoint, endPoint, that.lineWidth);
         var test = new mapboxgl.GeoJSONSource();
 
         var feature = {
             "type": "Feature",
             "geometry": {
                 "type": "Point",
-                "coordinates": [pointCoords.lng, pointCoords.lat]
+                "coordinates": bbox[0][0]
+            },
+            "properties": {
+                "marker-symbol": "marker"
+            }
+        };
+        var feature2 = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": bbox[0][3]
             },
             "properties": {
                 "marker-symbol": "marker"
@@ -147,7 +198,7 @@ function LineSelector(map) {
 
         test.setData({
             "type": "FeatureCollection",
-            "features": [feature]
+            "features": [feature, feature2]
         });
         that.map.map.addSource("test", test);
 
@@ -161,7 +212,7 @@ function LineSelector(map) {
             }
         });
 
-       // var features = that.map.map.queryRenderedFeatures(, { layers: that.layers });
+        // var features = that.map.map.queryRenderedFeatures(, { layers: that.layers });
     };
 
     document.addEventListener("mousedown", that.mouseDown);
