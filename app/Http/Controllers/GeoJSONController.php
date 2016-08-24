@@ -8,6 +8,7 @@ use App\Http\Requests;
 use DateTime;
 use DB;
 use Illuminate\Support\Facades\Input;
+use Auth;
 
 session_start();
 
@@ -79,75 +80,75 @@ class GeoJSONController extends Controller {
        $decimal_dates = $dateInfo->decimaldates;
        $string_dates = $dateInfo->stringdates;
      }
-      
-      $json["decimal_dates"] = $this->postgresToPHPFloatArray($decimal_dates);
-
-      
-      $json["string_dates"] = $this->postgresToPHPArray($string_dates);
-
-      $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = " . $pointNumber;
-
-      $points = DB::select($query);
-      foreach ($points as $point) {
-        $json["displacements"] = $this->postgresToPHPFloatArray($point->d);
-      }
-      echo json_encode($json);
-    } catch (\Illuminate\Database\QueryException $e) {
-      echo "Point Not found";
-    }
-    
-  }  
-
-  public function getPoints() {
-    $points = Input::get("points");
-
-    try {
-      $json = [];    
-
-      $json["displacements"] = [];
-      $decimal_dates = null;
-      $string_dates = null;
-
-      $parameters = explode("/", $points);
-      $area = $parameters[0];
-      $offset = count($parameters) - 2;
-      $pointsArray = array_slice($parameters, 1, $offset);
-
-      $pointsArrayLen = count($pointsArray);
-      $query = "SELECT decimaldates, stringdates FROM area WHERE area.name like '" . $area . "'";
-      $dateInfos = DB::select($query);
-
-      foreach ($dateInfos as $dateInfo) {
-       $decimal_dates = $dateInfo->decimaldates;
-       $string_dates = $dateInfo->stringdates;
-     }
 
      $json["decimal_dates"] = $this->postgresToPHPFloatArray($decimal_dates);
+
+
      $json["string_dates"] = $this->postgresToPHPArray($string_dates);
-     $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = ANY (VALUES ";
 
-     for ($i = 0; $i < $pointsArrayLen - 1; $i++) {       
-      $curPointNum = $pointsArray[$i];
+     $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = " . $pointNumber;
 
-      $query = $query . "(" . $curPointNum . "),"; 
+     $points = DB::select($query);
+     foreach ($points as $point) {
+      $json["displacements"] = $this->postgresToPHPFloatArray($point->d);
     }
-
-    // add last ANY values without comma
-    $curPointNum = $pointsArray[$i];
-    $query = $query . "(" . $curPointNum . "))";
-
-    // echo $fullQuery;
-    $points = DB::select($query);
-
-    foreach ($points as $point) {
-      $displacements = $this->postgresToPHPFloatArray($point->d);
-      array_push($json["displacements"], $displacements);
-    }     
-
     echo json_encode($json);
   } catch (\Illuminate\Database\QueryException $e) {
-    echo "Error Getting Points";
+    echo "Point Not found";
   }
+
+}  
+
+public function getPoints() {
+  $points = Input::get("points");
+
+  try {
+    $json = [];    
+
+    $json["displacements"] = [];
+    $decimal_dates = null;
+    $string_dates = null;
+
+    $parameters = explode("/", $points);
+    $area = $parameters[0];
+    $offset = count($parameters) - 2;
+    $pointsArray = array_slice($parameters, 1, $offset);
+
+    $pointsArrayLen = count($pointsArray);
+    $query = "SELECT decimaldates, stringdates FROM area WHERE area.name like '" . $area . "'";
+    $dateInfos = DB::select($query);
+
+    foreach ($dateInfos as $dateInfo) {
+     $decimal_dates = $dateInfo->decimaldates;
+     $string_dates = $dateInfo->stringdates;
+   }
+
+   $json["decimal_dates"] = $this->postgresToPHPFloatArray($decimal_dates);
+   $json["string_dates"] = $this->postgresToPHPArray($string_dates);
+   $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = ANY (VALUES ";
+
+   for ($i = 0; $i < $pointsArrayLen - 1; $i++) {       
+    $curPointNum = $pointsArray[$i];
+
+    $query = $query . "(" . $curPointNum . "),"; 
+  }
+
+    // add last ANY values without comma
+  $curPointNum = $pointsArray[$i];
+  $query = $query . "(" . $curPointNum . "))";
+
+    // echo $fullQuery;
+  $points = DB::select($query);
+
+  foreach ($points as $point) {
+    $displacements = $this->postgresToPHPFloatArray($point->d);
+    array_push($json["displacements"], $displacements);
+  }     
+
+  echo json_encode($json);
+} catch (\Illuminate\Database\QueryException $e) {
+  echo "Error Getting Points";
+}
 }
 
 public function getAreas() {
@@ -156,6 +157,18 @@ public function getAreas() {
   try {
     $query = "SELECT * from area";
     $areas = DB::select($query);
+    $permissionController = new PermissionsController();
+    $areasPermissions = $permissionController->getPermissions("area", "area_allowed_permissions", ["area.name = area_allowed_permissions.area_name"]);
+
+    $userPermissions = NULL;
+
+    // if we aren't logged in, our permission is public
+    if (Auth::guest()) {
+      $userPermissions = ["public"];
+    } else {
+      $userPermissions = $permissionController->getUserPermissions(Auth::id(), "users", "user_permissions", ["users.id = user_permissions.id"]);
+      array_push($userPermissions, "public"); // every user must have public permissions
+    }
 
     $json["areas"] = [];
     foreach ($areas as $area) {
@@ -164,15 +177,27 @@ public function getAreas() {
       $currentArea = [];
       $currentArea["name"] = $areaName;
 
-      $hack = 0;
-      $currentArea["coords"]["latitude"] = $area->latitude;
-      $currentArea["coords"]["longitude"] = $area->longitude;                
-      $currentArea["num_chunks"] = $area->numchunks;
-      $currentArea["country"] = $area->country;
-      $currentArea["attributekeys"] = $this->postgresToPHPArray($area->attributekeys);
-      $currentArea["attributevalues"] = $this->postgresToPHPArray($area->attributevalues);
-      $currentArea["region"] = $area->region;
-      array_push($json["areas"], $currentArea);
+      // do we have info for that area in the DB? if not, we assume it's public
+      $curAreaPermissions = NULL;
+      if (isset($areasPermissions[$areaName])) {
+        $curAreaPermissions = $areasPermissions[$areaName];
+      } else {
+        $curAreaPermissions = ["public"];
+      }
+
+      foreach ($curAreaPermissions as $curAreaPermission) {
+        if (in_array($curAreaPermission, $userPermissions)) {
+          $currentArea["coords"]["latitude"] = $area->latitude;
+          $currentArea["coords"]["longitude"] = $area->longitude;                
+          $currentArea["num_chunks"] = $area->numchunks;
+          $currentArea["country"] = $area->country;
+          $currentArea["attributekeys"] = $this->postgresToPHPArray($area->attributekeys);
+          $currentArea["attributevalues"] = $this->postgresToPHPArray($area->attributevalues);
+          $currentArea["region"] = $area->region;
+          array_push($json["areas"], $currentArea);
+          continue;
+        }
+      }
     }
 
     echo json_encode($json);
