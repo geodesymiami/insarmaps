@@ -73,16 +73,7 @@
       </div>
       <div id="information-button">                
         <button class="btn btn-primary-outline">About</button>
-      </div>
-      @if (Auth::guest())
-        <div id="login-logout-button">
-          <button class="btn btn-primary-outline">Login</button>
-        </div>
-      @else
-        <div class="logged-in" id="login-logout-button">
-         <button class="btn btn-primary-outline">Logout</button>
-        </div>
-      @endif      
+      </div>            
     </div>    
     <div id="polygon-button-div">
       <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="polygon-button">
@@ -205,23 +196,34 @@
         </p>
         <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto">
         <img src="img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
-        <div id="close-information-button">       
-          <button class="btn btn-primary-outline">Done</button>
-        </div>
-      </div>
-    </div>
-    <?php
-    echo "
-    <script type=\"text/javascript\">
-      var fileName = \"$fileName\";
-    </script>
-    ";
-    ?>
-    <script type="text/javascript" src="js/SquareSelector.js"></script>
-    <script type="text/javascript" src="js/mainMap.js"></script>
-    <script type="text/javascript" src="js/mainPage.js"></script>
-    <script type="text/javascript" src="js/LineSelector.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBm77jFIq1iM3mpL5CgB1uvW6jGcefbIYs"
-    async defer></script>
-  </body>
-  </html>
+        <div id="information-div-buttom-buttons">
+          <div id="close-information-button">       
+            <button class="btn btn-primary-outline">Done</button>
+          </div>
+          @if (Auth::guest())
+          <div id="login-logout-button">
+            <button class="btn btn-primary-outline">Login</button>
+          </div>
+          @else
+          <div class="logged-in" id="login-logout-button">
+           <button class="btn btn-primary-outline">Logout</button>
+         </div>
+         @endif
+       </div>
+     </div>
+   </div>
+   <?php
+   echo "
+   <script type=\"text/javascript\">
+    var fileName = \"$fileName\";
+  </script>
+  ";
+  ?>
+  <script type="text/javascript" src="js/SquareSelector.js"></script>
+  <script type="text/javascript" src="js/mainMap.js"></script>
+  <script type="text/javascript" src="js/mainPage.js"></script>
+  <script type="text/javascript" src="js/LineSelector.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBm77jFIq1iM3mpL5CgB1uvW6jGcefbIYs"
+  async defer></script>
+</body>
+</html>
