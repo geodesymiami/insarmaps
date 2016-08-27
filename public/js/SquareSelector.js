@@ -99,6 +99,27 @@ function SquareSelector(map) {
         }
     };
 
+    // courtesy of: https://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+    // see: http://stackoverflow.com/questions/11716268/point-in-polygon-algorithm
+    this.pointInPolygon = function(vertices, testPoint) {
+        var i, j = 0;
+        var pointIsInPolygon = false;
+        var numberVertices = vertices.length;
+
+        var x = 0;
+        var y = 1;
+        console.log(vertices);
+
+        for (i = 0, j = numberVertices - 1; i < numberVertices; j = i++) {
+            if (((vertices[i][y] > testPoint[y]) != (vertices[j][y] > testPoint[y])) &&
+                (testPoint[x] < (vertices[j][x] - vertices[i][x]) * (testPoint[y] - vertices[i][y]) / (vertices[j][y] - vertices[i][y]) + vertices[i][x])) {
+                pointIsInPolygon = !pointIsInPolygon;
+            }
+        }
+
+        return pointIsInPolygon;
+    };
+
     this.recolorMap = function() {
         if (that.bbox == null) {
             return;
@@ -112,7 +133,7 @@ function SquareSelector(map) {
         // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
         if (that.lastbbox == that.bbox && that.lastMinIndex == that.minIndex && that.lastMaxIndex == that.maxIndex) {
             return;
-        }        
+        }
 
         if (that.recoloringInProgress) {
             return;

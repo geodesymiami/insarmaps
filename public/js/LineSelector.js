@@ -4,6 +4,8 @@ function LineSelector(map) {
 
     this.lineJSON = null;
     this.lineWidth = 100;
+    this.polygonVertices = null;
+
     SquareSelector.call(this, map);
 
     // remove event listener from base constructor calling
@@ -48,7 +50,13 @@ function LineSelector(map) {
             ]
         ]; // no idea why 3D array, just see their api
 
+        that.polygonVertices = polygonCoordinates;
+
         return polygonCoordinates;
+    };
+
+    this.getPointsInPolygon = function(bbox) {
+        //todo
     };
 
     this.finish = function(bbox) {
@@ -78,6 +86,12 @@ function LineSelector(map) {
                 'fill-opacity': 0.8
             }
         });
+
+        if (that.pointInPolygon(that.polygonVertices[0], [0, 0])) {
+            console.log("it is in");
+        } else {
+            console.log("not in");
+        }
     };
 
     document.addEventListener("mousedown", that.mouseDown);
