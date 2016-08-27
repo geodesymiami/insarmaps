@@ -108,7 +108,6 @@ function SquareSelector(map) {
 
         var x = 0;
         var y = 1;
-        console.log(vertices);
 
         for (i = 0, j = numberVertices - 1; i < numberVertices; j = i++) {
             if (((vertices[i][y] > testPoint[y]) != (vertices[j][y] > testPoint[y])) &&

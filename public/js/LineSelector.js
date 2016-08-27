@@ -55,14 +55,31 @@ function LineSelector(map) {
         return polygonCoordinates;
     };
 
-    this.getPointsInPolygon = function(bbox) {
-        //todo
+    this.getPointsInPolygon = function(polygonVertices) {
+        var features = that.map.map.queryRenderedFeatures();
+        var featuresInPolygon = [];
+
+        for (var i = 0; i < features.length; i++) {
+            var feature = features[i];
+            var featureCoordinates = feature.geometry.coordinates;
+
+            if (that.pointInPolygon(polygonVertices, featureCoordinates)) {
+                featuresInPolygon.push(feature);
+            }
+        }
+
+        return featuresInPolygon;
     };
 
     this.finish = function(bbox) {
         if (that.map.map.getSource("topographyLine")) {
             that.map.map.removeLayer("topographyLine");
-            that.map.map.removeSource("topographyLine");
+            that.map.map.removeSource("topographyLine");            
+        }
+
+        if (that.map.map.getSource("test")) {
+            that.map.map.removeLayer("test");
+            that.map.map.removeSource("test");
         }
 
         that.map.map.addSource('topographyLine', {
@@ -86,12 +103,37 @@ function LineSelector(map) {
                 'fill-opacity': 0.8
             }
         });
+        var selectedFeatures = that.getPointsInPolygon(that.polygonVertices[0]);
+        var test = new mapboxgl.GeoJSONSource();
+        var features = [];
 
-        if (that.pointInPolygon(that.polygonVertices[0], [0, 0])) {
-            console.log("it is in");
-        } else {
-            console.log("not in");
-        }
+        for (var i = 0; i < selectedFeatures.length; i++) {
+            var long = selectedFeatures[i].geometry.coordinates[0];
+            var lat = selectedFeatures[i].geometry.coordinates[1];
+
+            features.push({
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [long, lat]
+                }                
+            });
+        }       
+
+        test.setData({
+            "type": "FeatureCollection",
+            "features": features
+        });
+        that.map.map.addSource("test", test);
+
+        that.map.map.addLayer({
+            "id": "test",
+            "type": "circle",
+            "source": "test",
+            "paint": {
+                "circle-color": "black"
+            }
+        });
     };
 
     document.addEventListener("mousedown", that.mouseDown);
