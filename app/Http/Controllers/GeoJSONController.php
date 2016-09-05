@@ -10,8 +10,6 @@ use DB;
 use Illuminate\Support\Facades\Input;
 use Auth;
 
-session_start();
-
 class GeoJSONController extends Controller {
 
   // returns an array containing folder path as a string and number of json files
