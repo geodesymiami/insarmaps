@@ -26,3 +26,4 @@ Route::controllers([
     // 'password' => 'Auth\PasswordController',
 ]);
 Route::get("/adminPanel", "AdminPanelController@getAdminPanel");
+Route::get("/test/{table}/{table2}", "PermissionsController@getAllUserPermissions");

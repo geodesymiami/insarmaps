@@ -60,4 +60,19 @@ class PermissionsController extends Controller {
 
 		return $userPermissions;
 	}
+
+	public function getAllUserPermissions($userTableName, $permissionsTableName) {
+		$sql = "SELECT id, name, email FROM " . $userTableName;
+		$allUsers = DB::select($sql);
+		$userWithPermissions = [];
+
+		foreach ($allUsers as $user) {
+			$permisisons = $this->getUserPermissions($user->id, $userTableName, $permissionsTableName, ["users.id = user_permissions.id"]);
+			$userAndPermission = ["user" => $user, "permissions" => $permisisons];
+
+			array_push($userWithPermissions, $userAndPermission);			
+		}
+
+		return $userWithPermissions;	
+	}
 }
