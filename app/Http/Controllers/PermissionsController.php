@@ -67,7 +67,7 @@ class PermissionsController extends Controller {
 		$userWithPermissions = [];
 
 		foreach ($allUsers as $user) {
-			$permisisons = $this->getUserPermissions($user->id, $userTableName, $permissionsTableName, ["users.id = user_permissions.id"]);
+			$permisisons = $this->getUserPermissions($user->id, $userTableName, $permissionsTableName, ["users.id = user_permissions.user_id"]);
 			$userAndPermission = ["user" => $user, "permissions" => $permisisons];
 
 			array_push($userWithPermissions, $userAndPermission);			

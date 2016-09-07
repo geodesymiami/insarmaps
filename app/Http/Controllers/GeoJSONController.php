@@ -164,7 +164,7 @@ public function getAreas() {
     if (Auth::guest()) {
       $userPermissions = ["public"];
     } else {
-      $userPermissions = $permissionController->getUserPermissions(Auth::id(), "users", "user_permissions", ["users.id = user_permissions.id"]);
+      $userPermissions = $permissionController->getUserPermissions(Auth::id(), "users", "user_permissions", ["users.id = user_permissions.user_id"]);
       array_push($userPermissions, "public"); // every user must have public permissions
     }
 

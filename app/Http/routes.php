@@ -26,4 +26,5 @@ Route::controllers([
     // 'password' => 'Auth\PasswordController',
 ]);
 Route::get("/adminPanel", "AdminPanelController@getAdminPanel");
+Route::post("/adminPanel/setPermissions/", "AdminPanelController@postSetUserPermissions");
 Route::get("/test/{table}/{table2}", "PermissionsController@getAllUserPermissions");
