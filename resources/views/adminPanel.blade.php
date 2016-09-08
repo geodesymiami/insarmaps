@@ -27,7 +27,7 @@
 						?>
 					</td>
 					<td>
-						<button class="btn btn-primary table-buttons" type="submit" id={{ $curRow }}>Set New Permissions</button>
+						<button class="btn btn-primary table-buttons" type="submit" id={{ $curRow }}>Set Permissions</button>
 					</td>
 				</tr>
 				<?php $curRow++;?>	
