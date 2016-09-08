@@ -68,25 +68,27 @@ class AuthController extends Controller
      */
     protected function create(array $data)
     {
-
-        throw new Exception("Registration disabled");
-
-        return null;
-        // return User::create([
-        //     'name' => $data['name'],
-        //     'email' => $data['email'],
-        //     'password' => bcrypt($data['password']),
-        // ]);
+        return User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => bcrypt($data['password']),
+        ]);
     }
 
-    // don't allow registration for now
-    public function getRegister() {
-        return redirect("/auth/login");
+    public function postRegister(Request $request) {
+        $validator = $this->validator($request->all());
 
-    }
+        if ($validator->fails()) {
+            $this->throwValidationException(
+                $request, $validator
+            );
+        }
 
-    public function postRegister() {        
-        return;
+        $this->create($request->all());
+
+        $this->redirectTo = "/adminPanel/";
+
+        return redirect($this->redirectPath());
     }
 
     public function postRemoveUsers(Request $request) {

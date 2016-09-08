@@ -46,4 +46,8 @@ $(window).on("load", function() {
             }
         });
     });
+
+    $("#add-user-button").on("click", function(event) {
+        location.href = "/auth/register";
+    });
 });
