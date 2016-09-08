@@ -606,3 +606,7 @@ ul.tab li a:focus,
     font-family: "Open Sans" !important;
     color: black !important;
 }
+
+#information-div-buttom-buttons div {
+    float: left;
+}
