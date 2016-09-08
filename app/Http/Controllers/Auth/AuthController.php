@@ -9,6 +9,9 @@ use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
 use Auth;
 use Session;
+use App\Http\Requests;
+use Illuminate\Http\Request;
+use DB;
 
 class AuthController extends Controller
 {
@@ -39,7 +42,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware($this->guestMiddleware(), ['except' => ['logout', 'getLogout']]);
+        //$this->middleware($this->guestMiddleware(), ['except' => ['logout', 'getLogout']]);
     }
 
     /**
@@ -84,5 +87,24 @@ class AuthController extends Controller
 
     public function postRegister() {        
         return;
+    }
+
+    public function postRemoveUsers(Request $request) {
+        $userIDs = $request->input("users");
+        print_r($userIDs);
+        // $sql = "DELETE FROM users WHERE id IN (";
+        $sql = "DELETE FROM users WHERE id IN (1)";
+
+        $userIDBindings = [];
+
+        // foreach ($userIDs as $userID) {
+        //     $sql = $sql . "?,";
+        //     array_push($userIDBindings, $userID);
+        // }
+        $sql = rtrim($sql, ",");
+        $sql = $sql . ")";
+        echo $sql;
+
+        DB::delete($sql, [1]);
     }
 }

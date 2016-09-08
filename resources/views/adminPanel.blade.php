@@ -14,7 +14,7 @@
 			$curRow = 0;?>
 			@foreach ($userPermissions as $userPermission)
 				<tr>
-					<td>{{ $userPermission["user"]->name }}</td>
+					<td><input type="checkbox" value={{ $userPermission["user"]->id }} name="selected-users">{{ $userPermission["user"]->name }}</td>
 					<td>
 						<?php
 							$permissionsString = "";
@@ -26,12 +26,16 @@
 							echo '<input type="text" value="' . $permissionsString . '" id="row-' . $curRow . '"';
 						?>
 					</td>
-					<button class="btn btn-primary table-buttons" type="submit" id={{ $curRow }}>Set New Permissions</button>
+					<td>
+						<button class="btn btn-primary table-buttons" type="submit" id={{ $curRow }}>Set New Permissions</button>
+					</td>
 				</tr>
 				<?php $curRow++;?>	
 			@endforeach
 		</tbody>
 	</table>
+		<button class="btn btn-primary" type="submit" id="add-user-button">Add User</button>
+		<button class="btn btn-primary" type="submit" id="remove-user-button">Remove User(s)</button>
 </div>
 <script type="text/javascript">
 	var userPermissions = <?php echo json_encode($userPermissions); ?>;

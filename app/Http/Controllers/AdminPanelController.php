@@ -11,7 +11,7 @@ use DB;
 class AdminPanelController extends Controller
 {
     public function __construct() {
-    	$this->middleware("checkAdmin");
+    	//$this->middleware("checkAdmin");
     }
 
     public function getAdminPanel() {
