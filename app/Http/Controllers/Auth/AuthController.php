@@ -42,7 +42,7 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware($this->guestMiddleware(), ['except' => ['logout', 'getLogout', 'postRegister', 'getRegister']]);
+        $this->middleware($this->guestMiddleware(), ['except' => ['logout', 'getLogout', 'postRegister', 'getRegister', 'postRemoveUsers']]);
         $this->middleware("checkAdmin")->only(["postRegister", "getRegister"]); // only admin can register
     }
 
@@ -108,6 +108,6 @@ class AuthController extends Controller
 
         DB::delete($sql, $userIDBindings);
 
-        return redirect("/adminPanel");
+        return redirect("/adminPanel/");
     }
 }
