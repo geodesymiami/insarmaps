@@ -23,7 +23,7 @@
 								$permissionsString = $permissionsString . $permission . " ";
 							}
 
-							echo '<input type="text" value="' . $permissionsString . '" id="perRow-' . $curRow . '"';
+							echo '<input type="text" value="' . $permissionsString . '" id="permRow-' . $curRow . '"';
 						?>
 					</td>
 					<td>

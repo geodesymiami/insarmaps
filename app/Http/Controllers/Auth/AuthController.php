@@ -42,7 +42,8 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        //$this->middleware($this->guestMiddleware(), ['except' => ['logout', 'getLogout']]);
+        $this->middleware($this->guestMiddleware(), ['except' => ['logout', 'getLogout', 'postRegister', 'getRegister']]);
+        $this->middleware("checkAdmin")->only(["postRegister", "getRegister"]); // only admin can register
     }
 
     /**
