@@ -7,7 +7,7 @@ $(window).on("load", function() {
 
         $.ajax({
             type: "POST",
-            url: "/adminPanel/setPermissions/",
+            url: "/adminPanel/setPermissions",
             data: {
                 id: user.id,
                 newPermissions: newPermissions
