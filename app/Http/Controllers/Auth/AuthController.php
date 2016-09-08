@@ -91,20 +91,20 @@ class AuthController extends Controller
 
     public function postRemoveUsers(Request $request) {
         $userIDs = $request->input("users");
-        print_r($userIDs);
-        // $sql = "DELETE FROM users WHERE id IN (";
-        $sql = "DELETE FROM users WHERE id IN (1)";
+        $sql = "DELETE FROM users WHERE id IN (";
 
         $userIDBindings = [];
 
-        // foreach ($userIDs as $userID) {
-        //     $sql = $sql . "?,";
-        //     array_push($userIDBindings, $userID);
-        // }
+        foreach ($userIDs as $userID) {
+            $sql = $sql . "?,";
+            array_push($userIDBindings, $userID);
+        }
+
         $sql = rtrim($sql, ",");
         $sql = $sql . ")";
-        echo $sql;
 
-        DB::delete($sql, [1]);
+        DB::delete($sql, $userIDBindings);
+
+        return redirect("/adminPanel");
     }
 }
