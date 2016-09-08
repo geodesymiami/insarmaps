@@ -3,7 +3,7 @@ $(window).on("load", function() {
         var index = event.target.id;
 
         var user = userPermissions[index].user;
-        var newPermissions = $("#row-" + index).val().split(" ");
+        var newPermissions = $("#permRow-" + index).val().split(" ");
 
         $.ajax({
             type: "POST",
@@ -25,7 +25,8 @@ $(window).on("load", function() {
         var checkedValues = $('input[name=selected-users]:checked').map(function() {
             return parseInt($(this).val());
         }).get();
-        console.log(checkedValues);
+        // might want to just do a regular form? or stick to ajax?
+        // add a loading popup later if he wants.
         $.ajax({
             type: "POST",
             url: "/auth/remove-users",
@@ -33,10 +34,15 @@ $(window).on("load", function() {
                 users: checkedValues
             },
             success: function(response) {
-                console.log(response);
+                for (var i = 0; i < checkedValues.length; i++) {
+                    value = checkedValues[i];
+
+                    $("#row-" + value).remove();
+                }
             },
             error: function(xhr, ajaxOptions, thrownError) {
-                alert("There was a fatal error while removing the users");
+                alert("There was a fatal error while removing the users. Reloading the page...");
+                location.reload();
             }
         });
     });

@@ -13,7 +13,7 @@
 			<?php // might want to sort by name in controller to prevent anyone knowing id's of DB
 			$curRow = 0;?>
 			@foreach ($userPermissions as $userPermission)
-				<tr>
+				<tr id='row-{{ $userPermission["user"]->id }}'>
 					<td><input type="checkbox" value={{ $userPermission["user"]->id }} name="selected-users">{{ $userPermission["user"]->name }}</td>
 					<td>
 						<?php
@@ -23,7 +23,7 @@
 								$permissionsString = $permissionsString . $permission . " ";
 							}
 
-							echo '<input type="text" value="' . $permissionsString . '" id="row-' . $curRow . '"';
+							echo '<input type="text" value="' . $permissionsString . '" id="perRow-' . $curRow . '"';
 						?>
 					</td>
 					<td>
