@@ -73,28 +73,33 @@
       </div>
       <div id="information-button">                
         <button class="btn btn-primary-outline">About</button>
-      </div>            
-    </div>    
-    <div id="polygon-button-div">
-      <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="polygon-button">
-        <img src="img/polygon.svg" alt="polygon.svg">
-      </button>
-    </div>
-    <div id="color-scale">
-      <div id="left-scale-minimum">
-        min: -2cm/yr
-      </div>      
-      <img src="img/matlab_colorscale.jpg" alt="matlab_colorscale.jpg">
-      <div id="right-scale-maximum">
-        max: 2cm/yr
       </div>
+      @if (Auth::check()) 
+      <div class="logged-in" id="login-logout-button">
+       <button class="btn btn-primary-outline">Logout</button>
+     </div>
+     @endif
+   </div>    
+   <div id="polygon-button-div">
+    <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="polygon-button">
+      <img src="img/polygon.svg" alt="polygon.svg">
+    </button>
+  </div>
+  <div id="color-scale">
+    <div id="left-scale-minimum">
+      min: -2cm/yr
+    </div>      
+    <img src="img/matlab_colorscale.jpg" alt="matlab_colorscale.jpg">
+    <div id="right-scale-maximum">
+      max: 2cm/yr
     </div>
-    <div id="point-details"></div>
-    <div class="wrap" id="area-attributes-div" title="Attributes">    
-      <div class="top-right-buttons">
-        <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"><span aria-hidden="true">__</span></button>
-      </div>
-      <div class="content">
+  </div>
+  <div id="point-details"></div>
+  <div class="wrap" id="area-attributes-div" title="Attributes">    
+    <div class="top-right-buttons">
+      <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"><span aria-hidden="true">__</span></button>
+    </div>
+    <div class="content">
         <!-- <ul class="tab">
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr1')">Attr1</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr2')">Attr2</a></li>
@@ -203,27 +208,24 @@
           @if (Auth::guest())
           <div id="login-logout-button">
             <button class="btn btn-primary-outline">Login</button>
-          </div>
-          @else
-          <div class="logged-in" id="login-logout-button">
-           <button class="btn btn-primary-outline">Logout</button>
-         </div>
-         @endif
-       </div>
-     </div>
-   </div>
-   <?php
-   echo "
-   <script type=\"text/javascript\">
-    var fileName = \"$fileName\";
-  </script>
-  ";
-  ?>
-  <script type="text/javascript" src="js/SquareSelector.js"></script>
-  <script type="text/javascript" src="js/mainMap.js"></script>
-  <script type="text/javascript" src="js/mainPage.js"></script>
-  <script type="text/javascript" src="js/LineSelector.js"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBm77jFIq1iM3mpL5CgB1uvW6jGcefbIYs"
-  async defer></script>
-</body>
-</html>
+          </div>          
+          @endif
+        </div>
+      </div>
+    </div>
+    <?php
+    echo "
+    <script type=\"text/javascript\">
+      var fileName = \"$fileName\";
+    </script>
+    ";
+    ?>
+    <script type="text/javascript" src="js/SquareSelector.js"></script>
+    <script type="text/javascript" src="js/mainMap.js"></script>
+    <script type="text/javascript" src="js/mainPage.js"></script>
+    <script type="text/javascript" src="js/LineSelector.js"></script>
+    <script type="text/javascript" src="js/GoogleElevationChunkedQuerier.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBm77jFIq1iM3mpL5CgB1uvW6jGcefbIYs"
+    async defer></script>
+  </body>
+  </html>
