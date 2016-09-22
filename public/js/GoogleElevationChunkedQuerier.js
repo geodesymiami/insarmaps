@@ -49,7 +49,8 @@ function GoogleElevationChunkedQuerier(options) {
             "locations": data[0].d
         }, function(results, status) {
             if (status === google.maps.ElevationStatus.OK) {
-                allResults[data[0].i] = data[0].i;
+                // allResults[data[0].i] = data[0].i; // for testing receiving data in correct order
+                allResults[data[0].i] = results;
 
                 // we check whether all chunks have been fetched, and only then call the done callback
                 // the way we've throttled this, I don't think it's possible for chunks to complete out of order

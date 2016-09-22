@@ -3,7 +3,7 @@ function LineSelector(map) {
     var that = this;
 
     this.lineJSON = null;
-    this.lineWidth = 100;
+    this.lineWidth = 2;
     this.polygonVertices = null;
 
     SquareSelector.call(this, map);
@@ -106,9 +106,15 @@ function LineSelector(map) {
         var selectedFeatures = that.getPointsInPolygon(that.polygonVertices[0]);
         var googleFetcher = new GoogleElevationChunkedQuerier({
             onDone: function(results) {
+                var elevations = [];
+                // extract elevations into one array for HighCharts
                 for (var i = 0; i < results.length; i++) {
-                    console.log(results[i]);
+                    for (var j = 0; j < results[i].length; j++) {
+                        elevations.push(results[i][j].elevation);
+                    }
                 }
+
+                console.log(selectedFeatures);
             }
         });
         var topography = googleFetcher.getTopographyFromGoogle(selectedFeatures);
