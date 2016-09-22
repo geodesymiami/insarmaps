@@ -19,7 +19,7 @@ function LineSelector(map) {
         } else {
             that.current = that.mousePos(e);
             that.setStartPoint = false;
-            var polygonCoordinates = that.getPolygonBbox(that.start, that.current);
+            var polygonCoordinates = that.getPolygonBbox(that.start, that.current);            
             that.finish(polygonCoordinates);
         }
     };
@@ -53,6 +53,25 @@ function LineSelector(map) {
         that.polygonVertices = polygonCoordinates;
 
         return polygonCoordinates;
+    };
+
+    // see: http://www.movable-type.co.uk/scripts/latlong.html
+    // we get the distance in meters, as we really don't care
+    this.getDistanceBetweenPoints = function(fromPoint, toPoint) {
+        var DEG_TO_RAD = Math.PI / 180.0;
+        var R = 6371e3;
+        var phi1 = fromPoint.lat * DEG_TO_RAD;
+        var phi2 = toPoint.lat * DEG_TO_RAD;
+        var dPhi = (toPoint.lat - fromPoint.lat) * DEG_TO_RAD;
+        var dLambda = (toPoint.lng - fromPoint.lng) * DEG_TO_RAD;
+
+        var a = Math.sin(dPhi / 2) * Math.sin(dPhi / 2) + Math.cos(phi1) * Math.cos(phi2) * Math.sin(dLambda / 2) * Math.sin(dLambda / 2);
+
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        var distance = R * c;
+
+        return distance;
     };
 
     this.getPointsInPolygon = function(polygonVertices) {
@@ -113,6 +132,8 @@ function LineSelector(map) {
                         elevations.push(results[i][j].elevation);
                     }
                 }
+
+
 
                 console.log(selectedFeatures);
             }

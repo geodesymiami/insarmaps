@@ -120,7 +120,6 @@ function GoogleElevationChunkedQuerier(options) {
         if (points.length % MAX_API_REQUESTS != 0) {
             selectedPointsChunks.push({ i: curChunk, d: selectedPoints });
         }
-        console.log("length is " + selectedPointsChunks.length);
 
         that.getPoints(selectedPointsChunks, that.topographyElevations);
 
