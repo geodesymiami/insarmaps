@@ -16,6 +16,9 @@ import geocoder
 # ---------------------------------------------------------------------------------------
 # FUNCTIONS
 # ---------------------------------------------------------------------------------------
+dbUsername = "INSERT"
+dbPassword = "INSERT"
+dbHost = "INSERT"
 # returns a dictionary of datasets that are stored in memory to speed up h5 read process
 def get_date(date_string): 
 	year = int(date_string[0:4])
