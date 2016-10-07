@@ -393,6 +393,20 @@ function Map(loadJSONFunc) {
         });
     };
 
+    this.determineZoomOutZoom = function() {
+        // memorize the zoom we clicked at, but only if it's more zoomed out than
+        // the flyTo zoom when an area is loaded
+        var currentZoom = that.map.getZoom();
+        if (currentZoom <= 7.0) {
+            // prevent zoom below 1.0, as floating point inaccuracies can cause bugs at most zoomed out level
+            if (currentZoom <= 1.0) {
+                that.zoomOutZoom = 1.0;
+            } else {
+                that.zoomOutZoom = that.map.getZoom();
+            }
+        }
+    };
+
     this.leftClickOnAPoint = function(e) {
         that.clickOnAPoint(e);
     };
@@ -415,17 +429,7 @@ function Map(loadJSONFunc) {
             return;
         }
 
-        // memorize the zoom we clicked at, but only if it's more zoomed out than
-        // the flyTo zoom when an area is loaded
-        var currentZoom = that.map.getZoom();
-        if (currentZoom <= 7.0) {
-            // prevent zoom below 1.0, as floating point inaccuracies can cause bugs at most zoomed out level
-            if (currentZoom <= 1.0) {
-                that.zoomOutZoom = 1.0;
-            } else {
-                that.zoomOutZoom = that.map.getZoom();
-            }
-        }
+        that.determineZoomOutZoom();
 
         var feature = features[0];
 
@@ -636,7 +640,7 @@ function Map(loadJSONFunc) {
         });
 
         that.map.on("load", function() {
-            that.selector = new LineSelector(that);//new SquareSelector(that);
+            that.selector = new LineSelector(that); //new SquareSelector(that);
             that.loadAreaMarkers();
         });
 
@@ -733,6 +737,7 @@ function Map(loadJSONFunc) {
                         return function(e) {
                             // don't load area if reference link is clicked
                             if (e.target.cellIndex == 0) {
+                                that.determineZoomOutZoom();
                                 clickedArea = area.name;
                                 that.areaPopup.remove();
                                 getGEOJSON(area);
@@ -838,6 +843,7 @@ function Map(loadJSONFunc) {
     };
 
     this.reset = function() {
+        console.log("we got called");
         myMap.removePoints();
         myMap.removeTouchLocationMarkers();
         myMap.elevationPopup.remove(); // incase it's up
