@@ -18,7 +18,6 @@ function getGEOJSON(area) {
         myMap.removePoints();
         myMap.removeTouchLocationMarkers();
     }
-
     // make streets toggle button be only checked one
     $("#streets").prop("checked", true);
 
@@ -36,8 +35,8 @@ function getGEOJSON(area) {
 
     // if we click on an area marker, we get a string as the mapbox feature can't seem to store an array and converts it to a string
     if (typeof area.attributekeys == "string" || typeof area.attributevalues == "string") {
-        attributekeys = area.attributekeys.split(",");
-        attributevalues = area.attributevalues.split(",");
+        attributekeys = JSON.parse(area.attributekeys);
+        attributevalues = JSON.parse(area.attributevalues);
         // otherwise, we get arrays from the server (clicked on area not through an area marker feature)
     } else {
         attributekeys = area.attributekeys;
@@ -80,7 +79,7 @@ function getGEOJSON(area) {
     $("#area-attributes-table-body").html(tableHTML);
 
     myMap.initLayer(myMap.tileJSON, "streets");
-    myMap.map.style.on("load", function() {
+    myMap.map.on("style.load", function() {
         overlayToggleButton.set("on");
         if (contourToggleButton.toggleState == ToggleStates.ON) {
             myMap.addContourLines();
@@ -266,13 +265,13 @@ function switchLayer(layer) {
         var mapHadClickLocationMarkerBot = false;
 
         if (myMap.map.getLayer(layerIDTop)) {
-            var markerCoords = myMap.clickLocationMarker._data.features[0].geometry.coordinates;
+            var markerCoords = myMap.clickLocationMarker.data.features[0].geometry.coordinates;
             latTop = markerCoords[0];
             longTop = markerCoords[1];
             mapHadClickLocationMarkerTop = true;
 
             if (myMap.map.getLayer(layerIDBot)) {
-                var markerCoords = myMap.clickLocationMarker2._data.features[0].geometry.coordinates;
+                var markerCoords = myMap.clickLocationMarker2.data.features[0].geometry.coordinates;
                 latBot = markerCoords[0];
                 longBot = markerCoords[1];
                 mapHadClickLocationMarkerBot = true;
@@ -280,6 +279,8 @@ function switchLayer(layer) {
 
             myMap.removeTouchLocationMarkers();
         }
+
+        console.log(myMap.map.getSource(layerIDBot));
 
         myMap.map.setStyle({
             version: 8,
@@ -308,9 +309,9 @@ function switchLayer(layer) {
 
         // finally, add back the click location marker, do on load of style to prevent
         // style not done loading error
-        myMap.map.style.on("load", function() {
+        myMap.map.on("style.load", function() {
             if (mapHadClickLocationMarkerTop) {
-                myMap.clickLocationMarker.setData({
+                myMap.clickLocationMarker.data = {
                     "type": "FeatureCollection",
                     "features": [{
                         "type": "Feature",
@@ -322,7 +323,7 @@ function switchLayer(layer) {
                             "marker-symbol": "cross"
                         }
                     }]
-                });
+                };
                 myMap.map.addSource(layerIDTop, myMap.clickLocationMarker);
 
                 myMap.map.addLayer({
@@ -336,7 +337,7 @@ function switchLayer(layer) {
             }
 
             if (mapHadClickLocationMarkerBot) {
-                myMap.clickLocationMarker2.setData({
+                myMap.clickLocationMarker2.data = {
                     "type": "FeatureCollection",
                     "features": [{
                         "type": "Feature",
@@ -348,7 +349,7 @@ function switchLayer(layer) {
                             "marker-symbol": "crossRed"
                         }
                     }]
-                });
+                };
                 myMap.map.addSource(layerIDBot, myMap.clickLocationMarker2);
 
                 myMap.map.addLayer({
@@ -384,7 +385,7 @@ function switchLayer(layer) {
         var id = "areas";
 
         if (myMap.areaFeatures != null) {
-            myMap.map.style.on("load", function() {
+            myMap.map.on("style.load", function() {
                 var areaMarker = new mapboxgl.GeoJSONSource({
                     cluster: false,
                     clusterRadius: 10
