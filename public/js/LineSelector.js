@@ -3,7 +3,7 @@ function LineSelector(map) {
     var that = this;
 
     this.lineJSON = null;
-    this.lineWidth = 100;
+    this.lineWidth = 2;
     this.polygonVertices = null;
 
     SquareSelector.call(this, map);
@@ -55,16 +55,43 @@ function LineSelector(map) {
         return polygonCoordinates;
     };
 
+    // see: http://www.movable-type.co.uk/scripts/latlong.html
+    // we get the distance in meters, as we really don't care
+    this.getDistanceBetweenPoints = function(fromPoint, toPoint) {
+        var DEG_TO_RAD = Math.PI / 180.0;
+        var R = 6371e3;
+        var phi1 = fromPoint.lat * DEG_TO_RAD;
+        var phi2 = toPoint.lat * DEG_TO_RAD;
+        var dPhi = (toPoint.lat - fromPoint.lat) * DEG_TO_RAD;
+        var dLambda = (toPoint.lng - fromPoint.lng) * DEG_TO_RAD;
+
+        var a = Math.sin(dPhi / 2) * Math.sin(dPhi / 2) + Math.cos(phi1) * Math.cos(phi2) * Math.sin(dLambda / 2) * Math.sin(dLambda / 2);
+
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        var distance = R * c;
+
+        return distance;
+    };
+
     this.getPointsInPolygon = function(polygonVertices) {
         var features = that.map.map.queryRenderedFeatures();
         var featuresInPolygon = [];
+        var featuresMap = [];
 
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
             var featureCoordinates = feature.geometry.coordinates;
 
             if (that.pointInPolygon(polygonVertices, featureCoordinates)) {
-                featuresInPolygon.push(feature);
+                var curFeatureKey = feature.properties.p.toString();
+
+                // mapbox gives us duplicate tiles (see documentation to see how query rendered features works)
+                // yet we only want unique features, not duplicates
+                if (featuresMap[curFeatureKey] == null) {
+                    featuresInPolygon.push(feature);
+                    featuresMap[curFeatureKey] = "1";
+                }
             }
         }
 
@@ -104,14 +131,177 @@ function LineSelector(map) {
             }
         });
         var selectedFeatures = that.getPointsInPolygon(that.polygonVertices[0]);
+        //console.log(selectedFeatures);
         var googleFetcher = new GoogleElevationChunkedQuerier({
             onDone: function(results) {
-                for (var i = 0; i < results.length; i++) {
-                    console.log(results[i]);
+                var query = currentArea.name + "/";
+                var set = [];
+
+                for (var i = 0; i < selectedFeatures.length; i++) {
+                    query += selectedFeatures[i].properties.p.toString() + "/";
                 }
+
+                $.ajax({
+                    url: "/points",
+                    type: "post",
+                    async: true,
+                    data: {
+                        points: query
+                    },
+                    success: function(response) {
+                        var json = JSON.parse(response);
+
+                        var dataToBeSorted = [];
+                        var startPoint = new mapboxgl.LngLat(that.polygonVertices[0][0][0], that.polygonVertices[0][0][1]);
+                        // extract elevations into one array for HighCharts
+                        for (var i = 0; i < results.length; i++) {
+                            for (var j = 0; j < results[i].length; j++) {
+                                var result = results[i][j];
+                                var curPoint = new mapboxgl.LngLat(result.location.lng(), result.location.lat());
+                                var distanceToStart = that.getDistanceBetweenPoints(startPoint, curPoint);
+
+                                var displacement_array = json.displacements[j];
+                                var decimal_dates = json.decimal_dates;
+
+                                var linearRegression = calcLinearRegression(displacement_array, decimal_dates);
+                                var slope = linearRegression["equation"][0];
+
+                                var data = {
+                                    elevation: result.elevation,
+                                    distanceToStart: distanceToStart,
+                                    velocity: slope
+                                };
+
+                                dataToBeSorted.push(data);
+                            }
+                        }
+                        dataToBeSorted.sort(function(a, b) {
+                            return a.distanceToStart - b.distanceToStart;
+                        });
+
+                        var elevations = [];
+                        var distances = [];
+                        var velocities = [];
+
+                        for (var i = 0; i < dataToBeSorted.length; i++) {
+                            var data = dataToBeSorted[i];
+                            elevations.push(data.elevation);
+                            distances.push(data.distanceToStart);
+                            velocities.push(data.velocity);
+                        }
+
+                        that.graphTopography(elevations, velocities, distances);
+                    },
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log("failed " + xhr.responseText);
+                    }
+                });
             }
         });
-        var topography = googleFetcher.getTopographyFromGoogle(selectedFeatures);
+        googleFetcher.getTopographyFromGoogle(selectedFeatures);
+    };
+
+    this.graphTopography = function(elevations, velocities, distances) {
+        if (!$('.wrap#charts').hasClass('active')) {
+            $('.wrap#charts').toggleClass('active');
+        }
+        console.log("hello");
+        var elevationChartData = [];
+        var velocitiesChartData = [];
+
+        for (var i = 0; i < distances.length; i++) {
+            elevationChartData.push(distances[i], elevations[i]);
+            velocitiesChartData.push(distances[i], velocities[i]);
+        }
+
+        var chartOpts = {
+            title: {
+                text: null
+            },
+            subtitle: {
+                text: "velocity: "
+            },
+            navigator: {
+                enabled: true
+            },
+            scrollbar: {
+                liveRedraw: false
+            },
+            xAxis: {
+                type: 'linear',
+                title: {
+                    text: 'Date'
+                }
+            },
+            yAxis: [{
+                title: {
+                    text: 'Elevations (m)'
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'left',
+                    verticalAlign: 'top',
+                    x: 100,
+                    y: 70,
+                    floating: true,
+                    backgroundColor: '#FFFFFF',
+                    borderWidth: 1,
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            }, {
+                title: {
+                    text: 'Velocities (mm / year)'
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'top',
+                    x: 100,
+                    y: 70,
+                    floating: true,
+                    backgroundColor: '#FFFFFF',
+                    borderWidth: 1,
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            }],
+            tooltip: {
+                headerFormat: '',
+                pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} m'
+            },
+            series: [{
+                type: 'scatter',
+                name: 'Elevations',
+                yAxis: 0,
+                data: elevationChartData,
+                marker: {
+                    enabled: true
+                },
+                showInLegend: false
+            }, {
+                type: 'scatter',
+                name: 'Velocities',
+                yAxis: 1,
+                data: velocitiesChartData,
+                marker: {
+                    enabled: true
+                },
+                showInLegend: false
+            }],
+            chart: {
+                marginRight: 50
+            }
+        };
+        console.log("gonna do it");
+        $("#chartContainer").highcharts(chartOpts);
+        console.log("did it");
     };
 
     document.addEventListener("mousedown", that.mouseDown);

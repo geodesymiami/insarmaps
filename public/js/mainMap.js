@@ -116,8 +116,14 @@ function Map(loadJSONFunc) {
     this.loadJSONFunc = loadJSONFunc;
     this.tileURLID = "kjjj11223344.4avm5zmh";
     this.tileJSON = null;
-    this.clickLocationMarker = new mapboxgl.GeoJSONSource();
-    this.clickLocationMarker2 = new mapboxgl.GeoJSONSource();
+    this.clickLocationMarker = {
+        type: "geojson",
+        data: {}
+    };
+    this.clickLocationMarker2 = {
+        type: "geojson",
+        data: {}
+    };
     this.selector = null;
     this.zoomOutZoom = 7.0;
     this.graphsController = new GraphsController();
@@ -187,7 +193,7 @@ function Map(loadJSONFunc) {
 
         var layerID = that.graphsController.selectedGraph;
 
-        clickMarker.setData({
+        clickMarker.data = {
             "type": "FeatureCollection",
             "features": [{
                 "type": "Feature",
@@ -199,7 +205,7 @@ function Map(loadJSONFunc) {
                     "marker-symbol": markerSymbol
                 }
             }]
-        });
+        };
         // show cross on clicked point
         if (!that.map.getLayer(layerID)) {
             that.map.addSource(layerID, clickMarker);
@@ -393,6 +399,20 @@ function Map(loadJSONFunc) {
         });
     };
 
+    this.determineZoomOutZoom = function() {
+        // memorize the zoom we clicked at, but only if it's more zoomed out than
+        // the flyTo zoom when an area is loaded
+        var currentZoom = that.map.getZoom();
+        if (currentZoom <= 7.0) {
+            // prevent zoom below 1.0, as floating point inaccuracies can cause bugs at most zoomed out level
+            if (currentZoom <= 1.0) {
+                that.zoomOutZoom = 1.0;
+            } else {
+                that.zoomOutZoom = that.map.getZoom();
+            }
+        }
+    };
+
     this.leftClickOnAPoint = function(e) {
         that.clickOnAPoint(e);
     };
@@ -415,17 +435,7 @@ function Map(loadJSONFunc) {
             return;
         }
 
-        // memorize the zoom we clicked at, but only if it's more zoomed out than
-        // the flyTo zoom when an area is loaded
-        var currentZoom = that.map.getZoom();
-        if (currentZoom <= 7.0) {
-            // prevent zoom below 1.0, as floating point inaccuracies can cause bugs at most zoomed out level
-            if (currentZoom <= 1.0) {
-                that.zoomOutZoom = 1.0;
-            } else {
-                that.zoomOutZoom = that.map.getZoom();
-            }
-        }
+        that.determineZoomOutZoom();
 
         var feature = features[0];
 
@@ -436,6 +446,9 @@ function Map(loadJSONFunc) {
         var num_chunks = feature.properties.num_chunks;
         var attributeKeys = feature.properties.attributekeys;
         var attributeValues = feature.properties.attributevalues;
+        // console.log(attributeKeys);
+        // console.log(attributeValues);
+        // console.log(feature.properties);
 
         // needed as mapbox doesn't return original feature
         var markerArea = {
@@ -448,7 +461,6 @@ function Map(loadJSONFunc) {
             "attributekeys": attributeKeys,
             "attributevalues": attributeValues
         };
-
         getGEOJSON(markerArea);
     };
 
@@ -519,7 +531,7 @@ function Map(loadJSONFunc) {
         });
 
         // remove click listener for selecting an area, and add new one for clicking on a point
-        that.map.off("click");
+        that.map.off("click", that.clickOnAnAreaMaker);
         that.map.on('click', that.leftClickOnAPoint);
 
         return layer;
@@ -530,10 +542,12 @@ function Map(loadJSONFunc) {
             var json = JSON.parse(response);
             that.areas = json;
 
-            var areaMarker = new mapboxgl.GeoJSONSource({
+            var areaMarker = {
+                type: "geojson",
                 cluster: false,
-                clusterRadius: 10
-            });
+                clusterRadius: 10,
+                data: {}
+            };
             var features = [];
 
             for (var i = 0; i < json.areas.length; i++) {
@@ -563,10 +577,10 @@ function Map(loadJSONFunc) {
             that.areaFeatures = features;
 
             // add the markers representing the available areas
-            areaMarker.setData({
+            areaMarker.data = {
                 "type": "FeatureCollection",
                 "features": features
-            });
+            };
             var id = "areas";
 
             if (that.map.getSource(id)) {
@@ -636,7 +650,7 @@ function Map(loadJSONFunc) {
         });
 
         that.map.on("load", function() {
-            that.selector = new LineSelector(that);//new SquareSelector(that);
+            that.selector = new SquareSelector(that);
             that.loadAreaMarkers();
         });
 
@@ -733,6 +747,7 @@ function Map(loadJSONFunc) {
                         return function(e) {
                             // don't load area if reference link is clicked
                             if (e.target.cellIndex == 0) {
+                                that.determineZoomOutZoom();
                                 clickedArea = area.name;
                                 that.areaPopup.remove();
                                 getGEOJSON(area);
@@ -806,10 +821,14 @@ function Map(loadJSONFunc) {
         // prevents crash of "cannot read property 'send' of undefined"
         var layerID = "Top Graph";
         if (that.map.getLayer(layerID)) {
+            console.log("wsdlfjslsjkfsdklf");
             that.map.removeLayer(layerID);
             that.map.removeSource(layerID);
 
-            that.clickLocationMarker = new mapboxgl.GeoJSONSource();
+            that.clickLocationMarker = {
+                type: "geojson",
+                data: {}
+            };
         }
 
         layerID = "Bottom Graph";
@@ -817,7 +836,10 @@ function Map(loadJSONFunc) {
             that.map.removeLayer(layerID);
             that.map.removeSource(layerID);
 
-            that.clickLocationMarker2 = new mapboxgl.GeoJSONSource();
+            that.clickLocationMarker2 = {
+                type: "geojson",
+                data: {}
+            };
         }
     };
 
