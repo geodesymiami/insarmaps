@@ -821,6 +821,7 @@ function Map(loadJSONFunc) {
         // prevents crash of "cannot read property 'send' of undefined"
         var layerID = "Top Graph";
         if (that.map.getLayer(layerID)) {
+            console.log("wsdlfjslsjkfsdklf");
             that.map.removeLayer(layerID);
             that.map.removeSource(layerID);
 

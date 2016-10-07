@@ -280,8 +280,6 @@ function switchLayer(layer) {
             myMap.removeTouchLocationMarkers();
         }
 
-        console.log(myMap.map.getSource(layerIDBot));
-
         myMap.map.setStyle({
             version: 8,
             sprite: "/maki/makiIcons",
