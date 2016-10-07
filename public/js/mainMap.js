@@ -640,7 +640,7 @@ function Map(loadJSONFunc) {
         });
 
         that.map.on("load", function() {
-            that.selector = new LineSelector(that); //new SquareSelector(that);
+            that.selector = new SquareSelector(that);
             that.loadAreaMarkers();
         });
 
@@ -843,7 +843,6 @@ function Map(loadJSONFunc) {
     };
 
     this.reset = function() {
-        console.log("we got called");
         myMap.removePoints();
         myMap.removeTouchLocationMarkers();
         myMap.elevationPopup.remove(); // incase it's up

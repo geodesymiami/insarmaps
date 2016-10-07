@@ -88,6 +88,11 @@ function SquareSelector(map) {
         document.removeEventListener('keydown', that.onKeyDown);
         document.removeEventListener('mouseup', that.onMouseUp);
 
+        // re enable dragpan only if polygon button isn't selected
+        if (!that.map.selector.polygonButtonSelected) {
+            that.map.map.dragPan.enable();
+        }
+
         if (that.box) {
             that.box.parentNode.removeChild(that.box);
             that.box = null;
