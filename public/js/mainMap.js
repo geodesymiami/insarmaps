@@ -206,15 +206,14 @@ function Map(loadJSONFunc) {
                 }
             }]
         };
+        console.log(clickMarker);
         // show cross on clicked point
-        if (!that.map.getLayer(layerID)) {
-            that.map.addSource(layerID, clickMarker);
-            // already there? then remove it as we are going to add a new layer every time
-            // so geojson sources overlayed on top of the vector tiles don't obscure our crosses
-        } else {
+        if (that.map.getLayer(layerID)) {
             that.map.removeLayer(layerID);
+            that.map.removeSource(layerID);
         }
 
+        that.map.addSource(layerID, clickMarker);
         that.map.addLayer({
             "id": layerID,
             "type": "symbol",
