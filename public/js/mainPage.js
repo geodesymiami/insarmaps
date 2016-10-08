@@ -276,8 +276,6 @@ function switchLayer(layer) {
                 longBot = markerCoords[1];
                 mapHadClickLocationMarkerBot = true;
             }
-
-            myMap.removeTouchLocationMarkers();
         }
 
         myMap.map.setStyle({
@@ -309,6 +307,8 @@ function switchLayer(layer) {
         // style not done loading error
         myMap.map.on("style.load", function() {
             if (mapHadClickLocationMarkerTop) {
+                myMap.removeTouchLocationMarkers();
+
                 myMap.clickLocationMarker.data = {
                     "type": "FeatureCollection",
                     "features": [{
