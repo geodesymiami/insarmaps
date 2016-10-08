@@ -92,8 +92,13 @@ def convert_data():
 	# calculate mid lat and long of dataset - then use google python lib to get country
 	mid_lat = x_first + ((num_columns/2) * x_step)
 	mid_long = y_first + ((num_rows/2) * y_step)
-	g = geocoder.google([mid_long,mid_lat], method='reverse')
- 	country = str(g.country_long)
+	country = None
+	try:
+		g = geocoder.google([mid_long,mid_lat], method='reverse', timeout=60.0)
+ 		country = str(g.country_long)
+	except Exception, e:
+		print "timeout reverse geocoding country name"
+
  	area = folder_name
 
  	# for some reason pgsql only takes {} not [] - format date arrays and attributes to be inserted to pgsql
