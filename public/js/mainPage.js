@@ -569,10 +569,6 @@ $(window).load(function() {
         }
     });
 
-    $("#graph-div-button").on("click", function(event) {
-        $(".wrap#charts").toggleClass("active");
-    });
-
     // set up tooltips on graph div and area attributes div
     $(".wrap#charts").tooltip("disable");
     $(".wrap#area-attributes-div").tooltip("disable");
@@ -782,14 +778,8 @@ $(window).load(function() {
         search();
     });
 
-    $("#close-button").on("click", function() {
-        $('.wrap#select-area-wrap').toggleClass('active');
-    });
-
-    // cancel the popup
-    $('#cancelPopupButton').on('click', function() {
-        console.log("#cancel");
-        $('.wrap#select-area-wrap').toggleClass('active');
+    $(".close-button").on("click", function() {
+        $(this).parent().parent().toggleClass("active");
     });
 
     $("#login-logout-button").on('click', function() {

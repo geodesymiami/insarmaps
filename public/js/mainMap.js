@@ -649,7 +649,7 @@ function Map(loadJSONFunc) {
         });
 
         that.map.on("load", function() {
-            that.selector = new LineSelector(that);//new SquareSelector(that);
+            that.selector = new SquareSelector(that);
             that.loadAreaMarkers();
         });
 

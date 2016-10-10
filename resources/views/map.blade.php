@@ -133,11 +133,11 @@
   </div>
   <div class="wrap" id="charts" title="Displacement time-series">
     <div class="top-right-buttons">
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="graph-div-button"><span aria-hidden="true">&times;</span></button>
+      <button type="button" class="close close-button" data-dismiss="modal" aria-label="Close" id="graph-div-button"><span aria-hidden="true">&times;</span></button>
       <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="graph-div-minimize-button"><span aria-hidden="true">__</span></button>
     </div>
     <div class="content">
-      <div id="chart-containers">
+      <div class="chart-containers" id="chart-containers">
         <div id="chartContainer" class="side-item">
         </div>
         <div id="chartContainer2" class="side-item"></div>
@@ -178,11 +178,11 @@
   </div>
   <div class='wrap' id="select-area-wrap">
     <div class="top-right-buttons">
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
+      <button type="button" class="close close-button" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
     </div>
     <div class='content'>                       
       <!-- table to select dataset from-->
-      <table class='table' id='myTable'>            
+      <table class='table' id='myTable'>
         <thead>
           <tr>
             <th>Dataset</th>
@@ -191,6 +191,14 @@
         </thead>
         <tbody id='tableBody'></tbody>
       </table>          
+    </div>
+  </div>
+  <div class="wrap" id="topography-wrap" title="Topography-Wrap">
+    <div class="top-right-buttons">
+      <button type="button" class="close close-button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    </div>
+    <div class="content">
+
     </div>
   </div>
   <div id="information-div">
