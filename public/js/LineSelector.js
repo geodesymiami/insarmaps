@@ -210,8 +210,8 @@ function LineSelector(map) {
         var velocitiesChartData = [];
 
         for (var i = 0; i < distances.length; i++) {
-            elevationChartData.push(distances[i], elevations[i]);
-            velocitiesChartData.push(distances[i], velocities[i]);
+            elevationChartData.push([distances[i], elevations[i]]);
+            velocitiesChartData.push([distances[i], velocities[i]]);
         }
 
         var chartOpts = {
@@ -226,6 +226,11 @@ function LineSelector(map) {
             },
             scrollbar: {
                 liveRedraw: false
+            },
+            plotOptions: {
+                    area: {
+                        stacking: "normal"
+                }
             },
             xAxis: {
                 type: 'linear',
@@ -270,14 +275,15 @@ function LineSelector(map) {
                     value: 0,
                     width: 1,
                     color: '#808080'
-                }]
+                }],
+                opposite: true
             }],
             tooltip: {
                 headerFormat: '',
                 pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} m'
             },
             series: [{
-                type: 'scatter',
+                type: 'area',
                 name: 'Elevations',
                 yAxis: 0,
                 data: elevationChartData,
@@ -286,7 +292,7 @@ function LineSelector(map) {
                 },
                 showInLegend: false
             }, {
-                type: 'scatter',
+                type: 'area',
                 name: 'Velocities',
                 yAxis: 1,
                 data: velocitiesChartData,

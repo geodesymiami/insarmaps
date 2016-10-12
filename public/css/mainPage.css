@@ -132,6 +132,14 @@ label {
     background-color: white !important;
 }
 
+#topography-wrap {
+    position: absolute;
+    top: 10%;
+    left: 0%;
+    height: 70%;
+    width: 40%;
+}
+
 .wrap#area-attributes-div .top-right-buttons {
     top: -5px;
 }
@@ -488,7 +496,7 @@ div.menu {
     padding-right: 10px;
 }
 
-#chart-containers {
+.chart-containers {
     width: 100%;
     height: 90%;
     float: left;
