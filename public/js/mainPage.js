@@ -375,7 +375,11 @@ function switchLayer(layer) {
                     "type": "raster",
                     "url": "mapbox://" + tileset,
                     "tileSize": 256
-                }
+                },
+                'Mapbox Terrain V2': {
+                    type: 'vector',
+                    url: 'mapbox://mapbox.mapbox-terrain-v2'
+                },
             },
             layers: myMap.layers_
         });
@@ -580,18 +584,19 @@ $(window).load(function() {
             return;
         }
 
-        var chartWrap = $(".wrap#charts");        
+        var chartWrap = $(".wrap#charts");
         oldGraphDiv.animating = true;
         if (chartWrap.hasClass("toggled")) {
             chartWrap.animate({
-                "height": oldGraphDiv.height, "width": oldGraphDiv.width
+                "height": oldGraphDiv.height,
+                "width": oldGraphDiv.width
             }, {
                 done: function() {
                     chartWrap.tooltip("disable");
-                    oldGraphDiv.animating = false;                   
+                    oldGraphDiv.animating = false;
                 }
             }).removeClass("toggled");
-            
+
             $(".wrap#charts").resizable("enable");
             $(".wrap#charts").draggable("enable");
         } else {
@@ -622,7 +627,7 @@ $(window).load(function() {
 
     $("#area-attributes-div-minimize-button").on("click", function(event) {
         var areaAttributesWrap = $(".wrap#area-attributes-div");
-        areaAttributesWrap.css("overflow-y", "auto");        
+        areaAttributesWrap.css("overflow-y", "auto");
         oldAttributeDiv.animating = true;
         if (areaAttributesWrap.hasClass("toggled")) {
             areaAttributesWrap.animate({
@@ -666,7 +671,7 @@ $(window).load(function() {
             }
         },
         stop: function(event, ui) {
-            myMap.graphsController.resizeChartContainers(); 
+            myMap.graphsController.resizeChartContainers();
 
             myMap.graphsController.recreateGraphs();
         }
