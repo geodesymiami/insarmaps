@@ -403,7 +403,7 @@ function Map(loadJSONFunc) {
         // the flyTo zoom when an area is loaded
         var currentZoom = that.map.getZoom();
         if (currentZoom <= 7.0) {
-            // prevent zoom below 1.0, as floating point inaccuracies can cause bugs at most zoomed out level
+            // prevent zoom below 0.5, as floating point inaccuracies can cause bugs at most zoomed out level
             if (currentZoom <= 0.5) {
                 that.zoomOutZoom = 0.5;
             } else {
