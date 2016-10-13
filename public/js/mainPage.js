@@ -412,6 +412,10 @@ function switchLayer(layer) {
                         "icon-allow-overlap": true
                     }
                 });
+
+                if (contourToggleButton.toggleState == ToggleStates.ON) {
+                    myMap.addContourLines();
+                }
                 myMap.map.off("style.load", styleLoadFunc);
             };
             myMap.map.on("style.load", styleLoadFunc);
