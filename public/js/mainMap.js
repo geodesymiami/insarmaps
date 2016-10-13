@@ -422,7 +422,7 @@ function Map(loadJSONFunc) {
         }
     };
 
-    this.clickOnAnAreaMaker = function(e) {
+    this.clickOnAnAreaMarker = function(e) {
         var features = that.map.queryRenderedFeatures(e.point, {
             layers: that.layers
         });
@@ -530,7 +530,7 @@ function Map(loadJSONFunc) {
         });
 
         // remove click listener for selecting an area, and add new one for clicking on a point
-        that.map.off("click", that.clickOnAnAreaMaker);
+        that.map.off("click", that.clickOnAnAreaMarker);
         that.map.on('click', that.leftClickOnAPoint);
 
         return layer;
@@ -686,7 +686,7 @@ function Map(loadJSONFunc) {
         // and box zoom
         that.map.boxZoom.disable();
 
-        that.map.on('click', that.clickOnAnAreaMaker);
+        that.map.on('click', that.clickOnAnAreaMarker);
 
         //that.map.on("contextmenu", that.rightClickOnAPoint);
 
@@ -779,7 +779,7 @@ function Map(loadJSONFunc) {
                     that.loadAreaMarkers();
                     // remove click listener for selecting an area, and add new one for clicking on a point
                     that.map.off("click");
-                    that.map.on('click', that.clickOnAnAreaMaker);
+                    that.map.on('click', that.clickOnAnAreaMarker);
                 }
             }
         });
@@ -866,7 +866,7 @@ function Map(loadJSONFunc) {
 
         // remove click listener for selecting an area, and add new one for clicking on a point
         that.map.off("click");
-        that.map.on('click', that.clickOnAnAreaMaker);
+        that.map.on('click', that.clickOnAnAreaMarker);
 
         that.removeAreaPopups();
 
