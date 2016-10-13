@@ -79,7 +79,7 @@ function getGEOJSON(area) {
     $("#area-attributes-table-body").html(tableHTML);
 
     myMap.initLayer(myMap.tileJSON, "streets");
-    myMap.map.on("style.load", function() {
+    var styleLoadFunc = function() {
         overlayToggleButton.set("on");
         if (contourToggleButton.toggleState == ToggleStates.ON) {
             myMap.addContourLines();
@@ -90,8 +90,11 @@ function getGEOJSON(area) {
                 center: [area.coords.latitude, area.coords.longitude],
                 zoom: 7
             });
+            myMap.map.off("style.load", styleLoadFunc);
         }, 1000);
-    });
+    };
+
+    myMap.map.on("style.load", styleLoadFunc);
 }
 
 function goToTab(event, id) {
@@ -247,6 +250,7 @@ function switchLayer(layer) {
     var layerId = layer.target.id;
 
     var tileset = 'mapbox.' + layerId;
+    var styleLoadFunc = null;
 
     // we assume in this case that an area has been clicked
     if (overlayToggleButton.toggleState == ToggleStates.ON && myMap.tileJSON != null) {
@@ -305,7 +309,7 @@ function switchLayer(layer) {
 
         // finally, add back the click location marker, do on load of style to prevent
         // style not done loading error
-        myMap.map.on("style.load", function() {
+        styleLoadFunc = function() {
             if (mapHadClickLocationMarkerTop) {
                 myMap.removeTouchLocationMarkers();
 
@@ -364,7 +368,9 @@ function switchLayer(layer) {
             if (contourToggleButton.toggleState == ToggleStates.ON) {
                 myMap.addContourLines();
             }
-        });
+            myMap.map.off("style.load", styleLoadFunc);
+        };
+        myMap.map.on("style.load", styleLoadFunc);
     } else {
         myMap.map.setStyle({
             version: 8,
@@ -387,15 +393,15 @@ function switchLayer(layer) {
         var id = "areas";
 
         if (myMap.areaFeatures != null) {
-            myMap.map.on("style.load", function() {
-                var areaMarker = new mapboxgl.GeoJSONSource({
-                    cluster: false,
-                    clusterRadius: 10
-                }); // add the markers representing the available areas
-                areaMarker.setData({
+            styleLoadFunc = function() {
+                var areaMarker = {
+                    type: "geojson",
+                    data: {}
+                }; // add the markers representing the available areas
+                areaMarker.data = {
                     "type": "FeatureCollection",
                     "features": myMap.areaFeatures
-                });
+                };
                 myMap.map.addSource(id, areaMarker);
                 myMap.map.addLayer({
                     "id": id,
@@ -406,9 +412,13 @@ function switchLayer(layer) {
                         "icon-allow-overlap": true
                     }
                 });
-            });
+                myMap.map.off("style.load", styleLoadFunc);
+            };
+            myMap.map.on("style.load", styleLoadFunc);
         }
     }
+
+    myMap.map.off("style.off");
 }
 
 for (var i = 0; i < inputs.length; i++) {
