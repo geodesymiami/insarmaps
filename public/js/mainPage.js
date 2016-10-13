@@ -10,9 +10,9 @@ function getGEOJSON(area) {
     // loadJSON(query, "file", myMap.JSONCallback);
     //var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[]};
     //myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
-    myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://ec2-52-41-231-16.us-west-2.compute.amazonaws.com:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
+    // myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://ec2-52-41-231-16.us-west-2.compute.amazonaws.com:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
 
-    // myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://129.171.97.228:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
+    myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://129.171.97.228:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
 
     if (myMap.pointsLoaded()) {
         myMap.removePoints();
@@ -79,7 +79,7 @@ function getGEOJSON(area) {
     $("#area-attributes-table-body").html(tableHTML);
 
     myMap.initLayer(myMap.tileJSON, "streets");
-    myMap.map.on("style.load", function() {
+    var styleLoadFunc = function() {
         overlayToggleButton.set("on");
         if (contourToggleButton.toggleState == ToggleStates.ON) {
             myMap.addContourLines();
@@ -90,8 +90,11 @@ function getGEOJSON(area) {
                 center: [area.coords.latitude, area.coords.longitude],
                 zoom: 7
             });
+            myMap.map.off("style.load", styleLoadFunc);
         }, 1000);
-    });
+    };
+
+    myMap.map.on("style.load", styleLoadFunc);
 }
 
 function goToTab(event, id) {
@@ -247,6 +250,7 @@ function switchLayer(layer) {
     var layerId = layer.target.id;
 
     var tileset = 'mapbox.' + layerId;
+    var styleLoadFunc = null;
 
     // we assume in this case that an area has been clicked
     if (overlayToggleButton.toggleState == ToggleStates.ON && myMap.tileJSON != null) {
@@ -305,7 +309,7 @@ function switchLayer(layer) {
 
         // finally, add back the click location marker, do on load of style to prevent
         // style not done loading error
-        myMap.map.on("style.load", function() {
+        styleLoadFunc = function() {
             if (mapHadClickLocationMarkerTop) {
                 myMap.removeTouchLocationMarkers();
 
@@ -364,7 +368,9 @@ function switchLayer(layer) {
             if (contourToggleButton.toggleState == ToggleStates.ON) {
                 myMap.addContourLines();
             }
-        });
+            myMap.map.off("style.load", styleLoadFunc);
+        };
+        myMap.map.on("style.load", styleLoadFunc);
     } else {
         myMap.map.setStyle({
             version: 8,
@@ -375,7 +381,11 @@ function switchLayer(layer) {
                     "type": "raster",
                     "url": "mapbox://" + tileset,
                     "tileSize": 256
-                }
+                },
+                'Mapbox Terrain V2': {
+                    type: 'vector',
+                    url: 'mapbox://mapbox.mapbox-terrain-v2'
+                },
             },
             layers: myMap.layers_
         });
@@ -383,15 +393,15 @@ function switchLayer(layer) {
         var id = "areas";
 
         if (myMap.areaFeatures != null) {
-            myMap.map.on("style.load", function() {
-                var areaMarker = new mapboxgl.GeoJSONSource({
-                    cluster: false,
-                    clusterRadius: 10
-                }); // add the markers representing the available areas
-                areaMarker.setData({
+            styleLoadFunc = function() {
+                var areaMarker = {
+                    type: "geojson",
+                    data: {}
+                }; // add the markers representing the available areas
+                areaMarker.data = {
                     "type": "FeatureCollection",
                     "features": myMap.areaFeatures
-                });
+                };
                 myMap.map.addSource(id, areaMarker);
                 myMap.map.addLayer({
                     "id": id,
@@ -402,9 +412,17 @@ function switchLayer(layer) {
                         "icon-allow-overlap": true
                     }
                 });
-            });
+
+                if (contourToggleButton.toggleState == ToggleStates.ON) {
+                    myMap.addContourLines();
+                }
+                myMap.map.off("style.load", styleLoadFunc);
+            };
+            myMap.map.on("style.load", styleLoadFunc);
         }
     }
+
+    myMap.map.off("style.off");
 }
 
 for (var i = 0; i < inputs.length; i++) {
@@ -580,18 +598,19 @@ $(window).load(function() {
             return;
         }
 
-        var chartWrap = $(".wrap#charts");        
+        var chartWrap = $(".wrap#charts");
         oldGraphDiv.animating = true;
         if (chartWrap.hasClass("toggled")) {
             chartWrap.animate({
-                "height": oldGraphDiv.height, "width": oldGraphDiv.width
+                "height": oldGraphDiv.height,
+                "width": oldGraphDiv.width
             }, {
                 done: function() {
                     chartWrap.tooltip("disable");
-                    oldGraphDiv.animating = false;                   
+                    oldGraphDiv.animating = false;
                 }
             }).removeClass("toggled");
-            
+
             $(".wrap#charts").resizable("enable");
             $(".wrap#charts").draggable("enable");
         } else {
@@ -622,7 +641,7 @@ $(window).load(function() {
 
     $("#area-attributes-div-minimize-button").on("click", function(event) {
         var areaAttributesWrap = $(".wrap#area-attributes-div");
-        areaAttributesWrap.css("overflow-y", "auto");        
+        areaAttributesWrap.css("overflow-y", "auto");
         oldAttributeDiv.animating = true;
         if (areaAttributesWrap.hasClass("toggled")) {
             areaAttributesWrap.animate({
@@ -666,7 +685,7 @@ $(window).load(function() {
             }
         },
         stop: function(event, ui) {
-            myMap.graphsController.resizeChartContainers(); 
+            myMap.graphsController.resizeChartContainers();
 
             myMap.graphsController.recreateGraphs();
         }

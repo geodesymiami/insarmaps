@@ -403,9 +403,9 @@ function Map(loadJSONFunc) {
         // the flyTo zoom when an area is loaded
         var currentZoom = that.map.getZoom();
         if (currentZoom <= 7.0) {
-            // prevent zoom below 1.0, as floating point inaccuracies can cause bugs at most zoomed out level
-            if (currentZoom <= 1.0) {
-                that.zoomOutZoom = 1.0;
+            // prevent zoom below 0.5, as floating point inaccuracies can cause bugs at most zoomed out level
+            if (currentZoom <= 0.5) {
+                that.zoomOutZoom = 0.5;
             } else {
                 that.zoomOutZoom = that.map.getZoom();
             }
@@ -422,7 +422,7 @@ function Map(loadJSONFunc) {
         }
     };
 
-    this.clickOnAnAreaMaker = function(e) {
+    this.clickOnAnAreaMarker = function(e) {
         var features = that.map.queryRenderedFeatures(e.point, {
             layers: that.layers
         });
@@ -530,7 +530,7 @@ function Map(loadJSONFunc) {
         });
 
         // remove click listener for selecting an area, and add new one for clicking on a point
-        that.map.off("click", that.clickOnAnAreaMaker);
+        that.map.off("click", that.clickOnAnAreaMarker);
         that.map.on('click', that.leftClickOnAPoint);
 
         return layer;
@@ -686,7 +686,7 @@ function Map(loadJSONFunc) {
         // and box zoom
         that.map.boxZoom.disable();
 
-        that.map.on('click', that.clickOnAnAreaMaker);
+        that.map.on('click', that.clickOnAnAreaMarker);
 
         //that.map.on("contextmenu", that.rightClickOnAPoint);
 
@@ -770,7 +770,7 @@ function Map(loadJSONFunc) {
             }
 
             // reshow area markers once we zoom out enough
-            if (that.map.getZoom() <= that.zoomOutZoom) {
+            if (that.map.getZoom() < that.zoomOutZoom) {
                 if (that.pointsLoaded()) {
                     that.reset();
                     // otherwise, points aren't loaded, but area previously was active
@@ -779,7 +779,7 @@ function Map(loadJSONFunc) {
                     that.loadAreaMarkers();
                     // remove click listener for selecting an area, and add new one for clicking on a point
                     that.map.off("click");
-                    that.map.on('click', that.clickOnAnAreaMaker);
+                    that.map.on('click', that.clickOnAnAreaMarker);
                 }
             }
         });
@@ -866,7 +866,7 @@ function Map(loadJSONFunc) {
 
         // remove click listener for selecting an area, and add new one for clicking on a point
         that.map.off("click");
-        that.map.on('click', that.clickOnAnAreaMaker);
+        that.map.on('click', that.clickOnAnAreaMarker);
 
         that.removeAreaPopups();
 
