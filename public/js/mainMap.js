@@ -404,8 +404,8 @@ function Map(loadJSONFunc) {
         var currentZoom = that.map.getZoom();
         if (currentZoom <= 7.0) {
             // prevent zoom below 1.0, as floating point inaccuracies can cause bugs at most zoomed out level
-            if (currentZoom <= 1.0) {
-                that.zoomOutZoom = 1.0;
+            if (currentZoom <= 0.5) {
+                that.zoomOutZoom = 0.5;
             } else {
                 that.zoomOutZoom = that.map.getZoom();
             }
@@ -770,7 +770,7 @@ function Map(loadJSONFunc) {
             }
 
             // reshow area markers once we zoom out enough
-            if (that.map.getZoom() <= that.zoomOutZoom) {
+            if (that.map.getZoom() < that.zoomOutZoom) {
                 if (that.pointsLoaded()) {
                     that.reset();
                     // otherwise, points aren't loaded, but area previously was active
