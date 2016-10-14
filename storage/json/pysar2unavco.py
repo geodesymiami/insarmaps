@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import h5py
 import numpy as np
 import datetime
@@ -23,20 +25,24 @@ def get_date(date_string):
 #  BEGIN EXECUTABLE
 # ---------------------------------------------------------------------------------------
 # if len(sys.argv) != 10:
-if len(sys.argv) > 2:
-	try:
-		opts, extraArgs = getopt.getopt(sys.argv[1:],'t:i:d:c:m:') 
-	except getopt.GetoptError:
-		print 'Error while retrieving operations - exit'
-		print 'correct format: python pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d dem.h5 -c temporal_coherence.h5 -m mask.h5'
-		sys.exit()
+try:
+	opts, extraArgs = getopt.getopt(sys.argv[1:],'t:i:d:c:m:', ['add_option=']) 
+except getopt.GetoptError:
+	print 'Error while retrieving operations - exit'
+	print 'correct format: python pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d dem.h5 -c temporal_coherence.h5 -m mask.h5'
+	sys.exit()
 
 # read operations and arguments(file names):
 operations = {}
+added_options = {}
+
 for o, a in opts:
 	if o == "-t" or o == "-i" or o == "-d" or o == "-c" or o == "-m":
 		operations[o] = a
-	if o == "-t":
+	if o == '--add_option':
+		option_and_value = a.split('=')
+		added_options[option_and_value[0].upper()] = option_and_value[1]
+	elif o == "-t":
 		timeseries = a
 	elif o == "-i":
 		incidence_angle = a
@@ -91,7 +97,19 @@ num_rows = int(attributes["FILE_LENGTH"])
 
 # extract attributes from project name
 # KyushuT73F2980_2990AlosD - 73 = track number, 2980_2990 = frames, Alos = mission
-project_name = attributes["PROJECT_NAME"]
+try:
+	project_name = attributes["PROJECT_NAME"]
+except Exception, e:
+	print "Project name is not in the h5 file, trying to find supplied name on the command line"
+	key = "project_name"
+
+	try:
+		project_name = added_options[key.upper()]
+	except Exception, e:
+		print "Project name not supplied on the command line... quitting"
+		sys.exit()
+
+print project_name
 track_index = project_name.find('T')
 frame_index = project_name.find('F')
 track_number = project_name[track_index+1:frame_index]
