@@ -223,7 +223,9 @@ function Map(loadJSONFunc) {
             }
         });
 
-        $("#point-details").html(lat.toFixed(5) + ", " + long.toFixed(5));
+        var pointDetailsHtml = lat.toFixed(5) + ", " + long.toFixed(5);
+
+        $("#point-details").html(pointDetailsHtml);
 
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "point", function(response) {
@@ -390,6 +392,8 @@ function Map(loadJSONFunc) {
                 "locations": [{ lat: lat, lng: long }]
             }, function(results, status) {
                 if (status === google.maps.ElevationStatus.OK) {
+                    // redundant but to avoid race conditions between two successive clicks
+                    $("#point-details").html(pointDetailsHtml);
                     $("#point-details").append("<br>Elevation: " + results[0].elevation.toFixed(0) + " meters");
                 } else {
                     console.log(status);
@@ -869,6 +873,8 @@ function Map(loadJSONFunc) {
         that.map.on('click', that.clickOnAnAreaMarker);
 
         that.removeAreaPopups();
+
+        $("#point-details").empty();
 
         overlayToggleButton.set("off");
         myMap.tileJSON = null;
