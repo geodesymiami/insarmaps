@@ -22,16 +22,26 @@ def get_date(date_string):
 	day = int(date_string[6:8])
 	return date(year, month, day)
 
+<<<<<<< HEAD
+def mask_timeseries(timeseries_file):
+	masked_name = "masked_" + timeseries_file
+	os.system("masking.py " + timeseries_file + " -o " + masked_name)
+	
+def usage():
+	print 'Correct format: python pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d DEM_error.h5 -c temporal_coherence.h5 -m mask.h5'
+	print 'Optional: --add_option OPTION_NAME=OPTION_VALUE, --mask_data (mask data using mask file)'
+=======
 def usage():
 	print 'Correct format: python pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d DEM_error.h5 -c temporal_coherence.h5 -m mask.h5'
 	print 'Optional: --add_options OPTION_NAME=OPTION_VALUE'
+>>>>>>> b3a85217fe556eef0874502940371dc907223f8e
 
 # ---------------------------------------------------------------------------------------
 #  BEGIN EXECUTABLE
 # ---------------------------------------------------------------------------------------
 # if len(sys.argv) != 10:
 try:
-	opts, extraArgs = getopt.getopt(sys.argv[1:],'t:i:d:c:m:', ['add_option=']) 
+	opts, extraArgs = getopt.getopt(sys.argv[1:],'t:i:d:c:m:', ['add_option=', 'mask_data']) 
 except getopt.GetoptError:
 	print 'Error while retrieving operations - exit'
 	usage()
@@ -40,10 +50,9 @@ except getopt.GetoptError:
 # read operations and arguments(file names):
 operations = {}
 added_options = {}
+mask_data = False
 
 for o, a in opts:
-	if o == "-t" or o == "-i" or o == "-d" or o == "-c" or o == "-m":
-		operations[o] = a
 	if o == '--add_option':
 		option_and_value = a.split('=')
 		added_options[option_and_value[0].upper()] = option_and_value[1]
@@ -57,6 +66,8 @@ for o, a in opts:
 		temporal_coherence = a
 	elif o == "-m":
 		mask = a
+	elif o == '--mask_data':
+		mask_data = True
 	else:
 		assert False, "unhandled option - exit"
 		sys.exit()
@@ -64,6 +75,10 @@ for o, a in opts:
 # ---------------------------------------------------------------------------------------
 #  GET TIMESERIES FILE INTO UNAVCO and encode attributes to timeseries group in unavco file
 # ---------------------------------------------------------------------------------------
+if mask_data:
+	mask_timeseries(timeseries)
+	timeseries = "masked_" + timeseries
+
 print 'trying to open ' + timeseries
 timeseries_file = h5py.File(timeseries, "r")
 try: 
