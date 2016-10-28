@@ -30,11 +30,6 @@ def mask_timeseries(timeseries_file):
 def usage():
 	print 'Correct format: python pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d DEM_error.h5 -c temporal_coherence.h5 -m mask.h5'
 	print 'Optional: --add_option OPTION_NAME=OPTION_VALUE, --mask_data (mask data using mask file)'
-=======
-def usage():
-	print 'Correct format: python pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d DEM_error.h5 -c temporal_coherence.h5 -m mask.h5'
-	print 'Optional: --add_options OPTION_NAME=OPTION_VALUE'
->>>>>>> b3a85217fe556eef0874502940371dc907223f8e
 
 # ---------------------------------------------------------------------------------------
 #  BEGIN EXECUTABLE
