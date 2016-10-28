@@ -22,7 +22,6 @@ def get_date(date_string):
 	day = int(date_string[6:8])
 	return date(year, month, day)
 
-<<<<<<< HEAD
 def mask_timeseries(timeseries_file):
 	masked_name = "masked_" + timeseries_file
 	os.system("masking.py " + timeseries_file + " -o " + masked_name)
