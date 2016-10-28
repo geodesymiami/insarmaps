@@ -1,3 +1,56 @@
+function showAreaAttributesPopup(area) {
+    var tableHTML = "";
+    var attributekeys = null;
+    var attributevalues = null;
+    // set like object
+    var attributesToDisplay = {
+        "mission": true,
+        "beam_mode": true,
+        "beam_swath": true,
+        "relative_orbit": true,
+        "first_date": true,
+        "last_date": true,
+        "processing_type": true,
+        "processing_software": true,
+        "history": true,
+        "first_frame": true,
+        "last_frame": true,
+        "flight_direction": true,
+        "look_direction": true,
+        "atmos_correct_method": true,
+        "unwrap_method": true,
+        "post_processing_method": true
+    };
+
+    // if we click on an area marker, we get a string as the mapbox feature can't seem to store an array and converts it to a string
+    if (typeof area.attributekeys == "string" || typeof area.attributevalues == "string") {
+        attributekeys = JSON.parse(area.attributekeys);
+        attributevalues = JSON.parse(area.attributevalues);
+        // otherwise, we get arrays from the server (clicked on area not through an area marker feature)
+    } else {
+        attributekeys = area.attributekeys;
+        attributevalues = area.attributevalues;
+    }
+
+    if (!$('.wrap#area-attributes-div').hasClass('active')) {
+        $('.wrap#area-attributes-div').toggleClass('active');
+    } else {
+        $("#area-attributes-div-minimize-button").click();
+    }
+
+    for (var i = 0; i < attributekeys.length; i++) {
+        curKey = attributekeys[i];
+
+        if (curKey in attributesToDisplay) {
+            curValue = attributevalues[i];
+
+            tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
+            tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
+        }
+        $("#area-attributes-table-body").html(tableHTML);
+    }
+}
+
 function getGEOJSON(area) {
     // currentPoint = 1;
     currentArea = area;
@@ -24,59 +77,11 @@ function getGEOJSON(area) {
     for (var i = 1; i <= area.num_chunks; i++) {
         var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
         myMap.tileJSON.vector_layers.push(layer);
-    }
+    }    
 
-    $('.wrap#area-attributes-div').toggleClass('active');
-
-    // $(".wrap#area-attributes-div").find(".content").find("#Attr1").empty();
-    var tableHTML = "";
-    var attributekeys = null;
-    var attributevalues = null;
-
-    // if we click on an area marker, we get a string as the mapbox feature can't seem to store an array and converts it to a string
-    if (typeof area.attributekeys == "string" || typeof area.attributevalues == "string") {
-        attributekeys = JSON.parse(area.attributekeys);
-        attributevalues = JSON.parse(area.attributevalues);
-        // otherwise, we get arrays from the server (clicked on area not through an area marker feature)
-    } else {
-        attributekeys = area.attributekeys;
-        attributevalues = area.attributevalues;
-    }
-
-    // set like object
-    var attributesToDisplay = {
-        "mission": true,
-        "beam_mode": true,
-        "beam_swath": true,
-        "relative_orbit": true,
-        "first_date": true,
-        "last_date": true,
-        "processing_type": true,
-        "processing_software": true,
-        "history": true,
-        "first_frame": true,
-        "last_frame": true,
-        "flight_direction": true,
-        "look_direction": true,
-        "atmos_correct_method": true,
-        "unwrap_method": true,
-        "post_processing_method": true
-    };
-
-    for (var i = 0; i < attributekeys.length; i++) {
-        curKey = attributekeys[i];
-
-        if (curKey in attributesToDisplay) {
-            curValue = attributevalues[i];
-
-            tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
-            tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
-        }
-    }
+    showAreaAttributesPopup(area);
 
     $("#color-scale").toggleClass("active");
-
-    $("#area-attributes-table-body").html(tableHTML);
 
     myMap.initLayer(myMap.tileJSON, "streets");
     var styleLoadFunc = function() {
@@ -667,7 +672,7 @@ $(window).load(function() {
                     oldAttributeDiv.animating = false
                 }
             }).addClass("toggled");
-        }
+        }        
     });
 
     // chart div resizable

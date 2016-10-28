@@ -702,7 +702,7 @@ function Map(loadJSONFunc) {
                 (features.length && !(features[0].layer.id == "contours") && !(features[0].layer.id == "contour_label")) ? 'pointer' : '';
 
             if (!features.length) {
-                that.areaPopup.remove();
+                //that.areaPopup.remove();
                 return;
             }
             // if it's a select area marker, but not a selected point marker... I suppose this is hackish
@@ -717,7 +717,7 @@ function Map(loadJSONFunc) {
                 // make the html table
                 for (var i = 0; i < features.length; i++) {
                     var areaName = features[i].properties.name;
-                    html += "<tr id='" + areaName + "'><td value='" + areaName + "'>" + areaName + "</td></tr>";
+                    html += "<tr><td value='" + areaName + "'><div id='" + areaName + "'>" + areaName + "</div><div class='preview-attributes-button' id=" + areaName + "preview_attribues>sh</div></td></tr>";
                 }
                 html += "</table>";
                 that.areaPopup.setLngLat(features[0].geometry.coordinates)
@@ -745,19 +745,30 @@ function Map(loadJSONFunc) {
 
                     // make cursor change when mouse hovers over row
                     $("#areas-under-mouse-table #" + areaName).css("cursor", "pointer");
+                    $("#" + areaName).css({
+                        "width": "80%",
+                        "word-wrap": "break-word",
+                        "float": "left"
+                    });
+
                     // ugly click function declaration to JS not using block scope
-                    $("#areas-under-mouse-table #" + areaName).click((function(area) {
-                        return function(e) {
-                            // don't load area if reference link is clicked
-                            if (e.target.cellIndex == 0) {
-                                that.determineZoomOutZoom();
-                                clickedArea = area.name;
-                                that.areaPopup.remove();
-                                getGEOJSON(area);
-                            }
+                    $("#" + areaName).click((function(area) {
+                        return function(e) {                            
+                            that.determineZoomOutZoom();
+                            clickedArea = area.name;
+                            that.areaPopup.remove();
+                            getGEOJSON(area);
                         };
                     })(markerArea));
                 }
+                $(".preview-attributes-button").css({
+                    "width": "20%",
+                    "float": "left"
+                });
+                $(".preview-attributes-button").on('click', function() {
+                    previewingArea = true;
+                    showAreaAttributesPopup(markerArea);
+                });
             }
         });
 
