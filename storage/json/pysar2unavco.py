@@ -22,9 +22,9 @@ def get_date(date_string):
 	day = int(date_string[6:8])
 	return date(year, month, day)
 
-def mask_timeseries(timeseries_file):
+def mask_timeseries(timeseries_file, mask_file):
 	masked_name = "masked_" + timeseries_file
-	os.system("masking.py " + timeseries_file + " -o " + masked_name)
+	os.system("masking.py -f " + timeseries_file + " -m " + mask_file + " -o " + masked_name)
 	
 def usage():
 	print 'Correct format: python pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d DEM_error.h5 -c temporal_coherence.h5 -m mask.h5'
@@ -70,8 +70,9 @@ for o, a in opts:
 #  GET TIMESERIES FILE INTO UNAVCO and encode attributes to timeseries group in unavco file
 # ---------------------------------------------------------------------------------------
 if mask_data:
-	mask_timeseries(timeseries)
-	timeseries = "masked_" + timeseries
+	print "Masking timeseries file named " + timeseries
+	mask_timeseries(timeseries, mask)
+	timeseries = timeseries.split('.')[0] + "_masked.h5"
 
 print 'trying to open ' + timeseries
 timeseries_file = h5py.File(timeseries, "r")
