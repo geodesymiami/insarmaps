@@ -22,9 +22,8 @@ def get_date(date_string):
 	day = int(date_string[6:8])
 	return date(year, month, day)
 
-def mask_timeseries(timeseries_file, mask_file):
-	masked_name = "masked_" + timeseries_file
-	os.system("masking.py -f " + timeseries_file + " -m " + mask_file + " -o " + masked_name)
+def mask_timeseries(timeseries_file, mask_file, out_file):
+	os.system("masking.py -f " + timeseries_file + " -m " + mask_file + " -o " + out_file)
 	
 def usage():
 	print 'Correct format: python pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d DEM_error.h5 -c temporal_coherence.h5 -m mask.h5'
@@ -33,7 +32,6 @@ def usage():
 # ---------------------------------------------------------------------------------------
 #  BEGIN EXECUTABLE
 # ---------------------------------------------------------------------------------------
-# if len(sys.argv) != 10:
 try:
 	opts, extraArgs = getopt.getopt(sys.argv[1:],'t:i:d:c:m:', ['add_option=', 'mask_data']) 
 except getopt.GetoptError:
@@ -71,8 +69,9 @@ for o, a in opts:
 # ---------------------------------------------------------------------------------------
 if mask_data:
 	print "Masking timeseries file named " + timeseries
-	mask_timeseries(timeseries, mask)
-	timeseries = timeseries.split('.')[0] + "_masked.h5"
+	out_name = timeseries.split('.')[0] + "_masked.h5"
+	mask_timeseries(timeseries, mask, out_name)
+	timeseries = out_name 
 
 print 'trying to open ' + timeseries
 timeseries_file = h5py.File(timeseries, "r")
