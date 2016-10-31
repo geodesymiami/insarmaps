@@ -14,6 +14,7 @@ var currentArea = null;
 var file = "/home/vagrant/code/insar_map_mvc/public/json/geo_timeseries_masked.h5test_chunk_";
 var firstToggle = true;
 var myPolygon = null;
+var areaAttributesPopup = new AreaAttributesPopup();
 
 // take an array of displacement values and return velocity standard deviation (confuses the heck out of me)
 var getStandardDeviation = function(displacements, slope) {
@@ -767,9 +768,9 @@ function Map(loadJSONFunc) {
                     $("#" + areaName + previewButtonIDSuffix).click((function(area) {
                         return function(e) {
                             if ($('.wrap#area-attributes-div').hasClass('active')) {
-                                populateAreaAttributesPopup(area);
+                                areaAttributesPopup.populate(area);
                             } else {
-                                showAreaAttributesPopup(area);
+                                areaAttributesPopup.show(area);
                             }
                         };
                     })(markerArea));
