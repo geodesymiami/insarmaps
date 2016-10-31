@@ -192,7 +192,7 @@ def make_json_file(chunk_num, points):
 	res = os.system(command + ' ' + chunk_path)
 
 	if res != 0:
-		print "Error inserting into the database. This is most often due to running out of Memory (RAM)... quitting"
+		print "Error inserting into the database. This is most often due to running out of Memory (RAM), or incorrect database credentials... quitting"
 		sys.exit()
 
 	print "inserted chunk " + str(chunk_num) + " to db"
