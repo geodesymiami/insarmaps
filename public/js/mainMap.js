@@ -825,6 +825,11 @@ function Map(loadJSONFunc) {
             }
         }
 
+        // remove contour labels if they are there. this wasn't needed as gl js seemed to remove the contours in the above loop
+        // now it doesn't, causing a crash if we disable data overlay and then disable contour lines
+        if (that.map.getLayer("contours")) {
+            that.removeContourLines();
+        }
         // remove all layers but the first, base layer
         that.layers_ = that.layers_.slice(0, 1);
 
@@ -947,6 +952,11 @@ function Map(loadJSONFunc) {
                 "text-color": "#00fcdc"
             }
         });
+    };
+
+    this.removeContourLines = function() {
+        that.map.removeLayer("contours");
+        that.map.removeLayer("contour_label");
     };
 }
 

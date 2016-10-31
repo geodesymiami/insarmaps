@@ -500,8 +500,7 @@ contourToggleButton.onclick(function() {
     if (contourToggleButton.toggleState == ToggleStates.ON) {
         myMap.addContourLines();
     } else {
-        myMap.map.removeLayer("contour_label");
-        myMap.map.removeLayer("contours");
+        myMap.removeContourLines();
     }
 });
 
