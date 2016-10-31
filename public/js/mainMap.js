@@ -683,7 +683,7 @@ function Map(loadJSONFunc) {
             layers: that.layers_
         });
 
-        that.map.addControl(new mapboxgl.Navigation());
+        that.map.addControl(new mapboxgl.NavigationControl());
 
         // disable rotation gesture
         that.map.dragRotate.disable();
