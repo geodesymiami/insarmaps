@@ -703,7 +703,7 @@ function Map(loadJSONFunc) {
 
             // mouse not under a marker, clear all popups
             if (!features.length) {
-                //that.areaPopup.remove();
+                that.areaPopup.remove();
                 return;
             }
             // if it's a select area marker, but not a selected point marker... I suppose this is hackish
