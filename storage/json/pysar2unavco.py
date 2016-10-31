@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import h5py
 import numpy as np
 import datetime
@@ -19,24 +21,34 @@ def get_date(date_string):
 	month = int(date_string[4:6])
 	day = int(date_string[6:8])
 	return date(year, month, day)
+
+def mask_timeseries(timeseries_file, mask_file, out_file):
+	os.system("masking.py -f " + timeseries_file + " -m " + mask_file + " -o " + out_file)
+	
+def usage():
+	print 'Correct format: python pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d DEM_error.h5 -c temporal_coherence.h5 -m mask.h5'
+	print 'Optional: --add_option OPTION_NAME=OPTION_VALUE, --mask_data (mask data using mask file)'
+
 # ---------------------------------------------------------------------------------------
 #  BEGIN EXECUTABLE
 # ---------------------------------------------------------------------------------------
-# if len(sys.argv) != 10:
-if len(sys.argv) > 2:
-	try:
-		opts, extraArgs = getopt.getopt(sys.argv[1:],'t:i:d:c:m:') 
-	except getopt.GetoptError:
-		print 'Error while retrieving operations - exit'
-		print 'correct format: python pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d dem.h5 -c temporal_coherence.h5 -m mask.h5'
-		sys.exit()
+try:
+	opts, extraArgs = getopt.getopt(sys.argv[1:],'t:i:d:c:m:', ['add_option=', 'mask_data']) 
+except getopt.GetoptError:
+	print 'Error while retrieving operations - exit'
+	usage()
+	sys.exit()
 
 # read operations and arguments(file names):
 operations = {}
+added_options = {}
+mask_data = False
+
 for o, a in opts:
-	if o == "-t" or o == "-i" or o == "-d" or o == "-c" or o == "-m":
-		operations[o] = a
-	if o == "-t":
+	if o == '--add_option':
+		option_and_value = a.split('=')
+		added_options[option_and_value[0].upper()] = option_and_value[1]
+	elif o == "-t":
 		timeseries = a
 	elif o == "-i":
 		incidence_angle = a
@@ -46,6 +58,8 @@ for o, a in opts:
 		temporal_coherence = a
 	elif o == "-m":
 		mask = a
+	elif o == '--mask_data':
+		mask_data = True
 	else:
 		assert False, "unhandled option - exit"
 		sys.exit()
@@ -53,6 +67,12 @@ for o, a in opts:
 # ---------------------------------------------------------------------------------------
 #  GET TIMESERIES FILE INTO UNAVCO and encode attributes to timeseries group in unavco file
 # ---------------------------------------------------------------------------------------
+if mask_data:
+	print "Masking timeseries file named " + timeseries
+	out_name = timeseries.split('.')[0] + "_masked.h5"
+	mask_timeseries(timeseries, mask, out_name)
+	timeseries = out_name 
+
 print 'trying to open ' + timeseries
 timeseries_file = h5py.File(timeseries, "r")
 try: 
@@ -91,7 +111,19 @@ num_rows = int(attributes["FILE_LENGTH"])
 
 # extract attributes from project name
 # KyushuT73F2980_2990AlosD - 73 = track number, 2980_2990 = frames, Alos = mission
-project_name = attributes["PROJECT_NAME"]
+try:
+	project_name = attributes["PROJECT_NAME"]
+except Exception, e:
+	print "Project name is not in the h5 file, trying to find supplied name on the command line"
+	key = "project_name"
+
+	try:
+		project_name = added_options[key.upper()]
+	except Exception, e:
+		print "Project name not supplied on the command line... quitting"
+		sys.exit()
+
+print project_name
 track_index = project_name.find('T')
 frame_index = project_name.find('F')
 track_number = project_name[track_index+1:frame_index]

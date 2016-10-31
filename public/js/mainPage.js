@@ -1,3 +1,69 @@
+function AreaAttributesPopup() {
+    var that = this;
+
+    this.populate = function(area) {
+        var tableHTML = "";
+        var attributekeys = null;
+        var attributevalues = null;
+
+        // set like object
+        var attributesToDisplay = {
+            "mission": true,
+            "beam_mode": true,
+            "beam_swath": true,
+            "relative_orbit": true,
+            "first_date": true,
+            "last_date": true,
+            "processing_type": true,
+            "processing_software": true,
+            "history": true,
+            "first_frame": true,
+            "last_frame": true,
+            "flight_direction": true,
+            "look_direction": true,
+            "atmos_correct_method": true,
+            "unwrap_method": true,
+            "post_processing_method": true
+        };
+
+        // if we click on an area marker, we get a string as the mapbox feature can't seem to store an array and converts it to a string
+        if (typeof area.attributekeys == "string" || typeof area.attributevalues == "string") {
+            attributekeys = JSON.parse(area.attributekeys);
+            attributevalues = JSON.parse(area.attributevalues);
+            // otherwise, we get arrays from the server (clicked on area not through an area marker feature)
+        } else {
+            attributekeys = area.attributekeys;
+            attributevalues = area.attributevalues;
+        }
+
+        for (var i = 0; i < attributekeys.length; i++) {
+            curKey = attributekeys[i];
+
+            if (curKey in attributesToDisplay) {
+                curValue = attributevalues[i];
+
+                tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
+                tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
+            }
+            $("#area-attributes-table-body").html(tableHTML);
+        }
+    }
+
+    this.show = function(area) {
+        if (!$('.wrap#area-attributes-div').hasClass('active')) {
+            $('.wrap#area-attributes-div').toggleClass('active');
+        } else if (that.isMinimized()) {
+            $("#area-attributes-div-minimize-button").click();
+        }
+
+        that.populate(area);
+    };
+
+    this.isMinimized = function() {
+        return $('.wrap#area-attributes-div').hasClass('toggled');
+    };
+};
+
 function getGEOJSON(area) {
     // currentPoint = 1;
     currentArea = area;
@@ -26,57 +92,9 @@ function getGEOJSON(area) {
         myMap.tileJSON.vector_layers.push(layer);
     }
 
-    $('.wrap#area-attributes-div').toggleClass('active');
-
-    // $(".wrap#area-attributes-div").find(".content").find("#Attr1").empty();
-    var tableHTML = "";
-    var attributekeys = null;
-    var attributevalues = null;
-
-    // if we click on an area marker, we get a string as the mapbox feature can't seem to store an array and converts it to a string
-    if (typeof area.attributekeys == "string" || typeof area.attributevalues == "string") {
-        attributekeys = JSON.parse(area.attributekeys);
-        attributevalues = JSON.parse(area.attributevalues);
-        // otherwise, we get arrays from the server (clicked on area not through an area marker feature)
-    } else {
-        attributekeys = area.attributekeys;
-        attributevalues = area.attributevalues;
-    }
-
-    // set like object
-    var attributesToDisplay = {
-        "mission": true,
-        "beam_mode": true,
-        "beam_swath": true,
-        "relative_orbit": true,
-        "first_date": true,
-        "last_date": true,
-        "processing_type": true,
-        "processing_software": true,
-        "history": true,
-        "first_frame": true,
-        "last_frame": true,
-        "flight_direction": true,
-        "look_direction": true,
-        "atmos_correct_method": true,
-        "unwrap_method": true,
-        "post_processing_method": true
-    };
-
-    for (var i = 0; i < attributekeys.length; i++) {
-        curKey = attributekeys[i];
-
-        if (curKey in attributesToDisplay) {
-            curValue = attributevalues[i];
-
-            tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
-            tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
-        }
-    }
+    areaAttributesPopup.show(area);
 
     $("#color-scale").toggleClass("active");
-
-    $("#area-attributes-table-body").html(tableHTML);
 
     myMap.initLayer(myMap.tileJSON, "streets");
     var styleLoadFunc = function() {
@@ -490,8 +508,7 @@ contourToggleButton.onclick(function() {
     if (contourToggleButton.toggleState == ToggleStates.ON) {
         myMap.addContourLines();
     } else {
-        myMap.map.removeLayer("contour_label");
-        myMap.map.removeLayer("contours");
+        myMap.removeContourLines();
     }
 });
 

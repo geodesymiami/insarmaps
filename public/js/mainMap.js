@@ -14,6 +14,7 @@ var currentArea = null;
 var file = "/home/vagrant/code/insar_map_mvc/public/json/geo_timeseries_masked.h5test_chunk_";
 var firstToggle = true;
 var myPolygon = null;
+var areaAttributesPopup = new AreaAttributesPopup();
 
 // take an array of displacement values and return velocity standard deviation (confuses the heck out of me)
 var getStandardDeviation = function(displacements, slope) {
@@ -683,7 +684,7 @@ function Map(loadJSONFunc) {
             layers: that.layers_
         });
 
-        that.map.addControl(new mapboxgl.Navigation());
+        that.map.addControl(new mapboxgl.NavigationControl());
 
         // disable rotation gesture
         that.map.dragRotate.disable();
@@ -701,6 +702,7 @@ function Map(loadJSONFunc) {
             that.map.getCanvas().style.cursor =
                 (features.length && !(features[0].layer.id == "contours") && !(features[0].layer.id == "contour_label")) ? 'pointer' : '';
 
+            // mouse not under a marker, clear all popups
             if (!features.length) {
                 that.areaPopup.remove();
                 return;
@@ -715,9 +717,11 @@ function Map(loadJSONFunc) {
 
                 var html = "<table class='table' id='areas-under-mouse-table'>";
                 // make the html table
+                var previewButtonIDSuffix = "_preview_attribues";
+
                 for (var i = 0; i < features.length; i++) {
                     var areaName = features[i].properties.name;
-                    html += "<tr id='" + areaName + "'><td value='" + areaName + "'>" + areaName + "</td></tr>";
+                    html += "<tr><td value='" + areaName + "'><div id='" + areaName + "'>" + areaName + "</div><div class='preview-attributes-button' id=" + areaName + previewButtonIDSuffix + ">I</div></td></tr>";
                 }
                 html += "</table>";
                 that.areaPopup.setLngLat(features[0].geometry.coordinates)
@@ -745,19 +749,36 @@ function Map(loadJSONFunc) {
 
                     // make cursor change when mouse hovers over row
                     $("#areas-under-mouse-table #" + areaName).css("cursor", "pointer");
+                    $(".preview-attributes-button").css("cursor", "pointer");
+                    $("#" + areaName).css({
+                        "width": "80%",
+                        "word-wrap": "break-word",
+                        "float": "left"
+                    });
+
                     // ugly click function declaration to JS not using block scope
-                    $("#areas-under-mouse-table #" + areaName).click((function(area) {
+                    $("#" + areaName).click((function(area) {
                         return function(e) {
-                            // don't load area if reference link is clicked
-                            if (e.target.cellIndex == 0) {
-                                that.determineZoomOutZoom();
-                                clickedArea = area.name;
-                                that.areaPopup.remove();
-                                getGEOJSON(area);
+                            that.determineZoomOutZoom();
+                            clickedArea = area.name;
+                            that.areaPopup.remove();
+                            getGEOJSON(area);
+                        };
+                    })(markerArea));
+                    $("#" + areaName + previewButtonIDSuffix).click((function(area) {
+                        return function(e) {
+                            if ($('.wrap#area-attributes-div').hasClass('active')) {
+                                areaAttributesPopup.populate(area);
+                            } else {
+                                areaAttributesPopup.show(area);
                             }
                         };
                     })(markerArea));
                 }
+                $(".preview-attributes-button").css({
+                    "width": "20%",
+                    "float": "left"
+                });
             }
         });
 
@@ -805,6 +826,11 @@ function Map(loadJSONFunc) {
             }
         }
 
+        // remove contour labels if they are there. this wasn't needed as gl js seemed to remove the contours in the above loop
+        // now it doesn't, causing a crash if we disable data overlay and then disable contour lines
+        if (that.map.getLayer("contours")) {
+            that.removeContourLines();
+        }
         // remove all layers but the first, base layer
         that.layers_ = that.layers_.slice(0, 1);
 
@@ -927,6 +953,11 @@ function Map(loadJSONFunc) {
                 "text-color": "#00fcdc"
             }
         });
+    };
+
+    this.removeContourLines = function() {
+        that.map.removeLayer("contours");
+        that.map.removeLayer("contour_label");
     };
 }
 

@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import json
 import h5py
 import numpy as np
@@ -187,15 +189,23 @@ def make_json_file(chunk_num, points):
 	# insert json file to pgsql using ogr2ogr - folder_name = area name
 	command = 'ogr2ogr -append -f "PostgreSQL" PG:"dbname=pgis host=' + dbHost + ' user=' + dbUsername + ' password=' + dbPassword + '" --config PG_USE_COPY YES -nln ' + folder_name + " "
 	chunk_path = './mbtiles/' + folder_name + '/' + chunk
-	os.system(command + ' ' + chunk_path)
+	res = os.system(command + ' ' + chunk_path)
+
+	if res != 0:
+		print "Error inserting into the database. This is most often due to running out of Memory (RAM), or incorrect database credentials... quitting"
+		sys.exit()
+
 	print "inserted chunk " + str(chunk_num) + " to db"
+
+def usage():
+	print "Usage: python Converter_unavco.py Alos_SM_73_2980_2990_20070107_20110420.h5"
 # ---------------------------------------------------------------------------------------
 # START OF EXECUTABLE
 # ---------------------------------------------------------------------------------------
 # get name of h5 file and the groupname of that file's data
 if (len(sys.argv) != 2):
 	print "Incorrect number of arguments - see correct example below:"
-	print "python Converter_unavco.py Alos_SM_73_2980_2990_20070107_20110420.h5"
+	usage()
 	sys.exit()
 
 file_name = sys.argv[1]
