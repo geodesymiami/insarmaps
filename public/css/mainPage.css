@@ -564,6 +564,11 @@ div.menu {
     margin: 0 !important;
 }
 
+.preview-attributes-button {
+    text-align: center;
+    border-width: 1px;
+    border-style: none none none solid;
+}
 
 /*area information popup with tabs*/
 

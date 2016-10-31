@@ -701,6 +701,7 @@ function Map(loadJSONFunc) {
             that.map.getCanvas().style.cursor =
                 (features.length && !(features[0].layer.id == "contours") && !(features[0].layer.id == "contour_label")) ? 'pointer' : '';
 
+            // mouse not under a marker, clear all popups
             if (!features.length) {
                 //that.areaPopup.remove();
                 return;
@@ -715,9 +716,11 @@ function Map(loadJSONFunc) {
 
                 var html = "<table class='table' id='areas-under-mouse-table'>";
                 // make the html table
+                var previewButtonIDSuffix = "_preview_attribues";
+
                 for (var i = 0; i < features.length; i++) {
                     var areaName = features[i].properties.name;
-                    html += "<tr><td value='" + areaName + "'><div id='" + areaName + "'>" + areaName + "</div><div class='preview-attributes-button' id=" + areaName + "preview_attribues>sh</div></td></tr>";
+                    html += "<tr><td value='" + areaName + "'><div id='" + areaName + "'>" + areaName + "</div><div class='preview-attributes-button' id=" + areaName + previewButtonIDSuffix + ">I</div></td></tr>";
                 }
                 html += "</table>";
                 that.areaPopup.setLngLat(features[0].geometry.coordinates)
@@ -745,6 +748,7 @@ function Map(loadJSONFunc) {
 
                     // make cursor change when mouse hovers over row
                     $("#areas-under-mouse-table #" + areaName).css("cursor", "pointer");
+                    $(".preview-attributes-button").css("cursor", "pointer");
                     $("#" + areaName).css({
                         "width": "80%",
                         "word-wrap": "break-word",
@@ -753,21 +757,26 @@ function Map(loadJSONFunc) {
 
                     // ugly click function declaration to JS not using block scope
                     $("#" + areaName).click((function(area) {
-                        return function(e) {                            
+                        return function(e) {
                             that.determineZoomOutZoom();
                             clickedArea = area.name;
                             that.areaPopup.remove();
                             getGEOJSON(area);
                         };
                     })(markerArea));
+                    $("#" + areaName + previewButtonIDSuffix).click((function(area) {
+                        return function(e) {
+                            if ($('.wrap#area-attributes-div').hasClass('active')) {
+                                populateAreaAttributesPopup(area);
+                            } else {
+                                showAreaAttributesPopup(area);
+                            }
+                        };
+                    })(markerArea));
                 }
                 $(".preview-attributes-button").css({
                     "width": "20%",
                     "float": "left"
-                });
-                $(".preview-attributes-button").on('click', function() {
-                    previewingArea = true;
-                    showAreaAttributesPopup(markerArea);
                 });
             }
         });

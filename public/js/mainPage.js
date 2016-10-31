@@ -1,7 +1,8 @@
-function showAreaAttributesPopup(area) {
+function populateAreaAttributesPopup(area) {
     var tableHTML = "";
     var attributekeys = null;
     var attributevalues = null;
+
     // set like object
     var attributesToDisplay = {
         "mission": true,
@@ -32,12 +33,6 @@ function showAreaAttributesPopup(area) {
         attributevalues = area.attributevalues;
     }
 
-    if (!$('.wrap#area-attributes-div').hasClass('active')) {
-        $('.wrap#area-attributes-div').toggleClass('active');
-    } else {
-        $("#area-attributes-div-minimize-button").click();
-    }
-
     for (var i = 0; i < attributekeys.length; i++) {
         curKey = attributekeys[i];
 
@@ -49,6 +44,16 @@ function showAreaAttributesPopup(area) {
         }
         $("#area-attributes-table-body").html(tableHTML);
     }
+}
+
+function showAreaAttributesPopup(area) {
+    if (!$('.wrap#area-attributes-div').hasClass('active')) {
+        $('.wrap#area-attributes-div').toggleClass('active');
+    } else {
+        $("#area-attributes-div-minimize-button").click();
+    }
+
+    populateAreaAttributesPopup(area);
 }
 
 function getGEOJSON(area) {
