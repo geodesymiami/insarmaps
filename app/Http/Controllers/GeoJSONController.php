@@ -170,15 +170,17 @@ public function getAreas() {
 
     $json["areas"] = [];
     foreach ($areas as $area) {
-      $areaName = $area->name;
+      $unavco_name = $area->unavco_name;
+      $project_name = $area->project_name;
 
       $currentArea = [];
-      $currentArea["name"] = $areaName;
+      $currentArea["unavco_name"] = $unavco_name;
+      $currentArea["project_name"] = $project_name;
 
       // do we have info for that area in the DB? if not, we assume it's public
       $curAreaPermissions = NULL;
-      if (isset($areasPermissions[$areaName])) {
-        $curAreaPermissions = $areasPermissions[$areaName];
+      if (isset($areasPermissions[$unavco_name])) {
+        $curAreaPermissions = $areasPermissions[$unavco_name];
       } else {
         $curAreaPermissions = ["public"];
       }
