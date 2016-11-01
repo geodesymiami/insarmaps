@@ -133,7 +133,7 @@ public function getPoints() {
 
     // add last ANY values without comma
   $curPointNum = $pointsArray[$i];
-  $query = $query . "(" . $curPointNum . "))";
+  $query = $query . "(" . $curPointNum . ")) ORDER BY p ASC";
 
     // echo $fullQuery;
   $points = DB::select($query);
