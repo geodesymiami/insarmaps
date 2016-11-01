@@ -145,7 +145,7 @@ def convert_data():
 	try:
 		con = psycopg2.connect("dbname='pgis' user='" + dbUsername + "' host='" + dbHost + "' password='" + dbPassword + "'")
 		cur = con.cursor()
-		query = 'INSERT INTO area VALUES (' + "'" + area + "','" + "'" + project_name + "','" + str(mid_lat) + "','" + str(mid_long) + "','" + country + "','" + region + "','" + str(chunk_num) + "','" + attribute_keys + "','" + attribute_values + "','" + string_dates_sql + "','" + decimal_dates_sql + "')"
+		query = "INSERT INTO area VALUES (" + "'" + area + "','" + project_name + "','" + str(mid_lat) + "','" + str(mid_long) + "','" + country + "','" + region + "','" + str(chunk_num) + "','" + attribute_keys + "','" + attribute_values + "','" + string_dates_sql + "','" + decimal_dates_sql + "')"
 		cur.execute(query)
 		con.commit()
 		con.close()

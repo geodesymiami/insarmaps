@@ -156,7 +156,7 @@ public function getAreas() {
     $query = "SELECT * from area";
     $areas = DB::select($query);
     $permissionController = new PermissionsController();
-    $areasPermissions = $permissionController->getPermissions("area", "area_allowed_permissions", ["area.name = area_allowed_permissions.area_name"]);
+    $areasPermissions = $permissionController->getPermissions("area", "area_allowed_permissions", ["area.unavco_name = area_allowed_permissions.area_name"]);
 
     $userPermissions = NULL;
 
