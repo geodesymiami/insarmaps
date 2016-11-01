@@ -132,7 +132,7 @@ def convert_data():
 		con = psycopg2.connect("dbname='pgis' user='" + dbUsername + "' host='" + dbHost + "' password='" + dbPassword + "'")
 		cur = con.cursor()
 		# create area table if not exist - limit for number of dates is 200, limt for number of attribute keys/values is 100
-		cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, latitude double precision, longitude double precision, country varchar, region varchar, numchunks integer, attributekeys varchar[100], attributevalues varchar[100], stringdates varchar[200], decimaldates double precision[200] );")
+		cur.execute("CREATE TABLE IF NOT EXISTS area ( unavco_name varchar, project_name varchar, latitude double precision, longitude double precision, country varchar, region varchar, numchunks integer, attributekeys varchar[100], attributevalues varchar[100], stringdates varchar[200], decimaldates double precision[200] );")
 		con.commit()
 		print 'created area table'
 	except Exception, e:
@@ -145,7 +145,7 @@ def convert_data():
 	try:
 		con = psycopg2.connect("dbname='pgis' user='" + dbUsername + "' host='" + dbHost + "' password='" + dbPassword + "'")
 		cur = con.cursor()
-		query = 'INSERT INTO area VALUES (' + "'" + area + "','" + str(mid_lat) + "','" + str(mid_long) + "','" + country + "','" + region + "','" + str(chunk_num) + "','" + attribute_keys + "','" + attribute_values + "','" + string_dates_sql + "','" + decimal_dates_sql + "')"
+		query = "INSERT INTO area VALUES (" + "'" + area + "','" + project_name + "','" + str(mid_lat) + "','" + str(mid_long) + "','" + country + "','" + region + "','" + str(chunk_num) + "','" + attribute_keys + "','" + attribute_values + "','" + string_dates_sql + "','" + decimal_dates_sql + "')"
 		cur.execute(query)
 		con.commit()
 		con.close()
@@ -218,9 +218,11 @@ start_time = time.clock()
 # search for region file - if exist get first line which is region name
 region_file = None
 region = "null"
+project_name = "null"
 try: 
 	region_file = open(region_file_name, "r")
 	region = region_file.readline()
+	project_name = region_file.readline()
 	region_file.close()
 except:
 	pass
