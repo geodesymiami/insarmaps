@@ -456,7 +456,7 @@ function Map(loadJSONFunc) {
 
         // needed as mapbox doesn't return original feature
         var markerArea = {
-            "name": areaName,
+            "unavco_name": areaName,
             "coords": {
                 "latitude": lat,
                 "longitude": long,
@@ -738,7 +738,7 @@ function Map(loadJSONFunc) {
                     var attributeValues = features[i].properties.attributevalues;
 
                     var markerArea = {
-                        "name": areaName,
+                        "unavco_name": areaName,
                         "coords": {
                             "latitude": lat,
                             "longitude": long,
