@@ -444,7 +444,7 @@ function Map(loadJSONFunc) {
         var feature = features[0];
 
         console.log(feature);
-        var areaName = feature.properties.name;
+        var unavco_name = feature.properties.unavco_name;
         var lat = feature.geometry.coordinates[0];
         var long = feature.geometry.coordinates[1];
         var num_chunks = feature.properties.num_chunks;
@@ -456,7 +456,7 @@ function Map(loadJSONFunc) {
 
         // needed as mapbox doesn't return original feature
         var markerArea = {
-            "unavco_name": areaName,
+            "unavco_name": unavco_name,
             "coords": {
                 "latitude": lat,
                 "longitude": long,
@@ -568,7 +568,8 @@ function Map(loadJSONFunc) {
                     },
                     "properties": {
                         "marker-symbol": "marker",
-                        "name": area.unavco_name,
+                        "unavco_name": area.unavco_name,
+                        "project_name": area.project_name,
                         "num_chunks": area.num_chunks,
                         "attributekeys": area.attributekeys,
                         "attributevalues": area.attributevalues
@@ -721,15 +722,17 @@ function Map(loadJSONFunc) {
                 var previewButtonIDSuffix = "_preview_attribues";
 
                 for (var i = 0; i < features.length; i++) {
-                    var areaName = features[i].properties.name;
-                    html += "<tr><td value='" + areaName + "'><div id='" + areaName + "'>" + areaName + "</div><div class='preview-attributes-button clickable-button' id=" + areaName + previewButtonIDSuffix + ">I</div></td></tr>";
+                    var unavco_name = features[i].properties.unavco_name;
+                    var project_name = features[i].properties.project_name;
+                    html += "<tr><td value='" + unavco_name + "'><div id='" + unavco_name + "'>" + project_name + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">I</div></td></tr>";
                 }
                 html += "</table>";
                 that.areaPopup.setLngLat(features[0].geometry.coordinates)
                     .setHTML(html).addTo(that.map);
                 // make table respond to clicks
                 for (var i = 0; i < features.length; i++) {
-                    var areaName = features[i].properties.name;
+                    var unavco_name = features[i].properties.unavco_name;
+                    var project_name = features[i].properties.project_name;
                     var lat = features[i].geometry.coordinates[0];
                     var long = features[i].geometry.coordinates[1];
                     var num_chunks = features[i].properties.num_chunks;
@@ -738,7 +741,7 @@ function Map(loadJSONFunc) {
                     var attributeValues = features[i].properties.attributevalues;
 
                     var markerArea = {
-                        "unavco_name": areaName,
+                        "unavco_name": unavco_name,
                         "coords": {
                             "latitude": lat,
                             "longitude": long,
@@ -749,24 +752,24 @@ function Map(loadJSONFunc) {
                     };
 
                     // make cursor change when mouse hovers over row
-                    $("#areas-under-mouse-table #" + areaName).css("cursor", "pointer");
+                    $("#areas-under-mouse-table #" + unavco_name).css("cursor", "pointer");
                     $(".preview-attributes-button").css("cursor", "pointer");
-                    $("#" + areaName).css({
+                    $("#" + unavco_name).css({
                         "width": "80%",
                         "word-wrap": "break-word",
                         "float": "left"
                     });
 
                     // ugly click function declaration to JS not using block scope
-                    $("#" + areaName).click((function(area) {
+                    $("#" + unavco_name).click((function(area) {
                         return function(e) {
                             that.determineZoomOutZoom();
-                            clickedArea = area.name;
+                            clickedArea = area.unavco_name;
                             that.areaPopup.remove();
                             getGEOJSON(area);
                         };
                     })(markerArea));
-                    $("#" + areaName + previewButtonIDSuffix).hover((function(area) {
+                    $("#" + unavco_name + previewButtonIDSuffix).hover((function(area) {
                         return function(e) {
                             if ($('.wrap#area-attributes-div').hasClass('active')) {
                                 areaAttributesPopup.populate(area);
