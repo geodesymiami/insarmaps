@@ -587,6 +587,17 @@ function prepareButtonsToHighlightOnHover() {
     });
 }
 
+function slideFunction(event, ui) {
+    // start at 1 to avoid base map layer
+    for (var i = 1; i < myMap.layers_.length; i++) {
+        var layerName = myMap.layers_[i].id;
+        var newOpacity = ui.value / 100.0;
+        newOpacity *= newOpacity * newOpacity; // scale it, as the default scale is not very linear
+
+        myMap.map.setPaintProperty(layerName, "circle-opacity", newOpacity);
+    }
+}
+
 // when site loads, turn toggle on
 $(window).load(function() {
     var NUM_CHUNKS = 300;
@@ -785,23 +796,13 @@ $(window).load(function() {
             change: function(event, ui) {
                 // call change only if too many layers, to avoid lag
                 if (myMap.layers_.length > NUM_CHUNKS) {
-                    // start at 1 to avoid base map layer
-                    for (var i = 1; i < myMap.layers_.length; i++) {
-                        var layerName = myMap.layers_[i].id;
-
-                        myMap.map.setPaintProperty(layerName, "circle-opacity", ui.value / 100.0);
-                    }
+                    slideFunction(event, ui);
                 }
             },
             slide: function(event, ui) {
                 // call slide only if sufficiently small amount of layers, otherwise lag
                 if (myMap.layers_.length <= NUM_CHUNKS) {
-                    // start at 1 to avoid base map layer
-                    for (var i = 1; i < myMap.layers_.length; i++) {
-                        var layerName = myMap.layers_[i].id;
-
-                        myMap.map.setPaintProperty(layerName, "circle-opacity", ui.value / 100.0);
-                    }
+                    slideFunction(event, ui);
                 }
             }
         });
