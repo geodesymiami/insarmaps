@@ -108,11 +108,7 @@
 
         <div id="Attr1" class="tabcontent">
           <table class="table" id="area-attributes-table">
-            <thead>
-              <tr>
-                <th>Attribute</th>
-                <th>Value</th>
-              </tr>
+            <thead>              
             </thead>
             <tbody id="area-attributes-table-body">            
             </tbody>          
