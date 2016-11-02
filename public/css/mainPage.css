@@ -38,6 +38,10 @@ label {
     font-weight: normal !important;
 }
 
+.hovered {
+    background-color: blue !important;
+}
+
 .page-container {
     position: relative;
     display: block;
@@ -562,6 +566,10 @@ div.menu {
 
 #areas-under-mouse-table {
     margin: 0 !important;
+}
+
+#areas-under-mouse-table td {
+    display: flex;
 }
 
 .preview-attributes-button {

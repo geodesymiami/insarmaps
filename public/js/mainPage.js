@@ -78,7 +78,7 @@ function getGEOJSON(area) {
     //myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
     // myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://ec2-52-41-231-16.us-west-2.compute.amazonaws.com:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
 
-    myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://129.171.97.228:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
+    myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://129.171.97.228:8888/" + area.unavco_name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
 
     if (myMap.pointsLoaded()) {
         myMap.removePoints();
@@ -532,7 +532,7 @@ function search() {
         // new sublist of areas that match query
         var match_areas = [];
 
-        var fuse = new Fuse(areas, { keys: ["country", "name", "region", "mission"] });
+        var fuse = new Fuse(areas, { keys: ["country", "unavco_name", "region", "mission"] });
         var countries = fuse.search(query);
 
         console.log("area 1");
@@ -542,16 +542,16 @@ function search() {
         for (var i = 0; i < countries.length; i++) {
             var country = countries[i];
 
-            $("#tableBody").append("<tr id=" + country.name + "><td value='" + country.name + "''>" +
-                country.name + "</td><td value='reference'><a href='http://www.rsmas.miami.edu/personal/famelung/Publications_files/ChaussardAmelungAoki_VolcanoCycles_JGR_2013.pdf' target='_blank'>" +
+            $("#tableBody").append("<tr id=" + country.unavco_name + "><td value='" + country.unavco_name + "''>" +
+                country.unavco_name + "(" + country.project_name + ")</td><td value='reference'><a href='http://www.rsmas.miami.edu/personal/famelung/Publications_files/ChaussardAmelungAoki_VolcanoCycles_JGR_2013.pdf' target='_blank'>" +
                 "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288.</a></td></tr>");
 
             // make cursor change when mouse hovers over row
-            $("#" + country.name).css("cursor", "pointer");
+            $("#" + country.unavco_name).css("cursor", "pointer");
             // set the on click callback function for this row
 
             // ugly click function declaration to JS not using block scope
-            $("#" + country.name).click((function(country) {
+            $("#" + country.unavco_name).click((function(country) {
                 return function(e) {
                     // don't load area if reference link is clicked
                     if (e.target.cellIndex == 0) {
@@ -577,6 +577,14 @@ function DivState() {
     this.height = 0;
     this.width = 0;
     this.animating = false;
+}
+
+function prepareButtonsToHighlightOnHover() {
+    $(".clickable-button").hover(function() {
+        $(this).addClass("hovered");
+    }, function() {
+        $(this).removeClass("hovered");
+    });
 }
 
 // when site loads, turn toggle on
@@ -825,4 +833,6 @@ $(window).load(function() {
             window.location = "/auth/login";
         }
     });
+
+    prepareButtonsToHighlightOnHover();
 });
