@@ -766,7 +766,7 @@ function Map(loadJSONFunc) {
                             getGEOJSON(area);
                         };
                     })(markerArea));
-                    $("#" + areaName + previewButtonIDSuffix).click((function(area) {
+                    $("#" + areaName + previewButtonIDSuffix).hover((function(area) {
                         return function(e) {
                             if ($('.wrap#area-attributes-div').hasClass('active')) {
                                 areaAttributesPopup.populate(area);
@@ -774,9 +774,11 @@ function Map(loadJSONFunc) {
                                 areaAttributesPopup.show(area);
                             }
                         };
-                    })(markerArea));
+                    })(markerArea), function() {
+                        $('.wrap#area-attributes-div').toggleClass('active');
+                    });
                 }
-                
+
                 $(".preview-attributes-button").css({
                     "width": "20%",
                     "float": "left"
