@@ -181,7 +181,7 @@ function SquareSelector(map) {
 
         var featuresMap = [];
 
-        var query = currentArea.name + "/";
+        var query = currentArea.unavco_name + "/";
 
         for (var i = 0; i < features.length; i++) {
             var long = features[i].geometry.coordinates[0];
