@@ -568,7 +568,7 @@ function Map(loadJSONFunc) {
                     },
                     "properties": {
                         "marker-symbol": "marker",
-                        "name": area.project_name,
+                        "name": area.unavco_name,
                         "num_chunks": area.num_chunks,
                         "attributekeys": area.attributekeys,
                         "attributevalues": area.attributevalues
