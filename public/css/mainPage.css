@@ -38,6 +38,10 @@ label {
     font-weight: normal !important;
 }
 
+.hovered {
+    background-color: blue !important;
+}
+
 .page-container {
     position: relative;
     display: block;

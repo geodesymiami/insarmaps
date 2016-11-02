@@ -697,6 +697,7 @@ function Map(loadJSONFunc) {
 
         // Use the same approach as above to indicate that the symbols are clickable
         // by changing the cursor style to 'pointer'.
+        // mainly used to show available areas under a marker
         that.map.on('mousemove', function(e) {
             var features = that.map.queryRenderedFeatures(e.point, { layers: that.layers });
             that.map.getCanvas().style.cursor =
@@ -721,7 +722,7 @@ function Map(loadJSONFunc) {
 
                 for (var i = 0; i < features.length; i++) {
                     var areaName = features[i].properties.name;
-                    html += "<tr><td value='" + areaName + "'><div id='" + areaName + "'>" + areaName + "</div><div class='preview-attributes-button' id=" + areaName + previewButtonIDSuffix + ">I</div></td></tr>";
+                    html += "<tr><td value='" + areaName + "'><div id='" + areaName + "'>" + areaName + "</div><div class='preview-attributes-button clickable-button' id=" + areaName + previewButtonIDSuffix + ">I</div></td></tr>";
                 }
                 html += "</table>";
                 that.areaPopup.setLngLat(features[0].geometry.coordinates)
@@ -775,10 +776,12 @@ function Map(loadJSONFunc) {
                         };
                     })(markerArea));
                 }
+                
                 $(".preview-attributes-button").css({
                     "width": "20%",
                     "float": "left"
                 });
+                prepareButtonsToHighlightOnHover();
             }
         });
 

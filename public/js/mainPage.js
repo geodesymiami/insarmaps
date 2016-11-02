@@ -579,6 +579,14 @@ function DivState() {
     this.animating = false;
 }
 
+function prepareButtonsToHighlightOnHover() {
+    $(".clickable-button").hover(function() {
+        $(this).addClass("hovered");
+    }, function() {
+        $(this).removeClass("hovered");
+    });
+}
+
 // when site loads, turn toggle on
 $(window).load(function() {
     var NUM_CHUNKS = 300;
@@ -825,4 +833,6 @@ $(window).load(function() {
             window.location = "/auth/login";
         }
     });
+
+    prepareButtonsToHighlightOnHover();
 });

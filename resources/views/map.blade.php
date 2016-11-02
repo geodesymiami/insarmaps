@@ -69,14 +69,14 @@
         </div>
       </div>
       <div id="reset-button">
-        <button class="btn btn-primary-outline">Reset</button>
+        <button class="btn btn-primary-outline clickable-button">Reset</button>
       </div>
       <div id="information-button">                
-        <button class="btn btn-primary-outline">About</button>
+        <button class="btn btn-primary-outline clickable-button">About</button>
       </div>
       @if (Auth::check()) 
       <div class="logged-in" id="login-logout-button">
-       <button class="btn btn-primary-outline">Logout</button>
+       <button class="btn btn-primary-outline clickable-button">Logout</button>
      </div>
      @endif
    </div>    
