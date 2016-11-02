@@ -568,6 +568,10 @@ div.menu {
     margin: 0 !important;
 }
 
+#areas-under-mouse-table td {
+    display: flex;
+}
+
 .preview-attributes-button {
     text-align: center;
     border-width: 1px;

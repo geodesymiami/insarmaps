@@ -706,7 +706,7 @@ function Map(loadJSONFunc) {
 
             // mouse not under a marker, clear all popups
             if (!features.length) {
-                that.areaPopup.remove();
+                //that.areaPopup.remove();
                 return;
             }
             // if it's a select area marker, but not a selected point marker... I suppose this is hackish
@@ -755,7 +755,7 @@ function Map(loadJSONFunc) {
                     $("#areas-under-mouse-table #" + unavco_name).css("cursor", "pointer");
                     $(".preview-attributes-button").css("cursor", "pointer");
                     $("#" + unavco_name).css({
-                        "width": "80%",
+                        "width": "95%",
                         "word-wrap": "break-word",
                         "float": "left"
                     });
@@ -783,7 +783,7 @@ function Map(loadJSONFunc) {
                 }
 
                 $(".preview-attributes-button").css({
-                    "width": "20%",
+                    "width": "5%",
                     "float": "left"
                 });
                 prepareButtonsToHighlightOnHover();
