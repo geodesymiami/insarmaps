@@ -346,7 +346,7 @@ function Map(loadJSONFunc) {
                 },
                 tooltip: {
                     headerFormat: '',
-                    pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} m'
+                    pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} cm'
                 },
                 series: [{
                     type: 'scatter',
