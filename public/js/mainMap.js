@@ -33,7 +33,7 @@ var convertStringsToDateArray = function(date_string_array) {
         var year = date_string_array[i].toString().substr(0, 4);
         var month = date_string_array[i].toString().substr(4, 2);
         var day = date_string_array[i].toString().substr(6, 2);
-        var date = new Date(year, month, day);
+        var date = new Date(year, month - 1, day);
         date_array.push(date);
     }
     return date_array;
@@ -99,7 +99,7 @@ function getDisplacementChartData(displacements, dates) {
         var year = parseInt(dates[i].toString().substr(0, 4));
         var month = parseInt(dates[i].toString().substr(4, 2));
         var day = parseInt(dates[i].toString().substr(6, 2));
-        data.push([Date.UTC(year, month, day), displacements[i]]);
+        data.push([Date.UTC(year, month - 1, day), displacements[i]]);
     }
     return data;
 }
@@ -726,7 +726,7 @@ function Map(loadJSONFunc) {
                 for (var i = 0; i < features.length; i++) {
                     var unavco_name = features[i].properties.unavco_name;
                     var project_name = that.prettyPrintProjectName(features[i].properties.project_name);
-                    html += "<tr><td value='" + unavco_name + "'><div id='" + unavco_name + "'>" + project_name + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">I</div></td></tr>";
+                    html += "<tr><td value='" + unavco_name + "'><div id='" + unavco_name + "'>" + project_name + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">i</div></td></tr>";
                 }
                 html += "</table>";
                 that.areaPopup.setLngLat(features[0].geometry.coordinates)
