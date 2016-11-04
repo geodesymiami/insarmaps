@@ -836,4 +836,8 @@ $(window).load(function() {
     });
 
     prepareButtonsToHighlightOnHover();
+
+    $("#download-as-text-button").click(function() {
+        window.open("/textFile/" + currentArea.unavco_name + "/" + currentPoint);
+    });
 });

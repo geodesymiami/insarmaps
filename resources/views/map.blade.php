@@ -169,6 +169,9 @@
           <label>Detrend</label>
           <input id = "detrend-toggle-button" type="checkbox" name="overlayToggle"/>          
         </div>
+        <div id="download-as-text-button">
+          <button class="btn btn-primary clickable-button">Download as TXT</button>
+        </div>
       </div>
     </div> 
   </div>
