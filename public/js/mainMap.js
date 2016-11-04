@@ -723,7 +723,7 @@ function Map(loadJSONFunc) {
 
                 for (var i = 0; i < features.length; i++) {
                     var unavco_name = features[i].properties.unavco_name;
-                    var project_name = features[i].properties.project_name;
+                    var project_name = that.prettyPrintProjectName(features[i].properties.project_name);
                     html += "<tr><td value='" + unavco_name + "'><div id='" + unavco_name + "'>" + project_name + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">I</div></td></tr>";
                 }
                 html += "</table>";
@@ -966,6 +966,49 @@ function Map(loadJSONFunc) {
     this.removeContourLines = function() {
         that.map.removeLayer("contours");
         that.map.removeLayer("contour_label");
+    };
+
+    this.prettyPrintProjectName = function(projectName) {
+        var trackIndex = projectName.indexOf("T");
+        var frameIndex = projectName.indexOf("F");
+        var trackNumber = projectName.substring(trackIndex + 1, frameIndex);
+        var regionName = projectName.substring(0, trackIndex);
+
+        var prettyPrintedName = regionName;
+
+
+        // sometimes there is only one frame number instead of framenumber_framenumber - look for "_"
+        var regex = /_/;
+
+        var underscoreFound = projectName.match(regex);
+
+        var firstFrame = null;
+        var lastFrame = null;
+        var frames = null;
+        var frameNumbers = null;
+
+        // multiple tracks
+        if (underscoreFound) {
+            regex = /T\d+_\d+/;
+
+            frames = projectName.match(regex);
+            frameNumbers = frames[0].split("_");
+            firstFrame = frameNumbers[0];
+            lastFrame = frameNumbers[1];
+        } else {
+            regex = /F\d+/;
+            frames = projectName.match(regex);
+            frameNumbers = frames[0].split("_");
+            firstFrame = frames[0];
+            lastFrame = frames[0];
+        }
+
+        var missionIndex = regionName.length + firstFrame.length + trackNumber.length;
+        var mission = projectName.substring(missionIndex + 1, projectName.length);
+
+        prettyPrintedName += " " + mission + " T" + trackNumber;
+
+        return prettyPrintedName;
     };
 }
 
