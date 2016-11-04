@@ -172,6 +172,8 @@ function Map(loadJSONFunc) {
         var lat = feature.geometry.coordinates[1];
         var pointNumber = feature.properties.p;
 
+        currentPoint = pointNumber;
+
         if (pointNumber === undefined || pointNumber === null || feature.layer.id == "contours" || feature.layer.id == "contour_label") {
             return;
         }
@@ -977,7 +979,7 @@ function Map(loadJSONFunc) {
         var prettyPrintedName = regionName;
 
 
-        // sometimes there is only one frame number instead of framenumber_framenumber - look for "_"
+        // sometimes there is only one track number instead of framenumber_framenumber - look for "_"
         var regex = /_/;
 
         var underscoreFound = projectName.match(regex);
@@ -989,7 +991,7 @@ function Map(loadJSONFunc) {
 
         // multiple tracks
         if (underscoreFound) {
-            regex = /T\d+_\d+/;
+            regex = /F\d+_\d+/;
 
             frames = projectName.match(regex);
             frameNumbers = frames[0].split("_");

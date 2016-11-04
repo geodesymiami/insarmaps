@@ -224,7 +224,6 @@ public function getAreas() {
       $datesLen = count($dates);
 
       $lineToWrite = "";
-      echo $datesLen;
 
       for ($i = 0; $i < $datesLen; $i++) {
         $lineToWrite .= $dates[$i] . "   " . $displacements[$i] . "\n";
@@ -232,9 +231,15 @@ public function getAreas() {
 
       fwrite($textFile, $lineToWrite);
 
+      $response = response()->download($filePath)->deleteFileAfterSend(true);
+
       fclose($textFile);
+
+      return $response;
     } catch (\Illuminate\Database\QueryException $e) {
       echo "Error getting point data for text file";
+
+      return NULL;
     }
   }
 }
