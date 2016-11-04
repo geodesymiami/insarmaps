@@ -64,8 +64,8 @@ class GeoJSONController extends Controller {
     return $this->stringArrayToFloatArray($stringArray);
   }
 
-  public function getDataForPoint($area, $pointNumber) {
-    try {
+  /** @throws Exception */
+  private function jsonDataForPoint($area, $pointNumber) {
       $json = [];
       // hard coded until zishi is back
       $decimal_dates = null;
@@ -90,12 +90,19 @@ class GeoJSONController extends Controller {
      foreach ($points as $point) {
       $json["displacements"] = $this->postgresToPHPFloatArray($point->d);
     }
-    echo json_encode($json);
-  } catch (\Illuminate\Database\QueryException $e) {
-    echo "Point Not found";
+
+    return $json;
   }
 
-}  
+  public function getDataForPoint($area, $pointNumber) {
+    try {
+      $json = $this->jsonDataForPoint($area, $pointNumber);
+
+      echo json_encode($json);
+    } catch (\Illuminate\Database\QueryException $e) {
+      echo "Point Not found";
+    }
+  }  
 
 public function getPoints() {
   $points = Input::get("points");
@@ -205,4 +212,29 @@ public function getAreas() {
     echo "error getting areas";
   }
 }
+
+  public function pointDataToTextFile($area, $pointNumber) {
+    try {
+      $json = $this->jsonDataForPoint($area, $pointNumber);
+      $filePath = storage_path() . "/" . $area . ".txt";
+      $textFile = fopen($filePath, "w") or die("failed");
+
+      $dates = $json["string_dates"];
+      $displacements = $json["displacements"];
+      $datesLen = count($dates);
+
+      $lineToWrite = "";
+      echo $datesLen;
+
+      for ($i = 0; $i < $datesLen; $i++) {
+        $lineToWrite .= $dates[$i] . "   " . $displacements[$i] . "\n";
+      }
+
+      fwrite($textFile, $lineToWrite);
+
+      fclose($textFile);
+    } catch (\Illuminate\Database\QueryException $e) {
+      echo "Error getting point data for text file";
+    }
+  }
 }
