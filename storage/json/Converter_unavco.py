@@ -219,11 +219,11 @@ except getopt.GetoptError:
 for o, a in opts:
 	if o == '-f':
 		file_name = a
-	elif o == 'u':
+	elif o == '-u':
 		dbUsername = a
-	elif o == 'p':
+	elif o == '-p':
 		dbPassword = a
-	elif o == 'h':
+	elif o == '-h':
 		dbHost = a
 	else:
 		assert False, "unhandled option - exit"
