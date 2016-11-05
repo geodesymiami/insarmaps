@@ -2,6 +2,7 @@
 
 import sys
 import os
+import getopt
 
 # extract project name from command line supplied path
 def project_name_from_path(path):

@@ -10,6 +10,7 @@ import os
 import sys
 import psycopg2
 import geocoder
+import getopt
 
 # ex: python Converter_unavco.py Alos_SM_73_2980_2990_20070107_20110420.h5
 
