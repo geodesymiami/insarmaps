@@ -209,7 +209,7 @@ def usage():
 file_name = None
 
 try:
-	opts, extraArgs = getopt.getopt(sys.argv[1:],'f:u:p:h:') 
+	opts, extraArgs = getopt.getopt(sys.argv[1:],'f:u:p:h:')
 except getopt.GetoptError:
 	print 'Error while retrieving operations - exit'
 	usage()

@@ -40,10 +40,35 @@ def get_H5_filename(path):
 	return h5_file # h5 file to go on site should be second newest file
 
 def usage():
-	print "pysar2insarmapsBatch.py path/dir"
+	print "pysar2insarmapsBatch.py -f path/dir -u DB_USERNAME -p DBPASSWORD -h DB_PASSWORD"
+
+dbUsername = "INSERT"
+dbPassword = "INSERT"
+dbHost = "INSERT"
+
+path = None
+
+try:
+	opts, extraArgs = getopt.getopt(sys.argv[1:],'f:u:p:h:')
+except getopt.GetoptError:
+	print 'Error while retrieving operations - exit'
+	usage()
+	sys.exit()
+
+for o, a in opts:
+	if o == '-f':
+		path = a
+	elif o == 'u':
+		dbUsername = a
+	elif o == 'p':
+		dbPassword = a
+	elif o == 'h':
+		dbHost = a
+	else:
+		assert False, "unhandled option - exit"
+		sys.exit()
 
 bjob_script_filename = "run_pysar2insarmaps.py"
-path = sys.argv[1:][0]
 path_absolute = os.path.abspath(path)
 
 h5_file = get_H5_filename(path)
@@ -60,7 +85,7 @@ print "copying files to scratch with command " + command
 os.system(command)
 
 # go to scratch dir, and run the bjob command
-command = "echo unavco2website.py " + h5_file + " > " + bjob_script_filename
+command = "echo unavco2website.py -f " + h5_file + " -u " + dbUsername + " -p " + dbPassword + " -h " + dbHost + " > " + bjob_script_filename
 
 mbtiles_filename = h5_file.split(".")[0] + ".mbtiles"
 os.chdir(scratch_dir)
