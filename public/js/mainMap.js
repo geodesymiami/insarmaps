@@ -708,7 +708,7 @@ function Map(loadJSONFunc) {
 
             // mouse not under a marker, clear all popups
             if (!features.length) {
-                //that.areaPopup.remove();
+                that.areaPopup.remove();
                 return;
             }
             // if it's a select area marker, but not a selected point marker... I suppose this is hackish
@@ -988,6 +988,7 @@ function Map(loadJSONFunc) {
         var lastFrame = null;
         var frames = null;
         var frameNumbers = null;
+        var missionIndex = 0;
 
         // multiple tracks
         if (underscoreFound) {
@@ -997,16 +998,20 @@ function Map(loadJSONFunc) {
             frameNumbers = frames[0].split("_");
             firstFrame = frameNumbers[0];
             lastFrame = frameNumbers[1];
+            missionIndex = regionName.length + firstFrame.length + lastFrame.length + 1 + trackNumber.length;
         } else {
             regex = /F\d+/;
             frames = projectName.match(regex);
             frameNumbers = frames[0].split("_");
             firstFrame = frames[0];
             lastFrame = frames[0];
+            missionIndex = regionName.length + firstFrame.length + trackNumber.length;
         }
-
-        var missionIndex = regionName.length + firstFrame.length + trackNumber.length;
+         
         var mission = projectName.substring(missionIndex + 1, projectName.length);
+        var missionType = mission.charAt(mission.length - 1);
+        mission = mission.substring(0, mission.length - 1);
+        mission += " " + missionType;
 
         prettyPrintedName += " " + mission + " T" + trackNumber;
 
