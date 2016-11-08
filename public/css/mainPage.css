@@ -39,7 +39,7 @@ label {
 }
 
 .hovered {
-    background-color: blue !important;
+    background-color: #dcdee2 !important;
 }
 
 .page-container {
@@ -130,8 +130,8 @@ label {
     position: fixed;
     bottom: 4%;
     right: 0%;
-    height: 400px;
-    width: 330px;
+    height: 310px;
+    width: 300px;
     overflow-y: auto;
     background-color: white !important;
 }
@@ -575,7 +575,6 @@ div.menu {
 .preview-attributes-button {
     text-align: center;
     border-width: 1px;
-    border-style: none none none solid;
 }
 
 /*area information popup with tabs*/
