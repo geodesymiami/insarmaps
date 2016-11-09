@@ -101,12 +101,13 @@
     </div>
     <div class="content">
         <ul class="tab">
-          <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr1')">Attr1</a></li>
-          <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr2')">Attr2</a></li>
-          <li><a href="#" class="tablinks" onclick="goToTab(event, 'Attr3')">Attr3</a></li>
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'deails-tab')">Details</a></li>
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'downloads-tab')">Downloads</a></li>
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'reference-tab')">Reference</a></li>
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'links-tab')">Links</a></li>
         </ul>
 
-        <div id="Attr1" class="tabcontent">
+        <div id="deails-tab" class="tabcontent">
           <table class="table" id="area-attributes-table">
             <thead>              
             </thead>
@@ -115,12 +116,15 @@
           </table>
         </div>
 
-        <div id="Attr2" class="tabcontent">          
-          <p>Not available .</p> 
+        <div id="downloads-tab" class="tabcontent">
+          <p>Download to Unavco InSAR data products to be implemented.</p>
         </div>
 
-        <div id="Attr3" class="tabcontent">
-          <p>Not available.</p>
+        <div id="reference-tab" class="tabcontent">
+          <p>Reference to the papers to be added.</p>
+        </div>
+        <div id="links-tab" class="tabcontent">
+          <p>Extra links to be added.</p>
         </div>
       </div>
     </div>

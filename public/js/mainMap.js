@@ -732,7 +732,6 @@ function Map(loadJSONFunc) {
             if (markerSymbol != null && typeof markerSymbol != "undefined" && markerSymbol != "cross" && markerSymbol != "crossRed") {
                 // Populate the areaPopup and set its coordinates
                 // based on the feature found.
-
                 var html = "<table class='table' id='areas-under-mouse-table'>";
                 // make the html table
                 var previewButtonIDSuffix = "_preview_attribues";
@@ -740,11 +739,20 @@ function Map(loadJSONFunc) {
                 for (var i = 0; i < features.length; i++) {
                     var unavco_name = features[i].properties.unavco_name;
                     var project_name = that.prettyPrintProjectName(features[i].properties.project_name);
-                    html += "<tr><td value='" + unavco_name + "'><div id='" + unavco_name + "'>" + project_name + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">i</div></td></tr>";
+                    var attributeValues = JSON.parse(features[i].properties.attributevalues);
+                    var first_date_index = JSON.parse(features[i].properties.attributekeys).indexOf("first_date");
+
+                    var first_date = attributeValues[first_date_index];
+                    var last_date = attributeValues[first_date_index + 1];
+
+                    html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date +
+                    "' data-placement='left'>" + project_name + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">i</div></td></tr>";
                 }
+
                 html += "</table>";
                 that.areaPopup.setLngLat(features[0].geometry.coordinates)
                     .setHTML(html).addTo(that.map);
+                $(".area-name-popup").tooltip(); // activate tooltips
                 // make table respond to clicks
                 for (var i = 0; i < features.length; i++) {
                     var unavco_name = features[i].properties.unavco_name;
@@ -856,7 +864,7 @@ function Map(loadJSONFunc) {
 
         // remove contour labels if they are there. this wasn't needed as gl js seemed to remove the contours in the above loop
         // now it doesn't, causing a crash if we disable data overlay
-        and then disable contour lines
+        // and then disable contour lines
         if (that.map.getLayer("contours")) {
             that.removeContourLines();
         }
