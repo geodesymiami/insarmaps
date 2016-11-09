@@ -136,6 +136,10 @@ label {
     background-color: white !important;
 }
 
+.tooltip.left {
+    margin-left: -40px !important;
+}
+
 #topography-wrap {
     position: absolute;
     top: 10%;
