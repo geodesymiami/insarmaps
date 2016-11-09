@@ -480,7 +480,6 @@ function Map(loadJSONFunc) {
         };
 
         getGEOJSON(markerArea);
-        that.loadAreaMarkers();
     };
 
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)

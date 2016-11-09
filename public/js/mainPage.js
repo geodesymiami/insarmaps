@@ -109,6 +109,7 @@ function getGEOJSON(area) {
                 zoom: 7
             });
             myMap.map.off("style.load", styleLoadFunc);
+            myMap.loadAreaMarkers();
         }, 1000);
     };
 
