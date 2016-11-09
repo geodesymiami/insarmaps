@@ -738,15 +738,15 @@ function Map(loadJSONFunc) {
 
                 for (var i = 0; i < features.length; i++) {
                     var unavco_name = features[i].properties.unavco_name;
-                    var project_name = that.prettyPrintProjectName(features[i].properties.project_name);
+                    var prettyNameAndComponents = that.prettyPrintProjectName(features[i].properties.project_name);
                     var attributeValues = JSON.parse(features[i].properties.attributevalues);
                     var first_date_index = JSON.parse(features[i].properties.attributekeys).indexOf("first_date");
 
                     var first_date = attributeValues[first_date_index];
                     var last_date = attributeValues[first_date_index + 1];
 
-                    html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date +
-                    "' data-placement='left'>" + project_name + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">i</div></td></tr>";
+                    html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-html='true' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date + "<br>" +
+                        prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + "' data-placement='left'>" + prettyNameAndComponents.region + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">i</div></td></tr>";
                 }
 
                 html += "</table>";
@@ -780,8 +780,8 @@ function Map(loadJSONFunc) {
                     $(".preview-attributes-button").css("cursor", "pointer");
                     $("#" + unavco_name).css({
                         "width": "95%",
-                        "word-wrap": "break-word",
-                        "float": "left"
+                        "float": "left",
+                        "padding-right": "10px"
                     });
 
                     // ugly click function declaration to JS not using block scope
@@ -1037,12 +1037,21 @@ function Map(loadJSONFunc) {
 
         var mission = projectName.substring(missionIndex + 1, projectName.length);
         var missionType = mission.charAt(mission.length - 1);
+        var missionSatellite = mission.charAt(mission.length - 3);
         mission = mission.substring(0, mission.length - 1);
         mission += " " + missionType;
 
         prettyPrintedName += " " + mission + " T" + trackNumber;
 
-        return prettyPrintedName;
+        var name = {
+            fullPrettyName: prettyPrintedName,
+            missionSatellite: missionSatellite,
+            region: regionName,
+            missionType: missionType,
+            trackNumber: trackNumber
+        };
+
+        return name;
     };
 }
 
