@@ -441,6 +441,7 @@ function switchLayer(layer) {
     }
 
     myMap.map.off("style.off");
+    myMap.loadAreaMarkers();
 }
 
 for (var i = 0; i < inputs.length; i++) {

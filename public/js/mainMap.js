@@ -168,6 +168,17 @@ function Map(loadJSONFunc) {
         var feature = features[0];
         console.log(feature);
 
+        // clicked on area marker, reload a new area.
+        if (feature.properties["marker-symbol"] == "marker" && that.anAreaWasPreviouslyLoaded()) {
+            if (that.pointsLoaded()) {
+                that.removePoints();
+            }
+
+            that.removeTouchLocationMarkers();
+            that.clickOnAnAreaMarker(e);
+            return;
+        }
+
         var long = feature.geometry.coordinates[0];
         var lat = feature.geometry.coordinates[1];
         var pointNumber = feature.properties.p;
@@ -467,7 +478,9 @@ function Map(loadJSONFunc) {
             "attributekeys": attributeKeys,
             "attributevalues": attributeValues
         };
+
         getGEOJSON(markerArea);
+        that.loadAreaMarkers();
     };
 
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
@@ -711,6 +724,7 @@ function Map(loadJSONFunc) {
                 that.areaPopup.remove();
                 return;
             }
+
             // if it's a select area marker, but not a selected point marker... I suppose this is hackish
             // a better way is to have two mousemove callbacks like we do with select area vs select marker
             var markerSymbol = features[0].properties["marker-symbol"];
@@ -809,7 +823,7 @@ function Map(loadJSONFunc) {
                 if (that.pointsLoaded()) {
                     that.reset();
                     // otherwise, points aren't loaded, but area previously was active
-                } else if (that.tileJSON != null) {
+                } else if (that.anAreaWasPreviouslyLoaded()) {
                     that.removeAreaPopups();
                     that.loadAreaMarkers();
                     // remove click listener for selecting an area, and add new one for clicking on a point
@@ -822,6 +836,10 @@ function Map(loadJSONFunc) {
 
     this.pointsLoaded = function() {
         return that.map.getSource("vector_layer_") != null;
+    };
+
+    this.anAreaWasPreviouslyLoaded = function() {
+        return that.tileJSON != null;
     };
 
     this.removePoints = function() {
@@ -837,7 +855,8 @@ function Map(loadJSONFunc) {
         }
 
         // remove contour labels if they are there. this wasn't needed as gl js seemed to remove the contours in the above loop
-        // now it doesn't, causing a crash if we disable data overlay and then disable contour lines
+        // now it doesn't, causing a crash if we disable data overlay
+        and then disable contour lines
         if (that.map.getLayer("contours")) {
             that.removeContourLines();
         }
@@ -898,9 +917,9 @@ function Map(loadJSONFunc) {
     };
 
     this.reset = function() {
-        myMap.removePoints();
-        myMap.removeTouchLocationMarkers();
-        myMap.elevationPopup.remove(); // incase it's up
+        that.removePoints();
+        that.removeTouchLocationMarkers();
+        that.elevationPopup.remove(); // incase it's up
 
         that.loadAreaMarkers();
 
@@ -913,7 +932,7 @@ function Map(loadJSONFunc) {
         $("#point-details").empty();
 
         overlayToggleButton.set("off");
-        myMap.tileJSON = null;
+        that.tileJSON = null;
     };
 
     this.addContourLines = function() {
@@ -1007,7 +1026,7 @@ function Map(loadJSONFunc) {
             lastFrame = frames[0];
             missionIndex = regionName.length + firstFrame.length + trackNumber.length;
         }
-         
+
         var mission = projectName.substring(missionIndex + 1, projectName.length);
         var missionType = mission.charAt(mission.length - 1);
         mission = mission.substring(0, mission.length - 1);
