@@ -10,6 +10,7 @@ import os
 import sys
 import psycopg2
 import geocoder
+import getopt
 
 # ex: python Converter_unavco.py Alos_SM_73_2980_2990_20070107_20110420.h5
 
@@ -198,17 +199,36 @@ def make_json_file(chunk_num, points):
 	print "inserted chunk " + str(chunk_num) + " to db"
 
 def usage():
-	print "Usage: python Converter_unavco.py Alos_SM_73_2980_2990_20070107_20110420.h5"
+	print "Usage: python Converter_unavco.py -f Alos_SM_73_2980_2990_20070107_20110420.h5 -u DB_USERNAME -p DBPASSWORD -h DB_PASSWORD"
 # ---------------------------------------------------------------------------------------
 # START OF EXECUTABLE
 # ---------------------------------------------------------------------------------------
 # get name of h5 file and the groupname of that file's data
-if (len(sys.argv) != 2):
-	print "Incorrect number of arguments - see correct example below:"
+# ---------------------------------------------------------------------------------------
+#  BEGIN EXECUTABLE
+# ---------------------------------------------------------------------------------------
+file_name = None
+
+try:
+	opts, extraArgs = getopt.getopt(sys.argv[1:],'f:u:p:h:')
+except getopt.GetoptError:
+	print 'Error while retrieving operations - exit'
 	usage()
 	sys.exit()
 
-file_name = sys.argv[1]
+for o, a in opts:
+	if o == '-f':
+		file_name = a
+	elif o == '-u':
+		dbUsername = a
+	elif o == '-p':
+		dbPassword = a
+	elif o == '-h':
+		dbHost = a
+	else:
+		assert False, "unhandled option - exit"
+		sys.exit()
+
 path_name = file_name[:len(file_name)-3]
 region_file_name = file_name[:len(file_name)-3] + '_region.txt'
 # ---------------------------------------------------------------------------------------

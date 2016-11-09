@@ -441,6 +441,7 @@ function switchLayer(layer) {
     }
 
     myMap.map.off("style.off");
+    myMap.loadAreaMarkers();
 }
 
 for (var i = 0; i < inputs.length; i++) {
@@ -762,7 +763,7 @@ $(window).load(function() {
     });
 
     $(function() {
-        $('[data-toggle="tooltip"]').tooltip()
+        $('[data-toggle="tooltip"]').tooltip();
     });
 
     $("#polygon-button").on("click", function() {

@@ -168,6 +168,17 @@ function Map(loadJSONFunc) {
         var feature = features[0];
         console.log(feature);
 
+        // clicked on area marker, reload a new area.
+        if (feature.properties["marker-symbol"] == "marker" && that.anAreaWasPreviouslyLoaded()) {
+            if (that.pointsLoaded()) {
+                that.removePoints();
+            }
+
+            that.removeTouchLocationMarkers();
+            that.clickOnAnAreaMarker(e);
+            return;
+        }
+
         var long = feature.geometry.coordinates[0];
         var lat = feature.geometry.coordinates[1];
         var pointNumber = feature.properties.p;
@@ -467,7 +478,9 @@ function Map(loadJSONFunc) {
             "attributekeys": attributeKeys,
             "attributevalues": attributeValues
         };
+
         getGEOJSON(markerArea);
+        that.loadAreaMarkers();
     };
 
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
@@ -708,9 +721,10 @@ function Map(loadJSONFunc) {
 
             // mouse not under a marker, clear all popups
             if (!features.length) {
-                //that.areaPopup.remove();
+                that.areaPopup.remove();
                 return;
             }
+
             // if it's a select area marker, but not a selected point marker... I suppose this is hackish
             // a better way is to have two mousemove callbacks like we do with select area vs select marker
             var markerSymbol = features[0].properties["marker-symbol"];
@@ -718,7 +732,6 @@ function Map(loadJSONFunc) {
             if (markerSymbol != null && typeof markerSymbol != "undefined" && markerSymbol != "cross" && markerSymbol != "crossRed") {
                 // Populate the areaPopup and set its coordinates
                 // based on the feature found.
-
                 var html = "<table class='table' id='areas-under-mouse-table'>";
                 // make the html table
                 var previewButtonIDSuffix = "_preview_attribues";
@@ -726,11 +739,20 @@ function Map(loadJSONFunc) {
                 for (var i = 0; i < features.length; i++) {
                     var unavco_name = features[i].properties.unavco_name;
                     var project_name = that.prettyPrintProjectName(features[i].properties.project_name);
-                    html += "<tr><td value='" + unavco_name + "'><div id='" + unavco_name + "'>" + project_name + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">i</div></td></tr>";
+                    var attributeValues = JSON.parse(features[i].properties.attributevalues);
+                    var first_date_index = JSON.parse(features[i].properties.attributekeys).indexOf("first_date");
+
+                    var first_date = attributeValues[first_date_index];
+                    var last_date = attributeValues[first_date_index + 1];
+
+                    html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date +
+                    "' data-placement='left'>" + project_name + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">i</div></td></tr>";
                 }
+
                 html += "</table>";
                 that.areaPopup.setLngLat(features[0].geometry.coordinates)
                     .setHTML(html).addTo(that.map);
+                $(".area-name-popup").tooltip(); // activate tooltips
                 // make table respond to clicks
                 for (var i = 0; i < features.length; i++) {
                     var unavco_name = features[i].properties.unavco_name;
@@ -809,7 +831,7 @@ function Map(loadJSONFunc) {
                 if (that.pointsLoaded()) {
                     that.reset();
                     // otherwise, points aren't loaded, but area previously was active
-                } else if (that.tileJSON != null) {
+                } else if (that.anAreaWasPreviouslyLoaded()) {
                     that.removeAreaPopups();
                     that.loadAreaMarkers();
                     // remove click listener for selecting an area, and add new one for clicking on a point
@@ -822,6 +844,10 @@ function Map(loadJSONFunc) {
 
     this.pointsLoaded = function() {
         return that.map.getSource("vector_layer_") != null;
+    };
+
+    this.anAreaWasPreviouslyLoaded = function() {
+        return that.tileJSON != null;
     };
 
     this.removePoints = function() {
@@ -837,7 +863,8 @@ function Map(loadJSONFunc) {
         }
 
         // remove contour labels if they are there. this wasn't needed as gl js seemed to remove the contours in the above loop
-        // now it doesn't, causing a crash if we disable data overlay and then disable contour lines
+        // now it doesn't, causing a crash if we disable data overlay
+        // and then disable contour lines
         if (that.map.getLayer("contours")) {
             that.removeContourLines();
         }
@@ -898,9 +925,9 @@ function Map(loadJSONFunc) {
     };
 
     this.reset = function() {
-        myMap.removePoints();
-        myMap.removeTouchLocationMarkers();
-        myMap.elevationPopup.remove(); // incase it's up
+        that.removePoints();
+        that.removeTouchLocationMarkers();
+        that.elevationPopup.remove(); // incase it's up
 
         that.loadAreaMarkers();
 
@@ -913,7 +940,7 @@ function Map(loadJSONFunc) {
         $("#point-details").empty();
 
         overlayToggleButton.set("off");
-        myMap.tileJSON = null;
+        that.tileJSON = null;
     };
 
     this.addContourLines = function() {
@@ -988,6 +1015,7 @@ function Map(loadJSONFunc) {
         var lastFrame = null;
         var frames = null;
         var frameNumbers = null;
+        var missionIndex = 0;
 
         // multiple tracks
         if (underscoreFound) {
@@ -997,16 +1025,20 @@ function Map(loadJSONFunc) {
             frameNumbers = frames[0].split("_");
             firstFrame = frameNumbers[0];
             lastFrame = frameNumbers[1];
+            missionIndex = regionName.length + firstFrame.length + lastFrame.length + 1 + trackNumber.length;
         } else {
             regex = /F\d+/;
             frames = projectName.match(regex);
             frameNumbers = frames[0].split("_");
             firstFrame = frames[0];
             lastFrame = frames[0];
+            missionIndex = regionName.length + firstFrame.length + trackNumber.length;
         }
 
-        var missionIndex = regionName.length + firstFrame.length + trackNumber.length;
         var mission = projectName.substring(missionIndex + 1, projectName.length);
+        var missionType = mission.charAt(mission.length - 1);
+        mission = mission.substring(0, mission.length - 1);
+        mission += " " + missionType;
 
         prettyPrintedName += " " + mission + " T" + trackNumber;
 
