@@ -582,6 +582,16 @@ div.menu {
     display: flex;
 }
 
+.area-name-popup + .tooltip > .tooltip-inner {
+    background-color: white !important;
+    color: black !important;
+}
+
+.area-name-popup + .tooltip > .tooltip-arrow {
+    border-color: white !important;
+    background-color: white !important;
+}
+
 .preview-attributes-button {
     text-align: center;
     border-width: 1px;
