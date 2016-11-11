@@ -160,7 +160,7 @@
           <input id = "second-graph-toggle-button" type="checkbox" name="overlayToggle"/>          
         </div>
         <div class="overlay_toggle">
-          <label>Connect dots</label>
+          <label>Line</label>
           <input id = "dot-toggle-button" type="checkbox" name="overlayToggle"/>          
         </div>
         <div class="overlay_toggle">
@@ -172,7 +172,7 @@
           <input id = "detrend-toggle-button" type="checkbox" name="overlayToggle"/>          
         </div>
         <div id="download-as-text-button">
-          <button class="btn btn-primary clickable-button">Download as TXT</button>
+          <button class="btn btn-primary-outline clickable-button">Download as TXT</button>
         </div>
       </div>
     </div> 
@@ -232,6 +232,7 @@
     </script>
     ";
     ?>
+    <script type="text/javascript" src="js/ColorScale.js"></script>
     <script type="text/javascript" src="js/mainPage.js"></script>
     <script type="text/javascript" src="js/mainMap.js"></script>
     <script type="text/javascript" src="js/SquareSelector.js"></script>

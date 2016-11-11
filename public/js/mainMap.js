@@ -486,6 +486,7 @@ function Map(loadJSONFunc) {
     this.initLayer = function(data, mapType) {
         var layer;
         var layerList = document.getElementById('layerList');
+        var colorScale = new ColorScale();
 
         data['vector_layers'].forEach(function(el) {
             that.layers_.push({
@@ -500,13 +501,7 @@ function Map(loadJSONFunc) {
                 paint: {
                     'circle-color': {
                         property: 'm',
-                        stops: [
-                            [-0.02, '#0000FF'], // blue
-                            [-0.01, '#00FFFF'], // cyan
-                            [0.0, '#01DF01'], // lime green
-                            [0.01, '#FFBF00'], // yellow orange
-                            [0.02, '#FF0000'] // red orange
-                        ]
+                        stops: colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.jet)
                     },
                     'circle-radius': {
                         // for an explanation of this array see here:
@@ -720,15 +715,14 @@ function Map(loadJSONFunc) {
 
             // mouse not under a marker, clear all popups
             if (!features.length) {
-                that.areaPopup.remove();
+                //that.areaPopup.remove();
                 return;
             }
 
             // if it's a select area marker, but not a selected point marker... I suppose this is hackish
             // a better way is to have two mousemove callbacks like we do with select area vs select marker
             var markerSymbol = features[0].properties["marker-symbol"];
-
-            if (markerSymbol != null && typeof markerSymbol != "undefined" && markerSymbol != "cross" && markerSymbol != "crossRed") {
+            if (markerSymbol != null && typeof markerSymbol != "undefined" && markerSymbol == "marker") {
                 // Populate the areaPopup and set its coordinates
                 // based on the feature found.
                 var html = "<table class='table' id='areas-under-mouse-table'>";
@@ -737,6 +731,11 @@ function Map(loadJSONFunc) {
 
                 for (var i = 0; i < features.length; i++) {
                     var unavco_name = features[i].properties.unavco_name;
+
+                    if (!unavco_name) {
+                        continue;
+                    }
+
                     var prettyNameAndComponents = that.prettyPrintProjectName(features[i].properties.project_name);
                     var attributeValues = JSON.parse(features[i].properties.attributevalues);
                     var first_date_index = JSON.parse(features[i].properties.attributekeys).indexOf("first_date");
@@ -745,7 +744,7 @@ function Map(loadJSONFunc) {
                     var last_date = attributeValues[first_date_index + 1];
 
                     html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-html='true' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date + "<br>" +
-                        prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + "' data-placement='left'>" + prettyNameAndComponents.region + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">i</div></td></tr>";
+                        prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + "' data-placement='left'>" + prettyNameAndComponents.region + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">?</div></td></tr>";
                 }
 
                 html += "</table>";
@@ -755,9 +754,16 @@ function Map(loadJSONFunc) {
                 // make table respond to clicks
                 for (var i = 0; i < features.length; i++) {
                     var unavco_name = features[i].properties.unavco_name;
+
+                    if (!unavco_name) {
+                        continue;
+                    }
+
+
                     var project_name = features[i].properties.project_name;
                     var lat = features[i].geometry.coordinates[0];
                     var long = features[i].geometry.coordinates[1];
+
                     var num_chunks = features[i].properties.num_chunks;
 
                     var attributeKeys = features[i].properties.attributekeys;
@@ -776,7 +782,12 @@ function Map(loadJSONFunc) {
 
                     // make cursor change when mouse hovers over row
                     $("#areas-under-mouse-table #" + unavco_name).css("cursor", "pointer");
-                    $(".preview-attributes-button").css("cursor", "pointer");
+                    $(".preview-attributes-button").css({
+                        "cursor": "pointer",
+                        "border-radius": "100%",
+                        "background-color": "rgb(107, 190, 249)"
+                    });
+
                     $("#" + unavco_name).css({
                         "width": "95%",
                         "float": "left",
@@ -806,7 +817,7 @@ function Map(loadJSONFunc) {
                 }
 
                 $(".preview-attributes-button").css({
-                    "width": "5%",
+                    "width": "15%",
                     "float": "left"
                 });
                 prepareButtonsToHighlightOnHover();

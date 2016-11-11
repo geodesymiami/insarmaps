@@ -549,6 +549,12 @@ div.menu {
     max-height: 40px;
 }
 
+#download-as-text-button > button {
+    border: solid;
+    background-color: white;
+    border-width: 1px;
+}
+
 .hidden {
     width: 30%;
     height: 10%;
