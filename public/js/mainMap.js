@@ -548,9 +548,10 @@ function Map(loadJSONFunc) {
         that.map.on('click', that.leftClickOnAPoint);
 
         return layer;
-    }
+    };
 
-    this.loadAreaMarkers = function() {
+    this.loadAreaMarkersExcluding = function(toExclude) {
+        console.log(toExclude);
         loadJSONFunc("", "areas", function(response) {
             var json = JSON.parse(response);
             that.areas = json;
@@ -565,6 +566,12 @@ function Map(loadJSONFunc) {
 
             for (var i = 0; i < json.areas.length; i++) {
                 var area = json.areas[i];
+
+                if (toExclude != null && toExclude.indexOf(area.unavco_name) != -1) {
+                    console.log("gonna continue");
+                    continue;
+                }
+
                 var lat = area.coords.latitude;
                 var long = area.coords.longitude;
                 console.log(area);
@@ -656,6 +663,10 @@ function Map(loadJSONFunc) {
         });
     };
 
+    this.loadAreaMarkers = function() {
+        that.loadAreaMarkersExcluding(null);
+    };
+
     this.addMapToPage = function(containerID) {
         that.map = new mapboxgl.Map({
             container: containerID, // container id
@@ -715,7 +726,7 @@ function Map(loadJSONFunc) {
 
             // mouse not under a marker, clear all popups
             if (!features.length) {
-                //that.areaPopup.remove();
+                that.areaPopup.remove();
                 return;
             }
 
