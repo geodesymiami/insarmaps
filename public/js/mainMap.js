@@ -743,8 +743,16 @@ function Map(loadJSONFunc) {
                     var first_date = attributeValues[first_date_index];
                     var last_date = attributeValues[first_date_index + 1];
 
+                    var frameNumbersString = null;
+
+                    if (prettyNameAndComponents.frameNumbers[0] == prettyNameAndComponents.frameNumbers[1]) {
+                        frameNumbersString = prettyNameAndComponents.frameNumbers[0];
+                    } else {
+                        frameNumbersString = prettyNameAndComponents.frameNumbers.join(" ");
+                    }
+
                     html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-html='true' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date + "<br>" +
-                        prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + "' data-placement='left'>" + prettyNameAndComponents.region + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">?</div></td></tr>";
+                        prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + prettyNameAndComponents.region + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">?</div></td></tr>";
                 }
 
                 html += "</table>";
@@ -1058,7 +1066,8 @@ function Map(loadJSONFunc) {
             missionSatellite: missionSatellite,
             region: regionName,
             missionType: missionType,
-            trackNumber: trackNumber
+            trackNumber: trackNumber,
+            frameNumbers: [firstFrame, lastFrame]
         };
 
         return name;
