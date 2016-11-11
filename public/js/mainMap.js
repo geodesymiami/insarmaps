@@ -486,6 +486,7 @@ function Map(loadJSONFunc) {
     this.initLayer = function(data, mapType) {
         var layer;
         var layerList = document.getElementById('layerList');
+        var colorScale = new ColorScale();
 
         data['vector_layers'].forEach(function(el) {
             that.layers_.push({
@@ -500,13 +501,7 @@ function Map(loadJSONFunc) {
                 paint: {
                     'circle-color': {
                         property: 'm',
-                        stops: [
-                            [-0.02, '#0000FF'], // blue
-                            [-0.01, '#00FFFF'], // cyan
-                            [0.0, '#01DF01'], // lime green
-                            [0.01, '#FFBF00'], // yellow orange
-                            [0.02, '#FF0000'] // red orange
-                        ]
+                        stops: colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.jet)
                     },
                     'circle-radius': {
                         // for an explanation of this array see here:

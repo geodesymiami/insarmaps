@@ -232,6 +232,7 @@
     </script>
     ";
     ?>
+    <script type="text/javascript" src="js/ColorScale.js"></script>
     <script type="text/javascript" src="js/mainPage.js"></script>
     <script type="text/javascript" src="js/mainMap.js"></script>
     <script type="text/javascript" src="js/SquareSelector.js"></script>

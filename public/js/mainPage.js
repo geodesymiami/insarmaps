@@ -211,6 +211,7 @@ overlayToggleButton.onclick(function() {
         //     var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
         //     myMap.tileJSON.vector_layers.push(layer);
         // }
+        var colorScale = new ColorScale();
 
         myMap.tileJSON["vector_layers"].forEach(function(el) {
             myMap.layers_.push({
@@ -225,13 +226,7 @@ overlayToggleButton.onclick(function() {
                 paint: {
                     'circle-color': {
                         property: 'm',
-                        stops: [
-                            [-0.02, '#0000FF'], // blue
-                            [-0.01, '#00FFFF'], // cyan
-                            [0.0, '#01DF01'], // lime green
-                            [0.01, '#FFBF00'], // yellow orange
-                            [0.02, '#FF0000'] // red orange
-                        ]
+                        stops: colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.jet)
                     },
                     'circle-radius': {
                         // for an explanation of this array see here:
