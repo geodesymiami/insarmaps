@@ -109,7 +109,7 @@ function getGEOJSON(area) {
                 zoom: 7
             });
             myMap.map.off("style.load", styleLoadFunc);
-            myMap.loadAreaMarkers();
+            myMap.loadAreaMarkersExcluding([area.unavco_name]);
         }, 1000);
     };
 

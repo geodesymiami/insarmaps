@@ -134,6 +134,7 @@ label {
     width: 300px;
     overflow-y: auto;
     background-color: white !important;
+    opacity: 0.55;
 }
 
 .tooltip.left {
@@ -582,13 +583,28 @@ div.menu {
     display: flex;
 }
 
+.area-name-popup + .tooltip > .tooltip-inner {
+    background-color: white !important;
+    color: black !important;
+}
+
+.area-name-popup + .tooltip > .tooltip-arrow {
+    border-color: white !important;
+    background-color: white !important;
+}
+
 .preview-attributes-button {
     text-align: center;
     border-width: 1px;
+    color: white;
+}
+
+/*take out popup area name table top line*/
+.mapboxgl-popup-content tr td {
+    border-top: none !important;
 }
 
 /*area information popup with tabs*/
-
 ul.tab {
     list-style-type: none;
     margin: 0;
@@ -596,6 +612,7 @@ ul.tab {
     overflow: hidden;
     border: 1px solid #ccc;
     background-color: #f1f1f1;
+    height: 25px;
 }
 
 ul.tab li {
@@ -604,7 +621,6 @@ ul.tab li {
 }
 
 ul.tab li a {
-    display: inline-block;
     color: black;
     text-align: center;
     padding: 14px 16px;
