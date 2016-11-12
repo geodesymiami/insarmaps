@@ -551,7 +551,6 @@ function Map(loadJSONFunc) {
     };
 
     this.loadAreaMarkersExcluding = function(toExclude) {
-        console.log(toExclude);
         loadJSONFunc("", "areas", function(response) {
             var json = JSON.parse(response);
             that.areas = json;
@@ -568,7 +567,6 @@ function Map(loadJSONFunc) {
                 var area = json.areas[i];
 
                 if (toExclude != null && toExclude.indexOf(area.unavco_name) != -1) {
-                    console.log("gonna continue");
                     continue;
                 }
 
@@ -763,7 +761,7 @@ function Map(loadJSONFunc) {
                     }
 
                     html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-html='true' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date + "<br>" +
-                        prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + prettyNameAndComponents.region + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + ">?</div></td></tr>";
+                        prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + prettyNameAndComponents.region + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + "><b>?</div></td></tr>";
                 }
 
                 html += "</table>";
@@ -808,7 +806,7 @@ function Map(loadJSONFunc) {
                     });
 
                     $("#" + unavco_name).css({
-                        "width": "95%",
+                        "width": "75%",
                         "float": "left",
                         "padding-right": "10px"
                     });
@@ -836,7 +834,7 @@ function Map(loadJSONFunc) {
                 }
 
                 $(".preview-attributes-button").css({
-                    "width": "15%",
+                    "width": "25%",
                     "float": "left"
                 });
                 prepareButtonsToHighlightOnHover();
