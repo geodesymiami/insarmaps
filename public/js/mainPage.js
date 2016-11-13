@@ -68,7 +68,7 @@ function AreaAttributesPopup() {
             tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
         }
         $("#area-attributes-areaname-div").html(area.project_name);
-        
+
         $("#area-attributes-table-body").html(tableHTML);
 
         // needed so area attributes popup doesn't show content that's supposed to be hidden
@@ -108,7 +108,7 @@ function getGEOJSON(area) {
     //myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
     // myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://ec2-52-41-231-16.us-west-2.compute.amazonaws.com:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
 
-    myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://129.171.97.228:8888/" + area.unavco_name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
+    var tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://129.171.97.228:8888/" + area.unavco_name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
 
     if (myMap.pointsLoaded()) {
         myMap.removePoints();
@@ -119,14 +119,14 @@ function getGEOJSON(area) {
 
     for (var i = 1; i <= area.num_chunks; i++) {
         var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
-        myMap.tileJSON.vector_layers.push(layer);
+        tileJSON.vector_layers.push(layer);
     }
 
     areaAttributesPopup.show(area);
 
     $("#color-scale").toggleClass("active");
 
-    myMap.initLayer(myMap.tileJSON, "streets");
+    myMap.initLayer(tileJSON, "streets");
     var styleLoadFunc = function() {
         overlayToggleButton.set("on");
         if (contourToggleButton.toggleState == ToggleStates.ON) {
@@ -134,10 +134,21 @@ function getGEOJSON(area) {
         }
 
         window.setTimeout(function() {
+            var zoom = 7;
+
+            // quickly switching between areas? don't reset zoom
+            if (myMap.anAreaWasPreviouslyLoaded()) {
+                zoom = myMap.map.getZoom();
+            }
+
+            // set our tilejson to the one we've loaded. this will make sure anAreaWasPreviouslyLoaded method returns true after the
+            // first time a dataset is selected
+            myMap.tileJSON = tileJSON;
             myMap.map.flyTo({
                 center: [area.coords.latitude, area.coords.longitude],
-                zoom: 7
+                zoom: zoom
             });
+
             myMap.map.off("style.load", styleLoadFunc);
             myMap.loadAreaMarkersExcluding([area.unavco_name]);
         }, 1000);
