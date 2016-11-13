@@ -137,6 +137,10 @@ label {
     opacity: 0.55;
 }
 
+#area-attributes-div-minimize-button {
+    opacity: 1.0 !important;
+}
+
 .tooltip.left {
     margin-left: -40px !important;
 }
@@ -503,6 +507,11 @@ div.menu {
 
 #graph-div-minimize-button {
     padding-right: 10px;
+}
+
+/*minize button red color*/
+.minimize {
+    color: red !important;
 }
 
 .chart-containers {

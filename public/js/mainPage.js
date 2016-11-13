@@ -725,6 +725,7 @@ $(window).load(function() {
                 done: function() {
                     areaAttributesWrap.tooltip("disable");
                     oldAttributeDiv.animating = false;
+                    $("#area-attributes-div-minimize-button > span").html("&or;");
                 }
             }).removeClass("toggled");
         } else {
@@ -739,6 +740,7 @@ $(window).load(function() {
                 done: function() {
                     areaAttributesWrap.tooltip("enable");
                     oldAttributeDiv.animating = false
+                    $("#area-attributes-div-minimize-button > span").html("&and;");
                 }
             }).addClass("toggled");
         }
