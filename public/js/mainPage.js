@@ -298,7 +298,7 @@ function switchLayer(layer) {
 
         myMap.map.setStyle({
             version: 8,
-            sprite: "/maki/makiIcons",
+            sprite: window.location.href + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
@@ -388,7 +388,7 @@ function switchLayer(layer) {
     } else {
         myMap.map.setStyle({
             version: 8,
-            sprite: "/maki/makiIcons",
+            sprite: window.location.href + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {

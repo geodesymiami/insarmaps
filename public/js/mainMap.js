@@ -520,7 +520,7 @@ function Map(loadJSONFunc) {
         var tileset = 'mapbox.' + mapType;
         that.map.setStyle({
             version: 8,
-            sprite: "/maki/makiIcons",
+            sprite: window.location.href + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
@@ -687,7 +687,7 @@ function Map(loadJSONFunc) {
         });
         that.map.setStyle({
             version: 8,
-            sprite: "/maki/makiIcons",
+            sprite: window.location.href + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
