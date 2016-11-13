@@ -100,6 +100,8 @@
       <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"><span aria-hidden="true">__</span></button>
     </div>
     <div class="content">
+        <div id="area-attributes-areaname-div">
+        </div>
         <ul class="tab">
           <li><a href="#" id="details-tab-link" class="tablinks" onclick="goToTab(event, 'details-tab')">Details</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'downloads-tab')">Downloads</a></li>

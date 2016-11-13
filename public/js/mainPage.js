@@ -67,7 +67,8 @@ function AreaAttributesPopup() {
             tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
             tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
         }
-
+        $("#area-attributes-areaname-div").html(area.project_name);
+        
         $("#area-attributes-table-body").html(tableHTML);
 
         // needed so area attributes popup doesn't show content that's supposed to be hidden

@@ -458,6 +458,7 @@ function Map(loadJSONFunc) {
 
         console.log(feature);
         var unavco_name = feature.properties.unavco_name;
+        var project_name = feature.properties.project_name;
         var lat = feature.geometry.coordinates[0];
         var long = feature.geometry.coordinates[1];
         var num_chunks = feature.properties.num_chunks;
@@ -470,6 +471,7 @@ function Map(loadJSONFunc) {
         // needed as mapbox doesn't return original feature
         var markerArea = {
             "unavco_name": unavco_name,
+            "project_name": project_name,
             "coords": {
                 "latitude": lat,
                 "longitude": long,
@@ -788,6 +790,7 @@ function Map(loadJSONFunc) {
 
                 var markerArea = {
                     "unavco_name": unavco_name,
+                    "project_name": project_name,
                     "coords": {
                         "latitude": lat,
                         "longitude": long,
