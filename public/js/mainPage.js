@@ -26,6 +26,13 @@ function AreaAttributesPopup() {
             "post_processing_method": true
         };
 
+        // set like object. don't put these in using the for loop, as we will
+        // manually set their order
+        var manuallyOrdered = {
+            "history": true,
+            "processing_type": true
+        };
+
         // if we click on an area marker, we get a string as the mapbox feature can't seem to store an array and converts it to a string
         if (typeof area.attributekeys == "string" || typeof area.attributevalues == "string") {
             attributekeys = JSON.parse(area.attributekeys);
@@ -36,17 +43,39 @@ function AreaAttributesPopup() {
             attributevalues = area.attributevalues;
         }
 
+        var manuallyOrderedIndexes = [];
+
         for (var i = 0; i < attributekeys.length; i++) {
             curKey = attributekeys[i];
 
-            if (curKey in attributesToDisplay) {
+            if (curKey in manuallyOrdered) {
+                manuallyOrderedIndexes.push(i);
+            } else if (curKey in attributesToDisplay) {
                 curValue = attributevalues[i];
 
                 tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
                 tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
             }
-            $("#area-attributes-table-body").html(tableHTML);
         }
+
+        // go over manually ordered attributes
+        for (var i = 0; i < manuallyOrderedIndexes.length; i++) {
+            var index = manuallyOrderedIndexes[i];
+            var curKey = attributekeys[index];
+            var curValue = attributevalues[index];
+
+            tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
+            tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
+        }
+
+        $("#area-attributes-table-body").html(tableHTML);
+
+        // needed so area attributes popup doesn't show content that's supposed to be hidden
+        // in other tabs
+        var clickEvent = jQuery.Event("click");
+        var link = $("#details-tab-link");
+        clickEvent.currentTarget = link;
+        link.trigger(clickEvent);
     }
 
     this.show = function(area) {
@@ -126,6 +155,7 @@ function goToTab(event, id) {
     });
 
     $("#" + id).css("display", "block");
+
     event.currentTarget.className += " active"
 }
 
@@ -540,8 +570,7 @@ function search() {
             var country = countries[i];
 
             $("#tableBody").append("<tr id=" + country.unavco_name + "><td value='" + country.unavco_name + "''>" +
-                country.unavco_name + "(" + country.project_name + ")</td><td value='reference'><a href='http://www.rsmas.miami.edu/personal/famelung/Publications_files/ChaussardAmelungAoki_VolcanoCycles_JGR_2013.pdf' target='_blank'>" +
-                "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288.</a></td></tr>");
+                country.unavco_name + " (" + country.project_name + ")</td><td value='reference'>Reference to the papers to be added.</a></td></tr>");
 
             // make cursor change when mouse hovers over row
             $("#" + country.unavco_name).css("cursor", "pointer");

@@ -583,6 +583,7 @@ function Map(loadJSONFunc) {
                     "properties": {
                         "marker-symbol": "marker",
                         "unavco_name": area.unavco_name,
+                        "region": area.region,
                         "project_name": area.project_name,
                         "num_chunks": area.num_chunks,
                         "attributekeys": area.attributekeys,
@@ -668,8 +669,8 @@ function Map(loadJSONFunc) {
     this.addMapToPage = function(containerID) {
         that.map = new mapboxgl.Map({
             container: containerID, // container id
-            center: [0, 0], // that.starting position
-            zoom: 0 // that.starting zoom
+            center: [0, 30], // that.starting position
+            zoom: 1.5 // that.starting zoom
         });
 
         that.map.on("load", function() {
@@ -744,6 +745,8 @@ function Map(loadJSONFunc) {
                     return;
                 }
 
+                var region = features[i].properties.region;
+
                 var prettyNameAndComponents = that.prettyPrintProjectName(features[i].properties.project_name);
                 var attributeValues = JSON.parse(features[i].properties.attributevalues);
                 var first_date_index = JSON.parse(features[i].properties.attributekeys).indexOf("first_date");
@@ -760,7 +763,7 @@ function Map(loadJSONFunc) {
                 }
 
                 html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-html='true' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date + "<br>" +
-                    prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + prettyNameAndComponents.region + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + "><b>?</div></td></tr>";
+                    prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + region + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + "><b>?</div></td></tr>";
 
                 html += "</table>";
                 that.areaPopup.setLngLat(features[0].geometry.coordinates)

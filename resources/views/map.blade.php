@@ -101,13 +101,13 @@
     </div>
     <div class="content">
         <ul class="tab">
-          <li><a href="#" class="tablinks" onclick="goToTab(event, 'deails-tab')">Details</a></li>
+          <li><a href="#" id="details-tab-link" class="tablinks" onclick="goToTab(event, 'details-tab')">Details</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'downloads-tab')">Downloads</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'reference-tab')">Reference</a></li>
           <!-- <li><a href="#" class="tablinks" onclick="goToTab(event, 'links-tab')">Links</a></li> -->
         </ul>
 
-        <div id="deails-tab" class="tabcontent">
+        <div id="details-tab" class="tabcontent">
           <table class="table" id="area-attributes-table">
             <thead>              
             </thead>
