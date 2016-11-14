@@ -88,8 +88,15 @@
   <div id="color-scale">
     <div id="left-scale-minimum">
       min: -2cm/yr
-    </div>      
-    <img src="img/matlab_colorscale.jpg" alt="matlab_colorscale.jpg">
+    </div>
+    <div>
+      <div id="color-scale-picture-div"> 
+        <img src="img/matlab_colorscale.jpg" alt="matlab_colorscale.jpg">
+      </div>
+      <div id="color-scale-text-div" class="rotate">
+        Mean LOS Velocity (mm/year)
+      </div>
+    </div>
     <div id="right-scale-maximum">
       max: 2cm/yr
     </div>
