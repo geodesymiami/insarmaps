@@ -607,6 +607,7 @@ div.menu {
     background-color: white !important;
     color: black !important;
     height: 55px;
+    margin-left: 65px;
 }
 
 .area-name-popup + .tooltip > .tooltip-arrow {
@@ -622,6 +623,7 @@ div.menu {
 
 .mapboxgl-popup {
     opacity: 0.65;
+    width: 170px;
 }
 
 
