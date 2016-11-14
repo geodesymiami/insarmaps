@@ -137,6 +137,10 @@ label {
     opacity: 0.55;
 }
 
+#area-attributes-div-minimize-button {
+    opacity: 1.0 !important;
+}
+
 .tooltip.left {
     margin-left: -40px !important;
 }
@@ -505,6 +509,11 @@ div.menu {
     padding-right: 10px;
 }
 
+/*minize button red color*/
+.minimize {
+    color: red !important;
+}
+
 .chart-containers {
     width: 100%;
     height: 90%;
@@ -586,6 +595,7 @@ div.menu {
 .area-name-popup + .tooltip > .tooltip-inner {
     background-color: white !important;
     color: black !important;
+    height: 55px;
 }
 
 .area-name-popup + .tooltip > .tooltip-arrow {
@@ -597,6 +607,10 @@ div.menu {
     text-align: center;
     border-width: 1px;
     color: white;
+}
+
+.mapboxgl-popup {
+    opacity: 0.65;
 }
 
 /*take out popup area name table top line*/

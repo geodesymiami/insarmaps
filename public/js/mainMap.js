@@ -131,6 +131,8 @@ function Map(loadJSONFunc) {
     this.areas = null;
     this.areaFeatures = null;
 
+    this.areaMarkerLayer = new AreaMarkerLayer(this);
+
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,
         closeOnClick: false
@@ -155,9 +157,7 @@ function Map(loadJSONFunc) {
     this.clickOnAPoint = function(e) {
         console.log("it is");
         console.log(e.point);
-        var features = that.map.queryRenderedFeatures(e.point, {
-            layers: that.layers
-        });
+        var features = that.map.queryRenderedFeatures(e.point);
 
         // var layerID = "touchLocation";
 
@@ -441,9 +441,7 @@ function Map(loadJSONFunc) {
     };
 
     this.clickOnAnAreaMarker = function(e) {
-        var features = that.map.queryRenderedFeatures(e.point, {
-            layers: that.layers
-        });
+        var features = that.map.queryRenderedFeatures(e.point);
 
         var layerID = "touchLocation";
 
@@ -458,11 +456,15 @@ function Map(loadJSONFunc) {
 
         console.log(feature);
         var unavco_name = feature.properties.unavco_name;
+        var project_name = feature.properties.project_name;
         var lat = feature.geometry.coordinates[0];
         var long = feature.geometry.coordinates[1];
         var num_chunks = feature.properties.num_chunks;
         var attributeKeys = feature.properties.attributekeys;
         var attributeValues = feature.properties.attributevalues;
+
+        var markerID = feature.properties.layerID;
+
         // console.log(attributeKeys);
         // console.log(attributeValues);
         // console.log(feature.properties);
@@ -470,6 +472,7 @@ function Map(loadJSONFunc) {
         // needed as mapbox doesn't return original feature
         var markerArea = {
             "unavco_name": unavco_name,
+            "project_name": project_name,
             "coords": {
                 "latitude": lat,
                 "longitude": long,
@@ -487,6 +490,7 @@ function Map(loadJSONFunc) {
         var layer;
         var layerList = document.getElementById('layerList');
         var colorScale = new ColorScale();
+        var stops = colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.zishiCustom);
 
         data['vector_layers'].forEach(function(el) {
             that.layers_.push({
@@ -501,7 +505,7 @@ function Map(loadJSONFunc) {
                 paint: {
                     'circle-color': {
                         property: 'm',
-                        stops: colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.jet)
+                        stops: stops
                     },
                     'circle-radius': {
                         // for an explanation of this array see here:
@@ -520,7 +524,7 @@ function Map(loadJSONFunc) {
         var tileset = 'mapbox.' + mapType;
         that.map.setStyle({
             version: 8,
-            sprite: "/maki/makiIcons",
+            sprite: window.location.href + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
@@ -574,6 +578,10 @@ function Map(loadJSONFunc) {
                 var long = area.coords.longitude;
                 console.log(area);
 
+                var id = "areas" + i;
+
+                that.areaMarkerLayer.addLayer(id);
+
                 var feature = {
                     "type": "Feature",
                     "geometry": {
@@ -582,7 +590,9 @@ function Map(loadJSONFunc) {
                     },
                     "properties": {
                         "marker-symbol": "marker",
+                        "layerID": id,
                         "unavco_name": area.unavco_name,
+                        "region": area.region,
                         "project_name": area.project_name,
                         "num_chunks": area.num_chunks,
                         "attributekeys": area.attributekeys,
@@ -591,6 +601,32 @@ function Map(loadJSONFunc) {
                 };
 
                 features.push(feature);
+
+                // add the markers representing the available areas
+                areaMarker.data = {
+                    "type": "FeatureCollection",
+                    "features": [feature]
+                };
+
+                if (that.map.getSource(id)) {
+                    that.map.removeSource(id);
+                }
+
+                if (that.map.getLayer(id)) {
+                    that.map.removeLayer(id);
+                }
+
+                that.map.addSource(id, areaMarker);
+
+                that.map.addLayer({
+                    "id": id,
+                    "type": "symbol",
+                    "source": id,
+                    "layout": {
+                        "icon-image": "{marker-symbol}-15",
+                        "icon-allow-overlap": true
+                    }
+                });
             };
 
             that.areaFeatures = features;
@@ -600,27 +636,6 @@ function Map(loadJSONFunc) {
                 "type": "FeatureCollection",
                 "features": features
             };
-            var id = "areas";
-
-            if (that.map.getSource(id)) {
-                that.map.removeSource(id);
-            }
-
-            if (that.map.getLayer(id)) {
-                that.map.removeLayer(id);
-            }
-
-            that.map.addSource(id, areaMarker);
-
-            that.map.addLayer({
-                "id": id,
-                "type": "symbol",
-                "source": id,
-                "layout": {
-                    "icon-image": "{marker-symbol}-15",
-                    "icon-allow-overlap": true
-                }
-            });
 
             // clustering
             var layers = [
@@ -668,8 +683,8 @@ function Map(loadJSONFunc) {
     this.addMapToPage = function(containerID) {
         that.map = new mapboxgl.Map({
             container: containerID, // container id
-            center: [0, 0], // that.starting position
-            zoom: 0 // that.starting zoom
+            center: [0, 30], // that.starting position
+            zoom: 1.5 // that.starting zoom
         });
 
         that.map.on("load", function() {
@@ -687,7 +702,7 @@ function Map(loadJSONFunc) {
         });
         that.map.setStyle({
             version: 8,
-            sprite: "/maki/makiIcons",
+            sprite: window.location.href + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
@@ -718,13 +733,15 @@ function Map(loadJSONFunc) {
         // by changing the cursor style to 'pointer'.
         // mainly used to show available areas under a marker
         that.map.on('mousemove', function(e) {
-            var features = that.map.queryRenderedFeatures(e.point, { layers: that.layers });
+            var features = that.map.queryRenderedFeatures(e.point);
             that.map.getCanvas().style.cursor =
                 (features.length && !(features[0].layer.id == "contours") && !(features[0].layer.id == "contour_label")) ? 'pointer' : '';
 
             // mouse not under a marker, clear all popups
             if (!features.length) {
                 that.areaPopup.remove();
+
+                that.areaMarkerLayer.resetSizeOfModifiedMarkers();
                 return;
             }
 
@@ -744,6 +761,12 @@ function Map(loadJSONFunc) {
                     return;
                 }
 
+                var markerID = features[i].properties.layerID;
+
+                that.areaMarkerLayer.setMarkerSize(markerID, 1.5);
+
+                var region = features[i].properties.region;
+
                 var prettyNameAndComponents = that.prettyPrintProjectName(features[i].properties.project_name);
                 var attributeValues = JSON.parse(features[i].properties.attributevalues);
                 var first_date_index = JSON.parse(features[i].properties.attributekeys).indexOf("first_date");
@@ -760,7 +783,7 @@ function Map(loadJSONFunc) {
                 }
 
                 html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-html='true' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date + "<br>" +
-                    prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + prettyNameAndComponents.region + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + "><b>?</div></td></tr>";
+                    prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + region + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + "><b>?</div></td></tr>";
 
                 html += "</table>";
                 that.areaPopup.setLngLat(features[0].geometry.coordinates)
@@ -785,6 +808,7 @@ function Map(loadJSONFunc) {
 
                 var markerArea = {
                     "unavco_name": unavco_name,
+                    "project_name": project_name,
                     "coords": {
                         "latitude": lat,
                         "longitude": long,

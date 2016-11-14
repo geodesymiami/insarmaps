@@ -26,6 +26,13 @@ function AreaAttributesPopup() {
             "post_processing_method": true
         };
 
+        // set like object. don't put these in using the for loop, as we will
+        // manually set their order
+        var manuallyOrdered = {
+            "history": true,
+            "processing_type": true
+        };
+
         // if we click on an area marker, we get a string as the mapbox feature can't seem to store an array and converts it to a string
         if (typeof area.attributekeys == "string" || typeof area.attributevalues == "string") {
             attributekeys = JSON.parse(area.attributekeys);
@@ -36,17 +43,40 @@ function AreaAttributesPopup() {
             attributevalues = area.attributevalues;
         }
 
+        var manuallyOrderedIndexes = [];
+
         for (var i = 0; i < attributekeys.length; i++) {
             curKey = attributekeys[i];
 
-            if (curKey in attributesToDisplay) {
+            if (curKey in manuallyOrdered) {
+                manuallyOrderedIndexes.push(i);
+            } else if (curKey in attributesToDisplay) {
                 curValue = attributevalues[i];
 
                 tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
                 tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
             }
-            $("#area-attributes-table-body").html(tableHTML);
         }
+
+        // go over manually ordered attributes
+        for (var i = 0; i < manuallyOrderedIndexes.length; i++) {
+            var index = manuallyOrderedIndexes[i];
+            var curKey = attributekeys[index];
+            var curValue = attributevalues[index];
+
+            tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
+            tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
+        }
+        $("#area-attributes-areaname-div").html(area.project_name);
+
+        $("#area-attributes-table-body").html(tableHTML);
+
+        // needed so area attributes popup doesn't show content that's supposed to be hidden
+        // in other tabs
+        var clickEvent = jQuery.Event("click");
+        var link = $("#details-tab-link");
+        clickEvent.currentTarget = link;
+        link.trigger(clickEvent);
     }
 
     this.show = function(area) {
@@ -78,7 +108,7 @@ function getGEOJSON(area) {
     //myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
     // myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://ec2-52-41-231-16.us-west-2.compute.amazonaws.com:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
 
-    myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://129.171.97.228:8888/" + area.unavco_name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
+    var tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://129.171.97.228:8888/" + area.unavco_name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
 
     if (myMap.pointsLoaded()) {
         myMap.removePoints();
@@ -89,14 +119,17 @@ function getGEOJSON(area) {
 
     for (var i = 1; i <= area.num_chunks; i++) {
         var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
-        myMap.tileJSON.vector_layers.push(layer);
+        tileJSON.vector_layers.push(layer);
     }
 
     areaAttributesPopup.show(area);
 
     $("#color-scale").toggleClass("active");
 
-    myMap.initLayer(myMap.tileJSON, "streets");
+    // when we click, we don't reset the size of modified markers one final time
+    myMap.areaMarkerLayer.resetSizeOfModifiedMarkers();
+
+    myMap.initLayer(tileJSON, "streets");
     var styleLoadFunc = function() {
         overlayToggleButton.set("on");
         if (contourToggleButton.toggleState == ToggleStates.ON) {
@@ -104,10 +137,21 @@ function getGEOJSON(area) {
         }
 
         window.setTimeout(function() {
+            var zoom = 7;
+
+            // quickly switching between areas? don't reset zoom
+            if (myMap.anAreaWasPreviouslyLoaded()) {
+                zoom = myMap.map.getZoom();
+            }
+
+            // set our tilejson to the one we've loaded. this will make sure anAreaWasPreviouslyLoaded method returns true after the
+            // first time a dataset is selected
+            myMap.tileJSON = tileJSON;
             myMap.map.flyTo({
                 center: [area.coords.latitude, area.coords.longitude],
-                zoom: 7
+                zoom: zoom
             });
+
             myMap.map.off("style.load", styleLoadFunc);
             myMap.loadAreaMarkersExcluding([area.unavco_name]);
         }, 1000);
@@ -126,6 +170,7 @@ function goToTab(event, id) {
     });
 
     $("#" + id).css("display", "block");
+
     event.currentTarget.className += " active"
 }
 
@@ -212,6 +257,7 @@ overlayToggleButton.onclick(function() {
         //     myMap.tileJSON.vector_layers.push(layer);
         // }
         var colorScale = new ColorScale();
+        var stops = colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.zishiCustom);
 
         myMap.tileJSON["vector_layers"].forEach(function(el) {
             myMap.layers_.push({
@@ -226,7 +272,7 @@ overlayToggleButton.onclick(function() {
                 paint: {
                     'circle-color': {
                         property: 'm',
-                        stops: colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.jet)
+                        stops: stops
                     },
                     'circle-radius': {
                         // for an explanation of this array see here:
@@ -298,7 +344,7 @@ function switchLayer(layer) {
 
         myMap.map.setStyle({
             version: 8,
-            sprite: "/maki/makiIcons",
+            sprite: window.location.href + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
@@ -388,7 +434,7 @@ function switchLayer(layer) {
     } else {
         myMap.map.setStyle({
             version: 8,
-            sprite: "/maki/makiIcons",
+            sprite: window.location.href + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
@@ -540,8 +586,7 @@ function search() {
             var country = countries[i];
 
             $("#tableBody").append("<tr id=" + country.unavco_name + "><td value='" + country.unavco_name + "''>" +
-                country.unavco_name + "(" + country.project_name + ")</td><td value='reference'><a href='http://www.rsmas.miami.edu/personal/famelung/Publications_files/ChaussardAmelungAoki_VolcanoCycles_JGR_2013.pdf' target='_blank'>" +
-                "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288.</a></td></tr>");
+                country.unavco_name + " (" + country.project_name + ")</td><td value='reference'>Reference to the papers to be added.</a></td></tr>");
 
             // make cursor change when mouse hovers over row
             $("#" + country.unavco_name).css("cursor", "pointer");
@@ -684,6 +729,7 @@ $(window).load(function() {
                 done: function() {
                     areaAttributesWrap.tooltip("disable");
                     oldAttributeDiv.animating = false;
+                    $("#area-attributes-div-minimize-button > span").html("&or;");
                 }
             }).removeClass("toggled");
         } else {
@@ -698,6 +744,7 @@ $(window).load(function() {
                 done: function() {
                     areaAttributesWrap.tooltip("enable");
                     oldAttributeDiv.animating = false
+                    $("#area-attributes-div-minimize-button > span").html("&and;");
                 }
             }).addClass("toggled");
         }

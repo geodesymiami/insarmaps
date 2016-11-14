@@ -5,8 +5,8 @@
  <link rel="stylesheet" href="css/slideout.css" />
  <!--jQuery-->
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script> 
- <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.26.0/mapbox-gl.js'></script>
- <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.26.0/mapbox-gl.css' rel='stylesheet' />
+ <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.27.0/mapbox-gl.js'></script>
+ <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.27.0/mapbox-gl.css' rel='stylesheet' />
  
  <script src="https://code.jquery.com/jquery-1.12.2.js"></script>
  <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
@@ -97,17 +97,19 @@
   <div id="point-details"></div>
   <div class="wrap" id="area-attributes-div" title="Attributes">    
     <div class="top-right-buttons">
-      <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"><span aria-hidden="true">__</span></button>
+      <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"><span aria-hidden="true">&or;</span></button>
     </div>
     <div class="content">
+        <div id="area-attributes-areaname-div">
+        </div>
         <ul class="tab">
-          <li><a href="#" class="tablinks" onclick="goToTab(event, 'deails-tab')">Details</a></li>
+          <li><a href="#" id="details-tab-link" class="tablinks" onclick="goToTab(event, 'details-tab')">Details</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'downloads-tab')">Downloads</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'reference-tab')">Reference</a></li>
           <!-- <li><a href="#" class="tablinks" onclick="goToTab(event, 'links-tab')">Links</a></li> -->
         </ul>
 
-        <div id="deails-tab" class="tabcontent">
+        <div id="details-tab" class="tabcontent">
           <table class="table" id="area-attributes-table">
             <thead>              
             </thead>
@@ -233,6 +235,7 @@
     ";
     ?>
     <script type="text/javascript" src="js/ColorScale.js"></script>
+    <script type="text/javascript" src="js/AreaMarkerLayer.js"></script>
     <script type="text/javascript" src="js/mainPage.js"></script>
     <script type="text/javascript" src="js/mainMap.js"></script>
     <script type="text/javascript" src="js/SquareSelector.js"></script>
