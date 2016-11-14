@@ -131,6 +131,8 @@ function Map(loadJSONFunc) {
     this.areas = null;
     this.areaFeatures = null;
 
+    this.areaMarkerLayer = new AreaMarkerLayer(this);
+
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,
         closeOnClick: false
@@ -155,9 +157,7 @@ function Map(loadJSONFunc) {
     this.clickOnAPoint = function(e) {
         console.log("it is");
         console.log(e.point);
-        var features = that.map.queryRenderedFeatures(e.point, {
-            layers: that.layers
-        });
+        var features = that.map.queryRenderedFeatures(e.point);
 
         // var layerID = "touchLocation";
 
@@ -441,9 +441,7 @@ function Map(loadJSONFunc) {
     };
 
     this.clickOnAnAreaMarker = function(e) {
-        var features = that.map.queryRenderedFeatures(e.point, {
-            layers: that.layers
-        });
+        var features = that.map.queryRenderedFeatures(e.point);
 
         var layerID = "touchLocation";
 
@@ -464,6 +462,11 @@ function Map(loadJSONFunc) {
         var num_chunks = feature.properties.num_chunks;
         var attributeKeys = feature.properties.attributekeys;
         var attributeValues = feature.properties.attributevalues;
+
+        var markerID = feature.properties.layerID;
+
+        // when we click, we don't reset the size of modified markers one final time
+        that.areaMarkerLayer.resetSizeOfModifiedMarkers();
         // console.log(attributeKeys);
         // console.log(attributeValues);
         // console.log(feature.properties);
@@ -576,6 +579,10 @@ function Map(loadJSONFunc) {
                 var long = area.coords.longitude;
                 console.log(area);
 
+                var id = "areas" + i;
+
+                that.areaMarkerLayer.addLayer(id);
+
                 var feature = {
                     "type": "Feature",
                     "geometry": {
@@ -584,6 +591,7 @@ function Map(loadJSONFunc) {
                     },
                     "properties": {
                         "marker-symbol": "marker",
+                        "layerID": id,
                         "unavco_name": area.unavco_name,
                         "region": area.region,
                         "project_name": area.project_name,
@@ -594,6 +602,32 @@ function Map(loadJSONFunc) {
                 };
 
                 features.push(feature);
+
+                // add the markers representing the available areas
+                areaMarker.data = {
+                    "type": "FeatureCollection",
+                    "features": [feature]
+                };
+
+                if (that.map.getSource(id)) {
+                    that.map.removeSource(id);
+                }
+
+                if (that.map.getLayer(id)) {
+                    that.map.removeLayer(id);
+                }
+
+                that.map.addSource(id, areaMarker);
+
+                that.map.addLayer({
+                    "id": id,
+                    "type": "symbol",
+                    "source": id,
+                    "layout": {
+                        "icon-image": "{marker-symbol}-15",
+                        "icon-allow-overlap": true
+                    }
+                });
             };
 
             that.areaFeatures = features;
@@ -603,27 +637,6 @@ function Map(loadJSONFunc) {
                 "type": "FeatureCollection",
                 "features": features
             };
-            var id = "areas";
-
-            if (that.map.getSource(id)) {
-                that.map.removeSource(id);
-            }
-
-            if (that.map.getLayer(id)) {
-                that.map.removeLayer(id);
-            }
-
-            that.map.addSource(id, areaMarker);
-
-            that.map.addLayer({
-                "id": id,
-                "type": "symbol",
-                "source": id,
-                "layout": {
-                    "icon-image": "{marker-symbol}-15",
-                    "icon-allow-overlap": true
-                }
-            });
 
             // clustering
             var layers = [
@@ -721,13 +734,15 @@ function Map(loadJSONFunc) {
         // by changing the cursor style to 'pointer'.
         // mainly used to show available areas under a marker
         that.map.on('mousemove', function(e) {
-            var features = that.map.queryRenderedFeatures(e.point, { layers: that.layers });
+            var features = that.map.queryRenderedFeatures(e.point);
             that.map.getCanvas().style.cursor =
                 (features.length && !(features[0].layer.id == "contours") && !(features[0].layer.id == "contour_label")) ? 'pointer' : '';
 
             // mouse not under a marker, clear all popups
             if (!features.length) {
                 that.areaPopup.remove();
+
+                that.areaMarkerLayer.resetSizeOfModifiedMarkers();
                 return;
             }
 
@@ -746,6 +761,10 @@ function Map(loadJSONFunc) {
                 if (!unavco_name) {
                     return;
                 }
+
+                var markerID = features[i].properties.layerID;
+
+                that.areaMarkerLayer.setMarkerSize(markerID, 1.5);
 
                 var region = features[i].properties.region;
 
