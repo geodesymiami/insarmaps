@@ -465,8 +465,6 @@ function Map(loadJSONFunc) {
 
         var markerID = feature.properties.layerID;
 
-        // when we click, we don't reset the size of modified markers one final time
-        that.areaMarkerLayer.resetSizeOfModifiedMarkers();
         // console.log(attributeKeys);
         // console.log(attributeValues);
         // console.log(feature.properties);
@@ -492,6 +490,7 @@ function Map(loadJSONFunc) {
         var layer;
         var layerList = document.getElementById('layerList');
         var colorScale = new ColorScale();
+        var stops = colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.zishiCustom);
 
         data['vector_layers'].forEach(function(el) {
             that.layers_.push({
@@ -506,7 +505,7 @@ function Map(loadJSONFunc) {
                 paint: {
                     'circle-color': {
                         property: 'm',
-                        stops: colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.jet)
+                        stops: stops
                     },
                     'circle-radius': {
                         // for an explanation of this array see here:

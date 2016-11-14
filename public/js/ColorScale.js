@@ -1,6 +1,6 @@
 function ColorScale() {
-	var that = this;
-	this.levels = 256;
+    var that = this;
+    this.levels = 256;
     this.jet = ['#000080',
         '#000084',
         '#000089',
@@ -259,19 +259,27 @@ function ColorScale() {
         '#800000',
     ];
 
+    this.zishiCustom = [
+        '#0000FF', // blue
+        '#00FFFF', // cyan
+        '#01DF01', // lime green
+        '#FFBF00', // yellow orange
+        '#FF0000' // red orange
+    ];
+
     this.colorsToMapboxStops = function(min, max, colors) {
-    	var stops = [];
-    	var colorRange = Math.abs(min) + Math.abs(max);
+        var stops = [];
+        var colorRange = Math.abs(min) + Math.abs(max);
 
-    	var currentValue = min;
-    	var increment = colorRange / that.levels;
+        var currentValue = min;
+        var increment = colorRange / colors.length;
 
-    	for (var i = 0; i < colors.length; i++) {
-    		var curStop = [currentValue, colors[i]];
-    		stops.push(curStop);
-			currentValue += increment;    		
-    	}
+        for (var i = 0; i < colors.length; i++) {
+            var curStop = [currentValue, colors[i]];
+            stops.push(curStop);
+            currentValue += increment;
+        }
 
-    	return stops;
+        return stops;
     };
 }

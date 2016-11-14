@@ -126,6 +126,9 @@ function getGEOJSON(area) {
 
     $("#color-scale").toggleClass("active");
 
+    // when we click, we don't reset the size of modified markers one final time
+    myMap.areaMarkerLayer.resetSizeOfModifiedMarkers();
+
     myMap.initLayer(tileJSON, "streets");
     var styleLoadFunc = function() {
         overlayToggleButton.set("on");
@@ -254,6 +257,7 @@ overlayToggleButton.onclick(function() {
         //     myMap.tileJSON.vector_layers.push(layer);
         // }
         var colorScale = new ColorScale();
+        var stops = colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.zishiCustom);
 
         myMap.tileJSON["vector_layers"].forEach(function(el) {
             myMap.layers_.push({
@@ -268,7 +272,7 @@ overlayToggleButton.onclick(function() {
                 paint: {
                     'circle-color': {
                         property: 'm',
-                        stops: colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.jet)
+                        stops: stops
                     },
                     'circle-radius': {
                         // for an explanation of this array see here:
