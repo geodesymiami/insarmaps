@@ -684,7 +684,7 @@ function Map(loadJSONFunc) {
         that.map = new mapboxgl.Map({
             container: containerID, // container id
             center: [0, 30], // that.starting position
-            zoom: 1.5 // that.starting zoom
+            zoom: 1.6 // that.starting zoom
         });
 
         that.map.on("load", function() {
@@ -740,7 +740,6 @@ function Map(loadJSONFunc) {
             // mouse not under a marker, clear all popups
             if (!features.length) {
                 that.areaPopup.remove();
-
                 that.areaMarkerLayer.resetSizeOfModifiedMarkers();
                 return;
             }
@@ -783,12 +782,12 @@ function Map(loadJSONFunc) {
                 }
 
                 html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-html='true' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date + "<br>" +
-                    prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + region + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + "><b>?</div></td></tr>";
+                    prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + region + " " + prettyNameAndComponents.missionSatellite +
+                    " " + prettyNameAndComponents.missionType + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + "><b>?</div></td></tr>";
 
                 html += "</table>";
                 that.areaPopup.setLngLat(features[0].geometry.coordinates)
                     .setHTML(html).addTo(that.map);
-                $(".area-name-popup").tooltip(); // activate tooltips
                 // make table respond to clicks
                 var unavco_name = features[i].properties.unavco_name;
 
@@ -827,7 +826,7 @@ function Map(loadJSONFunc) {
                 });
 
                 $("#" + unavco_name).css({
-                    "width": "75%",
+                    "width": "90%",
                     "float": "left",
                     "padding-right": "10px"
                 });
@@ -855,9 +854,11 @@ function Map(loadJSONFunc) {
             }
 
             $(".preview-attributes-button").css({
-                "width": "25%",
+                "width": "15px",
                 "float": "left"
             });
+
+            $(".area-name-popup").tooltip(); // activate tooltips
             prepareButtonsToHighlightOnHover();
         });
 
@@ -1084,7 +1085,7 @@ function Map(loadJSONFunc) {
 
         var mission = projectName.substring(missionIndex + 1, projectName.length);
         var missionType = mission.charAt(mission.length - 1);
-        var missionSatellite = mission.charAt(mission.length - 3);
+        var missionSatellite = mission.substring(0, mission.length - 1);
         mission = mission.substring(0, mission.length - 1);
         mission += " " + missionType;
 

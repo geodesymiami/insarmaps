@@ -242,7 +242,6 @@ label {
     transition: transform 0.5s;
 }
 
-
 #map {
     width: 100%;
     height: 100%;
@@ -349,7 +348,7 @@ div.menu {
 }
 
 #map-type-menu {
-    background: #fff;    
+    background: #fff;
     font-family: 'Open Sans', sans-serif;
     width: 120px;
     min-height: 34px;
@@ -475,6 +474,16 @@ div.menu {
     background-color: rgba(255, 255, 255, 0.5);
 }
 
+#color-scale-picture-div,
+#color-scale-text-div,
+#right-scale-maximum {
+    float: left;
+}
+
+#color-scale-text-div {
+    writing-mode: vertical-lr;
+}
+
 #slideout-button {
     position: absolute;
     font-family: 'Open Sans', sans-serif;
@@ -509,7 +518,9 @@ div.menu {
     padding-right: 10px;
 }
 
+
 /*minize button red color*/
+
 .minimize {
     color: red !important;
 }
@@ -596,6 +607,7 @@ div.menu {
     background-color: white !important;
     color: black !important;
     height: 55px;
+    margin-left: 65px;
 }
 
 .area-name-popup + .tooltip > .tooltip-arrow {
@@ -611,14 +623,19 @@ div.menu {
 
 .mapboxgl-popup {
     opacity: 0.65;
+    width: 170px;
 }
 
+
 /*take out popup area name table top line*/
+
 .mapboxgl-popup-content tr td {
     border-top: none !important;
 }
 
+
 /*area information popup with tabs*/
+
 ul.tab {
     list-style-type: none;
     margin: 0;
