@@ -622,17 +622,15 @@ div.menu {
 }
 
 .mapboxgl-popup {
-    opacity: 0.65;
+    opacity: 0.8;
     width: 170px;
 }
-
 
 /*take out popup area name table top line*/
 
 .mapboxgl-popup-content tr td {
     border-top: none !important;
 }
-
 
 /*area information popup with tabs*/
 

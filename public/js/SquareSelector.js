@@ -296,7 +296,7 @@ function SquareSelector(map) {
                     "paint": {
                         'circle-color': {
                             property: 'm',
-                            stops: colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.jet)
+                            stops: colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.zishiCustom)
                         },
                         'circle-radius': {
                             // for an explanation of this array see here:

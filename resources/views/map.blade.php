@@ -81,7 +81,7 @@
      @endif
    </div>    
    <div id="polygon-button-div">
-    <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="polygon-button">
+    <button class="btn btn-primary-outline map-button clickable-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="polygon-button">
       <img src="img/polygon.svg" alt="polygon.svg">
     </button>
   </div>

@@ -67,7 +67,9 @@ function AreaAttributesPopup() {
             tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
             tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
         }
-        $("#area-attributes-areaname-div").html(area.project_name);
+
+        var prettyNameAndComponents = myMap.prettyPrintProjectName(area.project_name);
+        $("#area-attributes-areaname-div").html(area.region + " " + prettyNameAndComponents.missionSatellite + " " + prettyNameAndComponents.missionType);
 
         $("#area-attributes-table-body").html(tableHTML);
 
@@ -792,8 +794,8 @@ $(window).load(function() {
         }
 
         myMap.map.flyTo({
-            center: [0, 0],
-            zoom: 0
+            center: myMap.startingCoords,
+            zoom: myMap.startingZoom
         });
     });
 
@@ -820,7 +822,7 @@ $(window).load(function() {
             myMap.map.dragPan.enable();
         }
 
-        var buttonColor = "blue";
+        var buttonColor = "#dcdee2";
         var opacity = 0.7;
 
         if (!myMap.selector.polygonButtonSelected) {
