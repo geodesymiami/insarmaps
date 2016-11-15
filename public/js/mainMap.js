@@ -108,6 +108,8 @@ function Map(loadJSONFunc) {
     var that = this;
     // my mapbox api key
     mapboxgl.accessToken = "pk.eyJ1Ijoia2pqajExMjIzMzQ0IiwiYSI6ImNpbDJqYXZ6czNjdWd2eW0zMTA2aW1tNXUifQ.cPofQqq5jqm6l4zix7k6vw";
+    this.startingZoom = 1.6;
+    this.startingCoords = [0, 30];
     // the map
     this.map = null;
     this.geoJSONSource = null;
@@ -473,6 +475,7 @@ function Map(loadJSONFunc) {
         var markerArea = {
             "unavco_name": unavco_name,
             "project_name": project_name,
+            "region": feature.properties.region,
             "coords": {
                 "latitude": lat,
                 "longitude": long,
@@ -683,8 +686,8 @@ function Map(loadJSONFunc) {
     this.addMapToPage = function(containerID) {
         that.map = new mapboxgl.Map({
             container: containerID, // container id
-            center: [0, 30], // that.starting position
-            zoom: 1.6 // that.starting zoom
+            center: that.startingCoords, // that.starting position
+            zoom: that.startingZoom // that.starting zoom
         });
 
         that.map.on("load", function() {
@@ -808,6 +811,7 @@ function Map(loadJSONFunc) {
                 var markerArea = {
                     "unavco_name": unavco_name,
                     "project_name": project_name,
+                    "region": region,
                     "coords": {
                         "latitude": lat,
                         "longitude": long,
