@@ -687,6 +687,7 @@ $(window).load(function() {
             }, {
                 done: function() {
                     chartWrap.tooltip("disable");
+                    $("#graph-div-minimize-button > span").html("&or;");
                     oldGraphDiv.animating = false;
                 }
             }).removeClass("toggled");
@@ -696,7 +697,7 @@ $(window).load(function() {
         } else {
             oldGraphDiv.height = chartWrap.height();
             oldGraphDiv.width = chartWrap.width();
-            var topRightButtonsWidth = chartWrap.find(".top-right-buttons").width() + 10;
+            var topRightButtonsWidth = chartWrap.find(".top-right-buttons").width() + 20;
             var oldBottom = chartWrap.css("bottom");
             chartWrap.css("bottom", oldBottom);
             chartWrap.css("top", "auto");
@@ -711,6 +712,7 @@ $(window).load(function() {
             }, {
                 done: function() {
                     chartWrap.tooltip("enable");
+                    $("#graph-div-minimize-button > span").html("&and;");
                     oldGraphDiv.animating = false;
                 }
             }).addClass("toggled");
@@ -730,8 +732,8 @@ $(window).load(function() {
             }, {
                 done: function() {
                     areaAttributesWrap.tooltip("disable");
-                    oldAttributeDiv.animating = false;
                     $("#area-attributes-div-minimize-button > span").html("&or;");
+                    oldAttributeDiv.animating = false;
                 }
             }).removeClass("toggled");
         } else {
@@ -745,8 +747,8 @@ $(window).load(function() {
             }, {
                 done: function() {
                     areaAttributesWrap.tooltip("enable");
-                    oldAttributeDiv.animating = false
                     $("#area-attributes-div-minimize-button > span").html("&and;");
+                    oldAttributeDiv.animating = false;
                 }
             }).addClass("toggled");
         }
