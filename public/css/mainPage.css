@@ -38,6 +38,27 @@ label {
     font-weight: normal !important;
 }
 
+.clearfix:after {
+    content: ".";
+    display: block;
+    clear: both;
+    visibility: hidden;
+    line-height: 0;
+    height: 0;
+}
+
+.clearfix {
+    display: inline-block;
+}
+
+html[xmlns] .clearfix {
+    display: block;
+}
+
+* html .clearfix {
+    height: 1%;
+}
+
 .hovered {
     background-color: #dcdee2 !important;
 }
@@ -134,7 +155,7 @@ label {
     width: 300px;
     overflow-y: auto;
     background-color: white !important;
-    opacity: 0.55;
+    opacity: 0.8;
 }
 
 #area-attributes-div-minimize-button {
@@ -472,16 +493,36 @@ div.menu {
 #color-scale.active {
     display: block;
     background-color: rgba(255, 255, 255, 0.5);
+    width: 75px;
 }
 
-#color-scale-picture-div,
-#color-scale-text-div,
-#right-scale-maximum {
+#color-scale-picture-div {
+    width: 30px;
+    height: 100%;
     float: left;
 }
 
-#color-scale-text-div {
-    writing-mode: vertical-lr;
+#color-scale-and-values-container {
+    width: 100%;
+}
+
+#scale-values {
+    position: relative;
+    width: 50%;
+    float: left;
+    height: 256px;
+}
+
+#left-scale-minimum, #right-scale-maximum {
+    position: absolute;
+}
+
+#right-scale-maximum {
+    top: 0;
+}
+
+#left-scale-minimum {
+    bottom: 0;
 }
 
 #slideout-button {
