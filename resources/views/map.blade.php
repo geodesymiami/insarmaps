@@ -85,7 +85,7 @@
       <img src="img/polygon.svg" alt="polygon.svg">
     </button>
   </div>
-  <div id="color-scale" class="active">
+  <div id="color-scale">
     <div id="color-scale-text-div" class="rotate">
       LOS Velocity (mm/year)
     </div>
