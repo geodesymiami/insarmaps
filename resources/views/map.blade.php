@@ -87,7 +87,7 @@
   </div>
   <div id="color-scale">
     <div id="color-scale-text-div" class="rotate">
-      LOS Velocity (mm/year)
+      LOS Velocity [mm/yr]
     </div>
     <div id="color-scale-and-values-container" class="clearfix">
       <div id="color-scale-picture-div"> 
