@@ -432,6 +432,23 @@ function Map(loadJSONFunc) {
         }
     };
 
+    this.getMarkersAtSameLocationAsMarker = function(marker, markers) {
+        var markersAtPoint = [];
+        var lat = marker.geometry.coordinates[1];
+        var long = marker.geometry.coordinates[0];
+
+        for (var i = 0; i < markers.length; i++) {
+            var curMarkerLat = markers[i].geometry.coordinates[1];
+            var curMarkerLong = markers[i].geometry.coordinates[0];
+
+            if (curMarkerLat = lat && curMarkerLong == long) {
+                markersAtPoint.push(markers[i]);
+            }
+        }
+
+        return markersAtPoint;
+    };
+
     this.leftClickOnAPoint = function(e) {
         that.clickOnAPoint(e);
     };
@@ -756,114 +773,118 @@ function Map(loadJSONFunc) {
                 var html = "<table class='table' id='areas-under-mouse-table'>";
                 // make the html table
                 var previewButtonIDSuffix = "_preview_attribues";
-                var i = 0;
-                var unavco_name = features[i].properties.unavco_name;
 
-                if (!unavco_name) {
-                    return;
+                features = that.getMarkersAtSameLocationAsMarker(features[0], features);
+
+                for (var i = 0; i < features.length; i++) {
+                    var unavco_name = features[i].properties.unavco_name;
+
+                    if (!unavco_name) {
+                        return;
+                    }
+
+                    var markerID = features[i].properties.layerID;
+
+                    that.areaMarkerLayer.setMarkerSize(markerID, 1.5);
+
+                    var region = features[i].properties.region;
+
+                    var prettyNameAndComponents = that.prettyPrintProjectName(features[i].properties.project_name);
+                    var attributeValues = JSON.parse(features[i].properties.attributevalues);
+                    var first_date_index = JSON.parse(features[i].properties.attributekeys).indexOf("first_date");
+
+                    var first_date = attributeValues[first_date_index];
+                    var last_date = attributeValues[first_date_index + 1];
+
+                    var frameNumbersString = null;
+
+                    if (prettyNameAndComponents.frameNumbers[0] == prettyNameAndComponents.frameNumbers[1]) {
+                        frameNumbersString = prettyNameAndComponents.frameNumbers[0];
+                    } else {
+                        frameNumbersString = prettyNameAndComponents.frameNumbers.join(" ");
+                    }
+
+                    html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-html='true' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date + "<br>" +
+                        prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + region + " " + prettyNameAndComponents.missionSatellite +
+                        " " + prettyNameAndComponents.missionType + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + "><b>?</div></td></tr>";
                 }
-
-                var markerID = features[i].properties.layerID;
-
-                that.areaMarkerLayer.setMarkerSize(markerID, 1.5);
-
-                var region = features[i].properties.region;
-
-                var prettyNameAndComponents = that.prettyPrintProjectName(features[i].properties.project_name);
-                var attributeValues = JSON.parse(features[i].properties.attributevalues);
-                var first_date_index = JSON.parse(features[i].properties.attributekeys).indexOf("first_date");
-
-                var first_date = attributeValues[first_date_index];
-                var last_date = attributeValues[first_date_index + 1];
-
-                var frameNumbersString = null;
-
-                if (prettyNameAndComponents.frameNumbers[0] == prettyNameAndComponents.frameNumbers[1]) {
-                    frameNumbersString = prettyNameAndComponents.frameNumbers[0];
-                } else {
-                    frameNumbersString = prettyNameAndComponents.frameNumbers.join(" ");
-                }
-
-                html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-html='true' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date + "<br>" +
-                    prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + region + " " + prettyNameAndComponents.missionSatellite +
-                    " " + prettyNameAndComponents.missionType + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + "><b>?</div></td></tr>";
-
                 html += "</table>";
                 that.areaPopup.setLngLat(features[0].geometry.coordinates)
                     .setHTML(html).addTo(that.map);
                 // make table respond to clicks
-                var unavco_name = features[i].properties.unavco_name;
+                for (var i = 0; i < features.length; i++) {
+                    var unavco_name = features[i].properties.unavco_name;
 
-                if (!unavco_name) {
-                    return;
+                    if (!unavco_name) {
+                        return;
+                    }
+
+                    var project_name = features[i].properties.project_name;
+                    var lat = features[i].geometry.coordinates[0];
+                    var long = features[i].geometry.coordinates[1];
+
+                    var num_chunks = features[i].properties.num_chunks;
+
+                    var attributeKeys = features[i].properties.attributekeys;
+                    var attributeValues = features[i].properties.attributevalues;
+
+                    var markerArea = {
+                        "unavco_name": unavco_name,
+                        "project_name": project_name,
+                        "region": region,
+                        "coords": {
+                            "latitude": lat,
+                            "longitude": long,
+                        },
+                        "num_chunks": num_chunks,
+                        "attributekeys": attributeKeys,
+                        "attributevalues": attributeValues
+                    };
+
+                    // make cursor change when mouse hovers over row
+                    $("#areas-under-mouse-table #" + unavco_name).css("cursor", "pointer");
+                    $(".preview-attributes-button").css({
+                        "cursor": "pointer",
+                        "border-radius": "100%",
+                        "background-color": "rgb(107, 190, 249)"
+                    });
+
+                    $("#" + unavco_name).css({
+                        "width": "90%",
+                        "float": "left",
+                        "padding-right": "10px"
+                    });
+
+                    // ugly click function declaration to JS not using block scope
+                    $("#" + unavco_name).click((function(area) {
+                        return function(e) {
+                            that.determineZoomOutZoom();
+                            clickedArea = area.unavco_name;
+                            that.areaPopup.remove();
+                            getGEOJSON(area);
+                        };
+                    })(markerArea));
+                    $("#" + unavco_name + previewButtonIDSuffix).hover((function(area) {
+                        return function(e) {
+                            if ($('.wrap#area-attributes-div').hasClass('active')) {
+                                areaAttributesPopup.populate(area);
+                            } else {
+                                areaAttributesPopup.show(area);
+                            }
+                        };
+                    })(markerArea), function() {
+                        $('.wrap#area-attributes-div').toggleClass('active');
+                    });
                 }
 
-
-                var project_name = features[i].properties.project_name;
-                var lat = features[i].geometry.coordinates[0];
-                var long = features[i].geometry.coordinates[1];
-
-                var num_chunks = features[i].properties.num_chunks;
-
-                var attributeKeys = features[i].properties.attributekeys;
-                var attributeValues = features[i].properties.attributevalues;
-
-                var markerArea = {
-                    "unavco_name": unavco_name,
-                    "project_name": project_name,
-                    "region": region,
-                    "coords": {
-                        "latitude": lat,
-                        "longitude": long,
-                    },
-                    "num_chunks": num_chunks,
-                    "attributekeys": attributeKeys,
-                    "attributevalues": attributeValues
-                };
-
-                // make cursor change when mouse hovers over row
-                $("#areas-under-mouse-table #" + unavco_name).css("cursor", "pointer");
                 $(".preview-attributes-button").css({
-                    "cursor": "pointer",
-                    "border-radius": "100%",
-                    "background-color": "rgb(107, 190, 249)"
+                    "width": "15px",
+                    "float": "left"
                 });
 
-                $("#" + unavco_name).css({
-                    "width": "90%",
-                    "float": "left",
-                    "padding-right": "10px"
-                });
-
-                // ugly click function declaration to JS not using block scope
-                $("#" + unavco_name).click((function(area) {
-                    return function(e) {
-                        that.determineZoomOutZoom();
-                        clickedArea = area.unavco_name;
-                        that.areaPopup.remove();
-                        getGEOJSON(area);
-                    };
-                })(markerArea));
-                $("#" + unavco_name + previewButtonIDSuffix).hover((function(area) {
-                    return function(e) {
-                        if ($('.wrap#area-attributes-div').hasClass('active')) {
-                            areaAttributesPopup.populate(area);
-                        } else {
-                            areaAttributesPopup.show(area);
-                        }
-                    };
-                })(markerArea), function() {
-                    $('.wrap#area-attributes-div').toggleClass('active');
-                });
+                $(".area-name-popup").tooltip(); // activate tooltips
+                prepareButtonsToHighlightOnHover();
             }
-
-            $(".preview-attributes-button").css({
-                "width": "15px",
-                "float": "left"
-            });
-
-            $(".area-name-popup").tooltip(); // activate tooltips
-            prepareButtonsToHighlightOnHover();
         });
 
         // handle zoom changed. we want to change the icon-size in the layer for varying zooms.
