@@ -510,7 +510,7 @@ function Map(loadJSONFunc) {
         var layer;
         var layerList = document.getElementById('layerList');
         var colorScale = new ColorScale();
-        var stops = colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.zishiCustom);
+        var stops = colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.jet);
 
         data['vector_layers'].forEach(function(el) {
             that.layers_.push({

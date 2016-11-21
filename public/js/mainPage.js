@@ -259,7 +259,7 @@ overlayToggleButton.onclick(function() {
         //     myMap.tileJSON.vector_layers.push(layer);
         // }
         var colorScale = new ColorScale();
-        var stops = colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.zishiCustom);
+        var stops = colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.jet);
 
         myMap.tileJSON["vector_layers"].forEach(function(el) {
             myMap.layers_.push({
