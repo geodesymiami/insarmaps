@@ -130,7 +130,7 @@ public function getPoints() {
 
    $json["decimal_dates"] = $this->postgresToPHPFloatArray($decimal_dates);
    $json["string_dates"] = $this->postgresToPHPArray($string_dates);
-   $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = ANY (VALUES ";
+   $query = "WITH points(point) AS (VALUES";
 
    for ($i = 0; $i < $pointsArrayLen - 1; $i++) {       
     $curPointNum = $pointsArray[$i];
@@ -140,9 +140,10 @@ public function getPoints() {
 
     // add last ANY values without comma
   $curPointNum = $pointsArray[$i];
-  $query = $query . "(" . $curPointNum . ")) ORDER BY p ASC";
+  $query = $query . "(" . $curPointNum . ")) SELECT *, st_astext(wkb_geometry) from " . $area . " INNER JOIN points p ON (" . $area . ".p = p.point) ORDER BY p ASC";
 
     // echo $fullQuery;
+  // echo $query;
   $points = DB::select($query);
 
   foreach ($points as $point) {
