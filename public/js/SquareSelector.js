@@ -183,6 +183,11 @@ function SquareSelector(map) {
 
         var query = currentArea.unavco_name + "/";
 
+	// may be placebo effect, but seems to speed up query from db
+        features.sort(function(a, b) {
+            return a.properties.p - b.properties.p;
+        });
+
         for (var i = 0; i < features.length; i++) {
             var long = features[i].geometry.coordinates[0];
             var lat = features[i].geometry.coordinates[1];
