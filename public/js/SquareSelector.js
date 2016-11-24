@@ -183,6 +183,12 @@ function SquareSelector(map) {
 
         var query = currentArea.unavco_name + "/";
 
+	// may be placebo effect, but seems to speed up query from db. also
+        // sort by p in ascending order so we match displacements with the features
+        features.sort(function(a, b) {
+            return a.properties.p - b.properties.p;
+        });
+
         for (var i = 0; i < features.length; i++) {
             var long = features[i].geometry.coordinates[0];
             var lat = features[i].geometry.coordinates[1];
@@ -209,11 +215,6 @@ function SquareSelector(map) {
                 }
             });
         }
-
-        // sort by p in ascending order so we match displacements with the features
-        geoJSONData.features.sort(function(a, b) {
-            return a.properties.p - b.properties.p;
-        });
 
         //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
         that.map.map.addSource("onTheFlyJSON", {
