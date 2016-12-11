@@ -95,10 +95,14 @@
       </div>
       <div id="scale-values">
         <div id="left-scale-minimum">
-          <b>-2</b>
+          <div class="form-group">
+            <input type="number" class="form-control" id="min-scale-value">
+          </div>
         </div>
         <div id="right-scale-maximum">
-          <b>2</b>
+          <div class="form-group">
+            <input type="number" class="form-control" id="max-scale-value">
+          </div>
         </div>
       </div>
     </div>

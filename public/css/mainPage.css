@@ -525,6 +525,21 @@ div.menu {
     bottom: 0;
 }
 
+#scale-values .form-group > input {
+    padding: 0;
+}
+
+/*remove the up/down spinners on the number input*/
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance:textfield;
+}
+
 #slideout-button {
     position: absolute;
     font-family: 'Open Sans', sans-serif;

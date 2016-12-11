@@ -1127,6 +1127,26 @@ function Map(loadJSONFunc) {
 
         return name;
     };
+
+    this.recolorPoints = function() {
+        var stops = that.colorScale.getMapboxStops();
+
+        that.layers_.forEach(function(layer) {
+            if (that.map.getPaintProperty(layer.id, "circle-color")) {
+                that.map.setPaintProperty(layer.id, "circle-color", {
+                    property: 'm',
+                    stops: stops
+                });
+            }
+        });
+
+        if (that.map.getLayer("onTheFlyJSON")) {
+            that.map.setPaintProperty("onTheFlyJSON", "circle-color", {
+                property: 'm',
+                stops: stops
+            });
+        }
+    };
 }
 
 

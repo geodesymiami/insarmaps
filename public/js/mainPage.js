@@ -887,4 +887,21 @@ $(window).load(function() {
     $("#download-as-text-button").click(function() {
         window.open("/textFile/" + currentArea.unavco_name + "/" + currentPoint);
     });
+
+    $("#min-scale-value").val(myMap.colorScale.min * 100);
+    $("#max-scale-value").val(myMap.colorScale.max * 100);
+
+    $("#scale-values .form-group > input").keypress(function(e) {
+        var ENTER = 13;
+
+        if (e.which == ENTER) {
+            var min = $("#min-scale-value").val() / 100;
+            var max = $("#max-scale-value").val() / 100;
+
+            myMap.colorScale.min = min;
+            myMap.colorScale.max = min;
+
+            myMap.recolorPoints();
+        }
+    });
 });
