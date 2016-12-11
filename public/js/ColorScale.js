@@ -1,6 +1,7 @@
-function ColorScale() {
+function ColorScale(min, max) {
     var that = this;
     this.levels = 256;
+
     this.jet = ['#000080',
         '#000084',
         '#000089',
@@ -267,6 +268,20 @@ function ColorScale() {
         '#FF0000' // red orange
     ];
 
+    this.currentScale = this.jet;
+    this.min = min;
+    this.max = max;
+
+    this.setScale = function(scale) {
+        if (scale == "jet") {
+            that.currentScale = that.jet;
+        } else if (scale == "zishiCustom") {
+            that.currentScale = that.zishiCustom;
+        } else {
+            throw "Invalid Color Scale (" + scale + ") selected";
+        }
+    };
+
     this.colorsToMapboxStops = function(min, max, colors) {
         var stops = [];
         var colorRange = Math.abs(min) + Math.abs(max);
@@ -281,5 +296,22 @@ function ColorScale() {
         }
 
         return stops;
+    };
+
+    this.setMin = function(min) {
+        that.min = min;
+    };
+
+    this.setMax = function(max) {
+        that.max = max;
+    };
+
+    this.setMinMax = function(min, max) {
+        that.setMin(min);
+        that.setMax(max);
+    };
+
+    this.getMapboxStops = function() {
+        return that.colorsToMapboxStops(that.min, that.max, this.currentScale);
     };
 }

@@ -132,6 +132,7 @@ function Map(loadJSONFunc) {
     this.graphsController = new GraphsController();
     this.areas = null;
     this.areaFeatures = null;
+    this.colorScale = new ColorScale(-0.02, 0.02);
 
     this.areaMarkerLayer = new AreaMarkerLayer(this);
 
@@ -509,8 +510,7 @@ function Map(loadJSONFunc) {
     this.initLayer = function(data, mapType) {
         var layer;
         var layerList = document.getElementById('layerList');
-        var colorScale = new ColorScale();
-        var stops = colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.jet);
+        var stops = that.colorScale.getMapboxStops();
 
         data['vector_layers'].forEach(function(el) {
             that.layers_.push({

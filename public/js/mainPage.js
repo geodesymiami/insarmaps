@@ -258,8 +258,7 @@ overlayToggleButton.onclick(function() {
         //     var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
         //     myMap.tileJSON.vector_layers.push(layer);
         // }
-        var colorScale = new ColorScale();
-        var stops = colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.jet);
+        var stops = myMap.colorScale.getMapboxStops();
 
         myMap.tileJSON["vector_layers"].forEach(function(el) {
             myMap.layers_.push({

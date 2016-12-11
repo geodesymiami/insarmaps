@@ -290,8 +290,6 @@ function SquareSelector(map) {
                     "data": geoJSONData
                 });
 
-                var colorScale = new ColorScale();
-
                 that.map.map.addLayer({
                     "id": "onTheFlyJSON",
                     "type": "circle",
@@ -299,7 +297,7 @@ function SquareSelector(map) {
                     "paint": {
                         'circle-color': {
                             property: 'm',
-                            stops: colorScale.colorsToMapboxStops(-0.02, 0.02, colorScale.jet)
+                            stops: that.map.colorScale.getMapboxStops()
                         },
                         'circle-radius': {
                             // for an explanation of this array see here:
