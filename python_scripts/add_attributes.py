@@ -33,14 +33,42 @@ class InsarDatabaseController:
 
 		return self.cursor.fetchall()
 
+	def get_dataset_id(self, dataset):
+		sql = "SELECT id from area WHERE area.unavco_name = '" + dataset + "'"
+		self.cursor.execute(sql)
+
+		return self.cursor.fetchone()[0]
+
 	def table_exists(self, table):
-		sql = "select exists(select * from information_schema.tables where table_name=%s)"
+		sql = "SELECT exists(SELECT * FROM information_schema.tables WHERE table_name=%s)"
 		self.cursor.execute(sql, (table,))
 
 		return self.cursor.fetchone()[0]
 
+	def attribute_exists_for_dataset(self, dataset, attributekey):
+		dataset_id = self.get_dataset_id(dataset)
+
+		sql = "SELECT exists(SELECT attributekey FROM extra_attributes WHERE area_id = " + str(dataset_id) + " AND attributekey = '" + attributekey + "');"
+		self.cursor.execute(sql)
+
+		return self.cursor.fetchone()[0]
+
 	def add_attribute(self, dataset, attributekey, attributevalue):
-		pass
+		dataset_id = self.get_dataset_id(dataset)
+		sql = ""
+
+		if not self.table_exists("extra_attributes"):
+			sql = "CREATE TABLE IF NOT EXISTS extra_attributes (area_id integer, attributekey varchar, attributevalue varchar);"
+			self.cursor.execute(sql)
+			self.con.commit()
+
+		if not self.attribute_exists_for_dataset(dataset, attributekey):
+			sql = "INSERT INTO extra_attributes VALUES (" + str(dataset_id) + ", '" + attributekey + "', '" + attributevalue + "');"
+		else:
+			sql = "UPDATE extra_attributes SET attributevalue = '" + attributevalue + "' WHERE area_id = " + str(dataset_id) + " AND attributekey = '" + attributekey + "'"
+
+		self.cursor.execute(sql)
+		self.con.commit()
 
 def usage():
 	print "add_atributes.py -u USERNAME -p PASSWORD -h HOST -d DB -f FILE"
@@ -77,7 +105,7 @@ def main(argv):
 	dbController = InsarDatabaseController(username, password, host, db)
 	dbController.connect()
 
-	print dbController.table_exists("area")
+	#dbController.add_attribute("Alos_SM_73_2950_2990_20070107_20110420", "testkey", "testvalue")
 
 	dbController.close()
 
