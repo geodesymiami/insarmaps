@@ -65,15 +65,26 @@ class InsarDatabaseController:
 			self.con.commit()
 
 		if not self.attribute_exists_for_dataset(dataset, attributekey):
-			print "if"
-			sql = "INSERT INTO extra_attributes VALUES (%s, '%s', '%s');"
+			sql = "INSERT INTO extra_attributes VALUES (%s, %s, %s);"
 			prepared_values = (str(dataset_id), attributekey, attributevalue)
 		else:
-			print "else"
-			sql = "UPDATE extra_attributes SET attributevalue = '" + attributevalue + "' WHERE area_id = " + str(dataset_id) + " AND attributekey = '" + attributekey + "'"
+			sql = "UPDATE extra_attributes SET attributevalue = %s WHERE area_id = %s AND attributekey = %s"
+			prepared_values = (attributevalue, str(dataset_id), attributekey)
 
 		self.cursor.execute(sql, prepared_values)
 		self.con.commit()
+
+	def index_table_on(self, table, on):
+		# can't remove single quotes from table name, so we do it manually
+		sql = "CREATE INDEX area_id_idx ON " + table + " (" + on + ");"
+
+		try:
+			self.cursor.execute(sql)
+			self.con.commit()
+		# index exists most probably if exception thrown
+		except Exception, e:
+			pass
+			
 
 def usage():
 	print "add_atributes.py -u USERNAME -p PASSWORD -h HOST -d DB -f FILE"
@@ -132,14 +143,14 @@ def main(argv):
 	project_name = working_dir.split("/")[-2]
 	attributes_file = working_dir + "add_Attribute.txt"
 	attributes = parse_file_for_attributes(attributes_file)
-	print project_name
 	dbController = InsarDatabaseController(username, password, host, db)	
 	dbController.connect()
-	print dbController.get_dataset_id(project_name)
 
 	for key in attributes:
+		print "Setting attribute " + key + " to " + attributes[key]
 		dbController.add_attribute(project_name, key, attributes[key])
 
+	dbController.index_table_on("extra_attributes", "area_id")
 	dbController.close()
 
 if __name__ == '__main__':
