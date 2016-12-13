@@ -3,6 +3,7 @@
 import psycopg2
 import sys
 import getopt
+import os
 
 class InsarDatabaseController:
 	def __init__(self, username, password, host, db):
@@ -34,7 +35,7 @@ class InsarDatabaseController:
 		return self.cursor.fetchall()
 
 	def get_dataset_id(self, dataset):
-		sql = "SELECT id from area WHERE area.unavco_name = '" + dataset + "'"
+		sql = "SELECT id from area WHERE area.project_name = '" + dataset + "'"
 		self.cursor.execute(sql)
 
 		return self.cursor.fetchone()[0]
@@ -56,6 +57,7 @@ class InsarDatabaseController:
 	def add_attribute(self, dataset, attributekey, attributevalue):
 		dataset_id = self.get_dataset_id(dataset)
 		sql = ""
+		prepared_values = None
 
 		if not self.table_exists("extra_attributes"):
 			sql = "CREATE TABLE IF NOT EXISTS extra_attributes (area_id integer, attributekey varchar, attributevalue varchar);"
@@ -63,22 +65,43 @@ class InsarDatabaseController:
 			self.con.commit()
 
 		if not self.attribute_exists_for_dataset(dataset, attributekey):
-			sql = "INSERT INTO extra_attributes VALUES (" + str(dataset_id) + ", '" + attributekey + "', '" + attributevalue + "');"
+			print "if"
+			sql = "INSERT INTO extra_attributes VALUES (%s, '%s', '%s');"
+			prepared_values = (str(dataset_id), attributekey, attributevalue)
 		else:
+			print "else"
 			sql = "UPDATE extra_attributes SET attributevalue = '" + attributevalue + "' WHERE area_id = " + str(dataset_id) + " AND attributekey = '" + attributekey + "'"
 
-		self.cursor.execute(sql)
+		self.cursor.execute(sql, prepared_values)
 		self.con.commit()
 
 def usage():
 	print "add_atributes.py -u USERNAME -p PASSWORD -h HOST -d DB -f FILE"
+
+def parse_file_for_attributes(file):
+	attributes_dict = {}
+
+	with open(file) as f:
+		file_contents = f.readlines()
+
+		for line in file_contents:
+			if line != '\n':
+				key_value = line.split("=") # index 0 is key, 1 is value
+
+				if key_value[1][-1] == '\n':
+					key_value[1] = key_value[1][:-1]
+					key_value[1] = key_value[1].lstrip() # take out leading whitespace
+
+				attributes_dict[key_value[0]] = key_value[1]
+
+	return attributes_dict
 
 def main(argv):
 	username = None
 	password = None
 	host = None
 	db = None
-	attributes_file = None
+	working_dir = None
 
 	try:
 		opts, extraArgs = getopt.getopt(argv[1:],'u:p:h:d:f:')
@@ -96,16 +119,26 @@ def main(argv):
 			host = a
 		elif o == '-d':
 			db = a
-		elif o == 'f':
-			attributes_file = a
+		elif o == '-f':
+			working_dir = a
 		else:
-			assert False, "unhandled option " + o + "- exit"
+			assert False, "unhandled option " + o + " - exit"
 			sys.exit()
 
-	dbController = InsarDatabaseController(username, password, host, db)
-	dbController.connect()
+	# make sure we have a final / so the below code doesn't break
+	if working_dir[-1] != "/":
+		working_dir += "/"
 
-	#dbController.add_attribute("Alos_SM_73_2950_2990_20070107_20110420", "testkey", "testvalue")
+	project_name = working_dir.split("/")[-2]
+	attributes_file = working_dir + "add_Attribute.txt"
+	attributes = parse_file_for_attributes(attributes_file)
+	print project_name
+	dbController = InsarDatabaseController(username, password, host, db)	
+	dbController.connect()
+	print dbController.get_dataset_id(project_name)
+
+	for key in attributes:
+		dbController.add_attribute(project_name, key, attributes[key])
 
 	dbController.close()
 

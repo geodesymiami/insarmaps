@@ -28,7 +28,7 @@ def rev_sorted_ls(path):
 
 # figure out what the name of the h5 file to put on site is in the given path
 def get_H5_filename(path):
-        files = rev_sorted_ls(path)
+   	files = rev_sorted_ls(path)
 	region_file = None
 
 	for file in files:
