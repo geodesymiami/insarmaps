@@ -202,6 +202,13 @@ public function getAreas() {
           $currentArea["attributekeys"] = $this->postgresToPHPArray($area->attributekeys);
           $currentArea["attributevalues"] = $this->postgresToPHPArray($area->attributevalues);
           $currentArea["region"] = $area->region;
+
+
+          $sql = "SELECT attributekey, attributevalue FROM extra_attributes JOIN area ON (extra_attributes.area_id = (?))";
+          $bindings = [$area->id];
+          $extra_attributes = DB::select($sql, $bindings);
+          $currentArea["extra_attributes"] = $extra_attributes;
+
           array_push($json["areas"], $currentArea);
           continue;
         }
