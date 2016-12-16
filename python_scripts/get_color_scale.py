@@ -41,14 +41,17 @@ def main(argv):
 
 	current_min = min
 	increment = color_range / float(cmap.N)
+	growing_str = ""
 	 
 	for i in range(cmap.N):
 		rgb=cmap(i)[:3]
 
 		#print ("[" + str(current_min) + ", '" + matplotlib.colors.rgb2hex(rgb) + "'],")
-		
-		print ("'" + matplotlib.colors.rgb2hex(rgb) + "',")
+		#print "'" + matplotlib.colors.rgb2hex(rgb) + "',"	
+		growing_str += "'" + matplotlib.colors.rgb2hex(rgb) + "',"
 		current_min += increment
+
+	print growing_str
 
 if __name__ == '__main__':
 	main(sys.argv)
