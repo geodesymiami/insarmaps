@@ -34,13 +34,13 @@ function AreaAttributesPopup() {
         };
 
         // if we click on an area marker, we get a string as the mapbox feature can't seem to store an array and converts it to a string
-        if (typeof area.attributekeys == "string" || typeof area.attributevalues == "string") {
-            attributekeys = JSON.parse(area.attributekeys);
-            attributevalues = JSON.parse(area.attributevalues);
+        if (typeof area.properties.attributekeys == "string" || typeof area.properties.attributevalues == "string") {
+            attributekeys = JSON.parse(area.properties.attributekeys);
+            attributevalues = JSON.parse(area.properties.attributevalues);
             // otherwise, we get arrays from the server (clicked on area not through an area marker feature)
         } else {
-            attributekeys = area.attributekeys;
-            attributevalues = area.attributevalues;
+            attributekeys = area.properties.attributekeys;
+            attributevalues = area.properties.attributevalues;
         }
 
         var manuallyOrderedIndexes = [];
@@ -68,8 +68,8 @@ function AreaAttributesPopup() {
             tableHTML += "<td value=" + curValue + ">" + curValue + "</td></tr>";
         }
 
-        var prettyNameAndComponents = myMap.prettyPrintProjectName(area.project_name);
-        $("#area-attributes-areaname-div").html(area.region + " " + prettyNameAndComponents.missionSatellite + " " + prettyNameAndComponents.missionType);
+        var prettyNameAndComponents = myMap.prettyPrintProjectName(area.properties.project_name);
+        $("#area-attributes-areaname-div").html(area.properties.region + " " + prettyNameAndComponents.missionSatellite + " " + prettyNameAndComponents.missionType);
 
         $("#area-attributes-table-body").html(tableHTML);
 
@@ -110,7 +110,7 @@ function getGEOJSON(area) {
     //myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
     // myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://ec2-52-41-231-16.us-west-2.compute.amazonaws.com:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
 
-    var tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://129.171.97.228:8888/" + area.unavco_name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
+    var tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://129.171.97.228:8888/" + area.properties.unavco_name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
 
     if (myMap.pointsLoaded()) {
         myMap.removePoints();
@@ -118,8 +118,7 @@ function getGEOJSON(area) {
     }
     // make streets toggle button be only checked one
     $("#streets").prop("checked", true);
-
-    for (var i = 1; i <= area.num_chunks; i++) {
+    for (var i = 1; i <= area.properties.num_chunks; i++) {
         var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
         tileJSON.vector_layers.push(layer);
     }
@@ -149,13 +148,17 @@ function getGEOJSON(area) {
             // set our tilejson to the one we've loaded. this will make sure anAreaWasPreviouslyLoaded method returns true after the
             // first time a dataset is selected
             myMap.tileJSON = tileJSON;
+
+            var lat = area.geometry.coordinates[1];
+            var long = area.geometry.coordinates[0];
+
             myMap.map.flyTo({
-                center: [area.coords.latitude, area.coords.longitude],
+                center: [long, lat],
                 zoom: zoom
             });
 
             myMap.map.off("style.load", styleLoadFunc);
-            myMap.loadAreaMarkersExcluding([area.unavco_name]);
+            myMap.loadAreaMarkersExcluding([area.properties.unavco_name]);
         }, 1000);
     };
 
@@ -557,44 +560,44 @@ contourToggleButton.onclick(function() {
 });
 
 function search() {
-    var json = myMap.areas;
-    console.log(json);
+    var areas = myMap.areaFeatures;
+    console.log(areas);
+
     if (!$('.wrap#select-area-wrap').hasClass('active')) {
         $('.wrap#select-area-wrap').toggleClass('active');
     }
-    if (json != null) {
+    if (areas != null) {
         // TODO: dummy search for paper, add actual paper later on when we get attribute    
         query = $("#search-input").val();
-        // full list of areas
-        var areas = json.areas;
+
         // TODO: remove, this is placeholder
         for (var i = 0; i < areas.length; i++) {
-            areas[i].reference = "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288";
+            areas[i].properties.reference = "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288";
             // add mission so it's fuse searchable
-            areas[i].mission = areas[i].attributevalues[0];
+            areas[i].properties.mission = areas[i].properties.attributevalues[0];
         }
         // new sublist of areas that match query
         var match_areas = [];
 
-        var fuse = new Fuse(areas, { keys: ["country", "unavco_name", "region", "mission"] });
+        var fuse = new Fuse(areas, { keys: ["properties.country", "properties.unavco_name", "properties.region", "properties.mission"] });
         var countries = fuse.search(query);
 
-        console.log("area 1");
-
+        console.log(countries);
         // add our info in a table, first remove any old info
         $(".wrap#select-area-wrap").find(".content").find("#myTable").find("#tableBody").empty();
         for (var i = 0; i < countries.length; i++) {
             var country = countries[i];
+            var properties = country.properties;
 
-            $("#tableBody").append("<tr id=" + country.unavco_name + "><td value='" + country.unavco_name + "''>" +
-                country.unavco_name + " (" + country.project_name + ")</td><td value='reference'>Reference to the papers to be added.</a></td></tr>");
+            $("#tableBody").append("<tr id=" + properties.unavco_name + "><td value='" + properties.unavco_name + "''>" +
+                properties.unavco_name + " (" + properties.project_name + ")</td><td value='reference'>Reference to the papers to be added.</a></td></tr>");
 
             // make cursor change when mouse hovers over row
-            $("#" + country.unavco_name).css("cursor", "pointer");
+            $("#" + properties.unavco_name).css("cursor", "pointer");
             // set the on click callback function for this row
 
             // ugly click function declaration to JS not using block scope
-            $("#" + country.unavco_name).click((function(country) {
+            $("#" + properties.unavco_name).click((function(country) {
                 return function(e) {
                     // don't load area if reference link is clicked
                     if (e.target.cellIndex == 0) {
@@ -606,10 +609,6 @@ function search() {
                 };
             })(country));
         }
-
-        // now get only datasets from countries array with query search
-        // for (i = 0; i < areas.length; i++) {}
-
     } else {
         console.log("No such areas");
         $("#tableBody").html("No areas found");

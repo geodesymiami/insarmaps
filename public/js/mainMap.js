@@ -489,21 +489,7 @@ function Map(loadJSONFunc) {
         // console.log(attributeValues);
         // console.log(feature.properties);
 
-        // needed as mapbox doesn't return original feature
-        var markerArea = {
-            "unavco_name": unavco_name,
-            "project_name": project_name,
-            "region": feature.properties.region,
-            "coords": {
-                "latitude": lat,
-                "longitude": long,
-            },
-            "num_chunks": num_chunks,
-            "attributekeys": attributeKeys,
-            "attributevalues": attributeValues
-        };
-
-        getGEOJSON(markerArea);
+        getGEOJSON(feature);
     };
 
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
@@ -615,6 +601,7 @@ function Map(loadJSONFunc) {
                         "region": area.region,
                         "project_name": area.project_name,
                         "num_chunks": area.num_chunks,
+                        "country": area.country,
                         "attributekeys": area.attributekeys,
                         "attributevalues": area.attributevalues
                     }
@@ -828,19 +815,6 @@ function Map(loadJSONFunc) {
                     var attributeKeys = features[i].properties.attributekeys;
                     var attributeValues = features[i].properties.attributevalues;
 
-                    var markerArea = {
-                        "unavco_name": unavco_name,
-                        "project_name": project_name,
-                        "region": region,
-                        "coords": {
-                            "latitude": lat,
-                            "longitude": long,
-                        },
-                        "num_chunks": num_chunks,
-                        "attributekeys": attributeKeys,
-                        "attributevalues": attributeValues
-                    };
-
                     // make cursor change when mouse hovers over row
                     $("#areas-under-mouse-table #" + unavco_name).css("cursor", "pointer");
                     $(".preview-attributes-button").css({
@@ -859,11 +833,11 @@ function Map(loadJSONFunc) {
                     $("#" + unavco_name).click((function(area) {
                         return function(e) {
                             that.determineZoomOutZoom();
-                            clickedArea = area.unavco_name;
+                            clickedArea = area.properties.unavco_name;
                             that.areaPopup.remove();
                             getGEOJSON(area);
                         };
-                    })(markerArea));
+                    })(features[i]));
                     $("#" + unavco_name + previewButtonIDSuffix).hover((function(area) {
                         return function(e) {
                             if ($('.wrap#area-attributes-div').hasClass('active')) {
@@ -872,7 +846,7 @@ function Map(loadJSONFunc) {
                                 areaAttributesPopup.show(area);
                             }
                         };
-                    })(markerArea), function() {
+                    })(features[i]), function() {
                         $('.wrap#area-attributes-div').toggleClass('active');
                     });
                 }
