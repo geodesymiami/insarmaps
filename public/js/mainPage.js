@@ -268,7 +268,6 @@ overlayToggleButton.onclick(function() {
                 id: el['id'] + Math.random(),
                 source: 'vector_layer_',
                 'source-layer': el['id'],
-                interactive: true,
                 type: 'circle',
                 layout: {
                     'visibility': 'visible'
