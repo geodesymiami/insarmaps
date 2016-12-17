@@ -195,6 +195,8 @@ function ColorScale(min, max) {
     ];
 
     this.currentScale = this.jet;
+
+    // in cm
     this.min = min;
     this.max = max;
 
@@ -216,9 +218,12 @@ function ColorScale(min, max) {
 
     this.colorsToMapboxStops = function(min, max, colors) {
         var stops = [];
-        var colorRange = Math.abs(min) + Math.abs(max);
 
-        var currentValue = min;
+        // we divide by 100 because this class works in cm, but mapbox works in m as
+        // those are the units in the original h5 files
+        var colorRange = (Math.abs(min) + Math.abs(max)) / 100;
+        var currentValue = min / 100;
+
         var increment = colorRange / colors.length;
 
         for (var i = 0; i < colors.length; i++) {
@@ -230,12 +235,19 @@ function ColorScale(min, max) {
         return stops;
     };
 
+    this.initVisualScale = function() {
+        $("#min-scale-value").val(that.min);
+        $("#max-scale-value").val(that.max);
+    };
+
     this.setMin = function(min) {
         that.min = min;
+        $("#min-scale-value").val(that.min);
     };
 
     this.setMax = function(max) {
         that.max = max;
+        $("#max-scale-value").val(that.max);
     };
 
     this.setMinMax = function(min, max) {

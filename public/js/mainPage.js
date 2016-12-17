@@ -132,8 +132,15 @@ function getGEOJSON(area) {
 
     // set color scale
     var areaExtraAttributes = JSON.parse(area.properties.extra_attributes);
+    // TODO: need to make class or function to conditionally get these attributes... just because
+    // the attributes are there, doesn't mean that all of them will be there.
     if (areaExtraAttributes != null) {
         myMap.colorScale.setScale(areaExtraAttributes.plotAttributePreset_colorBar);
+        var min = areaExtraAttributes.plotAttributePreset_displayMin;
+        var max = areaExtraAttributes.plotAttributePreset_displayMax;
+        myMap.colorScale.setMinMax(min, max);
+
+        myMap.recolorPoints();
     }
 
 
@@ -893,15 +900,14 @@ $(window).load(function() {
         window.open("/textFile/" + currentArea.unavco_name + "/" + currentPoint);
     });
 
-    $("#min-scale-value").val(myMap.colorScale.min * 100);
-    $("#max-scale-value").val(myMap.colorScale.max * 100);
+    myMap.colorScale.initVisualScale();
 
     $("#scale-values .form-group > input").keypress(function(e) {
         var ENTER = 13;
 
         if (e.which == ENTER) {
-            var min = $("#min-scale-value").val() / 100;
-            var max = $("#max-scale-value").val() / 100;
+            var min = $("#min-scale-value").val();
+            var max = $("#max-scale-value").val();
 
             myMap.colorScale.min = min;
             myMap.colorScale.max = min;

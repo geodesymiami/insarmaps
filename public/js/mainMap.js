@@ -132,7 +132,7 @@ function Map(loadJSONFunc) {
     this.graphsController = new GraphsController();
     this.areas = null;
     this.areaFeatures = null;
-    this.colorScale = new ColorScale(-0.02, 0.02);
+    this.colorScale = new ColorScale(-2.00, 2.00);
 
     this.areaMarkerLayer = new AreaMarkerLayer(this);
 
