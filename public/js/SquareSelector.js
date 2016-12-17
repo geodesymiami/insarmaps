@@ -181,9 +181,9 @@ function SquareSelector(map) {
 
         var featuresMap = [];
 
-        var query = currentArea.unavco_name + "/";
+        var query = currentArea.properties.unavco_name + "/";
 
-	// may be placebo effect, but seems to speed up query from db. also
+	    // may be placebo effect, but seems to speed up query from db. also
         // sort by p in ascending order so we match displacements with the features
         features.sort(function(a, b) {
             return a.properties.p - b.properties.p;
@@ -240,7 +240,7 @@ function SquareSelector(map) {
                 }
             }
         });
-        //console.log(query);        
+        //console.log(query);
         that.recoloringInProgress = true;
 
         $.ajax({

@@ -194,7 +194,7 @@ function Map(loadJSONFunc) {
 
         var title = pointNumber.toString();
         var query = {
-            "area": currentArea.unavco_name,
+            "area": currentArea.properties.unavco_name,
             "pointNumber": pointNumber
         };
 
