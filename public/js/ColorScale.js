@@ -255,6 +255,11 @@ function ColorScale(min, max) {
         that.setMax(max);
     };
 
+    this.defaultValues = function() {
+        that.setScale("jet");
+        that.setMinMax(-2.0, 2.0);
+    };
+
     this.getMapboxStops = function() {
         return that.colorsToMapboxStops(that.min, that.max, this.currentScale);
     };
