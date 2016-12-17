@@ -163,15 +163,10 @@ private function getExtraAttributesForAreas() {
   $attributesDict = [];
 
   foreach ($attributes as $attribute) {
-    $keyValue = [];
-    $keyValue["key"] = $attribute->attributekey;
-    $keyValue["value"] = $attribute->attributevalue;
+    $key = $attribute->attributekey;
+    $value = $attribute->attributevalue;
 
-    if (isset($attributesDict[$attribute->area_id])) {
-      array_push($attributesDict[$attribute->area_id], $keyValue);
-    } else {
-      $attributesDict[$attribute->area_id] = [$keyValue];
-    }
+    $attributesDict[$attribute->area_id][$key] = $value;
   }
 
   return $attributesDict;
@@ -229,7 +224,7 @@ public function getAreas() {
           if (isset($extra_attributes[$area->id])) {
             $currentArea["extra_attributes"] = $extra_attributes[$area->id];
           } else {
-            $currentArea["extra_attributes"] = [];
+            $currentArea["extra_attributes"] = NULL;
           }
 
           array_push($json["areas"], $currentArea);

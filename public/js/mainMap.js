@@ -602,7 +602,8 @@ function Map(loadJSONFunc) {
                         "num_chunks": area.num_chunks,
                         "country": area.country,
                         "attributekeys": area.attributekeys,
-                        "attributevalues": area.attributevalues
+                        "attributevalues": area.attributevalues,
+                        "extra_attributes": area.extra_attributes
                     }
                 };
 
