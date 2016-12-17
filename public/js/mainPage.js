@@ -130,6 +130,13 @@ function getGEOJSON(area) {
     // when we click, we don't reset the size of modified markers one final time
     myMap.areaMarkerLayer.resetSizeOfModifiedMarkers();
 
+    // set color scale
+    var areaExtraAttributes = JSON.parse(area.properties.extra_attributes);
+    if (areaExtraAttributes != null) {
+        myMap.colorScale.setScale(areaExtraAttributes.plotAttributePreset_colorBar);
+    }
+
+
     myMap.initLayer(tileJSON, "streets");
     var styleLoadFunc = function() {
         overlayToggleButton.set("on");

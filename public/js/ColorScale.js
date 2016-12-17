@@ -208,7 +208,7 @@ function ColorScale(min, max) {
         } else if (scale == "hsv") {
             that.currentScale = that.hsv;
         } else if (scale == "bwr") {
-            that.currentScale = "bwr";
+            that.currentScale = that.bwr;
         } else {
             throw "Invalid Color Scale (" + scale + ") selected";
         }
