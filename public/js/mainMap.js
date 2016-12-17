@@ -323,7 +323,7 @@ function Map(loadJSONFunc) {
 
                             if (regressionToggleButton.toggleState == ToggleStates.ON) {
                                 var graphSettings = that.graphsController.graphSettings[chartContainer];
-                                var displacements_array = detrendToggleButton.toggleState == ToggleStates.ON ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
+                                var displacements_array = (detrendToggleButton.toggleState == ToggleStates.ON && graphSettings.detrend_displacement_array) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
                                 that.graphsController.addRegressionLine(chartContainer, displacements_array);
                             }
 
