@@ -71,8 +71,8 @@ class GeoJSONController extends Controller {
       $decimal_dates = null;
       $string_dates = null;
 
-      $query = "SELECT decimaldates, stringdates FROM area WHERE unavco_name='" . $area . "'";
-      $dateInfos = DB::select($query);
+      $query = "SELECT decimaldates, stringdates FROM area WHERE unavco_name=?";
+      $dateInfos = DB::select($query, [$area]);
 
       foreach ($dateInfos as $dateInfo) {
        $decimal_dates = $dateInfo->decimaldates;
@@ -84,9 +84,9 @@ class GeoJSONController extends Controller {
 
      $json["string_dates"] = $this->postgresToPHPArray($string_dates);
 
-     $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = " . $pointNumber;
+     $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = ?";
 
-     $points = DB::select($query);
+     $points = DB::select($query, [$pointNumber]);
      foreach ($points as $point) {
       $json["displacements"] = $this->postgresToPHPFloatArray($point->d);
     }
@@ -120,8 +120,8 @@ public function getPoints() {
     $pointsArray = array_slice($parameters, 1, $offset);
 
     $pointsArrayLen = count($pointsArray);
-    $query = "SELECT decimaldates, stringdates FROM area WHERE area.unavco_name like '" . $area . "'";
-    $dateInfos = DB::select($query);
+    $query = "SELECT decimaldates, stringdates FROM area WHERE area.unavco_name like ?";
+    $dateInfos = DB::select($query, [$area]);
 
     foreach ($dateInfos as $dateInfo) {
      $decimal_dates = $dateInfo->decimaldates;
