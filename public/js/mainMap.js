@@ -1145,6 +1145,3 @@ function loadJSON(arg, param, callback) {
     };
     xobj.send(null);
 }
-
-var myMap = new Map(loadJSON);
-myMap.addMapToPage("map-container");
