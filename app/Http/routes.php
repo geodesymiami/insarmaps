@@ -18,11 +18,14 @@
 Route::get('/', 'MyController@returnPage')->name('returnPage');
 Route::post('/data', 'MyController@convertData')->name('convertData');
 Route::get("/file/{area}/{fileChunkNumber}", "GeoJSONController@getJSONFileChunk")->name("getJSONFileChunk");
+Route::get("/textFile/{area}/{point}", "GeoJSONController@pointDataToTextFile")->name("pointDataToTextFile");
 Route::get("/point/{area}/{point}", "GeoJSONController@getDataForPoint")->name("getDataForPoint");
 Route::get("/areas/", "GeoJSONController@getAreas")->name("getAreas");
 Route::post("/points", "GeoJSONController@getPoints");
 Route::controllers([
-    'auth' => 'Auth\AuthController'
+    'auth' => 'Auth\AuthController',    
     // 'password' => 'Auth\PasswordController',
 ]);
-Route::auth();
+Route::get("/adminPanel", "AdminPanelController@getAdminPanel");
+Route::post("/adminPanel/setPermissions/", "AdminPanelController@postSetUserPermissions");
+Route::get("/test/{table}/{table2}", "PermissionsController@getAllUserPermissions");

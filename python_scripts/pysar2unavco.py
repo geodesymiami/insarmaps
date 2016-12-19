@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import h5py
 import numpy as np
 import datetime
@@ -7,6 +9,7 @@ import os
 from osgeo import ogr
 import getopt
 import re
+import itertools
 
 # COMMAND I USE TO RUN SCRIPT: 
 # python ~/code/insar_map_mvc/storage/json/pysar2unavco_back.py -t timeseries.h5 -i incidence_angle.h5 -d DEM_error.h5 -c temporal_coherence.h5 -m mask.h5 
@@ -19,24 +22,34 @@ def get_date(date_string):
 	month = int(date_string[4:6])
 	day = int(date_string[6:8])
 	return date(year, month, day)
+
+def mask_timeseries(timeseries_file, mask_file, out_file):
+	os.system("masking.py -f " + timeseries_file + " -m " + mask_file + " -o " + out_file)
+	
+def usage():
+	print 'Correct format: python pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d DEM_error.h5 -c temporal_coherence.h5 -m mask.h5'
+	print 'Optional: --add_option OPTION_NAME=OPTION_VALUE, --mask_data (mask data using mask file)'
+
 # ---------------------------------------------------------------------------------------
 #  BEGIN EXECUTABLE
 # ---------------------------------------------------------------------------------------
-# if len(sys.argv) != 10:
-if len(sys.argv) > 2:
-	try:
-		opts, extraArgs = getopt.getopt(sys.argv[1:],'t:i:d:c:m:') 
-	except getopt.GetoptError:
-		print 'Error while retrieving operations - exit'
-		print 'correct format: python pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d dem.h5 -c temporal_coherence.h5 -m mask.h5'
-		sys.exit()
+try:
+	opts, extraArgs = getopt.getopt(sys.argv[1:],'t:i:d:c:m:', ['add_option=', 'mask_data']) 
+except getopt.GetoptError:
+	print 'Error while retrieving operations - exit'
+	usage()
+	sys.exit()
 
 # read operations and arguments(file names):
 operations = {}
+added_options = {}
+mask_data = False
+
 for o, a in opts:
-	if o == "-t" or o == "-i" or o == "-d" or o == "-c" or o == "-m":
-		operations[o] = a
-	if o == "-t":
+	if o == '--add_option':
+		option_and_value = a.split('=')
+		added_options[option_and_value[0].upper()] = option_and_value[1]
+	elif o == "-t":
 		timeseries = a
 	elif o == "-i":
 		incidence_angle = a
@@ -46,6 +59,8 @@ for o, a in opts:
 		temporal_coherence = a
 	elif o == "-m":
 		mask = a
+	elif o == '--mask_data':
+		mask_data = True
 	else:
 		assert False, "unhandled option - exit"
 		sys.exit()
@@ -53,6 +68,12 @@ for o, a in opts:
 # ---------------------------------------------------------------------------------------
 #  GET TIMESERIES FILE INTO UNAVCO and encode attributes to timeseries group in unavco file
 # ---------------------------------------------------------------------------------------
+if mask_data:
+	print "Masking timeseries file named " + timeseries
+	out_name = timeseries.split('.')[0] + "_masked.h5"
+	mask_timeseries(timeseries, mask, out_name)
+	timeseries = out_name 
+
 print 'trying to open ' + timeseries
 timeseries_file = h5py.File(timeseries, "r")
 try: 
@@ -91,33 +112,62 @@ num_rows = int(attributes["FILE_LENGTH"])
 
 # extract attributes from project name
 # KyushuT73F2980_2990AlosD - 73 = track number, 2980_2990 = frames, Alos = mission
-project_name = attributes["PROJECT_NAME"]
+try:
+	project_name = attributes["PROJECT_NAME"]
+except Exception, e:
+	print "Project name is not in the h5 file, trying to find supplied name on the command line"
+	key = "project_name"
+
+	try:
+		project_name = added_options[key.upper()]
+	except Exception, e:
+		print "Project name not supplied on the command line... quitting"
+		sys.exit()
+
+print project_name
 track_index = project_name.find('T')
 frame_index = project_name.find('F')
-track_number = project_name[track_index+1:frame_index]
+track_number = "None"
+mission_index = -1;
+mission = "None"
+no_frames = False
+
+# no frame number
+if frame_index == -1:
+	no_frames = True
+	project_name_starting_at_track_number = project_name[track_index + 1:]
+	track_number = ("".join(itertools.takewhile(str.isdigit, project_name_starting_at_track_number)))
+
+	mission_index = project_name.find(track_number) + len(track_number)
+	mission = project_name[mission_index:len(project_name)-1]
+else:
+	track_number = project_name[track_index+1:frame_index]
+	# sometimes there is only one frame number instead of framenumber_framenumber - look for "_"
+	multipleFrames = False
+	try:
+		underscore = re.search("_", project_name).group(0)
+		multipleFrames = True
+	except:
+		pass
+
+	if multipleFrames:
+		frames = re.search("\d+_\d+", project_name).group(0)
+		first_frame = frames.split("_")[0]
+		last_frame = frames.split("_")[1]
+	else:
+		frames = re.search("\d+", project_name[frame_index+1:]).group(0)
+		first_frame = frames
+		last_frame = frames
+
+	mission_index = project_name.find(frames) + len(frames)
+	mission = project_name[mission_index:len(project_name)-1]
+
 region_name = project_name[:track_index]
 
-# sometimes there is only one frame number instead of framenumber_framenumber - look for "_"
-multipleFrames = False
-try:
-	underscore = re.search("_", project_name).group(0)
-	multipleFrames = True
-except:
-	pass
-
-if multipleFrames:
-	frames = re.search("\d+_\d+", project_name).group(0)
-	first_frame = frames.split("_")[0]
-	last_frame = frames.split("_")[1]
-else:
-	frames = re.search("\d+", project_name[frame_index+1:]).group(0)
-	first_frame = frames
-	last_frame = frames
-
-mission_index = project_name.find(frames) + len(frames)
-mission = project_name[mission_index:len(project_name)-1]
-
 group = unavco_file['/']
+
+# project_name
+group['project_name'] = project_name
 # 1) mission = last chars of a folder name - SinabungT495F40_50AlosA -> mission = Alos
 group.attrs['mission'] = mission
 
@@ -160,8 +210,13 @@ group.attrs['history'] = datetime.datetime.now().date().isoformat()
 #  ENCODE RECOMMENDED ATTRIBUTES FROM TIMESERIES FILE INTO UNAVCO
 # ---------------------------------------------------------------------------------------
 # UNAVCO wants this to be an int but we have multiple frames so we have two frame attributes
-group.attrs['first_frame'] = int(first_frame)
-group.attrs['last_frame'] = int(last_frame)
+# ask what to do if no frames, for now, set to -1
+if no_frames:	
+	group.attrs['first_frame'] = -1
+	group.attrs['last_frame'] = -1
+else:
+	group.attrs['first_frame'] = int(first_frame)
+	group.attrs['last_frame'] = int(last_frame)
 
 # flight_direction = A or D (ascending or descending)
 # tried to encode as char but python seems to only know string
@@ -298,13 +353,18 @@ unavco_file.close()
 # IMPORTANT: RENAME UNAVCO file to proper format based on file attributes
 # example - pysar file is called Kyushu T 80 F 245_246 JersD.h5
 # UNAVCO timeseries file is called JERS_SM_80_245_246_<first date>_<last date>.h5 since we dont need TBASE or BPERP for timeseries
-unavco_name = mission + '_SM_' + track_number + '_' + frames + '_' + dates[0] + '_' + dates[len(dates)-1] + '.h5'
+if no_frames:
+	unavco_name = mission + '_SM_' + track_number + '_' + dates[0] + '_' + dates[len(dates)-1] + '.h5'
+else:
+	unavco_name = mission + '_SM_' + track_number + '_' + frames + '_' + dates[0] + '_' + dates[len(dates)-1] + '.h5'
+
 os.rename(unavco, "./" + unavco_name)
 
 # create a text file to store region (ex: Kyushu) needed for database but not unavco format
 attributes_file_name = unavco_name[:len(unavco_name)-3] + '_region.txt'
 attributes_file = open(attributes_file_name, "w")
-attributes_file.write(region_name)
+attributes_file.write(region_name + '\n')
+attributes_file.write(project_name)
 attributes_file.close()
 
 # ---------------------------------------------------------------------------------------

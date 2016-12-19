@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import json
 import h5py
 import numpy as np
@@ -8,6 +10,7 @@ import os
 import sys
 import psycopg2
 import geocoder
+import getopt
 
 # ex: python Converter_unavco.py Alos_SM_73_2980_2990_20070107_20110420.h5
 
@@ -16,6 +19,9 @@ import geocoder
 # ---------------------------------------------------------------------------------------
 # FUNCTIONS
 # ---------------------------------------------------------------------------------------
+dbUsername = "INSERT"
+dbPassword = "INSERT"
+dbHost = "INSERT"
 # returns a dictionary of datasets that are stored in memory to speed up h5 read process
 def get_date(date_string): 
 	year = int(date_string[0:4])
@@ -54,7 +60,7 @@ def convert_data():
 				displacement = timeseries_datasets[key][row][col]
 				displacements += (str(displacement) + ",")
 				displacement_values.append(float(displacement))
-			displacements = displacements[:len(displacements)-2] + '}'
+			displacements = displacements[:len(displacements) - 1] + '}'
 
 			# np array of displacement values, y parameter in linear regression equation
 			y = displacement_values
@@ -89,20 +95,25 @@ def convert_data():
 	# calculate mid lat and long of dataset - then use google python lib to get country
 	mid_lat = x_first + ((num_columns/2) * x_step)
 	mid_long = y_first + ((num_rows/2) * y_step)
-	g = geocoder.google([mid_long,mid_lat], method='reverse')
- 	country = str(g.country_long)
+	country = None
+	try:
+		g = geocoder.google([mid_long,mid_lat], method='reverse', timeout=60.0)
+ 		country = str(g.country_long)
+	except Exception, e:
+		print "timeout reverse geocoding country name"
+
  	area = folder_name
 
  	# for some reason pgsql only takes {} not [] - format date arrays and attributes to be inserted to pgsql
  	string_dates_sql = '{'
  	for k in dataset_keys:
  		string_dates_sql += (str(k) + ",")
- 	string_dates_sql = string_dates_sql[:len(string_dates_sql)-2] + '}'
+ 	string_dates_sql = string_dates_sql[:len(string_dates_sql) - 1] + '}'
 
  	decimal_dates_sql = '{'
  	for d in decimal_dates:
  		decimal_dates_sql += (str(d) + ",")
- 	decimal_dates_sql = decimal_dates_sql[:len(decimal_dates_sql)-2] + '}'
+ 	decimal_dates_sql = decimal_dates_sql[:len(decimal_dates_sql) - 1] + '}'
 
  	# scene_footprint attribute uses a wkt geometry type with format that confuses postgresql database
  	# thus we have to add "Polygon(coordinates, coordinates, coordinates, coordinates)" as string
@@ -119,10 +130,10 @@ def convert_data():
  	attribute_values = attribute_values[:len(attribute_values)-1] + '}'
 
 	try:	# connect to databse
-		con = psycopg2.connect("dbname='pgis' user='aterzishi' host='postgresdb.cpk4mk8rt0nu.us-west-2.rds.amazonaws.com' password='abc123howilikemyabc'")
+		con = psycopg2.connect("dbname='pgis' user='" + dbUsername + "' host='" + dbHost + "' password='" + dbPassword + "'")
 		cur = con.cursor()
 		# create area table if not exist - limit for number of dates is 200, limt for number of attribute keys/values is 100
-		cur.execute("CREATE TABLE IF NOT EXISTS area ( name varchar, latitude double precision, longitude double precision, country varchar, region varchar, numchunks integer, attributekeys varchar[100], attributevalues varchar[100], stringdates varchar[200], decimaldates double precision[200] );")
+		cur.execute("CREATE TABLE IF NOT EXISTS area ( unavco_name varchar, project_name varchar, latitude double precision, longitude double precision, country varchar, region varchar, numchunks integer, attributekeys varchar[100], attributevalues varchar[100], stringdates varchar[200], decimaldates double precision[200] );")
 		con.commit()
 		print 'created area table'
 	except Exception, e:
@@ -133,9 +144,9 @@ def convert_data():
 	# put dataset into area table
 	# area_data = {"latitude": mid_lat, "longitude": mid_long, "country": country, "num_chunks": chunk_num, "dates": dataset_keys}
 	try:
-		con = psycopg2.connect("dbname='pgis' user='aterzishi' host='postgresdb.cpk4mk8rt0nu.us-west-2.rds.amazonaws.com' password='abc123howilikemyabc'")
+		con = psycopg2.connect("dbname='pgis' user='" + dbUsername + "' host='" + dbHost + "' password='" + dbPassword + "'")
 		cur = con.cursor()
-		query = 'INSERT INTO area VALUES (' + "'" + area + "','" + str(mid_lat) + "','" + str(mid_long) + "','" + country + "','" + region + "','" + str(chunk_num) + "','" + attribute_keys + "','" + attribute_values + "','" + string_dates_sql + "','" + decimal_dates_sql + "')"
+		query = "INSERT INTO area VALUES (" + "'" + area + "','" + project_name + "','" + str(mid_lat) + "','" + str(mid_long) + "','" + country + "','" + region + "','" + str(chunk_num) + "','" + attribute_keys + "','" + attribute_values + "','" + string_dates_sql + "','" + decimal_dates_sql + "')"
 		cur.execute(query)
 		con.commit()
 		con.close()
@@ -147,7 +158,7 @@ def convert_data():
 	# create index to speed up queries:
 	print "Creating index"
 	try:
-		con = psycopg2.connect("dbname='pgis' user='aterzishi' host='postgresdb.cpk4mk8rt0nu.us-west-2.rds.amazonaws.com' password='abc123howilikemyabc'")
+		con = psycopg2.connect("dbname='pgis' user='" + dbUsername + "' host='" + dbHost + "' password='" + dbPassword + "'")
 		cur = con.cursor()
 		query = 'CREATE INDEX ON ' + area + ' (p)'
 		cur.execute(query)
@@ -177,20 +188,47 @@ def make_json_file(chunk_num, points):
 	json_file.close()
 
 	# insert json file to pgsql using ogr2ogr - folder_name = area name
-	command = 'ogr2ogr -append -f "PostgreSQL" PG:"dbname=pgis host=postgresdb.cpk4mk8rt0nu.us-west-2.rds.amazonaws.com user=aterzishi password=abc123howilikemyabc" --config PG_USE_COPY YES -nln ' + folder_name + " "
+	command = 'ogr2ogr -append -f "PostgreSQL" PG:"dbname=pgis host=' + dbHost + ' user=' + dbUsername + ' password=' + dbPassword + '" --config PG_USE_COPY YES -nln ' + folder_name + " "
 	chunk_path = './mbtiles/' + folder_name + '/' + chunk
-	os.system(command + ' ' + chunk_path)
+	res = os.system(command + ' ' + chunk_path)
+
+	if res != 0:
+		print "Error inserting into the database. This is most often due to running out of Memory (RAM), or incorrect database credentials... quitting"
+		sys.exit()
+
 	print "inserted chunk " + str(chunk_num) + " to db"
+
+def usage():
+	print "Usage: python Converter_unavco.py -f Alos_SM_73_2980_2990_20070107_20110420.h5 -u DB_USERNAME -p DBPASSWORD -h DB_PASSWORD"
 # ---------------------------------------------------------------------------------------
 # START OF EXECUTABLE
 # ---------------------------------------------------------------------------------------
 # get name of h5 file and the groupname of that file's data
-if (len(sys.argv) != 2):
-	print "Incorrect number of arguments - see correct example below:"
-	print "python Converter_unavco.py Alos_SM_73_2980_2990_20070107_20110420.h5"
+# ---------------------------------------------------------------------------------------
+#  BEGIN EXECUTABLE
+# ---------------------------------------------------------------------------------------
+file_name = None
+
+try:
+	opts, extraArgs = getopt.getopt(sys.argv[1:],'f:u:p:h:')
+except getopt.GetoptError:
+	print 'Error while retrieving operations - exit'
+	usage()
 	sys.exit()
 
-file_name = sys.argv[1]
+for o, a in opts:
+	if o == '-f':
+		file_name = a
+	elif o == '-u':
+		dbUsername = a
+	elif o == '-p':
+		dbPassword = a
+	elif o == '-h':
+		dbHost = a
+	else:
+		assert False, "unhandled option - exit"
+		sys.exit()
+
 path_name = file_name[:len(file_name)-3]
 region_file_name = file_name[:len(file_name)-3] + '_region.txt'
 # ---------------------------------------------------------------------------------------
@@ -200,9 +238,11 @@ start_time = time.clock()
 # search for region file - if exist get first line which is region name
 region_file = None
 region = "null"
+project_name = "null"
 try: 
 	region_file = open(region_file_name, "r")
 	region = region_file.readline()
+	project_name = region_file.readline()
 	region_file.close()
 except:
 	pass

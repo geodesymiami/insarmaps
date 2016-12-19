@@ -88,6 +88,11 @@ function SquareSelector(map) {
         document.removeEventListener('keydown', that.onKeyDown);
         document.removeEventListener('mouseup', that.onMouseUp);
 
+        // re enable dragpan only if polygon button isn't selected
+        if (!that.map.selector.polygonButtonSelected) {
+            that.map.map.dragPan.enable();
+        }
+
         if (that.box) {
             that.box.parentNode.removeChild(that.box);
             that.box = null;
@@ -97,6 +102,26 @@ function SquareSelector(map) {
         if (bbox) {
             that.recolorMap();
         }
+    };
+
+    // courtesy of: https://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+    // see: http://stackoverflow.com/questions/11716268/point-in-polygon-algorithm
+    this.pointInPolygon = function(vertices, testPoint) {
+        var i, j = 0;
+        var pointIsInPolygon = false;
+        var numberVertices = vertices.length;
+
+        var x = 0;
+        var y = 1;
+
+        for (i = 0, j = numberVertices - 1; i < numberVertices; j = i++) {
+            if (((vertices[i][y] > testPoint[y]) != (vertices[j][y] > testPoint[y])) &&
+                (testPoint[x] < (vertices[j][x] - vertices[i][x]) * (testPoint[y] - vertices[i][y]) / (vertices[j][y] - vertices[i][y]) + vertices[i][x])) {
+                pointIsInPolygon = !pointIsInPolygon;
+            }
+        }
+
+        return pointIsInPolygon;
     };
 
     this.recolorMap = function() {
@@ -112,7 +137,7 @@ function SquareSelector(map) {
         // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
         if (that.lastbbox == that.bbox && that.lastMinIndex == that.minIndex && that.lastMaxIndex == that.maxIndex) {
             return;
-        }        
+        }
 
         if (that.recoloringInProgress) {
             return;
@@ -156,7 +181,13 @@ function SquareSelector(map) {
 
         var featuresMap = [];
 
-        var query = currentArea.name + "/";
+        var query = currentArea.properties.unavco_name + "/";
+
+	    // may be placebo effect, but seems to speed up query from db. also
+        // sort by p in ascending order so we match displacements with the features
+        features.sort(function(a, b) {
+            return a.properties.p - b.properties.p;
+        });
 
         for (var i = 0; i < features.length; i++) {
             var long = features[i].geometry.coordinates[0];
@@ -185,11 +216,6 @@ function SquareSelector(map) {
             });
         }
 
-        // sort by p in ascending order so we match displacements with the features
-        geoJSONData.features.sort(function(a, b) {
-            return a.properties.p - b.properties.p;
-        });
-
         //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
         that.map.map.addSource("onTheFlyJSON", {
             "type": "geojson",
@@ -214,7 +240,7 @@ function SquareSelector(map) {
                 }
             }
         });
-        //console.log(query);        
+        //console.log(query);
         that.recoloringInProgress = true;
 
         $.ajax({
@@ -225,6 +251,8 @@ function SquareSelector(map) {
                 points: query
             },
             success: function(response) {
+                console.log("Received points");
+                // console.log(response);
                 var json = JSON.parse(response);
                 // if (geoJSONData.features.length != json.displacements.length) {
                 //     console.log("not the same size json is " + json.displacements.length + " while features is " + geoJSONData.features.length);
@@ -261,6 +289,7 @@ function SquareSelector(map) {
                     "type": "geojson",
                     "data": geoJSONData
                 });
+
                 that.map.map.addLayer({
                     "id": "onTheFlyJSON",
                     "type": "circle",
@@ -268,13 +297,7 @@ function SquareSelector(map) {
                     "paint": {
                         'circle-color': {
                             property: 'm',
-                            stops: [
-                                [-0.02, '#0000FF'], // blue
-                                [-0.01, '#00FFFF'], // cyan
-                                [0.0, '#01DF01'], // lime green
-                                [0.01, '#FFBF00'], // yellow orange
-                                [0.02, '#FF0000'] // red orange
-                            ]
+                            stops: that.map.colorScale.getMapboxStops()
                         },
                         'circle-radius': {
                             // for an explanation of this array see here:
