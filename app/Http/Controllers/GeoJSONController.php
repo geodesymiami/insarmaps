@@ -268,4 +268,23 @@ public function getAreas() {
       return NULL;
     }
   }
+
+  // how to get points in polygon for webservices:
+  /*
+  Assume we have lat, long; delta = 0.0001 but can be refined later
+  Polygon we want: 131.20 33.43, 131.20 33.44, 131.21 33.44, 131.21 33.43, 131.20 33.43
+
+  Query with hardcoded lat and long and delta:
+  SELECT p, wkb_geometry AS lat, ST_Y(wkb_geometry) AS long
+FROM alos_sm_422_650_20070106_20110117
+WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING(131.20 33.43, 131.20 33.44, 131.21 33.44, 131.21 33.43, 131.20 33.43)', 4326)), wkb_geometry);
+
+  Order of coordinates we need for general algorithm:
+  131.20 33.43, (lat - delta, long - delta)
+  131.20 33.44, (lat + delta, long - delta)
+  131.21 33.44, (lat + delta, long + delta)
+  131.21 33.43, (lat - delta, long + delta)
+  131.20 33.43  (lat - delta, long - delta)
+
+  */
 }
