@@ -38,6 +38,31 @@ label {
     font-weight: normal !important;
 }
 
+.clearfix:after {
+    content: ".";
+    display: block;
+    clear: both;
+    visibility: hidden;
+    line-height: 0;
+    height: 0;
+}
+
+.clearfix {
+    display: inline-block;
+}
+
+html[xmlns] .clearfix {
+    display: block;
+}
+
+* html .clearfix {
+    height: 1%;
+}
+
+.hovered {
+    background-color: #dcdee2 !important;
+}
+
 .page-container {
     position: relative;
     display: block;
@@ -126,10 +151,27 @@ label {
     position: fixed;
     bottom: 4%;
     right: 0%;
-    height: 400px;
-    width: 330px;
+    height: 310px;
+    width: 300px;
     overflow-y: auto;
     background-color: white !important;
+    opacity: 0.8;
+}
+
+#area-attributes-div-minimize-button {
+    opacity: 1.0 !important;
+}
+
+.tooltip.left {
+    margin-left: -40px !important;
+}
+
+#topography-wrap {
+    position: absolute;
+    top: 10%;
+    left: 0%;
+    height: 70%;
+    width: 40%;
 }
 
 .wrap#area-attributes-div .top-right-buttons {
@@ -220,7 +262,6 @@ label {
     transform: rotate(135deg);
     transition: transform 0.5s;
 }
-
 
 #map {
     width: 100%;
@@ -328,7 +369,7 @@ div.menu {
 }
 
 #map-type-menu {
-    background: #fff;    
+    background: #fff;
     font-family: 'Open Sans', sans-serif;
     width: 120px;
     min-height: 34px;
@@ -452,6 +493,51 @@ div.menu {
 #color-scale.active {
     display: block;
     background-color: rgba(255, 255, 255, 0.5);
+    width: 75px;
+}
+
+#color-scale-picture-div {
+    width: 30px;
+    height: 100%;
+    float: left;
+}
+
+#color-scale-and-values-container {
+    width: 100%;
+}
+
+#scale-values {
+    position: relative;
+    width: 50%;
+    float: left;
+    height: 256px;
+}
+
+#left-scale-minimum, #right-scale-maximum {
+    position: absolute;
+}
+
+#right-scale-maximum {
+    top: 0;
+}
+
+#left-scale-minimum {
+    bottom: 0;
+}
+
+#scale-values .form-group > input {
+    padding: 0;
+}
+
+/*remove the up/down spinners on the number input*/
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance:textfield;
 }
 
 #slideout-button {
@@ -488,7 +574,14 @@ div.menu {
     padding-right: 10px;
 }
 
-#chart-containers {
+
+/*minize button red color*/
+
+.minimize {
+    color: red !important;
+}
+
+.chart-containers {
     width: 100%;
     height: 90%;
     float: left;
@@ -533,6 +626,12 @@ div.menu {
     max-height: 40px;
 }
 
+#download-as-text-button > button {
+    border: solid;
+    background-color: white;
+    border-width: 1px;
+}
+
 .hidden {
     width: 30%;
     height: 10%;
@@ -556,6 +655,38 @@ div.menu {
     margin: 0 !important;
 }
 
+#areas-under-mouse-table td {
+    display: flex;
+}
+
+.area-name-popup + .tooltip > .tooltip-inner {
+    background-color: white !important;
+    color: black !important;
+    height: 55px;
+    margin-left: 65px;
+}
+
+.area-name-popup + .tooltip > .tooltip-arrow {
+    border-color: white !important;
+    background-color: white !important;
+}
+
+.preview-attributes-button {
+    text-align: center;
+    border-width: 1px;
+    color: white;
+}
+
+.mapboxgl-popup {
+    opacity: 0.8;
+    width: 170px;
+}
+
+/*take out popup area name table top line*/
+
+.mapboxgl-popup-content tr td {
+    border-top: none !important;
+}
 
 /*area information popup with tabs*/
 
@@ -566,6 +697,7 @@ ul.tab {
     overflow: hidden;
     border: 1px solid #ccc;
     background-color: #f1f1f1;
+    height: 25px;
 }
 
 ul.tab li {
@@ -574,7 +706,6 @@ ul.tab li {
 }
 
 ul.tab li a {
-    display: inline-block;
     color: black;
     text-align: center;
     padding: 14px 16px;
@@ -605,4 +736,8 @@ ul.tab li a:focus,
     font-size: 14px;
     font-family: "Open Sans" !important;
     color: black !important;
+}
+
+#information-div-buttom-buttons div {
+    float: left;
 }

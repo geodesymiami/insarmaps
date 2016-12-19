@@ -14,6 +14,7 @@ var currentArea = null;
 var file = "/home/vagrant/code/insar_map_mvc/public/json/geo_timeseries_masked.h5test_chunk_";
 var firstToggle = true;
 var myPolygon = null;
+var areaAttributesPopup = new AreaAttributesPopup();
 
 // take an array of displacement values and return velocity standard deviation (confuses the heck out of me)
 var getStandardDeviation = function(displacements, slope) {
@@ -32,7 +33,7 @@ var convertStringsToDateArray = function(date_string_array) {
         var year = date_string_array[i].toString().substr(0, 4);
         var month = date_string_array[i].toString().substr(4, 2);
         var day = date_string_array[i].toString().substr(6, 2);
-        var date = new Date(year, month, day);
+        var date = new Date(year, month - 1, day);
         date_array.push(date);
     }
     return date_array;
@@ -98,7 +99,7 @@ function getDisplacementChartData(displacements, dates) {
         var year = parseInt(dates[i].toString().substr(0, 4));
         var month = parseInt(dates[i].toString().substr(4, 2));
         var day = parseInt(dates[i].toString().substr(6, 2));
-        data.push([Date.UTC(year, month, day), displacements[i]]);
+        data.push([Date.UTC(year, month - 1, day), displacements[i]]);
     }
     return data;
 }
@@ -107,6 +108,8 @@ function Map(loadJSONFunc) {
     var that = this;
     // my mapbox api key
     mapboxgl.accessToken = "pk.eyJ1Ijoia2pqajExMjIzMzQ0IiwiYSI6ImNpbDJqYXZ6czNjdWd2eW0zMTA2aW1tNXUifQ.cPofQqq5jqm6l4zix7k6vw";
+    this.startingZoom = 1.6;
+    this.startingCoords = [0, 30];
     // the map
     this.map = null;
     this.geoJSONSource = null;
@@ -116,13 +119,22 @@ function Map(loadJSONFunc) {
     this.loadJSONFunc = loadJSONFunc;
     this.tileURLID = "kjjj11223344.4avm5zmh";
     this.tileJSON = null;
-    this.clickLocationMarker = new mapboxgl.GeoJSONSource();
-    this.clickLocationMarker2 = new mapboxgl.GeoJSONSource();
+    this.clickLocationMarker = {
+        type: "geojson",
+        data: {}
+    };
+    this.clickLocationMarker2 = {
+        type: "geojson",
+        data: {}
+    };
     this.selector = null;
     this.zoomOutZoom = 7.0;
     this.graphsController = new GraphsController();
     this.areas = null;
     this.areaFeatures = null;
+    this.colorScale = new ColorScale(-2.00, 2.00);
+
+    this.areaMarkerLayer = new AreaMarkerLayer(this);
 
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,
@@ -148,9 +160,7 @@ function Map(loadJSONFunc) {
     this.clickOnAPoint = function(e) {
         console.log("it is");
         console.log(e.point);
-        var features = that.map.queryRenderedFeatures(e.point, {
-            layers: that.layers
-        });
+        var features = that.map.queryRenderedFeatures(e.point);
 
         // var layerID = "touchLocation";
 
@@ -161,9 +171,22 @@ function Map(loadJSONFunc) {
         var feature = features[0];
         console.log(feature);
 
+        // clicked on area marker, reload a new area.
+        if (feature.properties["marker-symbol"] == "marker" && that.anAreaWasPreviouslyLoaded()) {
+            if (that.pointsLoaded()) {
+                that.removePoints();
+            }
+
+            that.removeTouchLocationMarkers();
+            that.clickOnAnAreaMarker(e);
+            return;
+        }
+
         var long = feature.geometry.coordinates[0];
         var lat = feature.geometry.coordinates[1];
         var pointNumber = feature.properties.p;
+
+        currentPoint = pointNumber;
 
         if (pointNumber === undefined || pointNumber === null || feature.layer.id == "contours" || feature.layer.id == "contour_label") {
             return;
@@ -171,7 +194,7 @@ function Map(loadJSONFunc) {
 
         var title = pointNumber.toString();
         var query = {
-            "area": currentArea.name,
+            "area": currentArea.properties.unavco_name,
             "pointNumber": pointNumber
         };
 
@@ -187,7 +210,7 @@ function Map(loadJSONFunc) {
 
         var layerID = that.graphsController.selectedGraph;
 
-        clickMarker.setData({
+        clickMarker.data = {
             "type": "FeatureCollection",
             "features": [{
                 "type": "Feature",
@@ -199,16 +222,15 @@ function Map(loadJSONFunc) {
                     "marker-symbol": markerSymbol
                 }
             }]
-        });
+        };
+
         // show cross on clicked point
-        if (!that.map.getLayer(layerID)) {
-            that.map.addSource(layerID, clickMarker);
-            // already there? then remove it as we are going to add a new layer every time
-            // so geojson sources overlayed on top of the vector tiles don't obscure our crosses
-        } else {
+        if (that.map.getLayer(layerID)) {
             that.map.removeLayer(layerID);
+            that.map.removeSource(layerID);
         }
 
+        that.map.addSource(layerID, clickMarker);
         that.map.addLayer({
             "id": layerID,
             "type": "symbol",
@@ -218,7 +240,9 @@ function Map(loadJSONFunc) {
             }
         });
 
-        $("#point-details").html(lat.toFixed(5) + ", " + long.toFixed(5));
+        var pointDetailsHtml = lat.toFixed(5) + ", " + long.toFixed(5);
+
+        $("#point-details").html(pointDetailsHtml);
 
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "point", function(response) {
@@ -299,7 +323,7 @@ function Map(loadJSONFunc) {
 
                             if (regressionToggleButton.toggleState == ToggleStates.ON) {
                                 var graphSettings = that.graphsController.graphSettings[chartContainer];
-                                var displacements_array = detrendToggleButton.toggleState == ToggleStates.ON ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
+                                var displacements_array = (detrendToggleButton.toggleState == ToggleStates.ON && graphSettings.detrend_displacement_array) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
                                 that.graphsController.addRegressionLine(chartContainer, displacements_array);
                             }
 
@@ -336,7 +360,7 @@ function Map(loadJSONFunc) {
                 },
                 tooltip: {
                     headerFormat: '',
-                    pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} m'
+                    pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} cm'
                 },
                 series: [{
                     type: 'scatter',
@@ -385,12 +409,45 @@ function Map(loadJSONFunc) {
                 "locations": [{ lat: lat, lng: long }]
             }, function(results, status) {
                 if (status === google.maps.ElevationStatus.OK) {
+                    // redundant but to avoid race conditions between two successive clicks
+                    $("#point-details").html(pointDetailsHtml);
                     $("#point-details").append("<br>Elevation: " + results[0].elevation.toFixed(0) + " meters");
                 } else {
                     console.log(status);
                 }
             });
         });
+    };
+
+    this.determineZoomOutZoom = function() {
+        // memorize the zoom we clicked at, but only if it's more zoomed out than
+        // the flyTo zoom when an area is loaded
+        var currentZoom = that.map.getZoom();
+        if (currentZoom <= 7.0) {
+            // prevent zoom below 0.5, as floating point inaccuracies can cause bugs at most zoomed out level
+            if (currentZoom <= 0.5) {
+                that.zoomOutZoom = 0.5;
+            } else {
+                that.zoomOutZoom = that.map.getZoom();
+            }
+        }
+    };
+
+    this.getMarkersAtSameLocationAsMarker = function(marker, markers) {
+        var markersAtPoint = [];
+        var lat = marker.geometry.coordinates[1];
+        var long = marker.geometry.coordinates[0];
+
+        for (var i = 0; i < markers.length; i++) {
+            var curMarkerLat = markers[i].geometry.coordinates[1];
+            var curMarkerLong = markers[i].geometry.coordinates[0];
+
+            if (curMarkerLat = lat && curMarkerLong == long) {
+                markersAtPoint.push(markers[i]);
+            }
+        }
+
+        return markersAtPoint;
     };
 
     this.leftClickOnAPoint = function(e) {
@@ -403,10 +460,8 @@ function Map(loadJSONFunc) {
         }
     };
 
-    this.clickOnAnAreaMaker = function(e) {
-        var features = that.map.queryRenderedFeatures(e.point, {
-            layers: that.layers
-        });
+    this.clickOnAnAreaMarker = function(e) {
+        var features = that.map.queryRenderedFeatures(e.point);
 
         var layerID = "touchLocation";
 
@@ -415,54 +470,39 @@ function Map(loadJSONFunc) {
             return;
         }
 
-        // memorize the zoom we clicked at, but only if it's more zoomed out than
-        // the flyTo zoom when an area is loaded
-        var currentZoom = that.map.getZoom();
-        if (currentZoom <= 7.0) {
-            // prevent zoom below 1.0, as floating point inaccuracies can cause bugs at most zoomed out level
-            if (currentZoom <= 1.0) {
-                that.zoomOutZoom = 1.0;
-            } else {
-                that.zoomOutZoom = that.map.getZoom();
-            }
-        }
+        that.determineZoomOutZoom();
 
         var feature = features[0];
 
         console.log(feature);
-        var areaName = feature.properties.name;
+        var unavco_name = feature.properties.unavco_name;
+        var project_name = feature.properties.project_name;
         var lat = feature.geometry.coordinates[0];
         var long = feature.geometry.coordinates[1];
         var num_chunks = feature.properties.num_chunks;
         var attributeKeys = feature.properties.attributekeys;
         var attributeValues = feature.properties.attributevalues;
 
-        // needed as mapbox doesn't return original feature
-        var markerArea = {
-            "name": areaName,
-            "coords": {
-                "latitude": lat,
-                "longitude": long,
-            },
-            "num_chunks": num_chunks,
-            "attributekeys": attributeKeys,
-            "attributevalues": attributeValues
-        };
+        var markerID = feature.properties.layerID;
 
-        getGEOJSON(markerArea);
+        // console.log(attributeKeys);
+        // console.log(attributeValues);
+        // console.log(feature.properties);
+
+        getGEOJSON(feature);
     };
 
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
     this.initLayer = function(data, mapType) {
         var layer;
         var layerList = document.getElementById('layerList');
+        var stops = that.colorScale.getMapboxStops();
 
         data['vector_layers'].forEach(function(el) {
             that.layers_.push({
                 id: el['id'] + Math.random(),
                 source: 'vector_layer_',
                 'source-layer': el['id'],
-                interactive: true,
                 type: 'circle',
                 layout: {
                     'visibility': 'visible'
@@ -470,13 +510,7 @@ function Map(loadJSONFunc) {
                 paint: {
                     'circle-color': {
                         property: 'm',
-                        stops: [
-                            [-0.02, '#0000FF'], // blue
-                            [-0.01, '#00FFFF'], // cyan
-                            [0.0, '#01DF01'], // lime green
-                            [0.01, '#FFBF00'], // yellow orange
-                            [0.02, '#FF0000'] // red orange
-                        ]
+                        stops: stops
                     },
                     'circle-radius': {
                         // for an explanation of this array see here:
@@ -495,7 +529,7 @@ function Map(loadJSONFunc) {
         var tileset = 'mapbox.' + mapType;
         that.map.setStyle({
             version: 8,
-            sprite: "/maki/makiIcons",
+            sprite: window.location.href + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
@@ -519,28 +553,39 @@ function Map(loadJSONFunc) {
         });
 
         // remove click listener for selecting an area, and add new one for clicking on a point
-        that.map.off("click");
+        that.map.off("click", that.clickOnAnAreaMarker);
         that.map.on('click', that.leftClickOnAPoint);
 
         return layer;
-    }
+    };
 
-    this.loadAreaMarkers = function() {
+    this.loadAreaMarkersExcluding = function(toExclude) {
         loadJSONFunc("", "areas", function(response) {
             var json = JSON.parse(response);
             that.areas = json;
 
-            var areaMarker = new mapboxgl.GeoJSONSource({
+            var areaMarker = {
+                type: "geojson",
                 cluster: false,
-                clusterRadius: 10
-            });
+                clusterRadius: 10,
+                data: {}
+            };
             var features = [];
 
             for (var i = 0; i < json.areas.length; i++) {
                 var area = json.areas[i];
+
+                if (toExclude != null && toExclude.indexOf(area.unavco_name) != -1) {
+                    continue;
+                }
+
                 var lat = area.coords.latitude;
                 var long = area.coords.longitude;
                 console.log(area);
+
+                var id = "areas" + i;
+
+                that.areaMarkerLayer.addLayer(id);
 
                 var feature = {
                     "type": "Feature",
@@ -550,44 +595,54 @@ function Map(loadJSONFunc) {
                     },
                     "properties": {
                         "marker-symbol": "marker",
-                        "name": area.name,
+                        "layerID": id,
+                        "unavco_name": area.unavco_name,
+                        "region": area.region,
+                        "project_name": area.project_name,
                         "num_chunks": area.num_chunks,
+                        "country": area.country,
                         "attributekeys": area.attributekeys,
-                        "attributevalues": area.attributevalues
+                        "attributevalues": area.attributevalues,
+                        "extra_attributes": area.extra_attributes
                     }
                 };
 
                 features.push(feature);
+
+                // add the markers representing the available areas
+                areaMarker.data = {
+                    "type": "FeatureCollection",
+                    "features": [feature]
+                };
+
+                if (that.map.getSource(id)) {
+                    that.map.removeSource(id);
+                }
+
+                if (that.map.getLayer(id)) {
+                    that.map.removeLayer(id);
+                }
+
+                that.map.addSource(id, areaMarker);
+
+                that.map.addLayer({
+                    "id": id,
+                    "type": "symbol",
+                    "source": id,
+                    "layout": {
+                        "icon-image": "{marker-symbol}-15",
+                        "icon-allow-overlap": true
+                    }
+                });
             };
 
             that.areaFeatures = features;
 
             // add the markers representing the available areas
-            areaMarker.setData({
+            areaMarker.data = {
                 "type": "FeatureCollection",
                 "features": features
-            });
-            var id = "areas";
-
-            if (that.map.getSource(id)) {
-                that.map.removeSource(id);
-            }
-
-            if (that.map.getLayer(id)) {
-                that.map.removeLayer(id);
-            }
-
-            that.map.addSource(id, areaMarker);
-
-            that.map.addLayer({
-                "id": id,
-                "type": "symbol",
-                "source": id,
-                "layout": {
-                    "icon-image": "{marker-symbol}-15",
-                    "icon-allow-overlap": true
-                }
-            });
+            };
 
             // clustering
             var layers = [
@@ -628,11 +683,15 @@ function Map(loadJSONFunc) {
         });
     };
 
+    this.loadAreaMarkers = function() {
+        that.loadAreaMarkersExcluding(null);
+    };
+
     this.addMapToPage = function(containerID) {
         that.map = new mapboxgl.Map({
             container: containerID, // container id
-            center: [0, 0], // that.starting position
-            zoom: 0 // that.starting zoom
+            center: that.startingCoords, // that.starting position
+            zoom: that.startingZoom // that.starting zoom
         });
 
         that.map.on("load", function() {
@@ -650,7 +709,7 @@ function Map(loadJSONFunc) {
         });
         that.map.setStyle({
             version: 8,
-            sprite: "/maki/makiIcons",
+            sprite: window.location.href + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
@@ -666,80 +725,139 @@ function Map(loadJSONFunc) {
             layers: that.layers_
         });
 
-        that.map.addControl(new mapboxgl.Navigation());
+        that.map.addControl(new mapboxgl.NavigationControl());
 
         // disable rotation gesture
         that.map.dragRotate.disable();
         // and box zoom
         that.map.boxZoom.disable();
 
-        that.map.on('click', that.clickOnAnAreaMaker);
+        that.map.on('click', that.clickOnAnAreaMarker);
 
         //that.map.on("contextmenu", that.rightClickOnAPoint);
 
         // Use the same approach as above to indicate that the symbols are clickable
         // by changing the cursor style to 'pointer'.
+        // mainly used to show available areas under a marker
         that.map.on('mousemove', function(e) {
-            var features = that.map.queryRenderedFeatures(e.point, { layers: that.layers });
+            var features = that.map.queryRenderedFeatures(e.point);
             that.map.getCanvas().style.cursor =
                 (features.length && !(features[0].layer.id == "contours") && !(features[0].layer.id == "contour_label")) ? 'pointer' : '';
 
+            // mouse not under a marker, clear all popups
             if (!features.length) {
                 that.areaPopup.remove();
+                that.areaMarkerLayer.resetSizeOfModifiedMarkers();
                 return;
             }
+
             // if it's a select area marker, but not a selected point marker... I suppose this is hackish
             // a better way is to have two mousemove callbacks like we do with select area vs select marker
             var markerSymbol = features[0].properties["marker-symbol"];
-
-            if (markerSymbol != null && typeof markerSymbol != "undefined" && markerSymbol != "cross" && markerSymbol != "crossRed") {
+            if (markerSymbol != null && typeof markerSymbol != "undefined" && markerSymbol == "marker") {
                 // Populate the areaPopup and set its coordinates
                 // based on the feature found.
-
                 var html = "<table class='table' id='areas-under-mouse-table'>";
                 // make the html table
+                var previewButtonIDSuffix = "_preview_attribues";
+
+                features = that.getMarkersAtSameLocationAsMarker(features[0], features);
+
                 for (var i = 0; i < features.length; i++) {
-                    var areaName = features[i].properties.name;
-                    html += "<tr id='" + areaName + "'><td value='" + areaName + "'>" + areaName + "</td></tr>";
+                    var unavco_name = features[i].properties.unavco_name;
+
+                    if (!unavco_name) {
+                        return;
+                    }
+
+                    var markerID = features[i].properties.layerID;
+
+                    that.areaMarkerLayer.setMarkerSize(markerID, 1.5);
+
+                    var region = features[i].properties.region;
+
+                    var prettyNameAndComponents = that.prettyPrintProjectName(features[i].properties.project_name);
+                    var attributeValues = JSON.parse(features[i].properties.attributevalues);
+                    var first_date_index = JSON.parse(features[i].properties.attributekeys).indexOf("first_date");
+
+                    var first_date = attributeValues[first_date_index];
+                    var last_date = attributeValues[first_date_index + 1];
+
+                    var frameNumbersString = null;
+
+                    if (prettyNameAndComponents.frameNumbers[0] == prettyNameAndComponents.frameNumbers[1]) {
+                        frameNumbersString = prettyNameAndComponents.frameNumbers[0];
+                    } else {
+                        frameNumbersString = prettyNameAndComponents.frameNumbers.join(" ");
+                    }
+
+                    html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-html='true' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date + "<br>" +
+                        prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + region + " " + prettyNameAndComponents.missionSatellite +
+                        " " + prettyNameAndComponents.missionType + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + "><b>?</div></td></tr>";
                 }
                 html += "</table>";
                 that.areaPopup.setLngLat(features[0].geometry.coordinates)
                     .setHTML(html).addTo(that.map);
                 // make table respond to clicks
                 for (var i = 0; i < features.length; i++) {
-                    var areaName = features[i].properties.name;
+                    var unavco_name = features[i].properties.unavco_name;
+
+                    if (!unavco_name) {
+                        return;
+                    }
+
+                    var project_name = features[i].properties.project_name;
                     var lat = features[i].geometry.coordinates[0];
                     var long = features[i].geometry.coordinates[1];
+
                     var num_chunks = features[i].properties.num_chunks;
 
                     var attributeKeys = features[i].properties.attributekeys;
                     var attributeValues = features[i].properties.attributevalues;
 
-                    var markerArea = {
-                        "name": areaName,
-                        "coords": {
-                            "latitude": lat,
-                            "longitude": long,
-                        },
-                        "num_chunks": num_chunks,
-                        "attributekeys": attributeKeys,
-                        "attributevalues": attributeValues
-                    };
-
                     // make cursor change when mouse hovers over row
-                    $("#areas-under-mouse-table #" + areaName).css("cursor", "pointer");
+                    $("#areas-under-mouse-table #" + unavco_name).css("cursor", "pointer");
+                    $(".preview-attributes-button").css({
+                        "cursor": "pointer",
+                        "border-radius": "100%",
+                        "background-color": "rgb(107, 190, 249)"
+                    });
+
+                    $("#" + unavco_name).css({
+                        "width": "90%",
+                        "float": "left",
+                        "padding-right": "10px"
+                    });
+
                     // ugly click function declaration to JS not using block scope
-                    $("#areas-under-mouse-table #" + areaName).click((function(area) {
+                    $("#" + unavco_name).click((function(area) {
                         return function(e) {
-                            // don't load area if reference link is clicked
-                            if (e.target.cellIndex == 0) {
-                                clickedArea = area.name;
-                                that.areaPopup.remove();
-                                getGEOJSON(area);
+                            that.determineZoomOutZoom();
+                            clickedArea = area.properties.unavco_name;
+                            that.areaPopup.remove();
+                            getGEOJSON(area);
+                        };
+                    })(features[i]));
+                    $("#" + unavco_name + previewButtonIDSuffix).hover((function(area) {
+                        return function(e) {
+                            if ($('.wrap#area-attributes-div').hasClass('active')) {
+                                areaAttributesPopup.populate(area);
+                            } else {
+                                areaAttributesPopup.show(area);
                             }
                         };
-                    })(markerArea));
+                    })(features[i]), function() {
+                        $('.wrap#area-attributes-div').toggleClass('active');
+                    });
                 }
+
+                $(".preview-attributes-button").css({
+                    "width": "15px",
+                    "float": "left"
+                });
+
+                $(".area-name-popup").tooltip(); // activate tooltips
+                prepareButtonsToHighlightOnHover();
             }
         });
 
@@ -756,16 +874,16 @@ function Map(loadJSONFunc) {
             }
 
             // reshow area markers once we zoom out enough
-            if (that.map.getZoom() <= that.zoomOutZoom) {
+            if (that.map.getZoom() < that.zoomOutZoom) {
                 if (that.pointsLoaded()) {
                     that.reset();
                     // otherwise, points aren't loaded, but area previously was active
-                } else if (that.tileJSON != null) {
+                } else if (that.anAreaWasPreviouslyLoaded()) {
                     that.removeAreaPopups();
                     that.loadAreaMarkers();
                     // remove click listener for selecting an area, and add new one for clicking on a point
                     that.map.off("click");
-                    that.map.on('click', that.clickOnAnAreaMaker);
+                    that.map.on('click', that.clickOnAnAreaMarker);
                 }
             }
         });
@@ -773,6 +891,10 @@ function Map(loadJSONFunc) {
 
     this.pointsLoaded = function() {
         return that.map.getSource("vector_layer_") != null;
+    };
+
+    this.anAreaWasPreviouslyLoaded = function() {
+        return that.tileJSON != null;
     };
 
     this.removePoints = function() {
@@ -787,6 +909,12 @@ function Map(loadJSONFunc) {
             }
         }
 
+        // remove contour labels if they are there. this wasn't needed as gl js seemed to remove the contours in the above loop
+        // now it doesn't, causing a crash if we disable data overlay
+        // and then disable contour lines
+        if (that.map.getLayer("contours")) {
+            that.removeContourLines();
+        }
         // remove all layers but the first, base layer
         that.layers_ = that.layers_.slice(0, 1);
 
@@ -809,7 +937,10 @@ function Map(loadJSONFunc) {
             that.map.removeLayer(layerID);
             that.map.removeSource(layerID);
 
-            that.clickLocationMarker = new mapboxgl.GeoJSONSource();
+            that.clickLocationMarker = {
+                type: "geojson",
+                data: {}
+            };
         }
 
         layerID = "Bottom Graph";
@@ -817,7 +948,10 @@ function Map(loadJSONFunc) {
             that.map.removeLayer(layerID);
             that.map.removeSource(layerID);
 
-            that.clickLocationMarker2 = new mapboxgl.GeoJSONSource();
+            that.clickLocationMarker2 = {
+                type: "geojson",
+                data: {}
+            };
         }
     };
 
@@ -838,20 +972,22 @@ function Map(loadJSONFunc) {
     };
 
     this.reset = function() {
-        myMap.removePoints();
-        myMap.removeTouchLocationMarkers();
-        myMap.elevationPopup.remove(); // incase it's up
+        that.removePoints();
+        that.removeTouchLocationMarkers();
+        that.elevationPopup.remove(); // incase it's up
 
         that.loadAreaMarkers();
 
         // remove click listener for selecting an area, and add new one for clicking on a point
         that.map.off("click");
-        that.map.on('click', that.clickOnAnAreaMaker);
+        that.map.on('click', that.clickOnAnAreaMarker);
 
         that.removeAreaPopups();
 
+        $("#point-details").empty();
+
         overlayToggleButton.set("off");
-        myMap.tileJSON = null;
+        that.tileJSON = null;
     };
 
     this.addContourLines = function() {
@@ -902,6 +1038,89 @@ function Map(loadJSONFunc) {
             }
         });
     };
+
+    this.removeContourLines = function() {
+        that.map.removeLayer("contours");
+        that.map.removeLayer("contour_label");
+    };
+
+    this.prettyPrintProjectName = function(projectName) {
+        var trackIndex = projectName.indexOf("T");
+        var frameIndex = projectName.indexOf("F");
+        var trackNumber = projectName.substring(trackIndex + 1, frameIndex);
+        var regionName = projectName.substring(0, trackIndex);
+
+        var prettyPrintedName = regionName;
+
+
+        // sometimes there is only one track number instead of framenumber_framenumber - look for "_"
+        var regex = /_/;
+
+        var underscoreFound = projectName.match(regex);
+
+        var firstFrame = null;
+        var lastFrame = null;
+        var frames = null;
+        var frameNumbers = null;
+        var missionIndex = 0;
+
+        // multiple tracks
+        if (underscoreFound) {
+            regex = /F\d+_\d+/;
+
+            frames = projectName.match(regex);
+            frameNumbers = frames[0].split("_");
+            firstFrame = frameNumbers[0];
+            lastFrame = frameNumbers[1];
+            missionIndex = regionName.length + firstFrame.length + lastFrame.length + 1 + trackNumber.length;
+        } else {
+            regex = /F\d+/;
+            frames = projectName.match(regex);
+            frameNumbers = frames[0].split("_");
+            firstFrame = frames[0];
+            lastFrame = frames[0];
+            missionIndex = regionName.length + firstFrame.length + trackNumber.length;
+        }
+
+        var mission = projectName.substring(missionIndex + 1, projectName.length);
+        var missionType = mission.charAt(mission.length - 1);
+        var missionSatellite = mission.substring(0, mission.length - 1);
+        mission = mission.substring(0, mission.length - 1);
+        mission += " " + missionType;
+
+        prettyPrintedName += " " + mission + " T" + trackNumber;
+
+        var name = {
+            fullPrettyName: prettyPrintedName,
+            missionSatellite: missionSatellite,
+            region: regionName,
+            missionType: missionType,
+            trackNumber: trackNumber,
+            frameNumbers: [firstFrame, lastFrame]
+        };
+
+        return name;
+    };
+
+    this.recolorPoints = function() {
+        var stops = that.colorScale.getMapboxStops();
+
+        that.layers_.forEach(function(layer) {
+            if (that.map.getPaintProperty(layer.id, "circle-color")) {
+                that.map.setPaintProperty(layer.id, "circle-color", {
+                    property: 'm',
+                    stops: stops
+                });
+            }
+        });
+
+        if (that.map.getLayer("onTheFlyJSON")) {
+            that.map.setPaintProperty("onTheFlyJSON", "circle-color", {
+                property: 'm',
+                stops: stops
+            });
+        }
+    };
 }
 
 
@@ -926,6 +1145,3 @@ function loadJSON(arg, param, callback) {
     };
     xobj.send(null);
 }
-
-var myMap = new Map(loadJSON);
-myMap.addMapToPage("map-container");

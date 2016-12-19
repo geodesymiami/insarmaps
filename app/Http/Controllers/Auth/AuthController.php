@@ -9,6 +9,9 @@ use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
 use Auth;
 use Session;
+use App\Http\Requests;
+use Illuminate\Http\Request;
+use DB;
 
 class AuthController extends Controller
 {
@@ -39,7 +42,8 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware($this->guestMiddleware(), ['except' => ['logout', 'getLogout']]);
+        $this->middleware($this->guestMiddleware(), ['except' => ['logout', 'getLogout', 'postRegister', 'getRegister', 'postRemoveUsers']]);
+        $this->middleware("checkAdmin")->only(["postRegister", "getRegister"]); // only admin can register
     }
 
     /**
@@ -65,30 +69,45 @@ class AuthController extends Controller
      */
     protected function create(array $data)
     {
-
-        throw new Exception("Registration disabled");
-
-        return null;
-        // return User::create([
-        //     'name' => $data['name'],
-        //     'email' => $data['email'],
-        //     'password' => bcrypt($data['password']),
-        // ]);
+        return User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => bcrypt($data['password']),
+        ]);
     }
 
-    public function getLogout() {
-        Auth::logout();
-        Session::flush();
+    public function postRegister(Request $request) {
+        $validator = $this->validator($request->all());
 
-        return redirect("/");
+        if ($validator->fails()) {
+            $this->throwValidationException(
+                $request, $validator
+            );
+        }
+
+        $this->create($request->all());
+
+        $this->redirectTo = "/adminPanel/";
+
+        return redirect($this->redirectPath());
     }
 
-    // don't allow registration for now
-    public function showRegistrationForm() {
-        return redirect("/auth/login");
-    }
+    public function postRemoveUsers(Request $request) {
+        $userIDs = $request->input("users");
+        $sql = "DELETE FROM users WHERE id IN (";
 
-    public function register() {
-        return;
+        $userIDBindings = [];
+
+        foreach ($userIDs as $userID) {
+            $sql = $sql . "?,";
+            array_push($userIDBindings, $userID);
+        }
+
+        $sql = rtrim($sql, ",");
+        $sql = $sql . ")";
+
+        DB::delete($sql, $userIDBindings);
+
+        return redirect("/adminPanel/");
     }
 }
