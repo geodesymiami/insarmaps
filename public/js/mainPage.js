@@ -161,8 +161,7 @@ function getGEOJSON(area) {
 
     // set color scale
     var areaExtraAttributes = JSON.parse(area.properties.extra_attributes);
-    // TODO: need to make class or function to conditionally get these attributes... just because
-    // the attributes are there, doesn't mean that all of them will be there.
+
     myMap.colorScale.defaultValues(); // set default values in case they were modified by another area
 
     myMap.initLayer(tileJSON, "streets");

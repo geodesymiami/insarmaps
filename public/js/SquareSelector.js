@@ -100,7 +100,7 @@ function SquareSelector(map) {
 
         // If bbox exists. use this value as the argument for `queryRenderedFeatures`
         if (bbox) {
-            that.recolorMap();
+            that.recolorDataset();
         }
     };
 
@@ -124,7 +124,7 @@ function SquareSelector(map) {
         return pointIsInPolygon;
     };
 
-    this.recolorMapWithBoundingBoxAndMultiplier = function(box, multiplier) {
+    this.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier) {
         if (that.recoloringInProgress) {
             return;
         }
@@ -241,7 +241,6 @@ function SquareSelector(map) {
             },
             success: function(response) {
                 console.log("Received points");
-                console.log(multiplier);
                 // console.log(response);
                 var json = JSON.parse(response);
                 // if (geoJSONData.features.length != json.displacements.length) {
@@ -310,7 +309,7 @@ function SquareSelector(map) {
         });
     };
 
-    this.recolorMap = function() {
+    this.recolorDataset = function() {
         if (that.bbox == null) {
             return;
         }
@@ -329,6 +328,6 @@ function SquareSelector(map) {
         that.lastMaxIndex = that.maxIndex;
         that.lastbbox = that.bbox;
 
-        that.recolorMapWithBoundingBoxAndMultiplier(that.bbox, 1);
+        that.recolorDatasetWithBoundingBoxAndMultiplier(that.bbox, 1);
     };
 }

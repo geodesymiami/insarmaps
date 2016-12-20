@@ -331,7 +331,7 @@ function Map(loadJSONFunc) {
                                 that.graphsController.addRegressionLine(chartContainer, displacements_array);
                             }
 
-                            that.selector.recolorMap();
+                            that.selector.recolorDataset();
                         }
                     },
                     dateTimeLabelFormats: {
@@ -875,7 +875,7 @@ function Map(loadJSONFunc) {
             console.log(that.map.getZoom());
 
             if (that.selector.bbox != null) {
-                that.selector.recolorMap();
+                that.selector.recolorDataset();
             }
 
             // reshow area markers once we zoom out enough
@@ -1107,7 +1107,7 @@ function Map(loadJSONFunc) {
         return name;
     };
 
-    this.recolorPoints = function() {
+    this.refreshDataset = function() {
         var stops = that.colorScale.getMapboxStops();
 
         that.layers_.forEach(function(layer) {
