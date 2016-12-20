@@ -217,6 +217,7 @@ public function getAreas() {
           $currentArea["country"] = $area->country;
           $currentArea["attributekeys"] = $this->postgresToPHPArray($area->attributekeys);
           $currentArea["attributevalues"] = $this->postgresToPHPArray($area->attributevalues);
+          $currentArea["decimal_dates"] = $this->postgresToPHPFloatArray($area->decimaldates);
           $currentArea["region"] = $area->region;
 
           $bindings = [$area->id];

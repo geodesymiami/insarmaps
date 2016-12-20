@@ -161,18 +161,8 @@ function getGEOJSON(area) {
 
     // set color scale
     var areaExtraAttributes = JSON.parse(area.properties.extra_attributes);
-    // TODO: need to make class or function to conditionally get these attributes... just because
-    // the attributes are there, doesn't mean that all of them will be there.
+
     myMap.colorScale.defaultValues(); // set default values in case they were modified by another area
-    if (areaExtraAttributes != null) {
-        myMap.colorScale.setScale(areaExtraAttributes.plotAttributePreset_colorBar);
-        var min = areaExtraAttributes.plotAttributePreset_displayMin;
-        var max = areaExtraAttributes.plotAttributePreset_displayMax;
-        myMap.colorScale.setMinMax(min, max);
-
-        myMap.recolorPoints();
-    }
-
 
     myMap.initLayer(tileJSON, "streets");
     var styleLoadFunc = function() {
@@ -182,7 +172,7 @@ function getGEOJSON(area) {
         }
 
         window.setTimeout(function() {
-            var zoom = 7;
+            var zoom = 9.5;
 
             // quickly switching between areas? don't reset zoom
             if (myMap.anAreaWasPreviouslyLoaded()) {
@@ -203,6 +193,10 @@ function getGEOJSON(area) {
 
             myMap.map.off("style.load", styleLoadFunc);
             myMap.loadAreaMarkersExcluding([area.properties.unavco_name]);
+            window.setTimeout(function() {
+                var attributesController = new AreaAttributesController(myMap, areaExtraAttributes, area.properties.decimal_dates);
+                attributesController.processAttributes();
+            }, 6000);
         }, 1000);
     };
 
