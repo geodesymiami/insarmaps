@@ -217,6 +217,19 @@ function goToTab(event, id) {
     event.currentTarget.className += " active"
 }
 
+function showLoadingScreen(msg) {
+    if (!$("#loading-screen.overlay-div").hasClass("active")) {
+        $("#loading-screen.overlay-div").toggleClass("active");
+        $("#loading-text-div").html(msg);
+    }
+}
+
+function hideLoadingScreen() {
+    if ($("#loading-screen.overlay-div").hasClass("active")) {
+        $("#loading-screen.overlay-div").toggleClass("active");
+    }
+}
+
 function ToggleButton(id) {
     var that = this;
     this.id = id;
@@ -868,11 +881,11 @@ $(window).load(function() {
     });
 
     $("#information-button").on("click", function() {
-        $("#information-div").toggleClass("active");
+        $("#information-div.overlay-div").toggleClass("active");
     });
 
     $("#close-information-button").on("click", function() {
-        $("#information-div").toggleClass("active");
+        $("#information-div.overlay-div").toggleClass("active");
     });
 
     $(function() {

@@ -178,6 +178,8 @@ function SquareSelector(map) {
             return a.properties.p - b.properties.p;
         });
 
+        showLoadingScreen("Recoloring in progress...");
+
         for (var i = 0; i < features.length; i++) {
             var long = features[i].geometry.coordinates[0];
             var lat = features[i].geometry.coordinates[1];
@@ -302,6 +304,7 @@ function SquareSelector(map) {
                     }
                 });
                 that.recoloringInProgress = false;
+                hideLoadingScreen();
             },
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed " + xhr.responseText);
