@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\Input;
 use Auth;
 
 class GeoJSONController extends Controller {
+  private $arrayFormatter;
+
+  public function __construct() {
+    $this->arrayFormatter = new PostgresArrayFormatter();
+  }
 
   // returns an array containing folder path as a string and number of json files
   public function getNumJSONFiles($jsonFolderPath) {
@@ -28,42 +33,6 @@ class GeoJSONController extends Controller {
     return $array;
   }
 
-  private function postgresToPHPArray($pgArray) {
-    $postgresStr = trim($pgArray, "{}");
-    $elmts = explode(",", $postgresStr);
-
-    $arrayToReturn = [];
-    $arrayLen = count($elmts);
-
-    for ($i = 0; $i < $arrayLen; $i++) {
-      $curString = $elmts[$i];      
-
-      if (strpos($curString, "POLYGON") !== false) {
-        $curString = substr($curString, 1);
-        $curString = $curString . " " . $elmts[$i + 1];
-        $curString = $curString . " " . $elmts[$i + 2];
-        $curString = $curString . " " . $elmts[$i + 3];
-        $curString = substr($curString, 0, strlen($curString) - 1);
-
-        $i += 3;
-      }
-
-      array_push($arrayToReturn, $curString);
-    }
-
-    return $arrayToReturn;
-  }
-
-  private function stringArrayToFloatArray($array) {    
-    return array_map("floatval", $array);
-  }
-
-  private function postgresToPHPFloatArray($pgArray) {
-    $stringArray = $this->postgresToPHPArray($pgArray);
-
-    return $this->stringArrayToFloatArray($stringArray);
-  }
-
   /** @throws Exception */
   private function jsonDataForPoint($area, $pointNumber) {
       $json = [];
@@ -79,16 +48,16 @@ class GeoJSONController extends Controller {
        $string_dates = $dateInfo->stringdates;
      }
 
-     $json["decimal_dates"] = $this->postgresToPHPFloatArray($decimal_dates);
+     $json["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($decimal_dates);
 
 
-     $json["string_dates"] = $this->postgresToPHPArray($string_dates);
+     $json["string_dates"] = $this->arrayFormatter->postgresToPHPArray($string_dates);
 
      $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = ?";
 
      $points = DB::select($query, [$pointNumber]);
      foreach ($points as $point) {
-      $json["displacements"] = $this->postgresToPHPFloatArray($point->d);
+      $json["displacements"] = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
     }
 
     return $json;
@@ -128,8 +97,8 @@ public function getPoints() {
      $string_dates = $dateInfo->stringdates;
    }
 
-   $json["decimal_dates"] = $this->postgresToPHPFloatArray($decimal_dates);
-   $json["string_dates"] = $this->postgresToPHPArray($string_dates);
+   $json["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($decimal_dates);
+   $json["string_dates"] = $this->arrayFormatter->postgresToPHPArray($string_dates);
    $query = "WITH points(point) AS (VALUES";
 
    for ($i = 0; $i < $pointsArrayLen - 1; $i++) {       
@@ -147,7 +116,7 @@ public function getPoints() {
   $points = DB::select($query);
 
   foreach ($points as $point) {
-    $displacements = $this->postgresToPHPFloatArray($point->d);
+    $displacements = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
     array_push($json["displacements"], $displacements);
   }     
 
@@ -215,9 +184,9 @@ public function getAreas() {
           $currentArea["coords"]["longitude"] = $area->longitude;                
           $currentArea["num_chunks"] = $area->numchunks;
           $currentArea["country"] = $area->country;
-          $currentArea["attributekeys"] = $this->postgresToPHPArray($area->attributekeys);
-          $currentArea["attributevalues"] = $this->postgresToPHPArray($area->attributevalues);
-          $currentArea["decimal_dates"] = $this->postgresToPHPFloatArray($area->decimaldates);
+          $currentArea["attributekeys"] = $this->arrayFormatter->postgresToPHPArray($area->attributekeys);
+          $currentArea["attributevalues"] = $this->arrayFormatter->postgresToPHPArray($area->attributevalues);
+          $currentArea["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($area->decimaldates);
           $currentArea["region"] = $area->region;
 
           $bindings = [$area->id];
