@@ -172,7 +172,7 @@ function getGEOJSON(area) {
         }
 
         window.setTimeout(function() {
-            var zoom = 8.0;
+            var zoom = 9.5;
 
             // quickly switching between areas? don't reset zoom
             if (myMap.anAreaWasPreviouslyLoaded()) {
