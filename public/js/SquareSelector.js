@@ -124,6 +124,35 @@ function SquareSelector(map) {
         return pointIsInPolygon;
     };
 
+    this.getVerticesOfSquareBbox = function(bbox) {
+        // create generic lat long object literals, else jquery has trouble
+        // sending over array
+        var mapboxPoint1 = bbox[0];
+        var mapboxPoint2 = bbox[1];
+
+        var point1 = {
+            lat: mapboxPoint1.lat,
+            lng: mapboxPoint1.lng
+        };
+        var point3 = {
+            lat: mapboxPoint2.lat,
+            lng: mapboxPoint2.lng
+        }
+        var point2 = {
+            lat: point1.lat,
+            lng: point3.lng
+        };
+
+        var point4 = {
+            lat: point3.lat,
+            lng: point1.lng
+        };
+
+        var vertices = [point1, point2, point3, point4];
+
+        return vertices;
+    };
+
     this.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier) {
         if (that.recoloringInProgress) {
             return;
@@ -232,18 +261,27 @@ function SquareSelector(map) {
             }
         });
         //console.log(query);
-        that.recoloringInProgress = true;
+
+        var polygonVertices = null;
+
+        // need to add logic to handle if we want to recolor whole dataset for elevation
+        // based coloring
+        polygonVertices = that.getVerticesOfSquareBbox(box);
+        that.recoloringInProgress = true;        
 
         $.ajax({
             url: "/points",
             type: "post",
             async: true,
             data: {
-                points: query
+                points: query,
+                polygonVertices: polygonVertices
             },
             success: function(response) {
                 console.log("Received points");
-                // console.log(response);
+                console.log(response);
+                hideLoadingScreen();
+                return;
                 var json = JSON.parse(response);
                 // if (geoJSONData.features.length != json.displacements.length) {
                 //     console.log("not the same size json is " + json.displacements.length + " while features is " + geoJSONData.features.length);
@@ -308,6 +346,7 @@ function SquareSelector(map) {
             },
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed " + xhr.responseText);
+                hideLoadingScreen();
             }
         });
     };
