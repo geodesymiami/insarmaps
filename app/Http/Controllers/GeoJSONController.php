@@ -75,7 +75,6 @@ class GeoJSONController extends Controller {
 
 public function getPoints() {
   $points = Input::get("points");
-  $polygonVertices = Input::get("polygonVertices");
 
   try {
     $json = [];    
@@ -110,45 +109,10 @@ public function getPoints() {
 
     // add last ANY values without comma
   $curPointNum = $pointsArray[$i];
-  $query = $query . "(" . $curPointNum . ")) SELECT p, d, wkb_geometry AS lat, ST_Y(wkb_geometry) AS long FROM " . $area . " INNER JOIN points po ON (p = po.point) WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING(";
-
-  foreach ($polygonVertices as $polygonVertex) {
-    $query = $query . $polygonVertex["lng"] . " " . $polygonVertex["lat"] . ", ";
-  }
-
-  // add initial vertext again to close linestring
-  $query = $query . $polygonVertices[0]["lng"] . " " . $polygonVertices[0]["lat"];
-
-  $query = $query .")', 4326)), wkb_geometry) ORDER BY p ASC";
+  $query = $query . "(" . $curPointNum . ")) SELECT *, st_astext(wkb_geometry) from " . $area . " INNER JOIN points p ON (" . $area . ".p = p.point) ORDER BY p ASC";
 
     // echo $fullQuery;
-  echo $query;
-
-  $query = "WITH points(point) AS (VALUES";
-
-   for ($i = 0; $i < $pointsArrayLen - 1; $i++) {       
-    $curPointNum = $pointsArray[$i];
-
-    $query = $query . "(" . $curPointNum . "),"; 
-  }
-
-    // add last ANY values without comma
-  $curPointNum = $pointsArray[$i];
-  $query = $query . "(" . $curPointNum . ")) SELECT p, d, wkb_geometry AS lat, ST_Y(wkb_geometry) AS long FROM " . $area . " INNER JOIN points po ON (p = po.point) WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING(";
-
-  $multiplier = 1.000001;
-  foreach ($polygonVertices as $polygonVertex) {
-    $query = $query . ($multiplier * $polygonVertex["lng"]) . " " . ($multiplier * $polygonVertex["lat"]) . ", ";
-  }
-
-  // add initial vertext again to close linestring
-  $query = $query . ($multiplier * $polygonVertices[0]["lng"]) . " " . ($multiplier * $polygonVertices[0]["lat"]);
-
-  $query = $query .")', 4326)), wkb_geometry) ORDER BY p ASC";
-
-  echo $query;
-  return;
-
+  // echo $query;
   $points = DB::select($query);
 
   foreach ($points as $point) {
