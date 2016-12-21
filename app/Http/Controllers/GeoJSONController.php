@@ -112,8 +112,35 @@ public function getPoints() {
   $curPointNum = $pointsArray[$i];
   $query = $query . "(" . $curPointNum . ")) SELECT p, d, wkb_geometry AS lat, ST_Y(wkb_geometry) AS long FROM " . $area . " INNER JOIN points po ON (p = po.point) WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING(";
 
-  foreach ($polygonVertices as $polygonVertex) {
-    $query = $query . $polygonVertex["lng"] . " " . $polygonVertex["lat"] . ", ";
+  $buffer = 1.2;
+  $polygonVerticesLen = count($polygonVertices);
+  // we receive the vertices always in the order nw, ne, se, sw
+  // let us enlarge this polygon by moving the vertices in all directions
+  // such that the original points are covered plus some delta area
+  for ($i = 0; $i < $polygonVerticesLen; $i++) {
+    switch ($i) {
+      case 0: // nw
+        $polygonVertices[$i]["lng"] -= $buffer;
+        $polygonVertices[$i]["lat"] += $buffer;
+        break;
+      case 1: // ne
+        $polygonVertices[$i]["lng"] += $buffer;
+        $polygonVertices[$i]["lat"] += $buffer;
+        break;
+      case 2: // se
+        $polygonVertices[$i]["lng"] += $buffer;
+        $polygonVertices[$i]["lat"] -= $buffer;
+        break;
+      case 3: // sw
+        $polygonVertices[$i]["lng"] -= $buffer;
+        $polygonVertices[$i]["lat"] -= $buffer;
+        break;
+      default:
+        die("invalid counter");
+        break;
+    }
+
+    $query = $query . $polygonVertices[$i]["lng"] . " " . $polygonVertices[$i]["lat"] . ", ";
   }
 
   // add initial vertext again to close linestring
@@ -122,32 +149,8 @@ public function getPoints() {
   $query = $query .")', 4326)), wkb_geometry) ORDER BY p ASC";
 
     // echo $fullQuery;
-  echo $query;
-
-  $query = "WITH points(point) AS (VALUES";
-
-   for ($i = 0; $i < $pointsArrayLen - 1; $i++) {       
-    $curPointNum = $pointsArray[$i];
-
-    $query = $query . "(" . $curPointNum . "),"; 
-  }
-
-    // add last ANY values without comma
-  $curPointNum = $pointsArray[$i];
-  $query = $query . "(" . $curPointNum . ")) SELECT p, d, wkb_geometry AS lat, ST_Y(wkb_geometry) AS long FROM " . $area . " INNER JOIN points po ON (p = po.point) WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING(";
-
-  $multiplier = 1.000001;
-  foreach ($polygonVertices as $polygonVertex) {
-    $query = $query . ($multiplier * $polygonVertex["lng"]) . " " . ($multiplier * $polygonVertex["lat"]) . ", ";
-  }
-
-  // add initial vertext again to close linestring
-  $query = $query . ($multiplier * $polygonVertices[0]["lng"]) . " " . ($multiplier * $polygonVertices[0]["lat"]);
-
-  $query = $query .")', 4326)), wkb_geometry) ORDER BY p ASC";
-
-  echo $query;
-  return;
+  // echo $query;
+  // return;
 
   $points = DB::select($query);
 
