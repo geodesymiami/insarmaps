@@ -169,9 +169,6 @@ function SquareSelector(map) {
         };
 
         var vertices = [nw, ne, se, sw];
-        for (var i = 0; i < vertices.length; i++) {
-            console.log(vertices[i].lat + "," + vertices[i].lng);
-        }
 
         return vertices;
     };
@@ -193,12 +190,24 @@ function SquareSelector(map) {
         }
 
         var features = null;
+        var polygonVertices = null;
+
         if (box) {
             var pixelBoundingBox = [that.map.map.project(box[0]), that.map.map.project(box[1])];
             features = that.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
-        // no bounding bax
+
+            // need to add logic to handle if we want to recolor whole dataset for elevation
+            // based coloring. for now, just set it to the whole world if box null
+            // should ideally set to dataset bounds
+            polygonVertices = that.getVerticesOfSquareBbox(box);
+
+            // no bounding box
         } else {
             features = that.map.map.queryRenderedFeatures({ layers: pointLayers });
+            polygonVertices = [{ lat: -0.4778997320132703, lng: -78.6456298828125 },
+                                { lat: -0.4778997320132703, lng: -78.2171630859375 },
+                                { lat: -0.9392889790847931, lng: -78.2171630859375 },
+                                { lat: -0.9392889790847931, lng: -78.6456298828125 }];
         }
 
         if (features.length == 0) {
@@ -208,13 +217,7 @@ function SquareSelector(map) {
         if (features.length >= 60000) {
             return window.alert('Select a smaller number of features');
         }
-        // Run through the selected features and set a filter
-        // to match features with unique FIPS codes to activate
-        // the `counties-highlighted` layer.
-        // var filter = features.reduce(function(memo, feature) {
-        //     memo.push(feature.properties.FIPS);
-        //     return memo;
-        // }, ['in', 'FIPS']);
+
         var geoJSONData = {
             "type": "FeatureCollection",
             "features": []
@@ -261,13 +264,7 @@ function SquareSelector(map) {
 
         //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
 
-        var polygonVertices = null;
-
-        // need to add logic to handle if we want to recolor whole dataset for elevation
-        // based coloring
-        polygonVertices = that.getVerticesOfSquareBbox(box);
-
-        that.recoloringInProgress = true;        
+        that.recoloringInProgress = true;
 
         $.ajax({
             url: "/points",
