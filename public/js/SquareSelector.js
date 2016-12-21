@@ -130,48 +130,25 @@ function SquareSelector(map) {
         var mapboxPoint1 = bbox[0];
         var mapboxPoint2 = bbox[1];
 
-        var multiplier = 1.2;
-        var highestLat, lowestLat, highestLong, lowestLong = 0;
-
-        // get lowest lat and long
-        if (mapboxPoint1.lat > mapboxPoint2.lat) {
-            highestLat = mapboxPoint1.lat;
-            lowestLat = mapboxPoint2.lat;
-        } else {
-            highestLat = mapboxPoint2.lat;
-            lowestLat = mapboxPoint1.lat;
-        }
-
-        if (mapboxPoint1.lng > mapboxPoint2.lng) {
-            highestLong = mapboxPoint1.lng;
-            lowestLong = mapboxPoint2.lng;
-        } else {
-            highestLong = mapboxPoint2.lng;
-            lowestLong = mapboxPoint1.lng;
-        }
-
-        var nw = {
-            lat: highestLat,
-            lng: lowestLong
+        var point1 = {
+            lat: mapboxPoint1.lat,
+            lng: mapboxPoint1.lng
         };
-        var ne = {
-            lat: highestLat,
-            lng: highestLong
+        var point3 = {
+            lat: mapboxPoint2.lat,
+            lng: mapboxPoint2.lng
         }
-        var se = {
-            lat: lowestLat,
-            lng: highestLong
+        var point2 = {
+            lat: point1.lat,
+            lng: point3.lng
         };
 
-        var sw = {
-            lat: lowestLat,
-            lng: lowestLong
+        var point4 = {
+            lat: point3.lat,
+            lng: point1.lng
         };
 
-        var vertices = [nw, ne, se, sw];
-        for (var i = 0; i < vertices.length; i++) {
-            console.log(vertices[i].lat + "," + vertices[i].lng);
-        }
+        var vertices = [point1, point2, point3, point4];
 
         return vertices;
     };
@@ -290,7 +267,6 @@ function SquareSelector(map) {
         // need to add logic to handle if we want to recolor whole dataset for elevation
         // based coloring
         polygonVertices = that.getVerticesOfSquareBbox(box);
-
         that.recoloringInProgress = true;        
 
         $.ajax({
@@ -304,8 +280,8 @@ function SquareSelector(map) {
             success: function(response) {
                 console.log("Received points");
                 console.log(response);
-                // hideLoadingScreen();
-                // return;
+                hideLoadingScreen();
+                return;
                 var json = JSON.parse(response);
                 // if (geoJSONData.features.length != json.displacements.length) {
                 //     console.log("not the same size json is " + json.displacements.length + " while features is " + geoJSONData.features.length);
