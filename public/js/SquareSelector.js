@@ -260,6 +260,30 @@ function SquareSelector(map) {
         }
 
         //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
+        that.map.map.addSource("onTheFlyJSON", {
+            "type": "geojson",
+            "data": geoJSONData
+        });
+        that.map.map.addLayer({
+            "id": "onTheFlyJSON",
+            "type": "circle",
+            "source": "onTheFlyJSON",
+            "paint": {
+                'circle-color': "black",
+                'circle-radius': {
+                    // for an explanation of this array see here:
+                    // https://www.mapbox.com/blog/data-driven-styling/
+                    stops: [
+                        [5, 2],
+                        [8, 2],
+                        [13, 8],
+                        [21, 16],
+                        [34, 32]
+                    ]
+                }
+            }
+        });
+        //console.log(query);
 
         var polygonVertices = null;
 
@@ -279,6 +303,9 @@ function SquareSelector(map) {
             },
             success: function(response) {
                 console.log("Received points");
+                console.log(response);
+                // hideLoadingScreen();
+                // return;
                 var json = JSON.parse(response);
                 // if (geoJSONData.features.length != json.displacements.length) {
                 //     console.log("not the same size json is " + json.displacements.length + " while features is " + geoJSONData.features.length);
