@@ -467,10 +467,26 @@ function Map(loadJSONFunc) {
     this.clickOnAnAreaMarker = function(e) {
         var features = that.map.queryRenderedFeatures(e.point);
 
+        if (!features.length) {
+            return;
+        }
+
+        var firstFeature = features[0];
+
+        if (firstFeature.layer.id = "gpsStations") {
+            var coordinates = firstFeature.geometry.coordinates;
+            var popup = new mapboxgl.Popup({ closeOnClick: true })
+                .setLngLat(coordinates)
+                .setHTML(firstFeature.properties.popupHTML)
+                .addTo(that.map);
+
+            return;
+        }
+
         var layerID = "touchLocation";
 
         // remove cluster count check if you remove clustering
-        if (!features.length || features[0].layer.id == "cluster-count" || features[0].layer.id == "contours" || features[0].layer.id == "contour_label") {
+        if (firstFeature.layer.id == "cluster-count" || firstFeature.layer.id == "contours" || firstFeature.layer.id == "contour_label") {
             return;
         }
 
@@ -1143,9 +1159,9 @@ function Map(loadJSONFunc) {
 
         var features = [];
         for (var i = 0; i < stations.length; i++) {
-            var popupHTML = '<h1>Station: ' + stations[i][0] + '<br/>' +
-                ' <a href="http://geodesy.unr.edu/NGLStationPages/stations/' + stations[i][0] + '.sta"> ' +
-                ' <img src="http://geodesy.unr.edu/tsplots/' + stations[i][3] + '/TimeSeries/' + stations[i][0] + '.png" align="center" width=400 alt="' + stations[i][0] + 'Time Series Plot"/> </a>' +
+            var popupHTML = '<h3>Station: ' + stations[i][0] + '<br/>' +
+                ' <a target="_blank" href="http://geodesy.unr.edu/NGLStationPages/stations/' + stations[i][0] + '.sta"> ' +
+                ' <img src="http://geodesy.unr.edu/tsplots/' + stations[i][3] + '/TimeSeries/' + stations[i][0] + '.png" align="center" width=400 height=600 alt="' + stations[i][0] + 'Time Series Plot"/> </a>' +
                 ' <p> <h5> Click plot for full station page. Positions in ' + stations[i][3] + ' reference frame. ';
 
             var feature = {

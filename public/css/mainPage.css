@@ -163,7 +163,7 @@ html[xmlns] .clearfix {
 }
 
 .tooltip.left {
-    margin-left: -40px !important;
+    margin-left: -57px !important;
 }
 
 #topography-wrap {
@@ -725,7 +725,7 @@ input[type=number] {
 
 .mapboxgl-popup {
     opacity: 0.8;
-    width: 170px;
+    /*width: 170px;*/
 }
 
 /*take out popup area name table top line*/
