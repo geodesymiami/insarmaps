@@ -256,6 +256,7 @@
     </script>
     ";
     ?>
+    <script type="text/javascript" src="js/gpsStations.js"></script>
     <script type="text/javascript" src="js/ColorScale.js"></script>
     <script type="text/javascript" src="js/AreaMarkerLayer.js"></script>
     <script type="text/javascript" src="js/AreaAttributesController.js"></script>
