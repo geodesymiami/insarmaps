@@ -43,43 +43,40 @@ function AreaAttributesPopup() {
             "processing_type": true
         };
 
-        // if we click on an area marker, we get a string as the mapbox feature can't seem to store an array and converts it to a string
-        if (typeof area.properties.attributekeys == "string" || typeof area
-            .properties.attributevalues == "string") {
-            attributekeys = JSON.parse(area.properties.attributekeys);
-            attributevalues = JSON.parse(area.properties.attributevalues);
-            // otherwise, we get arrays from the server (clicked on area not through an area marker feature)
-        } else {
-            attributekeys = area.properties.attributekeys;
-            attributevalues = area.properties.attributevalues;
-        }
+        attributekeys = JSON.parse(area.properties.attributekeys);
+        attributevalues = JSON.parse(area.properties.attributevalues);
 
-        var manuallyOrderedIndexes = [];
+        var originalAttributes = [attributekeys, attributevalues];
+        var extra_attributes = JSON.parse(area.properties.extra_attributes);
+        // console.log(extra_attributes);
+        var attributesController = new AreaAttributesController(myMap, originalAttributes, extra_attributes, null);
+        var areaAttributes = attributesController.getAllAttributes();
+        // console.log(areaAttributes);
 
-        for (var i = 0; i < attributekeys.length; i++) {
-            curKey = attributekeys[i];
+        for (var curKey in areaAttributes) {
+            if (areaAttributes.hasOwnProperty(curKey)) {
+                if (!(curKey in manuallyOrdered)) {
+                    if (curKey in attributesToDisplay) {
+                        var curValue = areaAttributes[curKey];
 
-            if (curKey in manuallyOrdered) {
-                manuallyOrderedIndexes.push(i);
-            } else if (curKey in attributesToDisplay) {
-                curValue = attributevalues[i];
-
-                tableHTML += "<tr><td value=" + curKey + ">" + curKey +
-                    "</td>";
-                tableHTML += "<td value=" + curValue + ">" + curValue +
-                    "</td></tr>";
+                        tableHTML += "<tr><td value=" + curKey + ">" + curKey +
+                            "</td>";
+                        tableHTML += "<td value=" + curValue + ">" + curValue +
+                            "</td></tr>";
+                    }
+                }
             }
         }
 
         // go over manually ordered attributes
-        for (var i = 0; i < manuallyOrderedIndexes.length; i++) {
-            var index = manuallyOrderedIndexes[i];
-            var curKey = attributekeys[index];
-            var curValue = attributevalues[index];
+        for (var curKey in manuallyOrdered) {
+            if (manuallyOrdered.hasOwnProperty(curKey)) {
+                var curValue = areaAttributes[curKey];
 
-            tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
-            tableHTML += "<td value=" + curValue + ">" + curValue +
-                "</td></tr>";
+                tableHTML += "<tr><td value=" + curKey + ">" + curKey + "</td>";
+                tableHTML += "<td value=" + curValue + ">" + curValue +
+                    "</td></tr>";
+            }
         }
 
         var prettyNameAndComponents = myMap.prettyPrintProjectName(area.properties
@@ -172,7 +169,7 @@ function getGEOJSON(area) {
         }
 
         window.setTimeout(function() {
-            var zoom = 9.5;
+            var zoom = 8.0;
 
             // quickly switching between areas? don't reset zoom
             if (myMap.anAreaWasPreviouslyLoaded()) {
@@ -194,7 +191,12 @@ function getGEOJSON(area) {
             myMap.map.off("style.load", styleLoadFunc);
             myMap.loadAreaMarkersExcluding([area.properties.unavco_name]);
             window.setTimeout(function() {
-                var attributesController = new AreaAttributesController(myMap, areaExtraAttributes, area.properties.decimal_dates);
+                var dates = JSON.parse(area.properties.decimal_dates);
+                var attributekeys = JSON.parse(area.properties.attributekeys);
+                var attributevalues = JSON.parse(area.properties.attributevalues);
+                var originalAttributes = [attributekeys, attributevalues];
+
+                var attributesController = new AreaAttributesController(myMap, originalAttributes, areaExtraAttributes, JSON.parse(area.properties.decimal_dates));
                 attributesController.processAttributes();
             }, 6000);
         }, 1000);
@@ -635,6 +637,15 @@ function search() {
         for (var i = 0; i < countries.length; i++) {
             var country = countries[i];
             var properties = country.properties;
+
+            // so we don't have to check whether it's a string or proper object every time
+            // TODO: best solution is to have a function - get js object from mapbox clicked marker
+            // this way we don't have to stringify these js objects, and mapbox clicked feature would
+            // also be objects
+            properties.decimal_dates = JSON.stringify(properties.decimal_dates);
+            properties.extra_attributes = JSON.stringify(properties.extra_attributes);
+            properties.attributekeys = JSON.stringify(properties.attributekeys);
+            properties.attributevalues = JSON.stringify(properties.attributevalues);
 
             $("#tableBody").append("<tr id=" + properties.unavco_name +
                 "><td value='" + properties.unavco_name + "''>" +

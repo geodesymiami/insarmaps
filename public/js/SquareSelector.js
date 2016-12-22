@@ -208,29 +208,6 @@ function SquareSelector(map) {
         }
 
         //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
-        that.map.map.addSource("onTheFlyJSON", {
-            "type": "geojson",
-            "data": geoJSONData
-        });
-        that.map.map.addLayer({
-            "id": "onTheFlyJSON",
-            "type": "circle",
-            "source": "onTheFlyJSON",
-            "paint": {
-                'circle-color': "black",
-                'circle-radius': {
-                    // for an explanation of this array see here:
-                    // https://www.mapbox.com/blog/data-driven-styling/
-                    stops: [
-                        [5, 2],
-                        [8, 2],
-                        [13, 8],
-                        [21, 16],
-                        [34, 32]
-                    ]
-                }
-            }
-        });
         //console.log(query);
         that.recoloringInProgress = true;
 
@@ -308,6 +285,7 @@ function SquareSelector(map) {
             },
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed " + xhr.responseText);
+                hideLoadingScreen();
             }
         });
     };
