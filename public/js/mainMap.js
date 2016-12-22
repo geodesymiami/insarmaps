@@ -702,6 +702,7 @@ function Map(loadJSONFunc) {
         that.map.on("load", function() {
             that.selector = new SquareSelector(that);
             that.loadAreaMarkers();
+            that.loadGPSStationsMarkers(gpsStations);
         });
 
         var tileset = 'mapbox.streets';
@@ -1125,6 +1126,55 @@ function Map(loadJSONFunc) {
                 stops: stops
             });
         }
+    };
+
+    this.loadGPSStationsMarkers = function(stations) {
+        var features = [];
+        var mapboxStationFeatures = {
+            type: "geojson",
+            cluster: false,
+            data: {
+                "type": "FeatureCollection",
+                "features": []
+            }
+        };
+
+        var imageURLs = ["bluSquare", "redSquare"];
+
+        var features = [];
+        for (var i = 0; i < stations.length; i++) {
+            var popupHTML = '<h1>Station: ' + stations[i][0] + '<br/>' +
+                ' <a href="http://geodesy.unr.edu/NGLStationPages/stations/' + stations[i][0] + '.sta"> ' +
+                ' <img src="http://geodesy.unr.edu/tsplots/' + stations[i][3] + '/TimeSeries/' + stations[i][0] + '.png" align="center" width=400 alt="' + stations[i][0] + 'Time Series Plot"/> </a>' +
+                ' <p> <h5> Click plot for full station page. Positions in ' + stations[i][3] + ' reference frame. ';
+
+            var feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [stations[i][2], stations[i][1]]
+                },
+                "properties": {
+                    "marker-symbol": "square",
+                    "popupHTML": popupHTML
+                }
+            };
+
+            features.push(feature);
+        }
+        mapboxStationFeatures.data.features = features;
+
+        var layerID = "gpsStations";
+        that.map.addSource(layerID, mapboxStationFeatures);
+        that.map.addLayer({
+            "id": layerID,
+            "type": "symbol",
+            "source": layerID,
+            "layout": {
+                "icon-image": "{marker-symbol}-15",
+                "icon-allow-overlap": true
+            }
+        });
     };
 }
 
