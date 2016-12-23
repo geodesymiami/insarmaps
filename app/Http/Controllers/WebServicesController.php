@@ -8,6 +8,11 @@ use DateTime;
 use App\Http\Requests;
 use DB;
 
+// pChart library
+use CpChart\Factory\Factory;
+use Exception;
+
+
 class WebServicesController extends Controller
 {
     public function __construct() {
@@ -184,10 +189,52 @@ class WebServicesController extends Controller
       // in future we will come up with algorithm to get the closest point
       $json = $this->createJsonArray($dataset, $points[0], $minDate, $maxDate);
 
+
+      try {
+
+      $factory = new Factory();
+      /* Create your dataset object */ 
+      $myData = $factory->newData();
+       
+      /* Add data in your dataset */ 
+      $myData->addPoints($json["decimal_dates"], "Labels");
+      $myData->setAbscissa("Labels");
+
+      /* Create a pChart object and associate your dataset */ 
+      $myPicture = $factory->newImage(700,230,$myData);
+       
+      /* Define the boundaries of the graph area */
+      $myPicture->setGraphArea(60,40,670,190);
+
+      // Draw a solid background
+    $backgroundSettings = array(
+        "R" => 173,
+        "G" => 152,
+        "B" => 217,
+        "Dash" => 1,
+        "DashR" => 193,
+        "DashG" => 172,
+        "DashB" => 237
+    );
+
+      $myPicture->drawFilledRectangle(0, 0, 700, 500, $backgroundSettings);
+
+      /* Draw the scale, keep everything automatic */ 
+      $myPicture->drawScale();
+       
+      /* Draw the scale, keep everything automatic */ 
+      $myPicture->drawSplineChart();
+       
+      /* Build the PNG file and send it to the web browser */ 
+      header("Content-Type: image/png");
+      $myPicture->Render(NULL);
+
+      }
+      catch (Exception $ex) {
+        echo sprintf('There was an error: %s', $ex->getMessage());
+      }
       // * TO DO: Construct picture of plot based on json
 
-      return json_encode($json);
+      //return json_encode($json);*/
     }
-
-
 }
