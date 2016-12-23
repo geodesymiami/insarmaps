@@ -100,7 +100,7 @@ function SquareSelector(map) {
 
         // If bbox exists. use this value as the argument for `queryRenderedFeatures`
         if (bbox) {
-            that.recolorMap();
+            that.recolorDataset();
         }
     };
 
@@ -124,28 +124,10 @@ function SquareSelector(map) {
         return pointIsInPolygon;
     };
 
-    this.recolorMap = function() {
-        if (that.bbox == null) {
-            return;
-        }
-
-        // haven't selected min and max, so exit
-        if (that.minIndex == -1 || that.maxIndex == -1) {
-            return;
-        }
-
-        // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
-        if (that.lastbbox == that.bbox && that.lastMinIndex == that.minIndex && that.lastMaxIndex == that.maxIndex) {
-            return;
-        }
-
+    this.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier) {
         if (that.recoloringInProgress) {
             return;
         }
-
-        that.lastMinIndex = that.minIndex;
-        that.lastMaxIndex = that.maxIndex;
-        that.lastbbox = that.bbox;
 
         if (that.map.map.getSource("onTheFlyJSON")) {
             that.map.map.removeSource("onTheFlyJSON");
@@ -158,8 +140,15 @@ function SquareSelector(map) {
             pointLayers.push(that.map.layers_[i].id);
         }
 
-        var pixelBoundingBox = [that.map.map.project(that.bbox[0]), that.map.map.project(that.bbox[1])];
-        var features = that.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
+        var features = null;
+        if (box) {
+            var pixelBoundingBox = [that.map.map.project(box[0]), that.map.map.project(box[1])];
+            features = that.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
+        // no bounding bax
+        } else {
+            features = that.map.map.queryRenderedFeatures({ layers: pointLayers });
+        }
+
         if (features.length == 0) {
             return;
         }
@@ -183,11 +172,13 @@ function SquareSelector(map) {
 
         var query = currentArea.properties.unavco_name + "/";
 
-	    // may be placebo effect, but seems to speed up query from db. also
+        // may be placebo effect, but seems to speed up query from db. also
         // sort by p in ascending order so we match displacements with the features
         features.sort(function(a, b) {
             return a.properties.p - b.properties.p;
         });
+
+        showLoadingScreen("Recoloring in progress...");
 
         for (var i = 0; i < features.length; i++) {
             var long = features[i].geometry.coordinates[0];
@@ -217,29 +208,6 @@ function SquareSelector(map) {
         }
 
         //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
-        that.map.map.addSource("onTheFlyJSON", {
-            "type": "geojson",
-            "data": geoJSONData
-        });
-        that.map.map.addLayer({
-            "id": "onTheFlyJSON",
-            "type": "circle",
-            "source": "onTheFlyJSON",
-            "paint": {
-                'circle-color': "black",
-                'circle-radius': {
-                    // for an explanation of this array see here:
-                    // https://www.mapbox.com/blog/data-driven-styling/
-                    stops: [
-                        [5, 2],
-                        [8, 2],
-                        [13, 8],
-                        [21, 16],
-                        [34, 32]
-                    ]
-                }
-            }
-        });
         //console.log(query);
         that.recoloringInProgress = true;
 
@@ -272,7 +240,7 @@ function SquareSelector(map) {
 
                     // calculate and render a linear regression of those dates and displacements
                     var result = calcLinearRegression(sub_displacements, sub_decimal_dates);
-                    var slope = result["equation"][0];
+                    var slope = result["equation"][0] * multiplier; // useful to get other derivatives such as position instead of velocity
                     var y = result["equation"][1];
                     // console.log("before " + curFeature.properties.m)
                     // console.log("slope is " + slope);
@@ -313,10 +281,34 @@ function SquareSelector(map) {
                     }
                 });
                 that.recoloringInProgress = false;
+                hideLoadingScreen();
             },
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed " + xhr.responseText);
+                hideLoadingScreen();
             }
         });
-    }
+    };
+
+    this.recolorDataset = function() {
+        if (that.bbox == null) {
+            return;
+        }
+
+        // haven't selected min and max, so exit
+        if (that.minIndex == -1 || that.maxIndex == -1) {
+            return;
+        }
+
+        // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
+        if (that.lastbbox == that.bbox && that.lastMinIndex == that.minIndex && that.lastMaxIndex == that.maxIndex) {
+            return;
+        }
+
+        that.lastMinIndex = that.minIndex;
+        that.lastMaxIndex = that.maxIndex;
+        that.lastbbox = that.bbox;
+
+        that.recolorDatasetWithBoundingBoxAndMultiplier(that.bbox, 1);
+    };
 }

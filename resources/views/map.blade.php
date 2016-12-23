@@ -36,6 +36,15 @@
 <script type="text/javascript" src="js/GraphsController.js"></script>
 </head>
 <body>
+  <div id="loading-screen" class="overlay-div">
+    <div id="loading-screen-contents">
+      <div id="loading-text-div">
+        Recoloring in progress...
+      </div>
+      <div class="loading-circle">
+      </div>
+    </div>
+  </div>
   <div id="map-container">
     <!--search bar-->
     <div id="search-bar">
@@ -217,7 +226,7 @@
 
     </div>
   </div>
-  <div id="information-div">
+  <div id="information-div" class="overlay-div">
     <div id="information-div-contents">
       <p>This website provides InSAR displacement time-series produced by the University of Miami Geodesy Laboratory,   which is supported by NASA and the NSF. To identify data sets from published papers please search for the author's names.<p>
 
@@ -247,8 +256,10 @@
     </script>
     ";
     ?>
+    <script type="text/javascript" src="js/gpsStations.js"></script>
     <script type="text/javascript" src="js/ColorScale.js"></script>
     <script type="text/javascript" src="js/AreaMarkerLayer.js"></script>
+    <script type="text/javascript" src="js/AreaAttributesController.js"></script>
     <script type="text/javascript" src="js/mainPage.js"></script>
     <script type="text/javascript" src="js/mainMap.js"></script>
     <script type="text/javascript" src="js/SquareSelector.js"></script>

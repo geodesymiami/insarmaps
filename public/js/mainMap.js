@@ -57,13 +57,17 @@ var getlinearDetrend = function(displacements, decimal_dates, slope) {
     return detrend_array;
 }
 
+var dateToDecimal = function(date) {
+    return date.getFullYear() + getDaysElapsed(date) / 365;
+}
+
 // convert date in decimal - for example, 20060131 is Jan 31, 2006
 // 31 days have passed so decimal format = [2006 + (31/365)] = 2006.0849
 // take an array of date objects and return an array of date decimals
 var convertDatesToDecimalArray = function(date_array) {
     var decimals = [];
     for (i = 0; i < date_array.length; i++) {
-        decimals.push(date_array[i].getFullYear() + getDaysElapsed(date_array[i]) / 365);
+        decimals.push(dateToDecimal(date_array[i]));
     }
     return decimals;
 }
@@ -327,7 +331,7 @@ function Map(loadJSONFunc) {
                                 that.graphsController.addRegressionLine(chartContainer, displacements_array);
                             }
 
-                            that.selector.recolorMap();
+                            that.selector.recolorDataset();
                         }
                     },
                     dateTimeLabelFormats: {
@@ -463,10 +467,26 @@ function Map(loadJSONFunc) {
     this.clickOnAnAreaMarker = function(e) {
         var features = that.map.queryRenderedFeatures(e.point);
 
+        if (!features.length) {
+            return;
+        }
+
+        var firstFeature = features[0];
+
+        if (firstFeature.layer.id = "gpsStations") {
+            var coordinates = firstFeature.geometry.coordinates;
+            var popup = new mapboxgl.Popup({ closeOnClick: true })
+                .setLngLat(coordinates)
+                .setHTML(firstFeature.properties.popupHTML)
+                .addTo(that.map);
+
+            return;
+        }
+
         var layerID = "touchLocation";
 
         // remove cluster count check if you remove clustering
-        if (!features.length || features[0].layer.id == "cluster-count" || features[0].layer.id == "contours" || features[0].layer.id == "contour_label") {
+        if (firstFeature.layer.id == "cluster-count" || firstFeature.layer.id == "contours" || firstFeature.layer.id == "contour_label") {
             return;
         }
 
@@ -601,6 +621,7 @@ function Map(loadJSONFunc) {
                         "project_name": area.project_name,
                         "num_chunks": area.num_chunks,
                         "country": area.country,
+                        "decimal_dates": area.decimal_dates,
                         "attributekeys": area.attributekeys,
                         "attributevalues": area.attributevalues,
                         "extra_attributes": area.extra_attributes
@@ -697,6 +718,7 @@ function Map(loadJSONFunc) {
         that.map.on("load", function() {
             that.selector = new SquareSelector(that);
             that.loadAreaMarkers();
+            that.loadGPSStationsMarkers(gpsStations);
         });
 
         var tileset = 'mapbox.streets';
@@ -870,7 +892,7 @@ function Map(loadJSONFunc) {
             console.log(that.map.getZoom());
 
             if (that.selector.bbox != null) {
-                that.selector.recolorMap();
+                that.selector.recolorDataset();
             }
 
             // reshow area markers once we zoom out enough
@@ -1102,7 +1124,7 @@ function Map(loadJSONFunc) {
         return name;
     };
 
-    this.recolorPoints = function() {
+    this.refreshDataset = function() {
         var stops = that.colorScale.getMapboxStops();
 
         that.layers_.forEach(function(layer) {
@@ -1120,6 +1142,55 @@ function Map(loadJSONFunc) {
                 stops: stops
             });
         }
+    };
+
+    this.loadGPSStationsMarkers = function(stations) {
+        var features = [];
+        var mapboxStationFeatures = {
+            type: "geojson",
+            cluster: false,
+            data: {
+                "type": "FeatureCollection",
+                "features": []
+            }
+        };
+
+        var imageURLs = ["bluSquare", "redSquare"];
+
+        var features = [];
+        for (var i = 0; i < stations.length; i++) {
+            var popupHTML = '<h3>Station: ' + stations[i][0] + '<br/>' +
+                ' <a target="_blank" href="http://geodesy.unr.edu/NGLStationPages/stations/' + stations[i][0] + '.sta"> ' +
+                ' <img src="http://geodesy.unr.edu/tsplots/' + stations[i][3] + '/TimeSeries/' + stations[i][0] + '.png" align="center" width=400 height=600 alt="' + stations[i][0] + 'Time Series Plot"/> </a>' +
+                ' <p> <h5> Click plot for full station page. Positions in ' + stations[i][3] + ' reference frame. ';
+
+            var feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [stations[i][2], stations[i][1]]
+                },
+                "properties": {
+                    "marker-symbol": "square",
+                    "popupHTML": popupHTML
+                }
+            };
+
+            features.push(feature);
+        }
+        mapboxStationFeatures.data.features = features;
+
+        var layerID = "gpsStations";
+        that.map.addSource(layerID, mapboxStationFeatures);
+        that.map.addLayer({
+            "id": layerID,
+            "type": "symbol",
+            "source": layerID,
+            "layout": {
+                "icon-image": "{marker-symbol}-15",
+                "icon-allow-overlap": true
+            }
+        });
     };
 }
 
