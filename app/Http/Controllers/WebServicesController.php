@@ -169,7 +169,7 @@ class WebServicesController extends Controller
     	}
 
     	// perform query
-    	$delta = 0.0002;	// range of error for latitude and longitude values, can be changed as needed
+    	$delta = 0.0005;	// range of error for latitude and longitude values, can be changed as needed
       $p1_lat = $latitude - $delta;
       $p1_long = $longitude - $delta;
       $p2_lat = $latitude + $delta;
@@ -181,7 +181,7 @@ class WebServicesController extends Controller
       $p5_lat = $latitude - $delta;
       $p5_long = $longitude - $delta;
       $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $dataset . "
-            WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_lat . " " . $p1_long . ", " . $p2_lat . " " . $p2_long . ", " . $p3_lat . " " . $p3_long . ", " . $p4_lat . " " . $p4_long . ", " . $p5_lat . " " . $p5_long . ")', 4326)), wkb_geometry);";
+            WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
 
      	$points = DB::select(DB::raw($query));
 
@@ -191,46 +191,35 @@ class WebServicesController extends Controller
 
 
       try {
+	// Create a factory class - it will load necessary files automatically,
+	    // otherwise you will need to add them on your own
+	    $factory = new Factory();
 
-      $factory = new Factory();
-      /* Create your dataset object */ 
-      $myData = $factory->newData();
-       
-      /* Add data in your dataset */ 
-      $myData->addPoints($json["decimal_dates"], "Labels");
-      $myData->setAbscissa("Labels");
+	    /* Create your dataset object */ 
+	    $myData = $factory->newData(array(), "Serie1"); 
 
-      /* Create a pChart object and associate your dataset */ 
-      $myPicture = $factory->newImage(700,230,$myData);
-       
-      /* Define the boundaries of the graph area */
-      $myPicture->setGraphArea(60,40,670,190);
+	    /* Add data in your dataset */ 
+	    $myData->addPoints(array(VOID,3,4,3,5));
 
-      // Draw a solid background
-    $backgroundSettings = array(
-        "R" => 173,
-        "G" => 152,
-        "B" => 217,
-        "Dash" => 1,
-        "DashR" => 193,
-        "DashG" => 172,
-        "DashB" => 237
-    );
+	    /* Create a pChart object and associate your dataset */ 
+	    $myPicture = $factory->newImage(700,230,$myData);
 
-      $myPicture->drawFilledRectangle(0, 0, 700, 500, $backgroundSettings);
+	    /* Choose a nice font */
+	    //$myPicture->setFontProperties(array("FontName"=>"fonts/Forgotte.ttf","FontSize"=>11));
 
-      /* Draw the scale, keep everything automatic */ 
-      $myPicture->drawScale();
-       
-      /* Draw the scale, keep everything automatic */ 
-      $myPicture->drawSplineChart();
-       
-      /* Build the PNG file and send it to the web browser */ 
-      header("Content-Type: image/png");
-      $myPicture->Render(NULL);
+	    /* Define the boundaries of the graph area */
+	    $myPicture->setGraphArea(60,40,670,190);
 
-      }
-      catch (Exception $ex) {
+	    /* Draw the scale, keep everything automatic */ 
+	    $myPicture->drawScale();
+
+	    /* Draw the scale, keep everything automatic */ 
+	    $myPicture->drawSplineChart();
+
+	    /* Build the PNG file and send it to the web browser */ 
+	    $myPicture->Render(storage_path() . "/basic.png");
+	    $myPicture->stroke();
+      } catch (Exception $ex) {
         echo sprintf('There was an error: %s', $ex->getMessage());
       }
       // * TO DO: Construct picture of plot based on json
