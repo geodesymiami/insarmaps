@@ -12,6 +12,7 @@ use DB;
 use CpChart\Factory\Factory;
 use Exception;
 
+// TODO: make all these date functions into own class - it's weird that they are here. also format graph to look better.
 
 class WebServicesController extends Controller
 {
@@ -39,6 +40,32 @@ class WebServicesController extends Controller
       $interval = date_diff($date, $date2);
 
       return $interval->format("%a");
+    }
+
+    private function dateStringToUnixTimestamp($dateString) {
+      $parsedDate = explode("/", $dateString);
+
+      // php dateTime object requires format yyyy-mm-dd
+      $date = new DateTime();
+      $date->setDate($parsedDate[0], $parsedDate[1], $parsedDate[2]);
+      
+      return $date->getTimestamp();	
+    }
+
+    private function stringDatesArrayToUnixTimeStampArray($stringDates) {
+	$len = count($stringDates);
+	$unixTimeStamps = [];
+
+	for ($i = 0; $i < $len; $i++) {
+		$year = substr($stringDates[$i], 0, 4);
+		$month = substr($stringDates[$i], 4, 2);
+		$day = substr($stringDates[$i], 6, 2);
+		$dateString = $year . "/" . $month . "/" . $day;
+
+		array_push($unixTimeStamps, $this->dateStringToUnixTimestamp($dateString));
+	}
+
+	return $unixTimeStamps;
     }
 
     // given a decimal format min and max date range, return indices of dates 
@@ -189,17 +216,21 @@ class WebServicesController extends Controller
       // in future we will come up with algorithm to get the closest point
       $json = $this->createJsonArray($dataset, $points[0], $minDate, $maxDate);
 
-
       try {
 	// Create a factory class - it will load necessary files automatically,
 	    // otherwise you will need to add them on your own
 	    $factory = new Factory();
 
 	    /* Create your dataset object */ 
-	    $myData = $factory->newData(array(), "Serie1"); 
+	    $myData = $factory->newData(array(), "Serie1");
 
 	    /* Add data in your dataset */ 
-	    $myData->addPoints(array(VOID,3,4,3,5));
+	    $myData->addPoints($json["displacements"], "displacements");
+	    $unixDates = $this->stringDatesArrayToUnixTimeStampArray($json["string_dates"]);
+	    $myData->addPoints($unixDates, "dates");
+	    $myData->setAbscissa("dates");
+
+	    $myData->setXAxisDisplay(AXIS_FORMAT_DATE, "y");
 
 	    /* Create a pChart object and associate your dataset */ 
 	    $myPicture = $factory->newImage(700,230,$myData);
@@ -214,7 +245,7 @@ class WebServicesController extends Controller
 	    $myPicture->drawScale();
 
 	    /* Draw the scale, keep everything automatic */ 
-	    $myPicture->drawSplineChart();
+	    $myPicture->drawLineChart();
 
 	    /* Build the PNG file and send it to the web browser */ 
 	    $myPicture->Render(storage_path() . "/basic.png");
