@@ -150,6 +150,8 @@ function Map(loadJSONFunc) {
         closeOnClick: false
     });
 
+    this.gpsStationPopup = new mapboxgl.Popup({ closeOnClick: true });
+
     this.disableInteractivity = function() {
         that.map.dragPan.disable();
         that.map.scrollZoom.disable();
@@ -769,6 +771,7 @@ function Map(loadJSONFunc) {
             // mouse not under a marker, clear all popups
             if (!features.length) {
                 that.areaPopup.remove();
+                that.gpsStationPopup.remove();
                 that.areaMarkerLayer.resetSizeOfModifiedMarkers();
                 return;
             }
@@ -776,6 +779,18 @@ function Map(loadJSONFunc) {
             // if it's a select area marker, but not a selected point marker... I suppose this is hackish
             // a better way is to have two mousemove callbacks like we do with select area vs select marker
             var markerSymbol = features[0].properties["marker-symbol"];
+
+            if (features[0].layer.id == "gpsStations") {
+                that.gpsStationPopup.remove();
+                var coordinates = features[0].geometry.coordinates;
+                that.gpsStationPopup = new mapboxgl.Popup({ closeOnClick: true })
+                    .setLngLat(coordinates)
+                    .setHTML(features[0].properties.stationName)
+                    .addTo(that.map);
+
+                return;
+            }
+
             if (markerSymbol != null && typeof markerSymbol != "undefined" && markerSymbol == "marker") {
                 // Populate the areaPopup and set its coordinates
                 // based on the feature found.
@@ -1171,8 +1186,8 @@ function Map(loadJSONFunc) {
                     "coordinates": [stations[i][2], stations[i][1]]
                 },
                 "properties": {
-                    "marker-symbol": "square",
-                    "popupHTML": popupHTML
+                    "popupHTML": popupHTML,
+                    "stationName": stations[i][0]
                 }
             };
 
@@ -1184,11 +1199,11 @@ function Map(loadJSONFunc) {
         that.map.addSource(layerID, mapboxStationFeatures);
         that.map.addLayer({
             "id": layerID,
-            "type": "symbol",
+            "type": "circle",
             "source": layerID,
-            "layout": {
-                "icon-image": "{marker-symbol}-15",
-                "icon-allow-overlap": true
+            "paint": {
+                "circle-color": "blue",
+                "circle-radius": 5
             }
         });
     };
