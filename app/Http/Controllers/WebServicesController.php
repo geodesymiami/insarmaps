@@ -49,23 +49,141 @@ class WebServicesController extends Controller
       $date = new DateTime();
       $date->setDate($parsedDate[0], $parsedDate[1], $parsedDate[2]);
       
-      return $date->getTimestamp();	
+      return $date->getTimestamp();
     }
 
     private function stringDatesArrayToUnixTimeStampArray($stringDates) {
-	$len = count($stringDates);
-	$unixTimeStamps = [];
+      $len = count($stringDates);
+      $unixTimeStamps = [];
 
-	for ($i = 0; $i < $len; $i++) {
-		$year = substr($stringDates[$i], 0, 4);
-		$month = substr($stringDates[$i], 4, 2);
-		$day = substr($stringDates[$i], 6, 2);
-		$dateString = $year . "/" . $month . "/" . $day;
+      for ($i = 0; $i < $len; $i++) {
+        $year = substr($stringDates[$i], 0, 4);
+        $month = substr($stringDates[$i], 4, 2);
+        $day = substr($stringDates[$i], 6, 2);
+        $dateString = $year . "/" . $month . "/" . $day;
 
-		array_push($unixTimeStamps, $this->dateStringToUnixTimestamp($dateString));
-	}
+        array_push($unixTimeStamps, $this->dateStringToUnixTimestamp($dateString));
+      }
 
-	return $unixTimeStamps;
+      return $unixTimeStamps;
+    }
+
+    private function getDisplacementChartDate($displacements, $stringDates) {
+      $data = [];
+      $len = count($stringDates);
+      $unixDates = $this->stringDatesArrayToUnixTimeStampArray($stringDates);
+
+      for ($i = 0; $i < $len; $i++) {
+        // high charts wants milliseconds so multiply by 1000
+        array_push($data, [$unixDates[$i] * 1000, $displacements[$i]]);
+      }
+
+      return $data;
+    }
+
+    private function generatePlotPicture($displacements, $stringDates) {
+      $jsonString = '{
+        "title": {
+          "text": null
+        },
+          "subtitle": {
+            "text": "velocity: "
+          },
+          "navigator": {
+            "enabled": true
+          },
+          "scrollbar": {
+            "liveRedraw": false
+          },
+          "xAxis": {
+            "type": "datetime",
+            "dateTimeLabelFormats": {
+              "month": "%e. %b",
+              "year": "%Y"
+            },
+            "title": {
+              "text": "Date"
+            }
+          },
+          "yAxis": {
+            "title": {
+              "text": "Ground Displacement (cm)"
+            },
+            "legend": {
+              "layout": "vertical",
+              "align": "left",
+              "verticalAlign": "top",
+              "x": 100,
+              "y": 70,
+              "floating": true,
+              "backgroundColor": "#FFFFFF",
+              "borderWidth": 1
+            },
+            "plotLines": [{
+              "value": 0,
+              "width": 1,
+              "color": "#808080"
+            }]
+          },
+          "tooltip": {
+            "headerFormat": "",
+            "pointFormat": "{point.x:%e. %b %Y}: {point.y:.6f} cm"
+          },
+          "series": [{
+            "type": "scatter",
+            "name": "Displacement",
+            "data": [],
+            "marker": {
+              "enabled": true
+            },
+            "showInLegend": false
+          }],
+          "chart": {
+            "marginRight": 50
+          }
+      }';
+
+      // pass true to get associative array instead of std class object
+      $json = json_decode($jsonString, true);
+      // debugging, remove when chart fully working
+      switch (json_last_error()) {
+        case JSON_ERROR_NONE:
+          break;
+        case JSON_ERROR_DEPTH:
+          echo ' - Maximum stack depth exceeded';
+          break;
+        case JSON_ERROR_STATE_MISMATCH:
+          echo ' - Underflow or the modes mismatch';
+          break;
+        case JSON_ERROR_CTRL_CHAR:
+          echo ' - Unexpected control character found';
+          break;
+        case JSON_ERROR_SYNTAX:
+          echo ' - Syntax error, malformed JSON';
+          break;
+        case JSON_ERROR_UTF8:
+          echo ' - Malformed UTF-8 characters, possibly incorrectly encoded';
+          break;
+        default:
+          echo ' - Unknown error';
+          break;
+      }
+
+      $json["series"][0]["data"] = $this->getDisplacementChartDate($displacements, $stringDates);
+
+      $jsonString = json_encode(($json));
+
+      $tempPictName = tempnam(storage_path(), "pict");
+      $command = "highcharts-export-server --instr '" . $jsonString . "' --outfile " . $tempPictName . " --type jpg";
+
+      exec($command);
+      $headers = ["Content-Type" => "image/jpg", "Content-Length" => filesize($tempPictName)];
+      $response = response()->file($tempPictName, $headers)->deleteFileAfterSend(true);
+      // header("Content-Type: image/jpg");
+      // header("Content-Length: " . filesize($tempPictName));
+      // fpassthru($pictFile);
+      // delete file to not clutter server
+      return $response;
     }
 
     // given a decimal format min and max date range, return indices of dates 
@@ -159,44 +277,44 @@ class WebServicesController extends Controller
     // like to view data from - this range is by default set to the first and last date of the dataset
     public function processRequest(Request $request) {
       $json = [];
-    	$requests = $request->all();
-    	$len = count($requests);
+      $requests = $request->all();
+      $len = count($requests);
 
-    	// we need latitude, longitude, dataset
+      // we need latitude, longitude, dataset
       // optional request vaues are minDate and maxDate
-    	// set lat and long to 1000.0 (impossible value) and dataset to empty string
-    	// if these initial values are retained then we did not get enough info to query
-    	$latitude = 1000.0;	
-    	$longitude = 1000.0;
-    	$dataset = "";
+      // set lat and long to 1000.0 (impossible value) and dataset to empty string
+      // if these initial values are retained then we did not get enough info to query
+      $latitude = 1000.0;
+      $longitude = 1000.0;
+      $dataset = "";
       $minDate = -1;
       $maxDate = -1;
 
-    	foreach ($requests as $key => $value) {
-    		if ($key == "latitude") {
-    			$latitude = $value ;
-    		} 
-    		else if ($key == "longitude") {
-    			$longitude = $value ;
-    		} 
-    		else if ($key == "dataset") {
-    			$dataset = $value;
-    		}
+      foreach ($requests as $key => $value) {
+        if ($key == "latitude") {
+          $latitude = $value ;
+        }
+        else if ($key == "longitude") {
+          $longitude = $value ;
+        }
+        else if ($key == "dataset") {
+          $dataset = $value;
+        }
         else if ($key == "minDate") {
           $minDate = $value;
         }
         else if ($key == "maxDate") {
           $maxDate = $value;
         }
-    	}
+      }
 
-    	if ($latitude == 1000.0 || $longitude == 1000.0 || strlen($dataset) == 0) {
-    		echo "Error: Incomplete/Invalid Data for Retrieving a Point";
-    		return NULL;
-    	}
+      if ($latitude == 1000.0 || $longitude == 1000.0 || strlen($dataset) == 0) {
+        echo "Error: Incomplete/Invalid Data for Retrieving a Point";
+        return NULL;
+      }
 
-    	// perform query
-    	$delta = 0.0005;	// range of error for latitude and longitude values, can be changed as needed
+      // perform query
+      $delta = 0.0005;  // range of error for latitude and longitude values, can be changed as needed
       $p1_lat = $latitude - $delta;
       $p1_long = $longitude - $delta;
       $p2_lat = $latitude + $delta;
@@ -210,50 +328,12 @@ class WebServicesController extends Controller
       $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $dataset . "
             WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
 
-     	$points = DB::select(DB::raw($query));
+      $points = DB::select(DB::raw($query));
 
       // * Currently we hardcode by picking the first point in the $points array
       // in future we will come up with algorithm to get the closest point
       $json = $this->createJsonArray($dataset, $points[0], $minDate, $maxDate);
-
-      try {
-	// Create a factory class - it will load necessary files automatically,
-	    // otherwise you will need to add them on your own
-	    $factory = new Factory();
-
-	    /* Create your dataset object */ 
-	    $myData = $factory->newData(array(), "Serie1");
-
-	    /* Add data in your dataset */ 
-	    $myData->addPoints($json["displacements"], "displacements");
-	    $unixDates = $this->stringDatesArrayToUnixTimeStampArray($json["string_dates"]);
-	    $myData->addPoints($unixDates, "dates");
-	    $myData->setAbscissa("dates");
-
-	    $myData->setXAxisDisplay(AXIS_FORMAT_DATE, "y");
-
-	    /* Create a pChart object and associate your dataset */ 
-	    $myPicture = $factory->newImage(700,230,$myData);
-
-	    /* Choose a nice font */
-	    //$myPicture->setFontProperties(array("FontName"=>"fonts/Forgotte.ttf","FontSize"=>11));
-
-	    /* Define the boundaries of the graph area */
-	    $myPicture->setGraphArea(60,40,670,190);
-
-	    /* Draw the scale, keep everything automatic */ 
-	    $myPicture->drawScale();
-
-	    /* Draw the scale, keep everything automatic */ 
-	    $myPicture->drawLineChart();
-
-	    /* Build the PNG file and send it to the web browser */ 
-	    $myPicture->Render(storage_path() . "/basic.png");
-	    $myPicture->stroke();
-      } catch (Exception $ex) {
-        echo sprintf('There was an error: %s', $ex->getMessage());
-      }
-      // * TO DO: Construct picture of plot based on json
+      return $this->generatePlotPicture($json["displacements"], $json["string_dates"]);
 
       //return json_encode($json);*/
     }
