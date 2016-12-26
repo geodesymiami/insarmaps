@@ -162,9 +162,11 @@ function getGEOJSON(area) {
     myMap.colorScale.defaultValues(); // set default values in case they were modified by another area
 
     myMap.initLayer(tileJSON, "streets");
-    var styleLoadFunc = function() {
+    var styleLoadFunc = function(event) {
+        myMap.map.off("data", styleLoadFunc);
         overlayToggleButton.set("on");
         if (contourToggleButton.toggleState == ToggleStates.ON) {
+            console.log("1");
             myMap.addContourLines();
         }
 
@@ -188,7 +190,6 @@ function getGEOJSON(area) {
                 zoom: zoom
             });
 
-            myMap.map.off("style.load", styleLoadFunc);
             myMap.loadAreaMarkersExcluding([area.properties.unavco_name]);
             window.setTimeout(function() {
                 var dates = JSON.parse(area.properties.decimal_dates);
@@ -202,7 +203,7 @@ function getGEOJSON(area) {
         }, 1000);
     };
 
-    myMap.map.on("style.load", styleLoadFunc);
+    myMap.map.on("data", styleLoadFunc);
 }
 
 function goToTab(event, id) {
@@ -346,6 +347,7 @@ function switchLayer(layer) {
         // finally, add back the click location marker, do on load of style to prevent
         // style not done loading error
         styleLoadFunc = function() {
+            myMap.map.off("data", styleLoadFunc);
             if (mapHadClickLocationMarkerTop) {
                 myMap.removeTouchLocationMarkers();
 
@@ -404,9 +406,8 @@ function switchLayer(layer) {
             if (contourToggleButton.toggleState == ToggleStates.ON) {
                 myMap.addContourLines();
             }
-            myMap.map.off("style.load", styleLoadFunc);
         };
-        myMap.map.on("style.load", styleLoadFunc);
+        myMap.map.on("data", styleLoadFunc);
     } else {
         myMap.map.setStyle({
             version: 8,
@@ -429,7 +430,8 @@ function switchLayer(layer) {
         var id = "areas";
 
         if (myMap.areaFeatures != null) {
-            styleLoadFunc = function() {
+            styleLoadFunc = function(event) {
+                myMap.map.off("data", styleLoadFunc);
                 var areaMarker = {
                     type: "geojson",
                     data: {}
@@ -452,14 +454,14 @@ function switchLayer(layer) {
                 if (contourToggleButton.toggleState == ToggleStates.ON) {
                     myMap.addContourLines();
                 }
-                myMap.map.off("style.load", styleLoadFunc);
+                myMap.loadAreaMarkers();
             };
-            myMap.map.on("style.load", styleLoadFunc);
+
+            myMap.map.on("data", styleLoadFunc);
         }
     }
 
-    myMap.map.off("style.off");
-    myMap.loadAreaMarkers();
+    myMap.map.off("data");
 }
 
 function setupToggleButtons() {

@@ -475,7 +475,7 @@ function Map(loadJSONFunc) {
 
         var firstFeature = features[0];
 
-        if (firstFeature.layer.id = "gpsStations") {
+        if (firstFeature.layer.id == "gpsStations") {
             var coordinates = firstFeature.geometry.coordinates;
             var popup = new mapboxgl.Popup({ closeOnClick: true })
                 .setLngLat(coordinates)
