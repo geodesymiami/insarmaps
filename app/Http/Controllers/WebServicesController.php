@@ -18,7 +18,7 @@ class WebServicesController extends Controller
 {
     public function __construct() {
       $this->arrayFormatter = new PostgresArrayFormatter();
-      $this->dateFormatter = new PostgresArrayFormatter();
+      $this->dateFormatter = new DateFormatter();
     }
 
     // assume input dateString is in format mm/dd/yyyy, ex: 12/19/2010
@@ -193,7 +193,7 @@ class WebServicesController extends Controller
       $json["series"][0]["data"] = $this->getDisplacementChartDate($displacements, $stringDates);
 
       // calculate velocity = slope of linear regression line 
-      $decimalDates = $this->dateStringsToDecimalArray($stringDates);
+      $decimalDates = $this->dateFormatter->dateStringsToDecimalArray($stringDates);
       $result = $this->calcLinearRegressionLine($decimalDates, $displacements);
       $json["subtitle"]["text"] = "velocity: " . round($result["m"] * 1000, 2) . " mm/yr";
 
@@ -273,8 +273,8 @@ class WebServicesController extends Controller
       // current condition of checking for -1 is insufficient placeholder
       if ($minDate != -1 && $maxDate != -1) {
         // convert minDate and maxDate into decimal dates
-        $minDate = $this->dateToDecimal($minDate);
-        $maxDate = $this->dateToDecimal($maxDate);
+        $minDate = $this->dateFormatter->dateToDecimal($minDate);
+        $maxDate = $this->dateFormatter->dateToDecimal($maxDate);
         $minAndMaxDateIndices = $this->getDateIndices($minDate, $maxDate, $decimal_dates);
         $minDateIndex = $minAndMaxDateIndices[0];
         $maxDateIndex = $minAndMaxDateIndices[1];
