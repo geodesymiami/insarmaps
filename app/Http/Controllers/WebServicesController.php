@@ -204,10 +204,7 @@ class WebServicesController extends Controller
       exec($command);
       $headers = ["Content-Type" => "image/jpg", "Content-Length" => filesize($tempPictName)];
       $response = response()->file($tempPictName, $headers)->deleteFileAfterSend(true);
-      // header("Content-Type: image/jpg");
-      // header("Content-Length: " . filesize($tempPictName));
-      // fpassthru($pictFile);
-      // delete file to not clutter server
+
       return $response;
     }
 
@@ -364,12 +361,12 @@ class WebServicesController extends Controller
         $points = DB::select(DB::raw($query));
       }
       catch (Exception $e) {
-        $error = "error: invalid dataset name - please check dataset";
+        $error["error"] = "invalid dataset name - please check dataset";
         return json_encode($error);
       }
 
       if (count($points) == 0) {
-        $error = "error: point was not found - please check latitude and longitude";
+        $error["error"] = "point was not found - please check latitude and longitude";
         return json_encode($error);
       }
 
