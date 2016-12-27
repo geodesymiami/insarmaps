@@ -6,6 +6,7 @@ var detrendToggleButton = null;
 var topGraphToggleButton = null;
 var bottomGraphToggleButton = null;
 var contourToggleButton = null;
+var gpsStationsToggleButton = null;
 var myMap = null;
 
 function AreaAttributesPopup() {
@@ -163,8 +164,11 @@ function getGEOJSON(area) {
         myMap.map.off("data", styleLoadFunc);
         overlayToggleButton.set("on");
         if (contourToggleButton.toggleState == ToggleStates.ON) {
-            console.log("1");
             myMap.addContourLines();
+        }
+
+        if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
+            myMap.addGPSStationMarkers(gpsStations);
         }
 
         window.setTimeout(function() {
@@ -279,8 +283,7 @@ function switchLayer(layer) {
     var styleLoadFunc = null;
 
     // we assume in this case that an area has been clicked
-    if (overlayToggleButton.toggleState == ToggleStates.ON && myMap.tileJSON !=
-        null) {
+    if (overlayToggleButton.toggleState == ToggleStates.ON && myMap.anAreaWasPreviouslyLoaded()) {
         // remove selected point marker if it exists, and create a new GeoJSONSource for it
         // prevents crash of "cannot read property 'send' of undefined"
         // if (myMap.map.getLayer(layerID)) {
@@ -340,6 +343,10 @@ function switchLayer(layer) {
         // style not done loading error
         styleLoadFunc = function() {
             myMap.map.off("data", styleLoadFunc);
+            if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
+                myMap.addGPSStationMarkers(gpsStations);
+            }
+
             if (mapHadClickLocationMarkerTop) {
                 myMap.removeTouchLocationMarkers();
 
@@ -428,6 +435,10 @@ function switchLayer(layer) {
                 if (contourToggleButton.toggleState == ToggleStates.ON) {
                     myMap.addContourLines();
                 }
+                if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
+                    myMap.addGPSStationMarkers(gpsStations);
+                }
+
                 myMap.loadAreaMarkers();
             };
 
@@ -573,6 +584,16 @@ function setupToggleButtons() {
             myMap.addContourLines();
         } else {
             myMap.removeContourLines();
+        }
+    });
+
+    gpsStationsToggleButton = new ToggleButton("#gps-stations-toggle-button");
+    gpsStationsToggleButton.onclick(function() {
+        if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
+            // gpsStations global variable from gpsStations.js
+            myMap.addGPSStationMarkers(gpsStations);
+        } else {
+            myMap.removeGPSStationMarkers();
         }
     });
 }

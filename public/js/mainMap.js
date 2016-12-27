@@ -163,6 +163,7 @@ function Map(loadJSONFunc) {
         that.map.scrollZoom.enable();
         that.map.doubleClickZoom.enable();
     };
+
     this.clickOnAPoint = function(e) {
         console.log("it is");
         console.log(e.point);
@@ -176,6 +177,16 @@ function Map(loadJSONFunc) {
 
         var feature = features[0];
         console.log(feature);
+
+        if (feature.layer.id == "gpsStations") {
+            var coordinates = feature.geometry.coordinates;
+            var popup = new mapboxgl.Popup({ closeOnClick: true })
+                .setLngLat(coordinates)
+                .setHTML(feature.properties.popupHTML)
+                .addTo(that.map);
+
+            return;
+        }
 
         // clicked on area marker, reload a new area.
         if (feature.properties["marker-symbol"] == "marker" && that.anAreaWasPreviouslyLoaded()) {
@@ -720,7 +731,6 @@ function Map(loadJSONFunc) {
         that.map.on("load", function() {
             that.selector = new SquareSelector(that);
             that.loadAreaMarkers();
-            that.loadGPSStationsMarkers(gpsStations);
         });
 
         var tileset = 'mapbox.streets';
@@ -1159,7 +1169,7 @@ function Map(loadJSONFunc) {
         }
     };
 
-    this.loadGPSStationsMarkers = function(stations) {
+    this.addGPSStationMarkers = function(stations) {
         var features = [];
         var mapboxStationFeatures = {
             type: "geojson",
@@ -1206,6 +1216,18 @@ function Map(loadJSONFunc) {
                 "circle-radius": 5
             }
         });
+    };
+
+    this.removeGPSStationMarkers = function() {
+        var layerID = "gpsStations";
+
+        if (that.map.getSource(layerID)) {
+            that.map.removeSource(layerID);
+        }
+
+        if (that.map.getLayer(layerID)) {
+            that.map.removeLayer(layerID);
+        }
     };
 }
 

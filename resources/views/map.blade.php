@@ -56,24 +56,9 @@
       </div>
     </div>
     <div id="top-map-buttons">
-      <div id="map-type-menu">
-        <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
-        <label for='streets'>Streets</label>
-        <input id='satellite' type='radio' name='rtoggle' value='satellite'>
-        <label for='satellite'>Satellite</label>
-      </div>
       <div id="overlay-options-wrapper">
         <div id="overlay-options">
-          <div id="overlay-options-toggles">
-            <div class="overlay_toggle">
-              <label>Data overlay</label>
-              <input id = "overlay-toggle-button" type="checkbox" name="overlayToggle"/>
-            </div>
-            <div class="overlay-toggle">
-              <label>Contour lines</label>
-              <input id = "contour-toggle-button" type="checkbox" name="overlayToggle"/>
-            </div>
-          </div>
+          Opacity:
           <div id="overlay-slider"></div>
         </div>
       </div>
@@ -88,11 +73,36 @@
        <button class="btn btn-primary-outline clickable-button">Logout</button>
      </div>
      @endif
-   </div>    
-   <div id="polygon-button-div">
-    <button class="btn btn-primary-outline map-button clickable-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="polygon-button">
-      <img src="img/polygon.svg" alt="polygon.svg">
-    </button>
+     <div id="polygon-button-div">
+      <button class="btn btn-primary-outline map-button clickable-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="polygon-button">
+        <img src="img/polygon.svg" alt="polygon.svg">
+      </button>
+    </div>
+    <div id="select-layer-button-div">
+      <button class="btn btn-primary-outline map-button clickable-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="select-layer-button">
+        <img src="img/layerSwitchIcon.png" alt="layerSwitchIcon.png" style="width: 20px; height: 20px">
+      </button>
+      <div id="overlay-options-toggles">
+        <div id="map-type-menu">
+          <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
+          <label for='streets'>Streets</label>
+          <input id='satellite' type='radio' name='rtoggle' value='satellite'>
+          <label for='satellite'>Satellite</label>
+        </div>
+        <div class="overlay_toggle">
+          <label>Data overlay</label>
+          <input id = "overlay-toggle-button" type="checkbox" name="overlayToggle"/>
+        </div>
+        <div class="overlay-toggle">
+          <label>Contour lines</label>
+          <input id = "contour-toggle-button" type="checkbox" name="overlayToggle"/>
+        </div>
+        <div class="overlay-toggle">
+          <label>GPS Stations</label>
+          <input id = "gps-stations-toggle-button" type="checkbox" name="overlayToggle"/>
+        </div>
+      </div>
+    </div>
   </div>
   <div id="color-scale">
     <div id="color-scale-text-div" class="rotate">

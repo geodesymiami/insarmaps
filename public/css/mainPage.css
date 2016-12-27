@@ -357,7 +357,6 @@ div.menu {
     top: 10px;
     left: 205px;
     z-index: 99;
-    width: 50%;
     height: 50px;
 }
 
@@ -373,27 +372,6 @@ div.menu {
     font-family: 'Open Sans', sans-serif;
     width: 120px;
     min-height: 34px;
-}
-
-#overlay-options-wrapper {
-    width: 200px;
-    height: 34px;
-}
-
-#overlay-options-toggles {
-    width: 100%;
-}
-
-#overlay-options-toggles .overlay_toggle {
-    width: 50%;
-}
-
-#overlay-options {
-    font-family: 'Open Sans', sans-serif;
-    z-index: 99;
-    border-radius: 4px;
-    background-color: white;
-    height: 100%;
 }
 
 #overlay-slider {
@@ -516,13 +494,44 @@ div.menu {
 }
 
 #polygon-button-div {
-    position: absolute;
     font-family: 'Open Sans', sans-serif;
-    z-index: 99;
-    left: 10px;
-    top: 55px;
     border-radius: 10px;
 }
+
+#select-layer-button {
+    padding: 0 !important;
+}
+
+#select-layer-button-div:hover > #overlay-options-toggles {
+    display: block;
+}
+
+#overlay-options-wrapper {
+    height: 34px;
+}
+
+#overlay-options-toggles {
+    width: 100%;
+    background: white;
+    display: none;
+}
+
+#overlay-options-toggles.active {
+    display: block;
+}
+
+#overlay-options-toggles .overlay_toggle {
+    width: 100%;
+}
+
+#overlay-options {
+    font-family: 'Open Sans', sans-serif;
+    z-index: 99;
+    border-radius: 4px;
+    background-color: white;
+    height: 100%;
+}
+
 
 #polygon-button {
     padding: 0 !important;
