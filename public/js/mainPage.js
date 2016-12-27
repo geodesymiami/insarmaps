@@ -46,10 +46,7 @@ function AreaAttributesPopup() {
         attributekeys = JSON.parse(area.properties.attributekeys);
         attributevalues = JSON.parse(area.properties.attributevalues);
 
-        var originalAttributes = [attributekeys, attributevalues];
-        var extra_attributes = JSON.parse(area.properties.extra_attributes);
-        // console.log(extra_attributes);
-        var attributesController = new AreaAttributesController(myMap, originalAttributes, extra_attributes, null);
+        var attributesController = new AreaAttributesController(myMap, area);
         var areaAttributes = attributesController.getAllAttributes();
         // console.log(areaAttributes);
 
@@ -192,12 +189,7 @@ function getGEOJSON(area) {
 
             myMap.loadAreaMarkersExcluding([area.properties.unavco_name]);
             window.setTimeout(function() {
-                var dates = JSON.parse(area.properties.decimal_dates);
-                var attributekeys = JSON.parse(area.properties.attributekeys);
-                var attributevalues = JSON.parse(area.properties.attributevalues);
-                var originalAttributes = [attributekeys, attributevalues];
-
-                var attributesController = new AreaAttributesController(myMap, originalAttributes, areaExtraAttributes, JSON.parse(area.properties.decimal_dates));
+                var attributesController = new AreaAttributesController(myMap, area);
                 attributesController.processAttributes();
             }, 6000);
         }, 1000);
@@ -432,24 +424,6 @@ function switchLayer(layer) {
         if (myMap.areaFeatures != null) {
             styleLoadFunc = function(event) {
                 myMap.map.off("data", styleLoadFunc);
-                var areaMarker = {
-                    type: "geojson",
-                    data: {}
-                }; // add the markers representing the available areas
-                areaMarker.data = {
-                    "type": "FeatureCollection",
-                    "features": myMap.areaFeatures
-                };
-                myMap.map.addSource(id, areaMarker);
-                myMap.map.addLayer({
-                    "id": id,
-                    "type": "symbol",
-                    "source": id,
-                    "layout": {
-                        "icon-image": "{marker-symbol}-15",
-                        "icon-allow-overlap": true
-                    }
-                });
 
                 if (contourToggleButton.toggleState == ToggleStates.ON) {
                     myMap.addContourLines();

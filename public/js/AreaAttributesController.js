@@ -1,21 +1,20 @@
-function AreaAttributesController(map, attributes, extraAttributes, datesArray) {
+function AreaAttributesController(map, area) {
     var that = this;
 
     this.map = map;
     this.attributes = null;
-    this.datesArray = datesArray;
+    this.datesArray = JSON.parse(area.properties.decimal_dates);
     this.colorOnPosition = false;
 
     this.constructAttributes = function() {
         // attributes should be an array, extraAttributes should be an object
         // let's just add all the key values from attributes to extraAttributes
-        if (!attributes) {
-            return null;
-        }
+        var attributeKeys = JSON.parse(area.properties.attributekeys);
+        var attributeValues = JSON.parse(area.properties.attributevalues);
 
-        var attributeKeys = attributes[0];
-        var attributeValues = attributes[1];
+        var extraAttributes = JSON.parse(area.properties.extra_attributes);
 
+        // use extraAttributes dictionary to save having to copy it's keys
         if (extraAttributes) {
             for (var i = 0; i < attributeKeys.length; i++) {
                 var curKey = attributeKeys[i];
@@ -27,7 +26,7 @@ function AreaAttributesController(map, attributes, extraAttributes, datesArray) 
             return extraAttributes;
         }
 
-        // no extra attributes
+        // no extra attributes, start with fresh dictionary
         var fullAttributes = [];
 
         for (var i = 0; i < attributeKeys.length; i++) {
