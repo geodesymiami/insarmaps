@@ -18,6 +18,7 @@ class WebServicesController extends Controller
 {
     public function __construct() {
       $this->arrayFormatter = new PostgresArrayFormatter();
+      $this->dateFormatter = new PostgresArrayFormatter();
     }
 
     // assume input dateString is in format mm/dd/yyyy, ex: 12/19/2010
@@ -408,10 +409,8 @@ class WebServicesController extends Controller
       $xy_sum = 0;
 
       for($i = 0; $i < $n; $i++) {
-
         $xy_sum+=($x[$i]*$y[$i]);
         $xx_sum+=($x[$i]*$x[$i]);
-
       }
 
       // calculate slope
