@@ -32,6 +32,26 @@ class WebServicesController extends Controller
       return $date->format("Y") + ($this->getDaysElapsed($date)) / 365.0;
     }
 
+    // given string date in yyyymmdd format, ex: 20101219
+    // return decimal version of dateString, ex: 2007.9671232877
+    // used for calculation of velocity in calcLinearRegressionLine
+    public function dateStringsToDecimalArray($stringDates) {
+      $decimalDates = [];
+
+      for ($i = 0; $i < count($stringDates); $i++) {
+        $year = substr($stringDates[$i], 0, 4);
+        $month = substr($stringDates[$i], 4, 2);
+        $day = substr($stringDates[$i], 6, 2);
+
+        $date = new DateTime();
+        $date->setDate($year, $month, $day);
+        $decimal_date = $date->format("Y") + ($this->getDaysElapsed($date)) / 365.0;
+        array_push($decimalDates, $decimal_date);
+      }
+     
+      return $decimalDates;
+    }
+
     // assume input date is in format of a PHP dateTime object with year Y,
     // return days elapsed from beginning of year Y up to input date
     public function getDaysElapsed($date) {
@@ -171,6 +191,11 @@ class WebServicesController extends Controller
 
       $json["series"][0]["data"] = $this->getDisplacementChartDate($displacements, $stringDates);
 
+      // calculate velocity = slope of linear regression line 
+      $decimalDates = $this->dateStringsToDecimalArray($stringDates);
+      $result = $this->calcLinearRegressionLine($decimalDates, $displacements);
+      $json["subtitle"]["text"] = "velocity: " . round($result["m"] * 1000, 2) . " mm/yr";
+
       $jsonString = json_encode(($json));
 
       $tempPictName = tempnam(storage_path(), "pict");
@@ -281,7 +306,7 @@ class WebServicesController extends Controller
       $len = count($requests);
 
       // we need latitude, longitude, dataset
-      // optional request vaues are minDate and maxDate
+      // optional request vaues are minDate, maxDate, outPutType (either "json" or "plot")
       // set lat and long to 1000.0 (impossible value) and dataset to empty string
       // if these initial values are retained then we did not get enough info to query
       $latitude = 1000.0;
@@ -289,6 +314,7 @@ class WebServicesController extends Controller
       $dataset = "";
       $minDate = -1;
       $maxDate = -1;
+      $outputType = "json";
 
       foreach ($requests as $key => $value) {
         if ($key == "latitude") {
@@ -306,6 +332,9 @@ class WebServicesController extends Controller
         else if ($key == "maxDate") {
           $maxDate = $value;
         }
+        else if ($key == "outputType") {
+          $outputType = $value;
+        }
       }
 
       if ($latitude == 1000.0 || $longitude == 1000.0 || strlen($dataset) == 0) {
@@ -313,7 +342,13 @@ class WebServicesController extends Controller
         return NULL;
       }
 
-      // perform query
+      // if outPutType was specified and its not json and its not plot
+      if (strlen($outputType) > 0 && strcasecmp($outputType, "json") != 0 && strcasecmp($outputType, "plot") != 0) {
+        echo "Error: outputType must be set to json or plot";
+        return NULL;
+      }
+
+      // perform query to get point objects within +/- delta range of (longitude, latitude)
       $delta = 0.0005;  // range of error for latitude and longitude values, can be changed as needed
       $p1_lat = $latitude - $delta;
       $p1_long = $longitude - $delta;
@@ -333,8 +368,55 @@ class WebServicesController extends Controller
       // * Currently we hardcode by picking the first point in the $points array
       // in future we will come up with algorithm to get the closest point
       $json = $this->createJsonArray($dataset, $points[0], $minDate, $maxDate);
-      return $this->generatePlotPicture($json["displacements"], $json["string_dates"]);
 
-      //return json_encode($json);*/
+      // by default we return json; only if outputType = plot, we return plot
+      if (strcasecmp($outputType, "plot") == 0) {
+        return $this->generatePlotPicture($json["displacements"], $json["string_dates"]);
+      }
+      else {
+        return json_encode($json);
+      }
     }
+
+
+    // Thanks to Richard at: https://richardathome.wordpress.com/2006/01/25/a-php-linear-regression-function/
+    /**
+    * linear regression function
+    * @param $x array x-coords
+    * @param $y array y-coords
+    * @returns array() m=>slope, b=>intercept
+    */
+    public static function calcLinearRegressionLine($x, $y) {
+      // calculate number points
+      $n = count($x);
+
+      // ensure both arrays of points are the same size
+      if ($n != count($y)) {
+        trigger_error("linear_regression(): Number of elements in coordinate arrays do not match.", E_USER_ERROR);
+      }
+
+      // calculate sums
+      $x_sum = array_sum($x);
+      $y_sum = array_sum($y);
+
+      $xx_sum = 0;
+      $xy_sum = 0;
+
+      for($i = 0; $i < $n; $i++) {
+
+        $xy_sum+=($x[$i]*$y[$i]);
+        $xx_sum+=($x[$i]*$x[$i]);
+
+      }
+
+      // calculate slope
+      $m = (($n * $xy_sum) - ($x_sum * $y_sum)) / (($n * $xx_sum) - ($x_sum * $x_sum));
+
+      // calculate intercept
+      $b = ($y_sum - ($m * $x_sum)) / $n;
+ 
+      // return result
+      return array("m"=>$m, "b"=>$b);
+    }
+
 }
