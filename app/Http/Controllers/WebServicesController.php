@@ -21,6 +21,19 @@ class WebServicesController extends Controller
       $this->dateFormatter = new DateFormatter();
     }
 
+    private function getDisplacementChartData($displacements, $stringDates) {
+      $data = [];
+      $len = count($stringDates);
+      $unixDates = $this->dateFormatter->stringDatesArrayToUnixTimeStampArray($stringDates);
+
+      for ($i = 0; $i < $len; $i++) {
+        // high charts wants milliseconds so multiply by 1000
+        array_push($data, [$unixDates[$i] * 1000, $displacements[$i]]);
+      }
+
+      return $data;
+    }
+
     private function generatePlotPicture($displacements, $stringDates) {
       $jsonString = '{
         "title": {
@@ -109,7 +122,7 @@ class WebServicesController extends Controller
           break;
       }
 
-      $json["series"][0]["data"] = $this->dateFormatter->getDisplacementChartDate($displacements, $stringDates);
+      $json["series"][0]["data"] = $this->getDisplacementChartData($displacements, $stringDates);
 
       // calculate velocity = slope of linear regression line 
       $decimalDates = $this->dateFormatter->dateStringsToDecimalArray($stringDates);
