@@ -270,8 +270,9 @@ class WebServicesController extends Controller
       // and maxDate is last date in decimaldates and stringdates
       // * Currently we are not accounting for condition where user specifies a minDate but no maxDate,
       // or a maxDate but no minDate
-      // * Currently we are not accounting for condition where user types incorrect date - in future need
-      // to get a isValidDate checker
+
+      // * TODO: create a function to check if minDate and maxDate inputted by user is valid
+      // current condition of checking for -1 is insufficient placeholder
       if ($minDate != -1 && $maxDate != -1) {
         // convert minDate and maxDate into decimal dates
         $minDate = $this->dateToDecimal($minDate);
@@ -296,10 +297,12 @@ class WebServicesController extends Controller
 
 
     // main entry point into web services
-    // given a latitude, longitude, and dataset - return json array for stringdates, decimaldates,
+    // * given a latitude, longitude, and dataset - return json array for stringdates, decimaldates,
     // and displacements of point that corresponds to input data or return null if data is invalid
-    // user also has option of sending a minDate and maxDate to specify the range of dates they would
+    // * user also has option of sending a minDate and maxDate to specify the range of dates they would
     // like to view data from - this range is by default set to the first and last date of the dataset
+    // * user can also specify outputType, which should be json or plot - default value results in json,
+    // if not specified or if specification is invalid, revert to default value
     public function processRequest(Request $request) {
       $json = [];
       $requests = $request->all();
@@ -307,10 +310,8 @@ class WebServicesController extends Controller
 
       // we need latitude, longitude, dataset
       // optional request vaues are minDate, maxDate, outPutType (either "json" or "plot")
-      // set lat and long to 1000.0 (impossible value) and dataset to empty string
-      // if these initial values are retained then we did not get enough info to query
-      $latitude = 1000.0;
-      $longitude = 1000.0;
+      $latitude = 0.0;
+      $longitude = 0.0;
       $dataset = "";
       $minDate = -1;
       $maxDate = -1;
@@ -337,19 +338,14 @@ class WebServicesController extends Controller
         }
       }
 
-      if ($latitude == 1000.0 || $longitude == 1000.0 || strlen($dataset) == 0) {
-        echo "Error: Incomplete/Invalid Data for Retrieving a Point";
-        return NULL;
-      }
-
-      // if outPutType was specified and its not json and its not plot
+      // if outPutType was specified and its not json and its not plot, set to default json value
       if (strlen($outputType) > 0 && strcasecmp($outputType, "json") != 0 && strcasecmp($outputType, "plot") != 0) {
-        echo "Error: outputType must be set to json or plot";
-        return NULL;
+        $outputType = "json";
       }
 
       // perform query to get point objects within +/- delta range of (longitude, latitude)
-      $delta = 0.0005;  // range of error for latitude and longitude values, can be changed as needed
+      // delta = range of error for latitude and longitude values, can be changed as needed
+      $delta = 0.0005;
       $p1_lat = $latitude - $delta;
       $p1_long = $longitude - $delta;
       $p2_lat = $latitude + $delta;
@@ -363,7 +359,19 @@ class WebServicesController extends Controller
       $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $dataset . "
             WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
 
-      $points = DB::select(DB::raw($query));
+      // if query fails for some reason, return json object with appropriate error message
+      try {
+        $points = DB::select(DB::raw($query));
+      }
+      catch (Exception $e) {
+        $error = "error: invalid dataset name - please check dataset";
+        return json_encode($error);
+      }
+
+      if (count($points) == 0) {
+        $error = "error: point was not found - please check latitude and longitude";
+        return json_encode($error);
+      }
 
       // * Currently we hardcode by picking the first point in the $points array
       // in future we will come up with algorithm to get the closest point
