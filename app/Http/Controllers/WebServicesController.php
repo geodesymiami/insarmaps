@@ -21,87 +21,6 @@ class WebServicesController extends Controller
       $this->dateFormatter = new DateFormatter();
     }
 
-    // assume input dateString is in format mm/dd/yyyy, ex: 12/19/2010
-    // return decimal version of dateString, ex: 2007.9671232877
-    public function dateToDecimal($dateString) {
-      $parsedDate = explode("/", $dateString);
-
-      // php dateTime object requires format yyyy-mm-dd
-      $date = new DateTime();
-      $date->setDate($parsedDate[2], $parsedDate[0], $parsedDate[1]);
-
-      return $date->format("Y") + ($this->getDaysElapsed($date)) / 365.0;
-    }
-
-    // given string date in yyyymmdd format, ex: 20101219
-    // return decimal version of dateString, ex: 2007.9671232877
-    // used for calculation of velocity in calcLinearRegressionLine
-    public function dateStringsToDecimalArray($stringDates) {
-      $decimalDates = [];
-
-      for ($i = 0; $i < count($stringDates); $i++) {
-        $year = substr($stringDates[$i], 0, 4);
-        $month = substr($stringDates[$i], 4, 2);
-        $day = substr($stringDates[$i], 6, 2);
-
-        $date = new DateTime();
-        $date->setDate($year, $month, $day);
-        $decimal_date = $date->format("Y") + ($this->getDaysElapsed($date)) / 365.0;
-        array_push($decimalDates, $decimal_date);
-      }
-     
-      return $decimalDates;
-    }
-
-    // assume input date is in format of a PHP dateTime object with year Y,
-    // return days elapsed from beginning of year Y up to input date
-    public function getDaysElapsed($date) {
-      $date2 = new DateTime();
-      $date2->setDate($date->format("Y"), 1, 1);
-      $interval = date_diff($date, $date2);
-
-      return $interval->format("%a");
-    }
-
-    private function dateStringToUnixTimestamp($dateString) {
-      $parsedDate = explode("/", $dateString);
-
-      // php dateTime object requires format yyyy-mm-dd
-      $date = new DateTime();
-      $date->setDate($parsedDate[0], $parsedDate[1], $parsedDate[2]);
-      
-      return $date->getTimestamp();
-    }
-
-    private function stringDatesArrayToUnixTimeStampArray($stringDates) {
-      $len = count($stringDates);
-      $unixTimeStamps = [];
-
-      for ($i = 0; $i < $len; $i++) {
-        $year = substr($stringDates[$i], 0, 4);
-        $month = substr($stringDates[$i], 4, 2);
-        $day = substr($stringDates[$i], 6, 2);
-        $dateString = $year . "/" . $month . "/" . $day;
-
-        array_push($unixTimeStamps, $this->dateStringToUnixTimestamp($dateString));
-      }
-
-      return $unixTimeStamps;
-    }
-
-    private function getDisplacementChartDate($displacements, $stringDates) {
-      $data = [];
-      $len = count($stringDates);
-      $unixDates = $this->stringDatesArrayToUnixTimeStampArray($stringDates);
-
-      for ($i = 0; $i < $len; $i++) {
-        // high charts wants milliseconds so multiply by 1000
-        array_push($data, [$unixDates[$i] * 1000, $displacements[$i]]);
-      }
-
-      return $data;
-    }
-
     private function generatePlotPicture($displacements, $stringDates) {
       $jsonString = '{
         "title": {
@@ -190,7 +109,7 @@ class WebServicesController extends Controller
           break;
       }
 
-      $json["series"][0]["data"] = $this->getDisplacementChartDate($displacements, $stringDates);
+      $json["series"][0]["data"] = $this->dateFormatter->getDisplacementChartDate($displacements, $stringDates);
 
       // calculate velocity = slope of linear regression line 
       $decimalDates = $this->dateFormatter->dateStringsToDecimalArray($stringDates);

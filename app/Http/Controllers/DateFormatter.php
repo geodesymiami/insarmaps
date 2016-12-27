@@ -13,8 +13,6 @@ class DateFormatter
   	* @return float - (ex: 2010.9671232877)
   	*/
   	public function dateToDecimal($dateString) {
-  	  print_r("called date Formatter - dateToDecimal");
-  	  
   	  $date = DateTime::createFromFormat('m/d/Y', $dateString);
       return $date->format("Y") + ($this->getDaysElapsed($date)) / 365.0;
     }
@@ -51,7 +49,7 @@ class DateFormatter
       return $interval->format("%a");
     }
 
-    private function dateStringToUnixTimestamp($dateString) {
+    public function dateStringToUnixTimestamp($dateString) {
       $parsedDate = explode("/", $dateString);
 
       // php dateTime object requires format yyyy-mm-dd
@@ -61,7 +59,7 @@ class DateFormatter
       return $date->getTimestamp();
     }
 
-    private function stringDatesArrayToUnixTimeStampArray($stringDates) {
+    public function stringDatesArrayToUnixTimeStampArray($stringDates) {
       $len = count($stringDates);
       $unixTimeStamps = [];
 
@@ -77,7 +75,7 @@ class DateFormatter
       return $unixTimeStamps;
     }
 
-    private function getDisplacementChartDate($displacements, $stringDates) {
+    public function getDisplacementChartDate($displacements, $stringDates) {
       $data = [];
       $len = count($stringDates);
       $unixDates = $this->stringDatesArrayToUnixTimeStampArray($stringDates);
