@@ -75,16 +75,4 @@ class DateFormatter
       return $unixTimeStamps;
     }
 
-    public function getDisplacementChartDate($displacements, $stringDates) {
-      $data = [];
-      $len = count($stringDates);
-      $unixDates = $this->stringDatesArrayToUnixTimeStampArray($stringDates);
-
-      for ($i = 0; $i < $len; $i++) {
-        // high charts wants milliseconds so multiply by 1000
-        array_push($data, [$unixDates[$i] * 1000, $displacements[$i]]);
-      }
-
-      return $data;
-    }
 }
