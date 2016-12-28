@@ -277,10 +277,10 @@ class WebServicesController extends Controller
         $outputType = "json";
       }
 
-      // check if minDate is valid
-      if ($this->dateFormatter->verifyDate($minDate) === NULL) {
-        print_r("minDate is not valid");
-        return;
+      // check if minDate and maxDate are valid, if not return json object with error message
+      if ($this->dateFormatter->verifyDate($minDate) === NULL || $this->dateFormatter->verifyDate($maxDate) === NULL) {
+        $error["error"] = "invalid minDate or maxDate - please input date in format mm/dd/yyyy (ex: 12/16/2010) or yyyymmdd (ex: 20101612)";
+        return json_encode($error);
       }
 
       // perform query to get point objects within +/- delta range of (longitude, latitude)
@@ -299,7 +299,7 @@ class WebServicesController extends Controller
       $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $dataset . "
             WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
 
-      // if query fails for some reason, return json object with appropriate error message
+      // if query fails for some reason, return json object with error message
       try {
         $points = DB::select(DB::raw($query));
       }

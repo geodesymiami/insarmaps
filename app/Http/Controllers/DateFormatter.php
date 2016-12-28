@@ -17,9 +17,21 @@ class DateFormatter
     */
     public function verifyDate($dateString) {
 
+      /** two cases of error to check for:
+      * 1) invalid date - example is mm/dd/yyyy = 12/40/2010, 40th day of December is nonexistent
+      *    in this case warning_count = 1 and error_count = 0
+      * 2) incomplete data - example is yyyymmdd = 201012, day is nonexistent
+      *    in this case warning_count = 0 and error_count = 1
+      */
       $date = DateTime::createFromFormat('m/d/Y', $dateString);
       $errors = DateTime::getLastErrors();
-      if ($errors['warning_count'] == 0) {
+      if ($errors['warning_count'] == 0 && $errors['error_count'] == 0) {
+        return $date;
+      }
+
+      $date = DateTime::createFromFormat('Ymd', $dateString);
+      $errors = DateTime::getLastErrors();
+      if ($errors['warning_count'] == 0 && $errors['error_count'] == 0) {
         return $date;
       }
      
@@ -29,11 +41,16 @@ class DateFormatter
   	/**
   	* Given a string containing information on a date, return decimal version of that date
   	*
-  	* @param string $dateString - format is mm/dd/yyyy (ex: 12/19/2010)
-  	* @return float - (ex: 2010.9671232877)
+  	* @param string $dateString - can be one of two formats: (1) mm/dd/yyyy (2) yyyymmdd
+  	* @return float - (ex: 2010.9671232877 -> converted from 12/19/2010 or 20101219)
   	*/
   	public function dateToDecimal($dateString) {
-  	  $date = DateTime::createFromFormat('m/d/Y', $dateString);
+
+  	  $date = $this->verifyDate($dateString);
+      if ($date === NULL) {
+        return $date;
+      }
+
       return $date->format("Y") + ($this->getDaysElapsed($date)) / 365.0;
     }
 
