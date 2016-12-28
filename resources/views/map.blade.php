@@ -98,7 +98,7 @@
           <input id = "contour-toggle-button" type="checkbox" name="overlayToggle"/>
         </div>
         <div class="overlay-toggle">
-          <label>GPS Stations</label>
+          <label>GPS Stations (UNR)</label>
           <input id = "gps-stations-toggle-button" type="checkbox" name="overlayToggle"/>
         </div>
       </div>
