@@ -6,6 +6,28 @@ use DateTime;
 
 class DateFormatter 
 {
+    /**
+    * Credits: http://stackoverflow.com/questions/19271381/correctly-determine-if-date-string-is-a-valid-date-in-that-format
+    *
+    * Given a string containing information on a date, check if string converts to valid date.
+    * Currently this function supports two formats: (1) mm/dd/yyyy (2) yyyymmdd
+    *
+    * @param string $dateString - format is either mm/dd/yyyy (ex: 12/19/2010) or yyyymmdd 20101219
+    * @return DateTime object if dateString contains valid date, NULL if invalid
+    */
+    public function verifyDate($dateString) {
+
+      $date = DateTime::createFromFormat('m/d/Y', $dateString);
+      print_r("about to print m/d/Y date");
+      if ($date && $date->format('Y-m-d') === $date) {
+        print_r("got a date in m/d/Y");
+        return $date;
+      }
+
+      print_r("date was invalid");
+      return NULL;
+    }
+
   	/**
   	* Given a string containing information on a date, return decimal version of that date
   	*

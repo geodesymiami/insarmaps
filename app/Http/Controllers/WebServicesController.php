@@ -248,23 +248,27 @@ class WebServicesController extends Controller
       $outputType = "json";
 
       foreach ($requests as $key => $value) {
-        if ($key == "latitude") {
-          $latitude = $value ;
-        }
-        else if ($key == "longitude") {
-          $longitude = $value ;
-        }
-        else if ($key == "dataset") {
-          $dataset = $value;
-        }
-        else if ($key == "minDate") {
-          $minDate = $value;
-        }
-        else if ($key == "maxDate") {
-          $maxDate = $value;
-        }
-        else if ($key == "outputType") {
-          $outputType = $value;
+        switch ($key) {
+          case 'latitude':
+            $latitude = $value;
+            break;
+          case 'longitude':
+            $longitude = $value;
+            break;
+          case 'dataset':
+            $dataset = $value;
+            break;
+          case 'minDate':
+            $minDate = $value;
+            break;
+          case 'maxDate':
+            $maxDate = $value;
+            break;
+          case 'outputType':
+            $outputType = $value;
+            break;
+          default:
+            break;
         }
       }
 
