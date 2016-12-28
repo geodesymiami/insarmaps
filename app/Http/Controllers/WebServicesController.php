@@ -366,8 +366,13 @@ class WebServicesController extends Controller
       return array("m"=>$m, "b"=>$b);
     }
 
-    public function renderView() {
-      return view("webServices");
+    // TODO: pass needed names of URL parameters (might need a loop and the separate class I told you about). let me show how to access variables from 
+    public function renderView(Request $request) {
+      $requests = $request->all();
+      $len = count($requests);
+      print_r($requests);
+
+      return view("webServices", $requests);
     }
 
 }
