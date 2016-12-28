@@ -880,9 +880,7 @@ $(window).load(function() {
     });
 
     $("#reset-button").on("click", function() {
-        if (myMap.pointsLoaded()) {
-            myMap.reset();
-        }
+        myMap.reset();
 
         myMap.map.flyTo({
             center: myMap.startingCoords,

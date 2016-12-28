@@ -156,7 +156,7 @@ function Map(loadJSONFunc) {
     });
 
     this.gpsStationPopup = new mapboxgl.Popup({
-        closeButton: false,
+        closeButton: true,
         closeOnClick: false
     });
 
@@ -952,6 +952,10 @@ function Map(loadJSONFunc) {
     };
 
     this.removePoints = function() {
+        if (!that.pointsLoaded()) {
+            return;
+        }
+
         that.map.removeSource("vector_layer_");
 
         for (var i = 0; i < that.layers_.length; i++) {
