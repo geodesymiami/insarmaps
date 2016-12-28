@@ -10,20 +10,21 @@ class DateFormatter
     * Credits: http://stackoverflow.com/questions/19271381/correctly-determine-if-date-string-is-a-valid-date-in-that-format
     *
     * Given a string containing information on a date, check if string converts to valid date.
-    * Currently this function supports two formats: (1) mm/dd/yyyy (2) yyyymmdd
+    * Currently this function supports two formats: 
+    * (1) yyyy-mm-dd for SSARA webservice, (2) yyyymmdd for json query results
     *
-    * @param string $dateString - format is either mm/dd/yyyy (ex: 12/19/2010) or yyyymmdd 20101219
+    * @param string $dateString - format is either yyyy-mm-dd (ex: 2010-12-19) or yyyymmdd 20101219
     * @return DateTime object if dateString contains valid date, NULL if invalid
     */
     public function verifyDate($dateString) {
 
       /** two cases of error to check for:
-      * 1) invalid date - example is mm/dd/yyyy = 12/40/2010, 40th day of December is nonexistent
+      * 1) invalid date - example is yyyy-mm-dd = 2010-12-40, 40th day of December is nonexistent
       *    in this case warning_count = 1 and error_count = 0
       * 2) incomplete data - example is yyyymmdd = 201012, day is nonexistent
       *    in this case warning_count = 0 and error_count = 1
       */
-      $date = DateTime::createFromFormat('m/d/Y', $dateString);
+      $date = DateTime::createFromFormat('Y-m-d', $dateString);
       $errors = DateTime::getLastErrors();
       if ($errors['warning_count'] == 0 && $errors['error_count'] == 0) {
         return $date;
@@ -41,8 +42,8 @@ class DateFormatter
   	/**
   	* Given a string containing information on a date, return decimal version of that date
   	*
-  	* @param string $dateString - can be one of two formats: (1) mm/dd/yyyy (2) yyyymmdd
-  	* @return float - (ex: 2010.9671232877 -> converted from 12/19/2010 or 20101219)
+  	* @param string $dateString - can be one of two formats: (1) yyyy-mm-dd (2) yyyymmdd
+  	* @return float - (ex: 2010.9671232877 -> converted from 2010-12-19 or 20101219)
   	*/
   	public function dateToDecimal($dateString) {
 

@@ -278,8 +278,9 @@ class WebServicesController extends Controller
       }
 
       // check if startTime and endTime are valid, if not return json object with error message
+      // webservice dates must follow SSARA format yyyy-mm-dd
       if ($this->dateFormatter->verifyDate($startTime) === NULL || $this->dateFormatter->verifyDate($endTime) === NULL) {
-        $error["error"] = "invalid startTime or endTime - please input date in format mm/dd/yyyy (ex: 12/16/2010) or yyyymmdd (ex: 20101612)";
+        $error["error"] = "invalid startTime or endTime - please input date in format yyyy-mm-dd (ex: 2010-12-19)";
         return json_encode($error);
       }
 
