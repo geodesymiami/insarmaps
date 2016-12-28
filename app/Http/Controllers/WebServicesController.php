@@ -19,6 +19,7 @@ class WebServicesController extends Controller
     public function __construct() {
       $this->arrayFormatter = new PostgresArrayFormatter();
       $this->dateFormatter = new DateFormatter();
+      $this->requestFormatter = new requestFormatter();
     }
 
     private function getDisplacementChartData($displacements, $stringDates) {
@@ -170,18 +171,19 @@ class WebServicesController extends Controller
       return $minAndendTimeIndices;
     }  
 
+    // given a request, check if it contains enough parameters
 
     // given a dataset name and point, returns json array containing
     // decimaldates, stringdates, and displacement values of that point
     public function createJsonArray($dataset, $point, $startTime, $endTime) {
       $json = [];
-      $decimal_dates = null;
-      $string_dates = null;
+      $decimal_dates = NULL;
+      $string_dates = NULL;
       $displacements = $point->d;
 
-      $startTimeIndex = -1;
-      $endTimeIndex = -1;
-      $minAndendTimeIndices = null;
+      $startTimeIndex = NULL;
+      $endTimeIndex = NULL;
+      $minAndendTimeIndices = NULL;
 
       $query = "SELECT decimaldates, stringdates FROM area WHERE unavco_name like ?";
       $dateInfos = DB::select($query, [$dataset]);
@@ -203,7 +205,7 @@ class WebServicesController extends Controller
 
       // * TODO: create a function to check if startTime and endTime inputted by user is valid
       // current condition of checking for -1 is insufficient placeholder
-      if ($startTime != -1 && $endTime != -1) {
+      if ($startTime !== NULL && $endTime !== NULL) {
         // convert startTime and endTime into decimal dates
         $startTime = $this->dateFormatter->dateToDecimal($startTime);
         $endTime = $this->dateFormatter->dateToDecimal($endTime);
@@ -367,12 +369,12 @@ class WebServicesController extends Controller
     }
 
     // TODO: pass needed names of URL parameters (might need a loop and the separate class I told you about). let me show how to access variables from 
-    public function renderView(Request $request) {
-      $requests = $request->all();
-      $len = count($requests);
+    public function renderView() {
+      
+      $requests = $this->requestFormatter;
       print_r($requests);
-
-      return view("webServices", $requests);
+      
+      return view("webServices");
     }
 
 }
