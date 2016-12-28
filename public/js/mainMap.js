@@ -150,7 +150,15 @@ function Map(loadJSONFunc) {
         closeOnClick: false
     });
 
-    this.gpsStationPopup = new mapboxgl.Popup({ closeOnClick: true });
+    this.gpsStationNamePopup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false
+    });
+
+    this.gpsStationPopup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false
+    });
 
     this.disableInteractivity = function() {
         that.map.dragPan.disable();
@@ -180,8 +188,8 @@ function Map(loadJSONFunc) {
 
         if (feature.layer.id == "gpsStations") {
             var coordinates = feature.geometry.coordinates;
-            var popup = new mapboxgl.Popup({ closeOnClick: true })
-                .setLngLat(coordinates)
+            that.gpsStationPopup.remove();
+            that.gpsStationPopup.setLngLat(coordinates)
                 .setHTML(feature.properties.popupHTML)
                 .addTo(that.map);
 
@@ -488,8 +496,8 @@ function Map(loadJSONFunc) {
 
         if (firstFeature.layer.id == "gpsStations") {
             var coordinates = firstFeature.geometry.coordinates;
-            var popup = new mapboxgl.Popup({ closeOnClick: true })
-                .setLngLat(coordinates)
+            that.gpsStationPopup.remove();
+            that.gpsStationPopup.setLngLat(coordinates)
                 .setHTML(firstFeature.properties.popupHTML)
                 .addTo(that.map);
 
@@ -781,7 +789,7 @@ function Map(loadJSONFunc) {
             // mouse not under a marker, clear all popups
             if (!features.length) {
                 that.areaPopup.remove();
-                that.gpsStationPopup.remove();
+                that.gpsStationNamePopup.remove();
                 that.areaMarkerLayer.resetSizeOfModifiedMarkers();
                 return;
             }
@@ -791,10 +799,9 @@ function Map(loadJSONFunc) {
             var markerSymbol = features[0].properties["marker-symbol"];
 
             if (features[0].layer.id == "gpsStations") {
-                that.gpsStationPopup.remove();
+                that.gpsStationNamePopup.remove();
                 var coordinates = features[0].geometry.coordinates;
-                that.gpsStationPopup = new mapboxgl.Popup({ closeOnClick: true })
-                    .setLngLat(coordinates)
+                that.gpsStationNamePopup.setLngLat(coordinates)
                     .setHTML(features[0].properties.stationName)
                     .addTo(that.map);
 
@@ -1021,7 +1028,13 @@ function Map(loadJSONFunc) {
     this.reset = function() {
         that.removePoints();
         that.removeTouchLocationMarkers();
-        that.elevationPopup.remove(); // incase it's up
+        // incase they are up
+        that.elevationPopup.remove();
+        that.gpsStationPopup.remove();
+        that.gpsStationNamePopup.remove();
+
+        that.removeGPSStationMarkers();
+        gpsStationsToggleButton.set("off");
 
         that.loadAreaMarkers();
 

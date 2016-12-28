@@ -171,6 +171,8 @@ function getGEOJSON(area) {
             myMap.addGPSStationMarkers(gpsStations);
         }
 
+        // in case it's up
+        myMap.gpsStationPopup.remove();
         window.setTimeout(function() {
             var zoom = 8.0;
 
@@ -975,7 +977,7 @@ $(window).load(function() {
     prepareButtonsToHighlightOnHover();
 
     $("#download-as-text-button").click(function() {
-        window.open("/textFile/" + currentArea.unavco_name +
+        window.open("/textFile/" + currentArea.properties.unavco_name +
             "/" + currentPoint);
     });
 
