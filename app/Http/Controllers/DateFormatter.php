@@ -18,13 +18,11 @@ class DateFormatter
     public function verifyDate($dateString) {
 
       $date = DateTime::createFromFormat('m/d/Y', $dateString);
-      print_r("about to print m/d/Y date");
-      if ($date && $date->format('Y-m-d') === $date) {
-        print_r("got a date in m/d/Y");
+      $errors = DateTime::getLastErrors();
+      if ($errors['warning_count'] == 0) {
         return $date;
       }
-
-      print_r("date was invalid");
+     
       return NULL;
     }
 

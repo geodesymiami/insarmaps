@@ -277,6 +277,12 @@ class WebServicesController extends Controller
         $outputType = "json";
       }
 
+      // check if minDate is valid
+      if ($this->dateFormatter->verifyDate($minDate) === NULL) {
+        print_r("minDate is not valid");
+        return;
+      }
+
       // perform query to get point objects within +/- delta range of (longitude, latitude)
       // delta = range of error for latitude and longitude values, can be changed as needed
       $delta = 0.0005;
