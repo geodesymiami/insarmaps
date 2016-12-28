@@ -31,3 +31,4 @@ Route::post("/adminPanel/setPermissions/", "AdminPanelController@postSetUserPerm
 Route::get("/test/{table}/{table2}", "PermissionsController@getAllUserPermissions");
 // web services
 Route::get("/WebServices/", "WebServicesController@processRequest");
+Route::get("/WebServicesUI/", "WebServicesController@renderView");

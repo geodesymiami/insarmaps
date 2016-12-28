@@ -366,4 +366,8 @@ class WebServicesController extends Controller
       return array("m"=>$m, "b"=>$b);
     }
 
+    public function renderView() {
+      return view("webServices");
+    }
+
 }
