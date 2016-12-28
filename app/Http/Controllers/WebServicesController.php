@@ -143,15 +143,15 @@ class WebServicesController extends Controller
 
     // given a decimal format min and max date range, return indices of dates 
     // that best correspond to min and max from an array of valid decimal dates 
-    public function getDateIndices($minDate, $maxDate, $arrayOfDates) {
+    public function getDateIndices($startTime, $endTime, $arrayOfDates) {
       $minIndex = 0;
       $maxIndex = 0;
       $currentDate = 0; 
-      $minAndMaxDateIndices = []; 
+      $minAndendTimeIndices = []; 
    
       for ($i = 0; $i < count($arrayOfDates); $i++) {
         $currentDate = $arrayOfDates[$i];
-        if ($currentDate >= $minDate) {
+        if ($currentDate >= $startTime) {
           $minIndex = $i;
           break;
         }
@@ -159,29 +159,29 @@ class WebServicesController extends Controller
 
       for ($i = 0; $i < count($arrayOfDates); $i++) {
         $currentDate = $arrayOfDates[$i];
-        if ($currentDate < $maxDate) {
+        if ($currentDate < $endTime) {
           $maxIndex = $i + 1;
         }
       }
 
-      array_push($minAndMaxDateIndices, $minIndex);
-      array_push($minAndMaxDateIndices, $maxIndex);
+      array_push($minAndendTimeIndices, $minIndex);
+      array_push($minAndendTimeIndices, $maxIndex);
 
-      return $minAndMaxDateIndices;
+      return $minAndendTimeIndices;
     }  
 
 
     // given a dataset name and point, returns json array containing
     // decimaldates, stringdates, and displacement values of that point
-    public function createJsonArray($dataset, $point, $minDate, $maxDate) {
+    public function createJsonArray($dataset, $point, $startTime, $endTime) {
       $json = [];
       $decimal_dates = null;
       $string_dates = null;
       $displacements = $point->d;
 
-      $minDateIndex = -1;
-      $maxDateIndex = -1;
-      $minAndMaxDateIndices = null;
+      $startTimeIndex = -1;
+      $endTimeIndex = -1;
+      $minAndendTimeIndices = null;
 
       $query = "SELECT decimaldates, stringdates FROM area WHERE unavco_name like ?";
       $dateInfos = DB::select($query, [$dataset]);
@@ -196,31 +196,31 @@ class WebServicesController extends Controller
       $string_dates = $this->arrayFormatter->postgresToPHPFloatArray($string_dates);
       $displacements = $this->arrayFormatter->postgresToPHPFloatArray($displacements);
 
-      // * Select dates that best match minDate and maxDate - if not specified, minDate is first date
-      // and maxDate is last date in decimaldates and stringdates
-      // * Currently we are not accounting for condition where user specifies a minDate but no maxDate,
-      // or a maxDate but no minDate
+      // * Select dates that best match startTime and endTime - if not specified, startTime is first date
+      // and endTime is last date in decimaldates and stringdates
+      // * Currently we are not accounting for condition where user specifies a startTime but no endTime,
+      // or a endTime but no startTime
 
-      // * TODO: create a function to check if minDate and maxDate inputted by user is valid
+      // * TODO: create a function to check if startTime and endTime inputted by user is valid
       // current condition of checking for -1 is insufficient placeholder
-      if ($minDate != -1 && $maxDate != -1) {
-        // convert minDate and maxDate into decimal dates
-        $minDate = $this->dateFormatter->dateToDecimal($minDate);
-        $maxDate = $this->dateFormatter->dateToDecimal($maxDate);
-        $minAndMaxDateIndices = $this->getDateIndices($minDate, $maxDate, $decimal_dates);
-        $minDateIndex = $minAndMaxDateIndices[0];
-        $maxDateIndex = $minAndMaxDateIndices[1];
+      if ($startTime != -1 && $endTime != -1) {
+        // convert startTime and endTime into decimal dates
+        $startTime = $this->dateFormatter->dateToDecimal($startTime);
+        $endTime = $this->dateFormatter->dateToDecimal($endTime);
+        $minAndendTimeIndices = $this->getDateIndices($startTime, $endTime, $decimal_dates);
+        $startTimeIndex = $minAndendTimeIndices[0];
+        $endTimeIndex = $minAndendTimeIndices[1];
       } 
-      else {  // otherwise we set minDate and maxDate to default date array in specified dataset
-        $minDateIndex = 0;
-        $maxDateIndex = count($decimal_dates);
+      else {  // otherwise we set startTime and endTime to default date array in specified dataset
+        $startTimeIndex = 0;
+        $endTimeIndex = count($decimal_dates);
       }
 
       // put dates and displacement into json, limited by range 
-      // minDateIndex to (maxDateIndex - minDateIndex + 1)
-      $json["decimal_dates"] = array_slice($decimal_dates, $minDateIndex, ($maxDateIndex - $minDateIndex + 1));
-      $json["string_dates"] = array_slice($string_dates, $minDateIndex, ($maxDateIndex - $minDateIndex + 1));
-      $json["displacements"] = array_slice($displacements, $minDateIndex, ($maxDateIndex - $minDateIndex + 1));
+      // startTimeIndex to (endTimeIndex - startTimeIndex + 1)
+      $json["decimal_dates"] = array_slice($decimal_dates, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
+      $json["string_dates"] = array_slice($string_dates, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
+      $json["displacements"] = array_slice($displacements, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
 
       return $json;
     }
@@ -229,7 +229,7 @@ class WebServicesController extends Controller
     // main entry point into web services
     // * given a latitude, longitude, and dataset - return json array for stringdates, decimaldates,
     // and displacements of point that corresponds to input data or return null if data is invalid
-    // * user also has option of sending a minDate and maxDate to specify the range of dates they would
+    // * user also has option of sending a startTime and endTime to specify the range of dates they would
     // like to view data from - this range is by default set to the first and last date of the dataset
     // * user can also specify outputType, which should be json or plot - default value results in json,
     // if not specified or if specification is invalid, revert to default value
@@ -239,12 +239,12 @@ class WebServicesController extends Controller
       $len = count($requests);
 
       // we need latitude, longitude, dataset
-      // optional request vaues are minDate, maxDate, outPutType (either "json" or "plot")
+      // optional request vaues are startTime, endTime, outPutType (either "json" or "plot")
       $latitude = 0.0;
       $longitude = 0.0;
       $dataset = "";
-      $minDate = -1;
-      $maxDate = -1;
+      $startTime = -1;
+      $endTime = -1;
       $outputType = "json";
 
       foreach ($requests as $key => $value) {
@@ -258,11 +258,11 @@ class WebServicesController extends Controller
           case 'dataset':
             $dataset = $value;
             break;
-          case 'minDate':
-            $minDate = $value;
+          case 'startTime':
+            $startTime = $value;
             break;
-          case 'maxDate':
-            $maxDate = $value;
+          case 'endTime':
+            $endTime = $value;
             break;
           case 'outputType':
             $outputType = $value;
@@ -277,9 +277,9 @@ class WebServicesController extends Controller
         $outputType = "json";
       }
 
-      // check if minDate and maxDate are valid, if not return json object with error message
-      if ($this->dateFormatter->verifyDate($minDate) === NULL || $this->dateFormatter->verifyDate($maxDate) === NULL) {
-        $error["error"] = "invalid minDate or maxDate - please input date in format mm/dd/yyyy (ex: 12/16/2010) or yyyymmdd (ex: 20101612)";
+      // check if startTime and endTime are valid, if not return json object with error message
+      if ($this->dateFormatter->verifyDate($startTime) === NULL || $this->dateFormatter->verifyDate($endTime) === NULL) {
+        $error["error"] = "invalid startTime or endTime - please input date in format mm/dd/yyyy (ex: 12/16/2010) or yyyymmdd (ex: 20101612)";
         return json_encode($error);
       }
 
@@ -315,7 +315,7 @@ class WebServicesController extends Controller
 
       // * Currently we hardcode by picking the first point in the $points array
       // in future we will come up with algorithm to get the closest point
-      $json = $this->createJsonArray($dataset, $points[0], $minDate, $maxDate);
+      $json = $this->createJsonArray($dataset, $points[0], $startTime, $endTime);
 
       // by default we return json; only if outputType = plot, we return plot
       if (strcasecmp($outputType, "plot") == 0) {
