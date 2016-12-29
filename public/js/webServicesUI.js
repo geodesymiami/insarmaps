@@ -32,18 +32,13 @@ $(window).load(function(){
   	// ex: http://homestead.app/WebServices?longitude=131.67&latitude=32.53&dataset=Alos_SM_72_2970_2980_20070205_20110403&startTime=1990-12-20&endTime=2020-12-20&outputType=plot
   	if (longitude.length > 0 && latitude.length > 0 && dataset.length > 0) {
 		query += "longitude=" + longitude + "&latitude=" + latitude + "&dataset=" + dataset;
-		console.log(query);
+		$("#form-webservice-url").val(query);
+		// console.log(query);
   	} 
   	else {
   	  console.log("Error: please input all required parameters");
   	}
 
-  	// Logic for query
-  	/* 
-  	$query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $dataset . "
-            WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . 
-            " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
-    */
   });
 
 });

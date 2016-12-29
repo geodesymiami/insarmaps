@@ -33,5 +33,10 @@
 	<div id="enter-button">
         <button class="btn btn-primary-outline clickable-button">Enter</button>
     </div>
+
+    <div class="form-group">
+		webservice url:
+		<input type="text" class="form-control" placeholder="http://homestead.app/WebServices?longitude=131.67&latitude=32.53&dataset=Alos_SM_72_2970_2980_20070205_20110403&startTime=1990-12-20& endTime=2020-12-20&outputType=plot" id="form-webservice-url">
+	</div>
 </div>
 @endsection
