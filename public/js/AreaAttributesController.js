@@ -3,16 +3,27 @@ function AreaAttributesController(map, area) {
 
     this.map = map;
     this.attributes = null;
-    this.datesArray = JSON.parse(area.properties.decimal_dates);
+    this.datesArray = null;
     this.colorOnPosition = false;
 
+    // returns json of the property, if string converts to json, otherwise
+    // returns the property itself
+    this.propertyToJSON = function(property) {
+        if (typeof property == "string") {
+            return JSON.parse(property);
+        }
+
+        return property;
+    };
+
+    this.datesArray = this.propertyToJSON(area.properties.decimal_dates);
     this.constructAttributes = function() {
         // attributes should be an array, extraAttributes should be an object
         // let's just add all the key values from attributes to extraAttributes
-        var attributeKeys = JSON.parse(area.properties.attributekeys);
-        var attributeValues = JSON.parse(area.properties.attributevalues);
+        var attributeKeys = that.propertyToJSON(area.properties.attributekeys);
+        var attributeValues = that.propertyToJSON(area.properties.attributevalues);
 
-        var extraAttributes = JSON.parse(area.properties.extra_attributes);
+        var extraAttributes = that.propertyToJSON(area.properties.extra_attributes);
 
         // use extraAttributes dictionary to save having to copy it's keys
         if (extraAttributes) {
@@ -77,5 +88,10 @@ function AreaAttributesController(map, area) {
                 that.map.refreshDataset();
             }
         }
+    };
+
+    this.setArea = function(area) {
+        that.area = area;
+        that.attributes = that.constructAttributes();
     };
 }
