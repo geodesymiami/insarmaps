@@ -19,7 +19,7 @@ class WebServicesController extends Controller
     public function __construct() {
       $this->arrayFormatter = new PostgresArrayFormatter();
       $this->dateFormatter = new DateFormatter();
-      $this->requestFormatter = new requestFormatter();
+      $this->requestFormatter = new RequestFormatter();
     }
 
     private function getDisplacementChartData($displacements, $stringDates) {
