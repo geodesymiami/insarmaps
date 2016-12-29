@@ -31,14 +31,13 @@ $(window).load(function(){
   	// check required parameters are not empty - if so construct webservice url
   	// ex: http://homestead.app/WebServices?longitude=131.67&latitude=32.53&dataset=Alos_SM_72_2970_2980_20070205_20110403&startTime=1990-12-20&endTime=2020-12-20&outputType=plot
   	if (longitude.length > 0 && latitude.length > 0 && dataset.length > 0) {
-		query += "longitude=" + longitude + "&latitude=" + latitude + "&dataset=" + dataset;
-		$("#form-webservice-url").val(query);
-		// console.log(query);
+	  query += "longitude=" + longitude + "&latitude=" + latitude + "&dataset=" + dataset;
   	} 
   	else {
-  	  console.log("Error: please input all required parameters");
+      query = "Error: please input all required parameters";
   	}
 
+  	$("#form-webservice-url").val(query);
   });
 
 });
