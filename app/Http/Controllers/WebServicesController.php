@@ -245,8 +245,8 @@ class WebServicesController extends Controller
       $latitude = 0.0;
       $longitude = 0.0;
       $dataset = "";
-      $startTime = -1;
-      $endTime = -1;
+      $startTime = NULL;  // originally -1
+      $endTime = NULL;
       $outputType = "json";
 
       foreach ($requests as $key => $value) {
@@ -279,11 +279,17 @@ class WebServicesController extends Controller
         $outputType = "json";
       }
 
-      // check if startTime and endTime are valid, if not return json object with error message
+      // TODO: check for condition where startTime is inputted by user but endTime is not
+      // currently system only gets specific dates if startTime and endTime are BOTH specified
+
+      // check if startTime and endTime were inputted by user
+      // if so, check if they are valid, if not valid return json object with error message
       // webservice dates must follow SSARA format yyyy-mm-dd
-      if ($this->dateFormatter->verifyDate($startTime) === NULL || $this->dateFormatter->verifyDate($endTime) === NULL) {
-        $error["error"] = "invalid startTime or endTime - please input date in format yyyy-mm-dd (ex: 2010-12-19)";
-        return json_encode($error);
+      if ($startTime !== NULL && $endTime !== NULL) {
+        if ($this->dateFormatter->verifyDate($startTime) === NULL || $this->dateFormatter->verifyDate($endTime) === NULL) {
+          $error["error"] = "invalid startTime or endTime - please input date in format yyyy-mm-dd (ex: 2010-12-19)";
+          return json_encode($error);
+        }
       }
 
       // perform query to get point objects within +/- delta range of (longitude, latitude)
