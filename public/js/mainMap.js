@@ -618,7 +618,7 @@ function Map(loadJSONFunc) {
             for (var i = 0; i < json.areas.length; i++) {
                 var area = json.areas[i];
 
-                if (toExclude != null && toExclude.indexOf(area.unavco_name) != -1) {
+                if (toExclude != null && toExclude.indexOf(area.properties.unavco_name) != -1) {
                     continue;
                 }
 
@@ -629,7 +629,7 @@ function Map(loadJSONFunc) {
                 attributesController.setArea(area);
                 var attributes = attributesController.getAllAttributes();
                 // hard coded for now, as we had a bug in converter
-                var scene_footprint = "POLYGON ((98.2612 2.4461,97.9933 3.7382,98.7351 3.8937,99.0021 2.6028,98.2612 2.4461))";
+                var scene_footprint = attributes.scene_footprint;
                 var polygonGeojson = Terraformer.WKT.parse(scene_footprint);
 
                 var id = "areas" + i;
@@ -644,6 +644,7 @@ function Map(loadJSONFunc) {
                     "properties": {
                         "marker-symbol": "marker",
                         "layerID": id,
+                        "centerOfDataset": area.coords,
                         "unavco_name": properties.unavco_name,
                         "region": properties.region,
                         "project_name": properties.project_name,
@@ -822,6 +823,8 @@ function Map(loadJSONFunc) {
                 // make the html table
                 var previewButtonIDSuffix = "_preview_attribues";
 
+                that.areaMarkerLayer.resetHighlightsOfAllMarkers();
+                that.areaMarkerLayer.setPolygonHighlighted(features[0].properties.layerID, "rgba(0, 0, 255, 0.3)");
                 for (var i = 0; i < features.length; i++) {
                     var unavco_name = features[i].properties.unavco_name;
 
@@ -830,8 +833,6 @@ function Map(loadJSONFunc) {
                     }
 
                     var markerID = features[i].properties.layerID;
-
-                    that.areaMarkerLayer.setPolygonHighlighted(markerID, "rgba(0, 0, 255, 0.3)");
 
                     var region = features[i].properties.region;
 

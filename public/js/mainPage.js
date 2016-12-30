@@ -151,8 +151,8 @@ function getGEOJSON(area) {
 
     $("#color-scale").toggleClass("active");
 
-    // when we click, we don't reset the size of modified markers one final time
-    myMap.areaMarkerLayer.resetSizeOfModifiedMarkers();
+    // when we click, we don't reset the highlight of modified markers one final time
+    myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
 
     // set color scale
     var areaExtraAttributes = JSON.parse(area.properties.extra_attributes);
@@ -185,8 +185,12 @@ function getGEOJSON(area) {
             // first time a dataset is selected
             myMap.tileJSON = tileJSON;
 
-            var lat = area.geometry.coordinates[1];
-            var long = area.geometry.coordinates[0];
+            var centerOfDataset = JSON.parse(area.properties.centerOfDataset);
+            console.log(centerOfDataset);
+            // converter accidentally switched lat and long...
+            // TODO: fix that and rerun datasets when pysar2unavco is fully finished
+            var lat = centerOfDataset.longitude;
+            var long = centerOfDataset.latitude;
 
             myMap.map.flyTo({
                 center: [long, lat],
@@ -645,6 +649,7 @@ function search() {
             properties.extra_attributes = JSON.stringify(properties.extra_attributes);
             properties.attributekeys = JSON.stringify(properties.attributekeys);
             properties.attributevalues = JSON.stringify(properties.attributevalues);
+            properties.centerOfDataset = JSON.stringify(properties.centerOfDataset);
 
             $("#tableBody").append("<tr id=" + properties.unavco_name +
                 "><td value='" + properties.unavco_name + "''>" +

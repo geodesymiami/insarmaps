@@ -5,6 +5,7 @@ function AreaAttributesController(map, area) {
     this.attributes = null;
     this.datesArray = null;
     this.colorOnPosition = false;
+    this.area = area;
 
     // returns json of the property, if string converts to json, otherwise
     // returns the property itself
@@ -16,35 +17,31 @@ function AreaAttributesController(map, area) {
         return property;
     };
 
-    this.datesArray = this.propertyToJSON(area.properties.decimal_dates);
     this.constructAttributes = function() {
         // attributes should be an array, extraAttributes should be an object
         // let's just add all the key values from attributes to extraAttributes
-        var attributeKeys = that.propertyToJSON(area.properties.attributekeys);
-        var attributeValues = that.propertyToJSON(area.properties.attributevalues);
+        that.datesArray = that.propertyToJSON(that.area.properties.decimal_dates);
+        var attributeKeys = that.propertyToJSON(that.area.properties.attributekeys);
+        var attributeValues = that.propertyToJSON(that.area.properties.attributevalues);
 
-        var extraAttributes = that.propertyToJSON(area.properties.extra_attributes);
+        var extraAttributes = that.propertyToJSON(that.area.properties.extra_attributes);
 
-        // use extraAttributes dictionary to save having to copy it's keys
-        if (extraAttributes) {
-            for (var i = 0; i < attributeKeys.length; i++) {
-                var curKey = attributeKeys[i];
-                var curValue = attributeValues[i];
-
-                extraAttributes[curKey] = curValue;
-            }
-
-            return extraAttributes;
-        }
-
-        // no extra attributes, start with fresh dictionary
         var fullAttributes = [];
-
         for (var i = 0; i < attributeKeys.length; i++) {
             var curKey = attributeKeys[i];
             var curValue = attributeValues[i];
 
             fullAttributes[curKey] = curValue;
+        }
+
+        if (extraAttributes) {
+            for (var curKey in extraAttributes) {
+                if (extraAttributes.hasOwnProperty(curKey)) {
+                    fullAttributes[curKey] = extraAttributes[curKey];
+                }
+            }
+        } else {
+            console.log("its null");
         }
 
         return fullAttributes;
