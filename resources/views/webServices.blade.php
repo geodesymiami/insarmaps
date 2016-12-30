@@ -4,7 +4,19 @@
 @endsection
 @section('content')
 <div class="container-fluid">
-	<!-- Input parameters for webservice -->
+
+	<div id="webservice-explanation-paragraph">
+		<h4>Acceptable Values for Parameters:</h4>
+
+		<br>dataset should be in UNAVCO naming format: [mission]_[beam_mode]_[relative_orbit]_[first_frame]_[last_frame (if more than one frame)]_[first_date]_[last_date]. Ex: Alos_SM_72_2970_2980_20070205_20110403.
+		<br>longitude should be between -180.0 and 180.0. Ex: 131.67.
+		<br>latitude should be between -90.0 and 90.0. Ex: 32.53
+		<br>startTime should be in yyyy-mm-dd format. Ex: 1990-12-20.
+		<br>endTime should be in yyyy-mm-dd format. Ex: 2020-12-20.
+		<br>outputType should be json or plot.</br>
+		<br>
+	</div>
+
 	<div class="input-group">
 		longitude (required)
 		<input type="text" class="form-control" placeholder="131.67" id="input-longitude">
