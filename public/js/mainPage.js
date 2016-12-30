@@ -977,6 +977,10 @@ $(window).load(function() {
         }
     });
 
+    $("#webservices-ui-button").on("click", function() {
+        window.location = "/WebServicesUI";
+    });
+
     prepareButtonsToHighlightOnHover();
 
     $("#download-as-text-button").click(function() {

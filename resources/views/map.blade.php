@@ -252,6 +252,12 @@
             <button class="btn btn-primary-outline">Login</button>
           </div>          
         @endif
+        <p>
+          For accessing the data products via web services click here:
+        </p>
+        <div id="webservices-ui-button">
+          <button class="btn btn-primary-outline">Web Services</button>
+        </div>
         <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto">
         <img src="img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
         <div id="information-div-buttom-buttons">
