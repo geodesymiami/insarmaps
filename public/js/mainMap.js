@@ -613,6 +613,8 @@ function Map(loadJSONFunc) {
             };
             var features = [];
 
+            var attributesController = new AreaAttributesController(that, json.areas[0]);
+
             for (var i = 0; i < json.areas.length; i++) {
                 var area = json.areas[i];
 
@@ -624,28 +626,33 @@ function Map(loadJSONFunc) {
                 var long = area.coords.longitude;
                 console.log(area);
 
+                attributesController.setArea(area);
+                var attributes = attributesController.getAllAttributes();
+                // hard coded for now, as we had a bug in converter
+                var scene_footprint = "POLYGON ((98.2612 2.4461,97.9933 3.7382,98.7351 3.8937,99.0021 2.6028,98.2612 2.4461))";
+                var polygonGeojson = Terraformer.WKT.parse(scene_footprint);
+
                 var id = "areas" + i;
 
                 that.areaMarkerLayer.addLayer(id);
 
+                var properties = area.properties;
+
                 var feature = {
                     "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [lat, long]
-                    },
+                    "geometry": polygonGeojson,
                     "properties": {
                         "marker-symbol": "marker",
                         "layerID": id,
-                        "unavco_name": area.unavco_name,
-                        "region": area.region,
-                        "project_name": area.project_name,
-                        "num_chunks": area.num_chunks,
-                        "country": area.country,
-                        "decimal_dates": area.decimal_dates,
-                        "attributekeys": area.attributekeys,
-                        "attributevalues": area.attributevalues,
-                        "extra_attributes": area.extra_attributes
+                        "unavco_name": properties.unavco_name,
+                        "region": properties.region,
+                        "project_name": properties.project_name,
+                        "num_chunks": properties.num_chunks,
+                        "country": properties.country,
+                        "decimal_dates": properties.decimal_dates,
+                        "attributekeys": properties.attributekeys,
+                        "attributevalues": properties.attributevalues,
+                        "extra_attributes": properties.extra_attributes
                     }
                 };
 
@@ -669,11 +676,11 @@ function Map(loadJSONFunc) {
 
                 that.map.addLayer({
                     "id": id,
-                    "type": "symbol",
+                    "type": "fill",
                     "source": id,
-                    "layout": {
-                        "icon-image": "{marker-symbol}-15",
-                        "icon-allow-overlap": true
+                    "paint": {
+                        "fill-color": "rgba(0, 0, 255, 0.0)",
+                        "fill-outline-color": "rgba(0, 0, 255, 1.0)"
                     }
                 });
             };
@@ -790,7 +797,7 @@ function Map(loadJSONFunc) {
             if (!features.length) {
                 that.areaPopup.remove();
                 that.gpsStationNamePopup.remove();
-                that.areaMarkerLayer.resetSizeOfModifiedMarkers();
+                that.areaMarkerLayer.resetHighlightsOfAllMarkers();
                 return;
             }
 
@@ -815,8 +822,6 @@ function Map(loadJSONFunc) {
                 // make the html table
                 var previewButtonIDSuffix = "_preview_attribues";
 
-                features = that.getMarkersAtSameLocationAsMarker(features[0], features);
-
                 for (var i = 0; i < features.length; i++) {
                     var unavco_name = features[i].properties.unavco_name;
 
@@ -826,7 +831,7 @@ function Map(loadJSONFunc) {
 
                     var markerID = features[i].properties.layerID;
 
-                    that.areaMarkerLayer.setMarkerSize(markerID, 1.5);
+                    that.areaMarkerLayer.setPolygonHighlighted(markerID, "rgba(0, 0, 255, 0.3)");
 
                     var region = features[i].properties.region;
 
@@ -850,8 +855,7 @@ function Map(loadJSONFunc) {
                         " " + prettyNameAndComponents.missionType + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + "><b>?</div></td></tr>";
                 }
                 html += "</table>";
-                that.areaPopup.setLngLat(features[0].geometry.coordinates)
-                    .setHTML(html).addTo(that.map);
+
                 // make table respond to clicks
                 for (var i = 0; i < features.length; i++) {
                     var unavco_name = features[i].properties.unavco_name;

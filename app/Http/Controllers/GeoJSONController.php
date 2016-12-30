@@ -167,8 +167,8 @@ public function getAreas() {
       $project_name = $area->project_name;
 
       $currentArea = [];
-      $currentArea["unavco_name"] = $unavco_name;
-      $currentArea["project_name"] = $project_name;
+      $currentArea["properties"]["unavco_name"] = $unavco_name;
+      $currentArea["properties"]["project_name"] = $project_name;
 
       // do we have info for that area in the DB? if not, we assume it's public
       $curAreaPermissions = NULL;
@@ -182,19 +182,19 @@ public function getAreas() {
         if (in_array($curAreaPermission, $userPermissions)) {
           $currentArea["coords"]["latitude"] = $area->latitude;
           $currentArea["coords"]["longitude"] = $area->longitude;                
-          $currentArea["num_chunks"] = $area->numchunks;
-          $currentArea["country"] = $area->country;
-          $currentArea["attributekeys"] = $this->arrayFormatter->postgresToPHPArray($area->attributekeys);
-          $currentArea["attributevalues"] = $this->arrayFormatter->postgresToPHPArray($area->attributevalues);
-          $currentArea["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($area->decimaldates);
-          $currentArea["region"] = $area->region;
+          $currentArea["properties"]["num_chunks"] = $area->numchunks;
+          $currentArea["properties"]["country"] = $area->country;
+          $currentArea["properties"]["attributekeys"] = $this->arrayFormatter->postgresToPHPArray($area->attributekeys);
+          $currentArea["properties"]["attributevalues"] = $this->arrayFormatter->postgresToPHPArray($area->attributevalues);
+          $currentArea["properties"]["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($area->decimaldates);
+          $currentArea["properties"]["region"] = $area->region;
 
           $bindings = [$area->id];
 
           if (isset($extra_attributes[$area->id])) {
-            $currentArea["extra_attributes"] = $extra_attributes[$area->id];
+            $currentArea["properties"]["extra_attributes"] = $extra_attributes[$area->id];
           } else {
-            $currentArea["extra_attributes"] = NULL;
+            $currentArea["properties"]["extra_attributes"] = NULL;
           }
 
           array_push($json["areas"], $currentArea);
