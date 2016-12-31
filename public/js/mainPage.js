@@ -960,7 +960,7 @@ $(window).load(function() {
             myMap.colorScale.min = min;
             myMap.colorScale.max = min;
 
-            myMap.recolorPoints();
+            myMap.refreshDataset();
         }
     });
 });
