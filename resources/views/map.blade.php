@@ -165,6 +165,10 @@
       </div>
     </div>
   </div>
+  <div id="search-form">
+  </div>
+  <div id="search-form-results">
+  </div>
   <div class="wrap" id="charts" title="Displacement time-series">
     <div class="top-right-buttons">
       <button type="button" class="close close-button" data-dismiss="modal" aria-label="Close" id="graph-div-button"><span aria-hidden="true">&times;</span></button>
