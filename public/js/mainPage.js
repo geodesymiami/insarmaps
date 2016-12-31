@@ -158,7 +158,7 @@ function getGEOJSON(area) {
     var areaExtraAttributes = JSON.parse(area.properties.extra_attributes);
 
     myMap.colorScale.defaultValues(); // set default values in case they were modified by another area
-    myMap.setBaseMapLayer("streets");
+
     myMap.addDataset(tileJSON);
     var styleLoadFunc = function(event) {
         myMap.map.off("data", styleLoadFunc);
@@ -319,12 +319,12 @@ function switchLayer(layer) {
         }
 
         myMap.setBaseMapLayer(layerID);
-        myMap.addDataset(myMap.tileJSON);
 
         // finally, add back the click location marker, do on load of style to prevent
         // style not done loading error
         styleLoadFunc = function() {
             myMap.map.off("data", styleLoadFunc);
+            myMap.addDataset(myMap.tileJSON);
             if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
                 myMap.addGPSStationMarkers(gpsStations);
             }
