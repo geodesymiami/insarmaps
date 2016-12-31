@@ -158,8 +158,8 @@ function getGEOJSON(area) {
     var areaExtraAttributes = JSON.parse(area.properties.extra_attributes);
 
     myMap.colorScale.defaultValues(); // set default values in case they were modified by another area
-
-    myMap.initLayer(tileJSON, "streets");
+    myMap.setBaseMapLayer("streets");
+    myMap.addDataset(tileJSON);
     var styleLoadFunc = function(event) {
         myMap.map.off("data", styleLoadFunc);
         overlayToggleButton.set("on");
@@ -283,9 +283,7 @@ var ToggleStates = {
 }
 
 function switchLayer(layer) {
-    var layerId = layer.target.id;
-
-    var tileset = 'mapbox.' + layerId;
+    var layerID = layer.target.id;
     var styleLoadFunc = null;
 
     // we assume in this case that an area has been clicked
@@ -320,30 +318,8 @@ function switchLayer(layer) {
             }
         }
 
-        myMap.map.setStyle({
-            version: 8,
-            sprite: window.location.href + "maki/makiIcons",
-            glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
-            sources: {
-                "raster-tiles": {
-                    "type": "raster",
-                    "url": "mapbox://" + tileset,
-                    "tileSize": 256
-                },
-                'Mapbox Terrain V2': {
-                    type: 'vector',
-                    url: 'mapbox://mapbox.mapbox-terrain-v2'
-                },
-                'vector_layer_': {
-                    type: 'vector',
-                    tiles: myMap.tileJSON['tiles'],
-                    minzoom: myMap.tileJSON['minzoom'],
-                    maxzoom: myMap.tileJSON['maxzoom'],
-                    bounds: myMap.tileJSON['bounds']
-                }
-            },
-            layers: myMap.layers_
-        });
+        myMap.setBaseMapLayer(layerID);
+        myMap.addDataset(myMap.tileJSON);
 
         // finally, add back the click location marker, do on load of style to prevent
         // style not done loading error
@@ -414,23 +390,7 @@ function switchLayer(layer) {
         };
         myMap.map.on("data", styleLoadFunc);
     } else {
-        myMap.map.setStyle({
-            version: 8,
-            sprite: window.location.href + "maki/makiIcons",
-            glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
-            sources: {
-                "raster-tiles": {
-                    "type": "raster",
-                    "url": "mapbox://" + tileset,
-                    "tileSize": 256
-                },
-                'Mapbox Terrain V2': {
-                    type: 'vector',
-                    url: 'mapbox://mapbox.mapbox-terrain-v2'
-                },
-            },
-            layers: myMap.layers_
-        });
+        myMap.setBaseMapLayer(layerID);
 
         var id = "areas";
 

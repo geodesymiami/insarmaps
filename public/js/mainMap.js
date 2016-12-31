@@ -533,14 +533,52 @@ function Map(loadJSONFunc) {
         getGEOJSON(feature);
     };
 
+    this.setBaseMapLayer = function(mapType) {
+        var tileset = 'mapbox.' + mapType;
+        that.layers_ = [];
+
+        that.layers_.push({
+            "id": "simple-tiles",
+            "type": "raster",
+            "source": "raster-tiles",
+            "minzoom": 0,
+            "maxzoom": 22
+        });
+        that.map.setStyle({
+            version: 8,
+            sprite: window.location.href + "maki/makiIcons",
+            glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
+            sources: {
+                "raster-tiles": {
+                    "type": "raster",
+                    "url": "mapbox://" + tileset,
+                    "tileSize": 256
+                },
+                'Mapbox Terrain V2': {
+                    type: 'vector',
+                    url: 'mapbox://mapbox.mapbox-terrain-v2'
+                }
+            },
+            layers: that.layers_
+        });
+    };
+
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
-    this.initLayer = function(data, mapType) {
+    this.addDataset = function(data) {
         var layer;
         var layerList = document.getElementById('layerList');
         var stops = that.colorScale.getMapboxStops();
 
+        that.map.addSource('vector_layer_', {
+            type: 'vector',
+            tiles: data['tiles'],
+            minzoom: data['minzoom'],
+            maxzoom: data['maxzoom'],
+            bounds: data['bounds']
+        });
+
         data['vector_layers'].forEach(function(el) {
-            that.layers_.push({
+            var layer = {
                 id: el['id'] + Math.random(),
                 source: 'vector_layer_',
                 'source-layer': el['id'],
@@ -565,32 +603,9 @@ function Map(loadJSONFunc) {
                         ]
                     }
                 }
-            });
-        });
-        var tileset = 'mapbox.' + mapType;
-        that.map.setStyle({
-            version: 8,
-            sprite: window.location.href + "maki/makiIcons",
-            glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
-            sources: {
-                "raster-tiles": {
-                    "type": "raster",
-                    "url": "mapbox://" + tileset,
-                    "tileSize": 256
-                },
-                'Mapbox Terrain V2': {
-                    type: 'vector',
-                    url: 'mapbox://mapbox.mapbox-terrain-v2'
-                },
-                'vector_layer_': {
-                    type: 'vector',
-                    tiles: data['tiles'],
-                    minzoom: data['minzoom'],
-                    maxzoom: data['maxzoom'],
-                    bounds: data['bounds']
-                }
-            },
-            layers: that.layers_
+            }
+            that.layers_.push(layer);
+            that.map.addLayer(layer);
         });
 
         // remove click listener for selecting an area, and add new one for clicking on a point
@@ -749,31 +764,7 @@ function Map(loadJSONFunc) {
             that.loadAreaMarkers();
         });
 
-        var tileset = 'mapbox.streets';
-        that.layers_.push({
-            "id": "simple-tiles",
-            "type": "raster",
-            "source": "raster-tiles",
-            "minzoom": 0,
-            "maxzoom": 22
-        });
-        that.map.setStyle({
-            version: 8,
-            sprite: window.location.href + "maki/makiIcons",
-            glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
-            sources: {
-                "raster-tiles": {
-                    "type": "raster",
-                    "url": "mapbox://" + tileset,
-                    "tileSize": 256
-                },
-                'Mapbox Terrain V2': {
-                    type: 'vector',
-                    url: 'mapbox://mapbox.mapbox-terrain-v2'
-                }
-            },
-            layers: that.layers_
-        });
+        that.setBaseMapLayer("streets");
 
         that.map.addControl(new mapboxgl.NavigationControl());
 
