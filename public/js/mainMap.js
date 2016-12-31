@@ -911,11 +911,6 @@ function Map(loadJSONFunc) {
             }
         });
 
-        // handle zoom changed. we want to change the icon-size in the layer for varying zooms.
-        // if you notice, in tremaps, all the points are just one size, as if they were real, physical points.
-        // so, when you zoom out, the points appear to be smaller than when you are zoomed in. with the markers
-        // we are using, though, the marker icons are always the same size, so we can use that function to
-        // dynamically change the sizes depending on the current map zoom.
         that.map.on('zoomend', function() {
             console.log(that.map.getZoom());
 

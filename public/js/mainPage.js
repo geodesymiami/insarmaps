@@ -44,9 +44,6 @@ function AreaAttributesPopup() {
             "processing_type": true
         };
 
-        attributekeys = JSON.parse(area.properties.attributekeys);
-        attributevalues = JSON.parse(area.properties.attributevalues);
-
         var attributesController = new AreaAttributesController(myMap, area);
         var areaAttributes = attributesController.getAllAttributes();
         // console.log(areaAttributes);
@@ -154,9 +151,6 @@ function getGEOJSON(area) {
     // when we click, we don't reset the highlight of modified markers one final time
     myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
 
-    // set color scale
-    var areaExtraAttributes = JSON.parse(area.properties.extra_attributes);
-
     myMap.colorScale.defaultValues(); // set default values in case they were modified by another area
 
     myMap.addDataset(tileJSON);
@@ -186,7 +180,6 @@ function getGEOJSON(area) {
             myMap.tileJSON = tileJSON;
 
             var centerOfDataset = JSON.parse(area.properties.centerOfDataset);
-            console.log(centerOfDataset);
             // converter accidentally switched lat and long...
             // TODO: fix that and rerun datasets when pysar2unavco is fully finished
             var lat = centerOfDataset.longitude;
@@ -427,54 +420,7 @@ function setupToggleButtons() {
             }
 
             $("#overlay-slider").slider("value", 100);
-            myMap.map.addSource("vector_layer_", {
-                type: 'vector',
-                tiles: myMap.tileJSON['tiles'],
-                minzoom: myMap.tileJSON['minzoom'],
-                maxzoom: myMap.tileJSON['maxzoom'],
-                bounds: myMap.tileJSON['bounds']
-            });
-
-            // for (var i = 1; i < 24; i++) {
-            //     var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
-            //     myMap.tileJSON.vector_layers.push(layer);
-            // }
-            var stops = myMap.colorScale.getMapboxStops();
-
-            myMap.tileJSON["vector_layers"].forEach(function(el) {
-                myMap.layers_.push({
-                    id: el['id'] + Math.random(),
-                    source: 'vector_layer_',
-                    'source-layer': el['id'],
-                    type: 'circle',
-                    layout: {
-                        'visibility': 'visible'
-                    },
-                    paint: {
-                        'circle-color': {
-                            property: 'm',
-                            stops: stops
-                        },
-                        'circle-radius': {
-                            // for an explanation of this array see here:
-                            // https://www.mapbox.com/blog/data-driven-styling/
-                            stops: [
-                                [5, 2],
-                                [8, 2],
-                                [13, 8],
-                                [21, 16],
-                                [34, 32]
-                            ]
-                        }
-                    }
-                });
-            });
-
-            for (var i = 1; i < myMap.layers_.length; i++) {
-                var layer = myMap.layers_[i];
-
-                myMap.map.addLayer(layer);
-            }
+            myMap.addDataset(myMap.styleJSON);
 
             console.log("added that");
         } else {
