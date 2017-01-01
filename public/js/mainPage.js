@@ -156,6 +156,8 @@ function getGEOJSON(area) {
     myMap.addDataset(tileJSON);
     var styleLoadFunc = function(event) {
         myMap.map.off("data", styleLoadFunc);
+        myMap.removeAreaMarkers();
+
         overlayToggleButton.set("on");
         if (contourToggleButton.toggleState == ToggleStates.ON) {
             myMap.addContourLines();

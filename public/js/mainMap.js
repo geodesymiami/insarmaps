@@ -752,6 +752,13 @@ function Map(loadJSONFunc) {
         that.loadAreaMarkersExcluding(null);
     };
 
+    this.removeAreaMarkers = function() {
+        for (var i = 0; i < that.areaFeatures.length; i++) {
+            // see why we can't remove source here as well...
+            myMap.map.removeLayer(myMap.areaFeatures[i].properties.layerID);
+        }
+    };
+
     this.addMapToPage = function(containerID) {
         that.map = new mapboxgl.Map({
             container: containerID, // container id

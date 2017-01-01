@@ -49,11 +49,13 @@ function AreaMarkerLayer(map) {
     };
 
     this.setPolygonHighlighted = function(marker, highlightColor) {
-        that.map.map.setPaintProperty(marker, "fill-color", highlightColor);
+        if (that.map.map.getLayer(marker)) {
+            that.map.map.setPaintProperty(marker, "fill-color", highlightColor);
 
-        // if not previously marked as modified, mark as modified
-        if (that.modifiedLayers.indexOf(marker) == -1) {
-            that.modifiedLayers.push(marker);
+            // if not previously marked as modified, mark as modified
+            if (that.modifiedLayers.indexOf(marker) == -1) {
+                that.modifiedLayers.push(marker);
+            }
         }
     };
 
