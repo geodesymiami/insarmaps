@@ -166,6 +166,21 @@
     </div>
   </div>
   <div id="search-form">
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="Satellite" id="input-satellite">
+    </div>
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="Relative Orbit" id="input-relative-orbit">
+    </div>
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="frame" id="input-frame">
+    </div>
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="Mode" id="input-mode">
+    </div>
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="Flight Dir." id="input-flight-dir">
+    </div>
   </div>
   <div id="search-form-results">
   </div>
