@@ -34,6 +34,7 @@ class WebServicesController extends Controller
     */
     // INCONSISTENCY: we call param $stringDates but it is an array of doubles... 
     private function getDisplacementChartData($displacements, $stringDates) {
+
       $data = [];
       $len = count($stringDates);
       $unixDates = $this->dateFormatter->stringDatesArrayToUnixTimeStampArray($stringDates);
@@ -144,8 +145,9 @@ class WebServicesController extends Controller
 
       $json["series"][0]["data"] = $this->getDisplacementChartData($displacements, $stringDates);
 
-      // calculate velocity = slope of linear regression line 
-      $decimalDates = $this->dateFormatter->dateStringsToDecimalArray($stringDates);
+      // calculate slope of linear regression line 
+      $decimalDates = $this->dateFormatter->stringDatesToDecimalArray($stringDates);
+
       $result = $this->calcLinearRegressionLine($decimalDates, $displacements);
       $json["subtitle"]["text"] = "velocity: " . round($result["m"] * 1000, 2) . " mm/yr";
 
@@ -226,7 +228,7 @@ class WebServicesController extends Controller
 
       // convert SQL data from string to array format
       $decimal_dates = $this->arrayFormatter->postgresToPHPFloatArray($decimal_dates);
-      $string_dates = $this->arrayFormatter->postgresToPHPFloatArray($string_dates);
+      $string_dates = $this->arrayFormatter->postgresToPHPArray($string_dates);
       $displacements = $this->arrayFormatter->postgresToPHPFloatArray($displacements);
 
       // * Select dates that best match startTime and endTime - if not specified, startTime is first date
@@ -234,12 +236,10 @@ class WebServicesController extends Controller
       // * Currently we are not accounting for condition where user specifies a startTime but no endTime,
       // or a endTime but no startTime
 
-      // * TODO: create a function to check if startTime and endTime inputted by user is valid
-      // current condition of checking for -1 is insufficient placeholder
       if ($startTime !== NULL && $endTime !== NULL) {
         // convert startTime and endTime into decimal dates
-        $startTime = $this->dateFormatter->dateToDecimal($startTime);
-        $endTime = $this->dateFormatter->dateToDecimal($endTime);
+        $startTime = $this->dateFormatter->stringDateToDecimal($startTime);
+        $endTime = $this->dateFormatter->stringDateToDecimal($endTime);
         $minAndendTimeIndices = $this->getDateIndices($startTime, $endTime, $decimal_dates);
         $startTimeIndex = $minAndendTimeIndices[0];
         $endTimeIndex = $minAndendTimeIndices[1];
