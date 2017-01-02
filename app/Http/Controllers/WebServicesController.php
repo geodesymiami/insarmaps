@@ -8,11 +8,14 @@ use DateTime;
 use App\Http\Requests;
 use DB;
 
-// pChart library
 use CpChart\Factory\Factory;
 use Exception;
 
-// TODO: make all these date functions into own class - it's weird that they are here. also format graph to look better.
+// NOTE: We currently use 3 date formats between various dependencies in SQL, Highcharts, etc. 
+// 1) yyyy-mm-dd / string (ex: 2010-12-20)
+// 2) decimal (ex: 2010.97)
+// 3) unix timestamp (ex: 1170692925)
+// Hence whenever a parameter or return value is a date, specify format to avoid confusion
 
 class WebServicesController extends Controller
 {
@@ -22,6 +25,14 @@ class WebServicesController extends Controller
       $this->requestFormatter = new RequestFormatter();
     }
 
+    /**
+    * Return array containing x and y axis data to create ploy using Highcharts.js library
+    *
+    * @param array $stringDates - doubles representing dates in yyyy-mm-dd.0 format (ex: 20070808.0)
+    * @param array $displacements - double representing ground displacement in meters/year
+    * @return array $data - contains 2 arrays: $displacements and an array of unix dates
+    */
+    // INCONSISTENCY: we call param $stringDates but it is an array of doubles... 
     private function getDisplacementChartData($displacements, $stringDates) {
       $data = [];
       $len = count($stringDates);
@@ -35,6 +46,13 @@ class WebServicesController extends Controller
       return $data;
     }
 
+    /**
+    * Return Highcharts plot with x-axis = displacement and y-axis = date
+    *
+    * @param array $stringDates - strings representing dates in yyyy-mm-dd.0 format (ex: 20070808.0)
+    * @param array $displacements - doubles representing ground displacement in meters/year
+    * @return object $response - Highcharts plot object
+    */
     private function generatePlotPicture($displacements, $stringDates) {
       $jsonString = '{
         "title": {
@@ -99,7 +117,8 @@ class WebServicesController extends Controller
 
       // pass true to get associative array instead of std class object
       $json = json_decode($jsonString, true);
-      // debugging, remove when chart fully working
+
+      // debugging, remove when chart is fully working
       switch (json_last_error()) {
         case JSON_ERROR_NONE:
           break;
@@ -142,39 +161,51 @@ class WebServicesController extends Controller
       return $response;
     }
 
-    // given a decimal format min and max date range, return indices of dates 
-    // that best correspond to min and max from an array of valid decimal dates 
-    public function getDateIndices($startTime, $endTime, $arrayOfDates) {
+    /**
+    * Given an array of dates, return indices of dates that are closest to startTime and endTime
+    *
+    * @param string $startTime - lower boundary of dates in yyyy-mm-dd format
+    * @param string $endTime - upper boundary of dates in yyyy-mm-dd format
+    * @param array $decimalDates - dates in decimal format
+    * @return array $startAndEndTimeIndices - indices of dates closest to startTime and endTime
+    */
+    public function getDateIndices($startTime, $endTime, $decimalDates) {
       $minIndex = 0;
       $maxIndex = 0;
       $currentDate = 0; 
-      $minAndendTimeIndices = []; 
-   
-      for ($i = 0; $i < count($arrayOfDates); $i++) {
-        $currentDate = $arrayOfDates[$i];
+      $startAndEndTimeIndices = []; 
+      
+
+      for ($i = 0; $i < count($decimalDates); $i++) {
+        $currentDate = $decimalDates[$i];
         if ($currentDate >= $startTime) {
           $minIndex = $i;
           break;
         }
       }
 
-      for ($i = 0; $i < count($arrayOfDates); $i++) {
-        $currentDate = $arrayOfDates[$i];
+      for ($i = 0; $i < count($decimalDates); $i++) {
+        $currentDate = $decimalDates[$i];
         if ($currentDate < $endTime) {
           $maxIndex = $i + 1;
         }
       }
 
-      array_push($minAndendTimeIndices, $minIndex);
-      array_push($minAndendTimeIndices, $maxIndex);
+      array_push($startAndEndTimeIndices, $minIndex);
+      array_push($startAndEndTimeIndices, $maxIndex);
 
-      return $minAndendTimeIndices;
+      return $startAndEndTimeIndices;
     }  
 
-    // given a request, check if it contains enough parameters
-
-    // given a dataset name and point, returns json array containing
-    // decimaldates, stringdates, and displacement values of that point
+    /**
+    * Given a dataset name, point, returns json array containing data for a point within bounded time period
+    *
+    * @param string $dataset - name of dataset
+    * @param string $point - point in dataset that user searched for using webservice
+    * @param string $startTime - lower boundary of dates in yyyy-mm-dd format
+    * @param string $endTime - upper boundary of dates in yyyy-mm-dd format
+    * @return array $json - contains decimaldates, stringdates, and displacement of point
+    */
     public function createJsonArray($dataset, $point, $startTime, $endTime) {
       $json = [];
       $decimal_dates = NULL;
@@ -218,8 +249,7 @@ class WebServicesController extends Controller
         $endTimeIndex = count($decimal_dates);
       }
 
-      // put dates and displacement into json, limited by range 
-      // startTimeIndex to (endTimeIndex - startTimeIndex + 1)
+      // put dates and displacement into json, bounded from startTime to endTime indices
       $json["decimal_dates"] = array_slice($decimal_dates, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
       $json["string_dates"] = array_slice($string_dates, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
       $json["displacements"] = array_slice($displacements, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
@@ -227,28 +257,29 @@ class WebServicesController extends Controller
       return $json;
     }
 
-
-    // main entry point into web services
-    // * given a latitude, longitude, and dataset - return json array for stringdates, decimaldates,
-    // and displacements of point that corresponds to input data or return null if data is invalid
-    // * user also has option of sending a startTime and endTime to specify the range of dates they would
-    // like to view data from - this range is by default set to the first and last date of the dataset
-    // * user can also specify outputType, which should be json or plot - default value results in json,
-    // if not specified or if specification is invalid, revert to default value
+    /**
+    * Given a request object containing a url, return a json encoded array for data corresponding to point
+    * that best matches request parameters specified by user. Return null if parameters are invalid.
+    *
+    * @param Request $request - url containing parameters specified by user to search for a point in a dataset
+    * @return array $json - contains decimaldates, stringdates, and displacement of point
+    */
     public function processRequest(Request $request) {
       $json = [];
-      $requests = $request->all();
-      $len = count($requests);
 
-      // we need latitude, longitude, dataset
-      // optional request vaues are startTime, endTime, outPutType (either "json" or "plot")
+      // TODO: Change system for processRequest since user should not see json...set default value to plot?
+
+      // Mandatory request parameters: latitude, longitude, dataset
+      // Optional request parameters: startTime, endTime, outPutType
       $latitude = 0.0;
       $longitude = 0.0;
       $dataset = "";
-      $startTime = NULL;  // originally -1
-      $endTime = NULL;
-      $outputType = "json";
+      $startTime = NULL;  // if dataset is valid, default value will be set to first date in dataset
+      $endTime = NULL;  // if dataset is valid, default value will be set to last date in dataset 
+      $outputType = "json"; // default value is json
 
+      // extract parameter values from Request url
+      $requests = $request->all();
       foreach ($requests as $key => $value) {
         switch ($key) {
           case 'latitude':
@@ -283,8 +314,7 @@ class WebServicesController extends Controller
       // currently system only gets specific dates if startTime and endTime are BOTH specified
 
       // check if startTime and endTime were inputted by user
-      // if so, check if they are valid, if not valid return json object with error message
-      // webservice dates must follow SSARA format yyyy-mm-dd
+      // if so, check if they are in yyyy-mm-dd format, if not return json object with error message
       if ($startTime !== NULL && $endTime !== NULL) {
         if ($this->dateFormatter->verifyDate($startTime) === NULL || $this->dateFormatter->verifyDate($endTime) === NULL) {
           $error["error"] = "invalid startTime or endTime - please input date in format yyyy-mm-dd (ex: 2010-12-19)";
@@ -305,10 +335,11 @@ class WebServicesController extends Controller
       $p4_long = $longitude + $delta;
       $p5_lat = $latitude - $delta;
       $p5_long = $longitude - $delta;
+
       $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $dataset . "
             WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
 
-      // if query fails for some reason, return json object with error message
+      // if query fails, return json object with error message
       try {
         $points = DB::select(DB::raw($query));
       }
@@ -341,7 +372,7 @@ class WebServicesController extends Controller
     * linear regression function
     * @param $x array x-coords
     * @param $y array y-coords
-    * @returns array() m=>slope, b=>intercept
+    * @return array() m=>slope, b=>intercept
     */
     public static function calcLinearRegressionLine($x, $y) {
       // calculate number points
@@ -374,11 +405,14 @@ class WebServicesController extends Controller
       return array("m"=>$m, "b"=>$b);
     }
 
-
+    /**
+    * Return Laravel view object for webservice UI
+    *
+    * @return object $requestParameters - Laravel view object containing dictionary of webservice parameters
+    */
     public function renderView() {
       $requestParameters = $this->requestFormatter->getRequestParameters();
 
-      return view("webServices", ["requestParameters" => $requestParameters]); // here i send the parameter dictionary
+      return view("webServices", ["requestParameters" => $requestParameters]);
     }
-
 }
