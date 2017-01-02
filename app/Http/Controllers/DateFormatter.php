@@ -69,8 +69,7 @@ class DateFormatter
       $len = count($stringDates);
 
       for ($i = 0; $i < $len; $i++) {
-        $decimal_date = $this->stringDateToDecimal($stringDates[$i]);
-        array_push($decimalDates, $decimal_date);
+        array_push($decimalDates, $this->stringDateToDecimal($stringDates[$i]));
       }
    
       return $decimalDates;
@@ -85,6 +84,7 @@ class DateFormatter
     * @return string - number of days elapsed
     */
     public function getDaysElapsed($date) {
+
       $date2 = new DateTime();
       $date2->setDate($date->format("Y"), 1, 1);
       $interval = date_diff($date, $date2);
@@ -93,38 +93,34 @@ class DateFormatter
     }
 
     /**
-    * Given a DateTime object with year Y, return number of days elapsed from 
-    * beginning of year Y up to date specified by DateTime object
-    * Example: DateTime(2010-12-19) returns 353
+    * Given a string containing a date, return UNIX timestamp conversion of date
+    * We assume each string date is a valid date in yyyymmdd format since array is queried from database
     *
-    * @param DateTime $date
-    * @return string - number of days elapsed
+    * Example: "20070205" returns 1170708432
+    *
+    * @param string $stringDate
+    * @return integer - UNIX timestamp of $stringDate
     */
     public function stringDateToUnixTimestamp($stringDate) {
 
-      $parsedDate = explode("/", $stringDate);
-
-      // php dateTime object requires format yyyy-mm-dd
-      $date = new DateTime();
-      $date->setDate($parsedDate[0], $parsedDate[1], $parsedDate[2]);
-      
+      $date = $this->verifyDate($stringDate);
       return $date->getTimestamp();
     }
 
-    // TODO: Change format of stringDate here to yyyy-mm-dd so we can use above functions and save code
+    /**
+    * Given array of string dates, return array of UNIX timestamps converted from dates
+    * We assume each string date is a valid date in yyyymmdd format since array is queried from database
+    *
+    * @param array $stringDates
+    * @return array - UNIX timestamps
+    */
     public function stringDatesArrayToUnixTimeStampArray($stringDates) {
-      $len = count($stringDates);
-      $unixTimeStamps = [];
 
-       // dd($stringDates);
+      $unixTimeStamps = [];
+      $len = count($stringDates);
 
       for ($i = 0; $i < $len; $i++) {
-        $year = substr($stringDates[$i], 0, 4);
-        $month = substr($stringDates[$i], 4, 2);
-        $day = substr($stringDates[$i], 6, 2);
-        $stringDate = $year . "/" . $month . "/" . $day;
-
-        array_push($unixTimeStamps, $this->stringDateToUnixTimestamp($stringDate));
+        array_push($unixTimeStamps, $this->stringDateToUnixTimestamp($stringDates[$i]));
       }
 
       return $unixTimeStamps;

@@ -43,6 +43,8 @@ $(window).load(function() {
 	// given a set of user inputted attribute names and values, 
 	// return an array containing areas with all attributes matching user input
 	$("#enter-button-search-attributes").click(function() {
+		console.log("clicked enter-button-search-attributes");
+
 		// array of areas with attributes matching those specified by user input
 		var matchingAreas = [];
 
@@ -80,6 +82,7 @@ $(window).load(function() {
 		}
 
 		// DOUBLE CHECK that search returned datasets with correct attributes
+		// WHY IS THIS BUTTON NOT WORKING?
 		/*
 		for (var i = 0; i < matchingAreas.length; i++) {
 			console.log(matchingAreas[i].properties.attributekeys);
@@ -87,6 +90,7 @@ $(window).load(function() {
 		}
 		console.log(matchingAreas.length);
 		*/
+		console.log(matchingAreas);
 
 		return matchingAreas;
 	});

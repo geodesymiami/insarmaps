@@ -176,7 +176,6 @@ class WebServicesController extends Controller
       $maxIndex = 0;
       $currentDate = 0; 
       $startAndEndTimeIndices = []; 
-      
 
       for ($i = 0; $i < count($decimalDates); $i++) {
         $currentDate = $decimalDates[$i];
@@ -354,7 +353,7 @@ class WebServicesController extends Controller
       }
 
       // * Currently we hardcode by picking the first point in the $points array
-      // in future we will come up with algorithm to get the closest point
+      // TODO: Come up with algorithm to get the closest point
       $json = $this->createJsonArray($dataset, $points[0], $startTime, $endTime);
 
       // by default we return json; only if outputType = plot, we return plot
