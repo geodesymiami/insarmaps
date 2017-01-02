@@ -173,13 +173,17 @@
       <input type="text" class="form-control" placeholder="Relative Orbit" id="input-relative-orbit">
     </div>
     <div class="input-group">
-      <input type="text" class="form-control" placeholder="frame" id="input-frame">
+      <input type="text" class="form-control" placeholder="First Frame" id="input-first-frame">
     </div>
     <div class="input-group">
       <input type="text" class="form-control" placeholder="Mode" id="input-mode">
     </div>
     <div class="input-group">
-      <input type="text" class="form-control" placeholder="Flight Dir." id="input-flight-dir">
+      <input type="text" class="form-control" placeholder="Flight Direction" id="input-flight-direction">
+    </div>
+    <!-- enter button to search for files with attributes matching above input -->
+    <div id="enter-button-search-attributes">
+      <button class="btn btn-primary-outline clickable-button">Enter</button>
     </div>
   </div>
   <div id="search-form-results">
@@ -298,6 +302,7 @@
     <script type="text/javascript" src="js/AreaMarkerLayer.js"></script>
     <script type="text/javascript" src="js/AreaAttributesController.js"></script>
     <script type="text/javascript" src="js/mainPage.js"></script>
+    <script type="text/javascript" src="js/SearchFile.js"></script>
     <script type="text/javascript" src="js/mainMap.js"></script>
     <script type="text/javascript" src="js/SquareSelector.js"></script>
     <script type="text/javascript" src="js/LineSelector.js"></script>
