@@ -92,17 +92,6 @@ $(window).load(function() {
 			}
 		}
 
-		// DOUBLE CHECK that search returned datasets with correct attributes
-		// WHY IS THIS BUTTON NOT WORKING?
-		/*
-		for (var i = 0; i < matchingAreas.length; i++) {
-			console.log(matchingAreas[i].properties.attributekeys);
-			console.log(matchingAreas[i].properties.attributevalues);
-		}
-		console.log(matchingAreas.length);
-		*/
-		console.log(matchingAreas);
-
 		return matchingAreas;
 	});
 
