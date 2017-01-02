@@ -13,9 +13,12 @@
  <script src="https://code.jquery.com/jquery-1.12.2.js"></script>
  <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
  <link href="http://code.jquery.com/ui/1.11.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
- 
+ <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.3/css/theme.bootstrap.min.css" rel="stylesheet">
+
  <script type="text/javascript" src="js/regression.js"></script>
  <script type="text/javascript" src="js/canvasjs.min.js"></script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.3/js/jquery.tablesorter.min.js"></script>
  
  <script src="http://code.highcharts.com/stock/highstock.js"></script>
  <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
@@ -183,6 +186,33 @@
     </div>
   </div>
   <div id="search-form-results">
+    <table class="tablesorter-bootstrap" id="search-form-results-table">
+      <thead>
+        <tr>
+          <th>Satellite</th>
+          <th>Rel Orbit</th>
+          <th>First_Frame</th>
+          <th>Mode</th>
+          <th>Flight Dir.</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>t</th>
+          <th>t</th>
+          <th>t</th>
+          <th>t</th>
+          <th>t</th>
+        </tr>
+        <tr>
+          <th>t2</th>
+          <th>t2</th>
+          <th>t2</th>
+          <th>t2</th>
+          <th>t2</th>
+        </tr>
+      </tbody>
+    </table>
   </div>
   <div class="wrap" id="charts" title="Displacement time-series">
     <div class="top-right-buttons">

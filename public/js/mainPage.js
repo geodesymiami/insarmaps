@@ -911,4 +911,6 @@ $(window).load(function() {
             myMap.refreshDataset();
         }
     });
+
+    $("#search-form-results-table").tablesorter();
 });
