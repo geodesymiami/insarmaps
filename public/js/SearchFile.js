@@ -44,6 +44,7 @@ $(window).load(function() {
 	// return an array containing areas with all attributes matching user input
 	$("#enter-button-search-attributes").click(function() {
 		console.log("clicked enter-button-search-attributes");
+		$("#search-form-results-table tbody").empty();
 
 		// array of areas with attributes matching those specified by user input
 		var matchingAreas = [];
@@ -78,6 +79,16 @@ $(window).load(function() {
 			// if all attributes match, add area to array matchingAreas
 			if (attributesMatch) {
 				matchingAreas.push(areas[i]);
+
+				var satellite = fileAttributes.mission;
+				var relative_orbit = fileAttributes.relative_orbit;
+				var first_frame = fileAttributes.first_frame;
+				var mode = fileAttributes.beam_mode;
+				var flight_direction = fileAttributes.flight_direction;
+				var html = "<tr><td>" + satellite + "</td><td>" + relative_orbit
+					+ "</td><td>" + first_frame + "</td><td>" + mode
+					+ "</td><td>" + flight_direction + "</td></tr>";
+				$("#search-form-results-table tbody").append(html);
 			}
 		}
 

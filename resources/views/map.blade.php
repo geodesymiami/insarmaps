@@ -201,20 +201,6 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th>t</th>
-          <th>t</th>
-          <th>t</th>
-          <th>t</th>
-          <th>t</th>
-        </tr>
-        <tr>
-          <th>t2</th>
-          <th>t2</th>
-          <th>t2</th>
-          <th>t2</th>
-          <th>t2</th>
-        </tr>
       </tbody>
     </table>
   </div>
