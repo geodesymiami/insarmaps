@@ -156,6 +156,8 @@ function getGEOJSON(area) {
     myMap.addDataset(tileJSON);
     var styleLoadFunc = function(event) {
         myMap.map.off("data", styleLoadFunc);
+        myMap.removeAreaMarkers();
+
         overlayToggleButton.set("on");
         if (contourToggleButton.toggleState == ToggleStates.ON) {
             myMap.addContourLines();
@@ -414,13 +416,13 @@ function setupToggleButtons() {
     overlayToggleButton.onclick(function() {
         // on? add layers, otherwise remove them
         if (overlayToggleButton.toggleState == ToggleStates.ON) {
-            if (!myMap.tileJSON) {
+            if (!myMap.anAreaWasPreviouslyLoaded()) {
                 overlayToggleButton.set("off");
                 return;
             }
 
             $("#overlay-slider").slider("value", 100);
-            myMap.addDataset(myMap.styleJSON);
+            myMap.addDataset(myMap.tileJSON);
 
             console.log("added that");
         } else {
@@ -909,4 +911,6 @@ $(window).load(function() {
             myMap.refreshDataset();
         }
     });
+
+    $("#search-form-results-table").tablesorter();
 });
