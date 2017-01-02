@@ -79,16 +79,20 @@ $(window).load(function() {
 			// if all attributes match, add area to array matchingAreas
 			if (attributesMatch) {
 				matchingAreas.push(areas[i]);
-
+				console.log(fileAttributes);
 				var satellite = fileAttributes.mission;
 				var relative_orbit = fileAttributes.relative_orbit;
 				var first_frame = fileAttributes.first_frame;
 				var mode = fileAttributes.beam_mode;
 				var flight_direction = fileAttributes.flight_direction;
-				var html = "<tr><td>" + satellite + "</td><td>" + relative_orbit
+				var unavco_name = areas[i].properties.unavco_name;
+
+				var html = "<tr id='search-" + unavco_name
+					+ "'><td>" + satellite + "</td><td>" + relative_orbit
 					+ "</td><td>" + first_frame + "</td><td>" + mode
 					+ "</td><td>" + flight_direction + "</td></tr>";
-				$("#search-form-results-table tbody").append(html);
+				$("#search-form-results-table > tbody").append(html);
+				$("#search-form-results-table > tbody tr").css("cursor", "pointer");
 			}
 		}
 

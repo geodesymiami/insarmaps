@@ -169,24 +169,24 @@
     </div>
   </div>
   <div id="search-form">
-    <div class="input-group">
+    <div class="form-group">
       <input type="text" class="form-control" placeholder="Satellite" id="input-satellite">
     </div>
-    <div class="input-group">
+    <div class="form-group">
       <input type="text" class="form-control" placeholder="Relative Orbit" id="input-relative-orbit">
     </div>
-    <div class="input-group">
+    <div class="form-group">
       <input type="text" class="form-control" placeholder="First Frame" id="input-first-frame">
     </div>
-    <div class="input-group">
+    <div class="form-group">
       <input type="text" class="form-control" placeholder="Mode" id="input-mode">
     </div>
-    <div class="input-group">
+    <div class="form-group">
       <input type="text" class="form-control" placeholder="Flight Direction" id="input-flight-direction">
     </div>
     <!-- enter button to search for files with attributes matching above input -->
     <div id="enter-button-search-attributes">
-      <button class="btn btn-primary-outline clickable-button">Enter</button>
+      <button class="btn btn-primary btn-block clickable-button">Enter</button>
     </div>
   </div>
   <div id="search-form-results">
