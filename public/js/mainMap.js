@@ -757,6 +757,8 @@ function Map(loadJSONFunc) {
             // see why we can't remove source here as well...
             myMap.map.removeLayer(myMap.areaFeatures[i].properties.layerID);
         }
+
+        that.areaFeatures = [];
     };
 
     this.addMapToPage = function(containerID) {
@@ -1040,8 +1042,10 @@ function Map(loadJSONFunc) {
 
         that.loadAreaMarkers();
 
-        // remove click listener for selecting an area, and add new one for clicking on a point
-        that.map.off("click");
+        // remove old click listeners, and add new one for clicking on an area marker
+        that.map.off("click", that.leftClickOnAPoint);
+        that.map.off("click", that.clickOnAnAreaMarker);
+
         that.map.on('click', that.clickOnAnAreaMarker);
 
         that.removeAreaPopups();

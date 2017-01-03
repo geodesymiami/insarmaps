@@ -176,7 +176,6 @@ function getGEOJSON(area) {
             if (myMap.anAreaWasPreviouslyLoaded()) {
                 zoom = myMap.map.getZoom();
             }
-
             // set our tilejson to the one we've loaded. this will make sure anAreaWasPreviouslyLoaded method returns true after the
             // first time a dataset is selected
             myMap.tileJSON = tileJSON;
