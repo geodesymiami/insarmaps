@@ -172,14 +172,19 @@ class DateFormatter
     */
     public function getStartTimeDateIndex($startTime, $stringDates) {
 
-      if ($startTime === NULL) {
+      if ($startTime === NULL || strlen($startTime) == 0) {
         return 0;
       }
 
       $minDateIndex = NULL;
       $currentDate = new DateTime();  
-      $startDate = $this->verifyDate($startTime);
       $interval = NULL;
+
+      // if startDate is invalid, throw error message
+      $startDate = $this->verifyDate($startTime);
+      if ($startDate == NULL) {
+        dd("error: invalid startTime, please enter date in yyyy-mm-dd format");
+      }
 
       for ($i = 0; $i < count($stringDates); $i++) {
         $currentDate = $this->verifyDate($stringDates[$i]);
@@ -207,14 +212,18 @@ class DateFormatter
     */
     public function getEndTimeDateIndex($endTime, $stringDates) {
 
-      if ($endTime === NULL) {
+      if ($endTime === NULL || strlen($endTime) == 0) {
         return count($stringDates)-1;
       }
 
       $maxDateIndex = NULL;
       $currentDate = new DateTime();  
-      $endDate = $this->verifyDate($endTime);
       $interval = NULL;
+
+      $endDate = $this->verifyDate($endTime);
+      if ($endDate == NULL) {
+        dd("error: invalid endTime, please enter date in yyyy-mm-dd format");
+      }
 
       for ($i = 0; $i < count($stringDates); $i++) {
         $currentDate = $this->verifyDate($stringDates[$i]);
