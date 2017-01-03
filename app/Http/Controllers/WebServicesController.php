@@ -266,8 +266,6 @@ class WebServicesController extends Controller
     public function processRequest(Request $request) {
       $json = [];
 
-      // TODO: Change system for processRequest since user should not see json...set default value to plot?
-
       // Mandatory request parameters: latitude, longitude, dataset
       // Optional request parameters: startTime, endTime, outPutType
       $latitude = 0.0;
@@ -275,7 +273,7 @@ class WebServicesController extends Controller
       $dataset = "";
       $startTime = NULL;  // if dataset is valid, default value will be set to first date in dataset
       $endTime = NULL;  // if dataset is valid, default value will be set to last date in dataset 
-      $outputType = "json"; // default value is json
+      $outputType = "plot"; // default value is plot, json is used for debugging and checking values
 
       // extract parameter values from Request url
       $requests = $request->all();
@@ -302,11 +300,6 @@ class WebServicesController extends Controller
           default:
             break;
         }
-      }
-
-      // if outPutType was specified and its not json and its not plot, set to default json value
-      if (strlen($outputType) > 0 && strcasecmp($outputType, "json") != 0 && strcasecmp($outputType, "plot") != 0) {
-        $outputType = "json";
       }
 
       // TODO: check for condition where startTime is inputted by user but endTime is not
@@ -356,13 +349,12 @@ class WebServicesController extends Controller
       // TODO: Come up with algorithm to get the closest point
       $json = $this->createJsonArray($dataset, $points[0], $startTime, $endTime);
 
-      // by default we return json; only if outputType = plot, we return plot
-      if (strcasecmp($outputType, "plot") == 0) {
-        return $this->generatePlotPicture($json["displacements"], $json["string_dates"]);
-      }
-      else {
+      // by default we return plot unless outputType = json
+      if (strcasecmp($outputType, "json") == 0) {
         return json_encode($json);
       }
+
+      return $this->generatePlotPicture($json["displacements"], $json["string_dates"]);
     }
 
 
