@@ -164,41 +164,6 @@ class WebServicesController extends Controller
     }
 
     /**
-    * Given an array of dates, return indices of dates that are closest to startTime and endTime
-    *
-    * @param string $startTime - lower boundary of dates in yyyy-mm-dd format
-    * @param string $endTime - upper boundary of dates in yyyy-mm-dd format
-    * @param array $decimalDates - dates in decimal format
-    * @return array $startAndEndTimeIndices - indices of dates closest to startTime and endTime
-    */
-    public function getDateIndices($startTime, $endTime, $decimalDates) {
-      $minIndex = 0;
-      $maxIndex = 0;
-      $currentDate = 0; 
-      $startAndEndTimeIndices = []; 
-
-      for ($i = 0; $i < count($decimalDates); $i++) {
-        $currentDate = $decimalDates[$i];
-        if ($currentDate >= $startTime) {
-          $minIndex = $i;
-          break;
-        }
-      }
-
-      for ($i = 0; $i < count($decimalDates); $i++) {
-        $currentDate = $decimalDates[$i];
-        if ($currentDate < $endTime) {
-          $maxIndex = $i + 1;
-        }
-      }
-
-      array_push($startAndEndTimeIndices, $minIndex);
-      array_push($startAndEndTimeIndices, $maxIndex);
-
-      return $startAndEndTimeIndices;
-    }  
-
-    /**
     * Given a dataset name, point, returns json array containing data for a point within bounded time period
     *
     * @param string $dataset - name of dataset
@@ -230,22 +195,21 @@ class WebServicesController extends Controller
       $string_dates = $this->arrayFormatter->postgresToPHPArray($string_dates);
       $displacements = $this->arrayFormatter->postgresToPHPFloatArray($displacements);
 
-      // * Select dates that best match startTime and endTime - if not specified, startTime is first date
-      // and endTime is last date in decimaldates and stringdates
-      // * Currently we are not accounting for condition where user specifies a startTime but no endTime,
-      // or a endTime but no startTime
+      // get index of dates that best match boundary of startTime and endTime
+      $startTimeIndex = $this->dateFormatter->getStartTimeDateIndex($startTime, $string_dates);
+      $endTimeIndex = $this->dateFormatter->getEndTimeDateIndex($endTime, $string_dates);
 
-      if ($startTime !== NULL && $endTime !== NULL) {
-        // convert startTime and endTime into decimal dates
-        $startTime = $this->dateFormatter->stringDateToDecimal($startTime);
-        $endTime = $this->dateFormatter->stringDateToDecimal($endTime);
-        $minAndendTimeIndices = $this->getDateIndices($startTime, $endTime, $decimal_dates);
-        $startTimeIndex = $minAndendTimeIndices[0];
-        $endTimeIndex = $minAndendTimeIndices[1];
-      } 
-      else {  // otherwise we set startTime and endTime to default date array in specified dataset
-        $startTimeIndex = 0;
-        $endTimeIndex = count($decimal_dates);
+      // if startTime or endTime go beyond range of dates, throw error message
+      if ($startTimeIndex === NULL) {
+        $lastDate = $this->dateFormatter->verifyDate($string_dates[count($string_dates)-1]);
+        $error["error"] = "please input startTime earlier than or equal to " . $lastDate->format('Y-m-d');
+        return json_encode($error);
+      }
+
+      if ($endTimeIndex === NULL) {
+        $firstDate = $this->dateFormatter->verifyDate($string_dates[0]);
+        $error["error"] = "please input endTime later than or equal to " . $firstDate->format('Y-m-d');
+        return json_encode($error);
       }
 
       // put dates and displacement into json, bounded from startTime to endTime indices
@@ -302,15 +266,23 @@ class WebServicesController extends Controller
         }
       }
 
-      // TODO: check for condition where startTime is inputted by user but endTime is not
-      // currently system only gets specific dates if startTime and endTime are BOTH specified
+      // check if startTime and endTime inputted by user are in in yyyy-mm-dd or yyyymmdd format
+      if ($startTime !== NULL && $this->dateFormatter->verifyDate($startTime) === NULL) {
+        $error["error"] = "please input startTime in format yyyy-mm-dd (ex: 1990-12-19)";
+      }
 
-      // check if startTime and endTime were inputted by user
-      // if so, check if they are in yyyy-mm-dd format, if not return json object with error message
+      if ($endTime !== NULL && $this->dateFormatter->verifyDate($endTime) === NULL) {
+        $error["error"] = "please input endTime in format yyyy-mm-dd (ex: 2020-12-19)";
+      }
+
+      // check if startTime is less than or equal to endTime
       if ($startTime !== NULL && $endTime !== NULL) {
-        if ($this->dateFormatter->verifyDate($startTime) === NULL || $this->dateFormatter->verifyDate($endTime) === NULL) {
-          $error["error"] = "invalid startTime or endTime - please input date in format yyyy-mm-dd (ex: 2010-12-19)";
-          return json_encode($error);
+        $startDate = $this->dateFormatter->verifyDate($startTime);
+        $endDate = $this->dateFormatter->verifyDate($endTime);
+        $interval = $startDate->diff($endDate);
+
+        if ($interval->format("%a") > 0 && $startDate > $endDate) {
+          $error["error"] = "please make sure startTime is a date earlier than endTime";
         }
       }
 
@@ -349,8 +321,9 @@ class WebServicesController extends Controller
       // TODO: Come up with algorithm to get the closest point
       $json = $this->createJsonArray($dataset, $points[0], $startTime, $endTime);
 
-      // by default we return plot unless outputType = json
-      if (strcasecmp($outputType, "json") == 0) {
+      // $json may contain error message string based on startTime and endTime, if so return message
+      // by default we return plot unless outputType = json (used for debugging)
+      if (gettype($json) == "string" || strcasecmp($outputType, "json") == 0) {
         return json_encode($json);
       }
 
@@ -368,6 +341,12 @@ class WebServicesController extends Controller
     public static function calcLinearRegressionLine($x, $y) {
       // calculate number points
       $n = count($x);
+
+      // special case: only one value in $x, throw exception message
+      // we don't check for count($x) == 0 since that would mean invalid dates
+      if ($n < 2) {
+        dd("Time interval contained 0 or 1 date and could not make linear regression line - please enter a later endTime or earlier startTime");
+      }
 
       // ensure both arrays of points are the same size
       if ($n != count($y)) {

@@ -51,7 +51,7 @@ class DateFormatter
         return $date;
       }
 
-      return $date->format("Y") + ($this->getDaysElapsed($date)) / 365.0;
+      return $date->format("Y") + ($this->getDaysElapsedInYear($date)) / 365.0;
     }
 
     /**
@@ -83,7 +83,7 @@ class DateFormatter
     * @param DateTime $date
     * @return string - number of days elapsed
     */
-    public function getDaysElapsed($date) {
+    public function getDaysElapsedInYear($date) {
 
       $date2 = new DateTime();
       $date2->setDate($date->format("Y"), 1, 1);
@@ -125,5 +125,109 @@ class DateFormatter
 
       return $unixTimeStamps;
     }
+
+    /**
+    * Given an array of dates, return indices of dates that are closest to startTime and endTime
+    *
+    * @param string $startTime - lower boundary of dates in yyyy-mm-dd format
+    * @param string $endTime - upper boundary of dates in yyyy-mm-dd format
+    * @param array $decimalDates - dates in decimal format
+    * @return array $startAndEndTimeIndices - indices of dates closest to startTime and endTime
+    */
+    public function getDateIndices($startTime, $endTime, $decimalDates) {
+      $minIndex = 0;
+      $maxIndex = 0;
+      $currentDate = 0; 
+      $startAndEndTimeIndices = []; 
+
+      for ($i = 0; $i < count($decimalDates); $i++) {
+        $currentDate = $decimalDates[$i];
+        if ($currentDate >= $startTime) {
+          $minIndex = $i;
+          break;
+        }
+      }
+
+      for ($i = 0; $i < count($decimalDates); $i++) {
+        $currentDate = $decimalDates[$i];
+        if ($currentDate < $endTime) {
+          $maxIndex = $i + 1;
+        }
+      }
+
+      array_push($startAndEndTimeIndices, $minIndex);
+      array_push($startAndEndTimeIndices, $maxIndex);
+
+      return $startAndEndTimeIndices;
+    }  
+
+    /**
+    * If user does not input startTime, return 0
+    * If user inputs startTime that is later than all dates in stringDates, return NULL
+    * Otherwise return index of date that is equal to or later than startTime and is closest to startTime
+    *
+    * @param string $startTime - lower boundary of dates in yyyy-mm-dd format
+    * @param array $stringDates - dates in yyyymmdd format
+    * @return $minDateIndex 
+    */
+    public function getStartTimeDateIndex($startTime, $stringDates) {
+
+      if ($startTime === NULL) {
+        return 0;
+      }
+
+      $minDateIndex = NULL;
+      $currentDate = new DateTime();  
+      $startDate = $this->verifyDate($startTime);
+      $interval = NULL;
+
+      for ($i = 0; $i < count($stringDates); $i++) {
+        $currentDate = $this->verifyDate($stringDates[$i]);
+        $interval = $startDate->diff($currentDate);
+
+        // Time of DateTime object creation can cause two DateTimes with the same yyyy-mm-dd
+        // to be evaluated as different - therefore check day interval
+        if ($interval->format("%a") == 0 || $currentDate > $startDate) {
+          $minDateIndex = $i;
+          break;
+        }
+      }
+
+      return $minDateIndex;
+    }  
+
+    /**
+    * If user does not input endTime, return index of last date in stringDates
+    * If user inputs endTime that is earlier than all dates in stringDates, return NULL
+    * Otherwise return index of date that is equal to or before after endTime and is closest to startTime
+    *
+    * @param string $endTime - upper boundary of dates in yyyy-mm-dd format
+    * @param array $stringDates - dates in yyyymmdd format
+    * @return $maxDateIndex 
+    */
+    public function getEndTimeDateIndex($endTime, $stringDates) {
+
+      if ($endTime === NULL) {
+        return count($stringDates)-1;
+      }
+
+      $maxDateIndex = NULL;
+      $currentDate = new DateTime();  
+      $endDate = $this->verifyDate($endTime);
+      $interval = NULL;
+
+      for ($i = 0; $i < count($stringDates); $i++) {
+        $currentDate = $this->verifyDate($stringDates[$i]);
+        $interval = $endDate->diff($currentDate);
+
+        // Time of DateTime object creation can cause two DateTimes with the same yyyy-mm-dd
+        // to be evaluated as different - therefore check day interval
+        if ($interval->format("%a") == 0 || $currentDate < $endDate) {
+          $maxDateIndex = $i;
+        }
+      }
+
+      return $maxDateIndex;
+    }  
 
 }
