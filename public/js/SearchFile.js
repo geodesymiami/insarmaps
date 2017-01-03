@@ -1,7 +1,10 @@
 function SearchFile(container) {
 	this.container = container;
 
-	// return dictionary containing unavco attribute names and values converted from user input
+	/**
+    * Return a dictionary containing unavco attribute names and values converted from user input on main page
+    * @return {Array} searchAttributesif dictionary if user inputs search criteria, null otherwise
+    */
 	this.getSearchAttributes = function() {
 
 		var attributes = {};	// dictionary of all attributes
@@ -34,19 +37,35 @@ function SearchFile(container) {
 
 	  	return searchAttributes;
 	}
-}
 
+	/**
+    * Given dictionary of attributes, generate HTML row displaying dataset with those attributes
+    * @param {Array} fileAttributes - if user inputs at least one search criteria, null otherwise
+    */
+	this.generateMatchingAreaHTML = function(fileAttributes) {
+
+		var satellite = fileAttributes.mission;
+		var relative_orbit = fileAttributes.relative_orbit;
+		var first_frame = fileAttributes.first_frame;
+		var mode = fileAttributes.beam_mode;
+		var flight_direction = fileAttributes.flight_direction;
+		var html = "<tr><td>" + satellite + "</td><td>" + relative_orbit
+		+ "</td><td>" + first_frame + "</td><td>" + mode
+		+ "</td><td>" + flight_direction + "</td></tr>";
+		$("#search-form-results-table tbody").append(html);
+	}
+}
 
 $(window).load(function() {
 	var searcher = new SearchFile("search-form");
 
-	// given a set of user inputted attribute names and values, 
-	// return an array containing areas with all attributes matching user input
+	/**
+    * Return an array containing areas with all attributes matching user inputted attributes
+    * @return {Array} matchingAreas if user inputs at least one search criteria, display alert otherwise
+    */
 	$("#enter-button-search-attributes").click(function() {
-		console.log("clicked enter-button-search-attributes");
-		$("#search-form-results-table tbody").empty();
 
-		// array of areas with attributes matching those specified by user input
+		$("#search-form-results-table tbody").empty();
 		var matchingAreas = [];
 
 		// special case if user inputs no attributes to search by, we get null instead of a dictionary
@@ -76,19 +95,10 @@ $(window).load(function() {
 					break;
 				}
 			} 
-			// if all attributes match, add area to array matchingAreas
+			// if all attributes match, add area to array matchingAreas and generate HTML row displaying that area's attributes
 			if (attributesMatch) {
 				matchingAreas.push(areas[i]);
-
-				var satellite = fileAttributes.mission;
-				var relative_orbit = fileAttributes.relative_orbit;
-				var first_frame = fileAttributes.first_frame;
-				var mode = fileAttributes.beam_mode;
-				var flight_direction = fileAttributes.flight_direction;
-				var html = "<tr><td>" + satellite + "</td><td>" + relative_orbit
-					+ "</td><td>" + first_frame + "</td><td>" + mode
-					+ "</td><td>" + flight_direction + "</td></tr>";
-				$("#search-form-results-table tbody").append(html);
+				searcher.generateMatchingAreaHTML(fileAttributes);
 			}
 		}
 
