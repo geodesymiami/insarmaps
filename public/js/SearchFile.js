@@ -42,17 +42,23 @@ function SearchFile(container) {
     * Given dictionary of attributes, generate HTML row displaying dataset with those attributes
     * @param {Array} fileAttributes - if user inputs at least one search criteria, null otherwise
     */
-	this.generateMatchingAreaHTML = function(fileAttributes) {
+	this.generateMatchingAreaHTML = function(fileAttributes, area) {
 
 		var satellite = fileAttributes.mission;
 		var relative_orbit = fileAttributes.relative_orbit;
 		var first_frame = fileAttributes.first_frame;
 		var mode = fileAttributes.beam_mode;
 		var flight_direction = fileAttributes.flight_direction;
-		var html = "<tr><td>" + satellite + "</td><td>" + relative_orbit
+		var rowID = area.properties.unavco_name + "-search-row";
+		var html = "<tr id='" + rowID + "'><td>" + satellite + "</td><td>" + relative_orbit
 		+ "</td><td>" + first_frame + "</td><td>" + mode
 		+ "</td><td>" + flight_direction + "</td></tr>";
 		$("#search-form-results-table tbody").append(html);
+		$("#" + rowID).css({ cursor: "pointer" });
+		$("#" + rowID).click(function() {
+			console.log(area);
+			getGEOJSON(area);
+		});
 	}
 }
 
@@ -98,7 +104,7 @@ $(window).load(function() {
 			// if all attributes match, add area to array matchingAreas and generate HTML row displaying that area's attributes
 			if (attributesMatch) {
 				matchingAreas.push(areas[i]);
-				searcher.generateMatchingAreaHTML(fileAttributes);
+				searcher.generateMatchingAreaHTML(fileAttributes, areas[i]);
 			}
 		}
 

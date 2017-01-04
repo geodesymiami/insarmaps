@@ -180,7 +180,12 @@ function getGEOJSON(area) {
             // first time a dataset is selected
             myMap.tileJSON = tileJSON;
 
-            var centerOfDataset = JSON.parse(area.properties.centerOfDataset);
+            var centerOfDataset = area.properties.centerOfDataset;
+
+            if (typeof centerOfDataset === "string") {
+                centerOfDataset = JSON.parse(centerOfDataset);
+            }
+
             // converter accidentally switched lat and long...
             // TODO: fix that and rerun datasets when pysar2unavco is fully finished
             var lat = centerOfDataset.longitude;
