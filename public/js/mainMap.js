@@ -773,6 +773,18 @@ function Map(loadJSONFunc) {
         that.areaFeatures = [];
     };
 
+    // until mapbox api gives us a way to determine when all points of mbtiles
+    // have finished fully rendering. TODO: use this instead of timers when
+    // endless render loop bug is fixed.
+    this.onDatasetRendered = function(callback) {
+        var renderHandler = function() {
+            if (that.map.loaded()) {
+                callback(renderHandler);
+            }
+        };
+        that.map.on("render", renderHandler);
+    };
+
     this.addMapToPage = function(containerID) {
         that.map = new mapboxgl.Map({
             container: containerID, // container id
