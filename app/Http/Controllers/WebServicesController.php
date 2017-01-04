@@ -148,14 +148,14 @@ class WebServicesController extends Controller
       // calculate slope of linear regression line 
       $decimalDates = $this->dateFormatter->stringDatesToDecimalArray($stringDates);
 
-      $result = $this->calcLinearRegressionLine($decimalDates, $displacements);
+      $linearRegression = $this->calcLinearRegressionLine($decimalDates, $displacements);
 
-      // check if result of linear regression calculation produced an error
-      if (gettype($result) == "string") {
-        return json_encode($result);
+      // check if linear regression calculation produced an error; if so return error
+      if (isset($linearRegression["errors"])) {
+        return json_encode($linearRegression);
       }
 
-      $json["subtitle"]["text"] = "velocity: " . round($result["m"] * 1000, 2) . " mm/yr";
+      $json["subtitle"]["text"] = "velocity: " . round($linearRegression["m"] * 1000, 2) . " mm/yr";
 
       $jsonString = json_encode(($json));
 
@@ -208,20 +208,20 @@ class WebServicesController extends Controller
       // if startTime or endTime go beyond range of dates, throw error message
       if ($startTimeIndex === NULL) {
         $lastDate = $this->dateFormatter->verifyDate($string_dates[count($string_dates)-1]);
-        $error["error"] = "please input startTime earlier than or equal to " . $lastDate->format('Y-m-d');
-        return ($error);
+        $json["errors"] = "please input startTime earlier than or equal to " . $lastDate->format('Y-m-d');
       }
 
       if ($endTimeIndex === NULL) {
         $firstDate = $this->dateFormatter->verifyDate($string_dates[0]);
-        $error["error"] = "please input endTime later than or equal to " . $firstDate->format('Y-m-d');
-        return ($error);
+        $json["errors"] = "please input endTime later than or equal to " . $firstDate->format('Y-m-d');
       }
 
-      // put dates and displacement into json, bounded from startTime to endTime indices
-      $json["decimal_dates"] = array_slice($decimal_dates, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
-      $json["string_dates"] = array_slice($string_dates, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
-      $json["displacements"] = array_slice($displacements, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
+      // if no errors, put dates and displacement into json, bounded from startTime to endTime indices
+      if (empty($json["errors"])) {
+        $json["decimal_dates"] = array_slice($decimal_dates, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
+        $json["string_dates"] = array_slice($string_dates, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
+        $json["displacements"] = array_slice($displacements, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
+      }
 
       return $json;
     }
@@ -274,27 +274,24 @@ class WebServicesController extends Controller
 
       // check if startTime and endTime inputted by user are in in yyyy-mm-dd or yyyymmdd format
       if ($startTime !== NULL && $this->dateFormatter->verifyDate($startTime) === NULL) {
-        $error["error"] = "please input startTime in format yyyy-mm-dd (ex: 1990-12-19)";
+        $json["errors"] = "please input startTime in format yyyy-mm-dd (ex: 1990-12-19)";
+        return json_encode($json);
       }
 
       if ($endTime !== NULL && $this->dateFormatter->verifyDate($endTime) === NULL) {
-        $error["error"] = "please input endTime in format yyyy-mm-dd (ex: 2020-12-19)";
+        $json["errors"] = "please input endTime in format yyyy-mm-dd (ex: 2020-12-19)";
+        return json_encode($json);
       }
 
       // check if startTime is less than or equal to endTime
       if ($startTime !== NULL && $endTime !== NULL) {
         $startDate = $this->dateFormatter->verifyDate($startTime);
         $endDate = $this->dateFormatter->verifyDate($endTime);
-
-        // check for case where startTime = "" and endTime = ""
-        if ($startDate === NULL || $endDate == NULL) {
-          $error["error"] = "invalid entry for startTime or endTime, please enter dates in yyyy-mm-dd format";
-          return json_encode($error);
-        }
         $interval = $startDate->diff($endDate);
 
         if ($interval->format("%a") > 0 && $startDate > $endDate) {
-          $error["error"] = "please make sure startTime is a date earlier than endTime";
+          $json["errors"] = "please make sure startTime is a date earlier than endTime";
+          return json_encode($json);
         }
       }
 
@@ -315,27 +312,28 @@ class WebServicesController extends Controller
       $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $dataset . "
             WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
 
-      // if query fails, return json object with error message
+      // check if query fails due to dataset name not existing in database
       try {
         $points = DB::select(DB::raw($query));
       }
       catch (Exception $e) {
-        $error["error"] = "invalid dataset name - please check dataset";
-        return json_encode($error);
+        $json["errors"] = "invalid dataset name - please check dataset";
+        return json_encode($json);
       }
 
+      // check if query fails due to latitude and/or longitude outside area of dataset
       if (count($points) == 0) {
-        $error["error"] = "point was not found - please check latitude and longitude";
-        return json_encode($error);
+        $json["errors"] = "point was not found in dataset - please check latitude and longitude";
+        return json_encode($json);
       }
 
       // * Currently we hardcode by picking the first point in the $points array
       // TODO: Come up with algorithm to get the closest point
       $json = $this->createJsonArray($dataset, $points[0], $startTime, $endTime);
 
-      // $json may contain error message string based on startTime and endTime, if so return message
+      // check if error occured based on startTime and endTime; if so return json
       // by default we return plot unless outputType = json (used for debugging)
-      if (isset($json["error"]) || strcasecmp($outputType, "json") == 0) {
+      if (isset($json["errors"]) || strcasecmp($outputType, "json") == 0) {
         return json_encode($json);
       }
 
@@ -351,18 +349,22 @@ class WebServicesController extends Controller
     * @return array() m=>slope, b=>intercept
     */
     public static function calcLinearRegressionLine($x, $y) {
+
+      $json = [];
+
       // calculate number points
       $n = count($x);
 
       // special case: zero or one values in $x, throw exception message
       if ($n < 2) {
-        $error = "Time interval contained 0 or 1 date and could not make linear regression line - please enter a later endTime or earlier startTime";
-        return $error;
+        $json["errors"] = "time interval contained 0 or 1 date and could not make linear regression line - please enter a later endTime or earlier startTime";
+        return $json;
       }
 
       // ensure both arrays of points are the same size
       if ($n != count($y)) {
-        trigger_error("linear_regression(): Number of elements in coordinate arrays do not match.", E_USER_ERROR);
+        $json["errors"] = "linear_regression(): Number of elements in coordinate arrays do not match";
+        return $json;
       }
 
       // calculate sums

@@ -27,11 +27,13 @@ $(window).load(function() {
         if (longitude.length > 0 && latitude.length > 0 && dataset.length > 0) {
             query += "longitude=" + longitude + "&latitude=" + latitude + "&dataset=" + dataset;
 
-            // TODO: handle case where user inputs startTime but not endTime, and vice versa case
-            
-            // add optional parameters to query if they exist
-            if (startTime.length > 0 && endTime.length > 0) {
-                query += "&startTime=" + startTime + "&endTime=" + endTime;
+            // add optional parameters if they exist
+            if (startTime.length > 0) {
+                query += "&startTime=" + startTime;
+            }
+
+            if (endTime.length > 0) {
+                query += "&endTime=" + endTime;
             }
 
             if (outputType.length > 0) {
