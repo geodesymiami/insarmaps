@@ -63,7 +63,7 @@ class DateFormatter
     * @param string $stringDates - date strings in array must be one two formats: (1) yyyy-mm-dd (2) yyyymmdd
     * @return double if stringDate contains a valid date, NULL otherwise
     */
-    public function stringDatesToDecimalArray($stringDates) {
+    public function stringDateArrayToDecimalArray($stringDates) {
 
       $decimalDates = [];
       $len = count($stringDates);
@@ -94,7 +94,7 @@ class DateFormatter
 
     /**
     * Given a string containing a date, return UNIX timestamp conversion of date
-    * We assume each string date is a valid date in yyyymmdd format since array is queried from database
+    * We assume each string date is a VALID date in yyyymmdd format since array is queried from database
     *
     * Example: "20070205" returns 1170708432
     *
@@ -109,12 +109,12 @@ class DateFormatter
 
     /**
     * Given array of string dates, return array of UNIX timestamps converted from dates
-    * We assume each string date is a valid date in yyyymmdd format since array is queried from database
+    * We assume each string date is a VALID date in yyyymmdd format since array is queried from database
     *
     * @param array $stringDates
     * @return array - UNIX timestamps
     */
-    public function stringDatesArrayToUnixTimeStampArray($stringDates) {
+    public function stringDateArrayToUnixTimestampArray($stringDates) {
 
       $unixTimeStamps = [];
       $len = count($stringDates);

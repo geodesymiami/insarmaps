@@ -28,16 +28,15 @@ class WebServicesController extends Controller
     /**
     * Return array containing x and y axis data to create ploy using Highcharts.js library
     *
-    * @param array $stringDates - strings representing dates in yyyymmdd (ex: 20070808)
+    * @param array $stringDates - strings representing VALID dates in yyyymmdd (ex: 20070808)
     * @param array $displacements - doubles representing ground displacement in meters/year
     * @return array $data - contains 2 arrays: $displacements and an array of unix dates
     */
-    // INCONSISTENCY: we call param $stringDates but it is an array of doubles... 
     private function getDisplacementChartData($displacements, $stringDates) {
 
       $data = []; 
       $len = count($stringDates);
-      $unixDates = $this->dateFormatter->stringDatesArrayToUnixTimeStampArray($stringDates);
+      $unixDates = $this->dateFormatter->stringDateArrayToUnixTimestampArray($stringDates);
 
       for ($i = 0; $i < $len; $i++) {
         // high charts wants milliseconds so multiply by 1000
@@ -54,7 +53,7 @@ class WebServicesController extends Controller
     * @param array $displacements - doubles representing ground displacement in meters/year
     * @return object $response - Highcharts plot object
     */
-    private function generatePlotPicture($displacements, $stringDates) {
+    private function createPlotPicture($displacements, $stringDates) {
       $jsonString = '{
         "title": {
           "text": null
@@ -146,7 +145,7 @@ class WebServicesController extends Controller
       $json["series"][0]["data"] = $this->getDisplacementChartData($displacements, $stringDates);
 
       // calculate slope of linear regression line 
-      $decimalDates = $this->dateFormatter->stringDatesToDecimalArray($stringDates);
+      $decimalDates = $this->dateFormatter->stringDateArrayToDecimalArray($stringDates);
 
       $linearRegression = $this->calcLinearRegressionLine($decimalDates, $displacements);
 
@@ -170,13 +169,14 @@ class WebServicesController extends Controller
     }
 
     /**
-    * Given a dataset name, point, returns json array containing data for a point within bounded time period
+    * Given a VALID dataset name and VALID point that exists in dataset, 
+    * return json array containing data for that point within bounded time period or error message
     *
     * @param string $dataset - name of dataset
     * @param string $point - point in dataset that user searched for using webservice
     * @param string $startTime - lower boundary of dates in yyyy-mm-dd format
     * @param string $endTime - upper boundary of dates in yyyy-mm-dd format
-    * @return array $json - contains decimaldates, stringdates, and displacement of point
+    * @return array $json - if no error, contains decimaldates, stringdates, and displacement of point
     */
     public function createJsonArray($dataset, $point, $startTime, $endTime) {
       $json = [];
@@ -205,7 +205,7 @@ class WebServicesController extends Controller
       $startTimeIndex = $this->dateFormatter->getStartTimeDateIndex($startTime, $string_dates);
       $endTimeIndex = $this->dateFormatter->getEndTimeDateIndex($endTime, $string_dates);
 
-      // if startTime or endTime go beyond range of dates, throw error message
+      // if startTime or endTime go beyond range of dates, create error message in json
       if ($startTimeIndex === NULL) {
         $lastDate = $this->dateFormatter->verifyDate($string_dates[count($string_dates)-1]);
         $json["errors"] = "please input startTime earlier than or equal to " . $lastDate->format('Y-m-d');
@@ -337,7 +337,7 @@ class WebServicesController extends Controller
         return json_encode($json);
       }
 
-      return $this->generatePlotPicture($json["displacements"], $json["string_dates"]);
+      return $this->createPlotPicture($json["displacements"], $json["string_dates"]);
     }
 
 

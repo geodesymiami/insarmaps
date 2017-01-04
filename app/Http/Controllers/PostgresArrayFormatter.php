@@ -12,8 +12,8 @@ class PostgresArrayFormatter
     */
     public function postgresToPHPArray($pgArray) {
 
-		$postgresStr = trim($pgArray, "{}");
-		$elements = explode(",", $postgresStr);
+		$postgresString = trim($pgArray, "{}");
+		$elements = explode(",", $postgresString);
 
 		$phpArray = [];
 	 	$arrayLen = count($elements);
