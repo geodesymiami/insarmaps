@@ -180,11 +180,8 @@ class DateFormatter
       $currentDate = new DateTime();  
       $interval = NULL;
 
-      // if startDate is invalid, throw error message
+      // WebServicesController.php already checked that startTime is valid date
       $startDate = $this->verifyDate($startTime);
-      if ($startDate == NULL) {
-        dd("error: invalid startTime, please enter date in yyyy-mm-dd format");
-      }
 
       for ($i = 0; $i < count($stringDates); $i++) {
         $currentDate = $this->verifyDate($stringDates[$i]);
@@ -220,10 +217,8 @@ class DateFormatter
       $currentDate = new DateTime();  
       $interval = NULL;
 
+      // WebServicesController.php already checked that endTime is valid date
       $endDate = $this->verifyDate($endTime);
-      if ($endDate == NULL) {
-        dd("error: invalid endTime, please enter date in yyyy-mm-dd format");
-      }
 
       for ($i = 0; $i < count($stringDates); $i++) {
         $currentDate = $this->verifyDate($stringDates[$i]);
