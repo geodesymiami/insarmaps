@@ -70,7 +70,6 @@ $(window).load(function() {
     * @return {Array} matchingAreas if user inputs at least one search criteria, display alert otherwise
     */
 	$("#enter-button-search-attributes").click(function() {
-
 		$("#search-form-results-table tbody").empty();
 		var matchingAreas = [];
 
@@ -108,7 +107,14 @@ $(window).load(function() {
 			}
 		}
 
+		$("#search-form-results-table tr").hover(function() {
+			$(this).css({ "background-color": "rgba(0, 86, 173, 0.5)" });
+		}, function() {
+			$(this).css({ "background-color": "white" });
+		});
+
+		$("#search-form-results-table").trigger("update");
+
 		return matchingAreas;
 	});
-
 });

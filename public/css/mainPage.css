@@ -716,6 +716,7 @@ input[type=number] {
     height: 30%;
     width: 100%;
     float: left;
+    overflow-y: auto;
 }
 
 #areas-under-mouse-table {

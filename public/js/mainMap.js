@@ -629,7 +629,9 @@ function Map(loadJSONFunc) {
             var features = [];
 
             var attributesController = new AreaAttributesController(that, json.areas[0]);
+            var searchFormController = new SearchFile();
 
+            $("#search-form-results-table tbody").empty();
             for (var i = 0; i < json.areas.length; i++) {
                 var area = json.areas[i];
 
@@ -643,7 +645,7 @@ function Map(loadJSONFunc) {
 
                 attributesController.setArea(area);
                 var attributes = attributesController.getAllAttributes();
-                // hard coded for now, as we had a bug in converter
+
                 var scene_footprint = attributes.scene_footprint;
                 var polygonGeojson = Terraformer.WKT.parse(scene_footprint);
 
@@ -699,8 +701,18 @@ function Map(loadJSONFunc) {
                         "fill-outline-color": "rgba(0, 0, 255, 1.0)"
                     }
                 });
+
+                searchFormController.generateMatchingAreaHTML(attributes, feature);
             };
 
+            // make search form table highlight on hover
+            $("#search-form-results-table tr").hover(function() {
+                $(this).css({ "background-color": "rgba(0, 86, 173, 0.5)" });
+            }, function() {
+                $(this).css({ "background-color": "white" });
+            });
+
+            $("#search-form-results-table").trigger("update");
             that.areaFeatures = features;
 
             // add the markers representing the available areas
@@ -799,6 +811,7 @@ function Map(loadJSONFunc) {
                 that.areaPopup.remove();
                 that.gpsStationNamePopup.remove();
                 that.areaMarkerLayer.resetHighlightsOfAllMarkers();
+                that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
                 return;
             }
 
@@ -824,6 +837,8 @@ function Map(loadJSONFunc) {
                 var previewButtonIDSuffix = "_preview_attribues";
 
                 that.areaMarkerLayer.resetHighlightsOfAllMarkers();
+                that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
+                that.areaMarkerLayer.setAreaRowHighlighted(features[0].properties.unavco_name);
                 that.areaMarkerLayer.setPolygonHighlighted(features[0].properties.layerID, "rgba(0, 0, 255, 0.3)");
                 for (var i = 0; i < features.length; i++) {
                     var unavco_name = features[i].properties.unavco_name;

@@ -48,6 +48,16 @@ function AreaMarkerLayer(map) {
         }
     };
 
+    this.setAreaRowHighlighted = function(unavcoName) {
+        $("#" + unavcoName + "-search-row").css({ "background-color": "rgba(0, 86, 173, 0.5)" });
+    };
+
+    this.resetHighlightsOfAllAreaRows = function() {
+        $("#search-form-results-table tr").each(function() {
+            $(this).css({ "background-color": "white"});
+        });
+    };
+
     this.setPolygonHighlighted = function(marker, highlightColor) {
         if (that.map.map.getLayer(marker)) {
             that.map.map.setPaintProperty(marker, "fill-color", highlightColor);
