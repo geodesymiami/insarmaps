@@ -28,14 +28,14 @@ class WebServicesController extends Controller
     /**
     * Return array containing x and y axis data to create ploy using Highcharts.js library
     *
-    * @param array $stringDates - doubles representing dates in yyyy-mm-dd.0 format (ex: 20070808.0)
-    * @param array $displacements - double representing ground displacement in meters/year
+    * @param array $stringDates - strings representing dates in yyyymmdd (ex: 20070808)
+    * @param array $displacements - doubles representing ground displacement in meters/year
     * @return array $data - contains 2 arrays: $displacements and an array of unix dates
     */
     // INCONSISTENCY: we call param $stringDates but it is an array of doubles... 
     private function getDisplacementChartData($displacements, $stringDates) {
 
-      $data = [];
+      $data = []; 
       $len = count($stringDates);
       $unixDates = $this->dateFormatter->stringDatesArrayToUnixTimeStampArray($stringDates);
 
