@@ -26,6 +26,4 @@ class RequestFormatter
 
     	return $requestParameters;
     }
-
-    // TODO: implement functions to set value of each parameter - needed for GUI
 }

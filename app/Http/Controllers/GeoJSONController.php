@@ -17,28 +17,37 @@ class GeoJSONController extends Controller {
     $this->arrayFormatter = new PostgresArrayFormatter();
   }
 
-  // returns an array containing folder path as a string and number of json files
+  /**
+  * Returns an array containing folder path as a string and number of json files
+  *
+  * @param string $jsonFolderPath
+  * @return array $data - data[0] = jsonFolderPath, data[1] = number of json files
+  */
   public function getNumJSONFiles($jsonFolderPath) {
+
     $num_files = 0;
     $files = scandir($jsonFolderPath);
     $len = count($files);
     $pattern = ".json";  // pattern is chunk_<number>.json"
-    $array = [$jsonFolderPath];
+    $data = [$jsonFolderPath];
+
     for ($i = 0; $i < $len; $i++) {
       if (strpos($files[$i], $pattern) !== false) {
         $num_files++;
       }
     }
-    array_push($array, $num_files);
-    return $array;
+
+    array_push($data, $num_files);
+    return $data;
   }
 
   /** @throws Exception */
+  // TODO: Insert try/catch statement in case query fails
   private function jsonDataForPoint($area, $pointNumber) {
       $json = [];
       // hard coded until zishi is back
-      $decimal_dates = null;
-      $string_dates = null;
+      $decimal_dates = NULL;
+      $string_dates = NULL;
 
       $query = "SELECT decimaldates, stringdates FROM area WHERE unavco_name=?";
       $dateInfos = DB::select($query, [$area]);
@@ -80,8 +89,8 @@ public function getPoints() {
     $json = [];    
 
     $json["displacements"] = [];
-    $decimal_dates = null;
-    $string_dates = null;
+    $decimal_dates = NULL;
+    $string_dates = NULL;
 
     $parameters = explode("/", $points);
     $area = $parameters[0];
