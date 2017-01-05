@@ -515,7 +515,6 @@ function Map(loadJSONFunc) {
 
         var feature = features[0];
 
-        console.log(feature);
         var unavco_name = feature.properties.unavco_name;
         var project_name = feature.properties.project_name;
         var lat = feature.geometry.coordinates[0];
@@ -565,8 +564,6 @@ function Map(loadJSONFunc) {
 
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
     this.addDataset = function(data) {
-        var layer;
-        var layerList = document.getElementById('layerList');
         var stops = that.colorScale.getMapboxStops();
 
         that.map.addSource('vector_layer_', {
@@ -579,7 +576,7 @@ function Map(loadJSONFunc) {
 
         data['vector_layers'].forEach(function(el) {
             var layer = {
-                id: el['id'] + Math.random(),
+                id: el['id'],
                 source: 'vector_layer_',
                 'source-layer': el['id'],
                 type: 'circle',
@@ -611,8 +608,6 @@ function Map(loadJSONFunc) {
         // remove click listener for selecting an area, and add new one for clicking on a point
         that.map.off("click", that.clickOnAnAreaMarker);
         that.map.on('click', that.leftClickOnAPoint);
-
-        return layer;
     };
 
     this.loadAreaMarkersExcluding = function(toExclude) {
@@ -641,7 +636,6 @@ function Map(loadJSONFunc) {
 
                 var lat = area.coords.latitude;
                 var long = area.coords.longitude;
-                console.log(area);
 
                 attributesController.setArea(area);
                 var attributes = attributesController.getAllAttributes();
@@ -692,15 +686,28 @@ function Map(loadJSONFunc) {
 
                 that.map.addSource(id, areaMarker);
 
-                that.map.addLayer({
-                    "id": id,
-                    "type": "fill",
-                    "source": id,
-                    "paint": {
-                        "fill-color": "rgba(0, 0, 255, 0.0)",
-                        "fill-outline-color": "rgba(0, 0, 255, 1.0)"
-                    }
-                });
+                // if dataset loaded, insert areas before dataset layer
+                if (that.map.getLayer("chunk_1")) {
+                    that.map.addLayer({
+                        "id": id,
+                        "type": "fill",
+                        "source": id,
+                        "paint": {
+                            "fill-color": "rgba(0, 0, 255, 0.0)",
+                            "fill-outline-color": "rgba(0, 0, 255, 1.0)"
+                        }
+                    }, "chunk_1");
+                } else {
+                    that.map.addLayer({
+                        "id": id,
+                        "type": "fill",
+                        "source": id,
+                        "paint": {
+                            "fill-color": "rgba(0, 0, 255, 0.0)",
+                            "fill-outline-color": "rgba(0, 0, 255, 1.0)"
+                        }
+                    });
+                }
 
                 searchFormController.generateMatchingAreaHTML(attributes, feature);
             };
@@ -720,43 +727,6 @@ function Map(loadJSONFunc) {
                 "type": "FeatureCollection",
                 "features": features
             };
-
-            // clustering
-            var layers = [
-                [150, '#f28cb1'],
-                [20, '#f1f075'],
-                [0, '#51bbd6']
-            ];
-
-            layers.forEach(function(layer, i) {
-                that.map.addLayer({
-                    "id": "cluster-" + i,
-                    "type": "circle",
-                    "source": id,
-                    "paint": {
-                        "circle-color": layer[1],
-                        "circle-radius": 10
-                    },
-                    "filter": i == 0 ? [">=", "point_count", layer[0]] : ["all", [">=", "point_count", layer[0]],
-                        ["<", "point_count", layers[i - 1][0]]
-                    ]
-                });
-            });
-
-            // Add a layer for the clusters' count labels
-            that.map.addLayer({
-                "id": "cluster-count",
-                "type": "symbol",
-                "source": id,
-                "layout": {
-                    "text-field": "{point_count}",
-                    "text-font": [
-                        "DIN Offc Pro Medium",
-                        "Arial Unicode MS Bold"
-                    ],
-                    "text-size": 12
-                }
-            });
         });
     };
 
@@ -827,10 +797,16 @@ function Map(loadJSONFunc) {
                 return;
             }
 
-            // if it's a select area marker, but not a selected point marker... I suppose this is hackish
-            // a better way is to have two mousemove callbacks like we do with select area vs select marker
             var markerSymbol = features[0].properties["marker-symbol"];
 
+            console.log(markerSymbol);
+            if (!markerSymbol) {
+                that.areaMarkerLayer.resetHighlightsOfAllMarkers();
+                that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
+                return;
+            }
+
+            // a better way is to have two mousemove callbacks like we do with select area vs select marker
             if (features[0].layer.id == "gpsStations") {
                 that.gpsStationNamePopup.remove();
                 var coordinates = features[0].geometry.coordinates;
@@ -841,7 +817,7 @@ function Map(loadJSONFunc) {
                 return;
             }
 
-            if (markerSymbol != null && typeof markerSymbol != "undefined" && markerSymbol == "marker") {
+            if (markerSymbol == "marker") {
                 // Populate the areaPopup and set its coordinates
                 // based on the feature found.
                 var html = "<table class='table' id='areas-under-mouse-table'>";
@@ -985,13 +961,8 @@ function Map(loadJSONFunc) {
 
         that.map.removeSource("vector_layer_");
 
-        for (var i = 0; i < that.layers_.length; i++) {
-            var id = that.layers_[i].id;
-
-            // don't remove the base map, only the points
-            if (id !== "simple-tiles") {
-                that.map.removeLayer(id);
-            }
+        for (var i = 1; i <= currentArea.properties.num_chunks; i++) {
+            that.map.removeLayer("chunk_" + i);
         }
 
         // remove contour labels if they are there. this wasn't needed as gl js seemed to remove the contours in the above loop
