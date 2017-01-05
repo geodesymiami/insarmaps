@@ -159,13 +159,6 @@ function getGEOJSON(area) {
         myMap.removeAreaMarkers();
 
         overlayToggleButton.set("on");
-        if (contourToggleButton.toggleState == ToggleStates.ON) {
-            myMap.addContourLines();
-        }
-
-        if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
-            myMap.addGPSStationMarkers(gpsStations);
-        }
 
         // in case it's up
         myMap.gpsStationPopup.remove();
