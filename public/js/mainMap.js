@@ -173,8 +173,6 @@ function Map(loadJSONFunc) {
     };
 
     this.clickOnAPoint = function(e) {
-        console.log("it is");
-        console.log(e.point);
         var features = that.map.queryRenderedFeatures(e.point);
 
         // var layerID = "touchLocation";
@@ -184,7 +182,6 @@ function Map(loadJSONFunc) {
         }
 
         var feature = features[0];
-        console.log(feature);
 
         if (feature.layer.id == "gpsStations") {
             var coordinates = feature.geometry.coordinates;
@@ -525,10 +522,6 @@ function Map(loadJSONFunc) {
 
         var markerID = feature.properties.layerID;
 
-        // console.log(attributeKeys);
-        // console.log(attributeValues);
-        // console.log(feature.properties);
-
         getGEOJSON(feature);
     };
 
@@ -799,7 +792,6 @@ function Map(loadJSONFunc) {
 
             var markerSymbol = features[0].properties["marker-symbol"];
 
-            console.log(markerSymbol);
             if (!markerSymbol) {
                 that.areaMarkerLayer.resetHighlightsOfAllMarkers();
                 that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
@@ -924,8 +916,6 @@ function Map(loadJSONFunc) {
         });
 
         that.map.on('zoomend', function() {
-            console.log(that.map.getZoom());
-
             if (that.selector.bbox != null) {
                 that.selector.recolorDataset();
             }

@@ -46,7 +46,6 @@ function AreaAttributesPopup() {
 
         var attributesController = new AreaAttributesController(myMap, area);
         var areaAttributes = attributesController.getAllAttributes();
-        // console.log(areaAttributes);
 
         for (var curKey in areaAttributes) {
             if (areaAttributes.hasOwnProperty(curKey)) {
@@ -255,7 +254,7 @@ function ToggleButton(id) {
                 that.toggle();
             }
         } else {
-            console.log("invalid toggle option");
+            throw "invalid toggle option";
         }
     }
     this.onclick = function(clickFunction) {
@@ -420,11 +419,8 @@ function setupToggleButtons() {
 
             $("#overlay-slider").slider("value", 100);
             myMap.addDataset(myMap.tileJSON);
-
-            console.log("added that");
         } else {
             if (myMap.pointsLoaded()) {
-                console.log("loaded");
                 $("#overlay-slider").slider("value", 0);
                 myMap.removePoints();
                 myMap.removeTouchLocationMarkers();
@@ -511,7 +507,6 @@ function setupToggleButtons() {
 
 function search() {
     var areas = myMap.areaFeatures;
-    console.log(areas);
 
     if (!$('.wrap#select-area-wrap').hasClass('active')) {
         $('.wrap#select-area-wrap').toggleClass('active');
@@ -538,7 +533,6 @@ function search() {
         });
         var countries = fuse.search(query);
 
-        console.log(countries);
         // add our info in a table, first remove any old info
         $(".wrap#select-area-wrap").find(".content").find("#myTable").find(
             "#tableBody").empty();
@@ -572,7 +566,6 @@ function search() {
                     // don't load area if reference link is clicked
                     if (e.target.cellIndex == 0) {
                         clickedArea = country;
-                        console.log(country);
                         $('.wrap#select-area-wrap').toggleClass(
                             'active');
                         getGEOJSON(country);
@@ -581,7 +574,6 @@ function search() {
             })(country));
         }
     } else {
-        console.log("No such areas");
         $("#tableBody").html("No areas found");
     }
 }
