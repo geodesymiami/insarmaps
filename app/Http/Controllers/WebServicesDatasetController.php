@@ -13,8 +13,6 @@ class WebServicesDatasetController extends Controller
 {
     public function __construct() {
       $this->arrayFormatter = new PostgresArrayFormatter();
-      $this->dateFormatter = new DateFormatter();
-      $this->requestFormatter = new RequestFormatter();
     }	
 
     public function processRequest(Request $request) {
@@ -35,29 +33,28 @@ class WebServicesDatasetController extends Controller
 
       foreach ($requests as $key => $value) {
         switch ($key) {
-          case 'latitude':
-            $latitude = $value;
+          case 'satellite':
+            $satellite = $value;
             break;
-          case 'longitude':
-            $longitude = $value;
+          case 'relativeOrbit':
+            $relativeOrbit = $value;
             break;
-          case 'dataset':
-            $dataset = $value;
+          case 'firstFrame':
+            $firstFrame = $value;
             break;
-          case 'startTime':
-            $startTime = $value;
+          case 'mode':
+            $mode = $value;
             break;
-          case 'endTime':
-            $endTime = $value;
-            break;
-          case 'outputType':
-            $outputType = $value;
+          case 'flightDirection':
+            $flightDirection = $value;
             break;
           default:
             break;
         }
       }
 
+      // TODO: current problem is that it is very difficult to check attributekeys and attributevalues using SQL
+      // Wondering if checking user input against dataset attributes logic should be done in server instead of database
     }
 
     /**
