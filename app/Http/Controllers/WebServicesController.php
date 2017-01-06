@@ -17,6 +17,10 @@ use Exception;
 // 3) unix timestamp (ex: 1170692925)
 // Hence whenever a parameter or return value is a date, specify format to avoid confusion
 
+// Pipeline: WebServicesController.php gets parameters for query from RequestFormatter.php
+// and sends that to webServices.blade.php which generates HTML and uses webservicesUI.js to 
+// check if user input paramaters are valid and generate a webservice url
+
 class WebServicesController extends Controller
 {
     public function __construct() {
@@ -188,6 +192,8 @@ class WebServicesController extends Controller
       $endTimeIndex = NULL;
       $minAndendTimeIndices = NULL;
 
+      // how to get attributes for dataset instead of point
+      // $query = "SELECT attributekeys, attributevalues FROM area WHERE unavco_name like ?";
       $query = "SELECT decimaldates, stringdates FROM area WHERE unavco_name like ?";
       $dateInfos = DB::select($query, [$dataset]);
 
@@ -390,13 +396,12 @@ class WebServicesController extends Controller
     }
 
     /**
-    * Return Laravel view object for webservice UI
+    * Return Laravel view object for webservice UI for querying points
     *
-    * @return object $requestParameters - Laravel view object containing dictionary of webservice parameters
+    * @return object $requestParameters - Laravel view object containing dictionary of query parameters
     */
     public function renderView() {
-      $requestParameters = $this->requestFormatter->getRequestParameters();
-
-      return view("webServices", ["requestParameters" => $requestParameters]);
+      // return view("webServices", ["requestParameters" => $requestParameters]);
+      return view("webServices");
     }
 }
