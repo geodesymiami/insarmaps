@@ -188,11 +188,13 @@ function getGEOJSON(area) {
                 zoom: zoom
             });
 
-            myMap.loadAreaMarkersExcluding([area.properties.unavco_name]);
-            window.setTimeout(function() {
+            myMap.onDatasetRendered(function(renderCallback) {
                 var attributesController = new AreaAttributesController(myMap, area);
                 attributesController.processAttributes();
-            }, 6000);
+                myMap.map.off("render", renderCallback);
+            });
+
+            myMap.loadAreaMarkersExcluding([area.properties.unavco_name]);
         }, 1000);
     };
 

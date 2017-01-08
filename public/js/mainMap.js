@@ -160,6 +160,8 @@ function Map(loadJSONFunc) {
         closeOnClick: false
     });
 
+    this.previousZoom = this.startingZoom;
+
     this.disableInteractivity = function() {
         that.map.dragPan.disable();
         that.map.scrollZoom.disable();
@@ -916,12 +918,10 @@ function Map(loadJSONFunc) {
         });
 
         that.map.on('zoomend', function() {
-            if (that.selector.bbox != null) {
-                that.selector.recolorDataset();
-            }
+            var currentZoom = that.map.getZoom();
 
             // reshow area markers once we zoom out enough
-            if (that.map.getZoom() < that.zoomOutZoom) {
+            if (currentZoom < that.zoomOutZoom) {
                 if (that.pointsLoaded()) {
                     that.reset();
                     // otherwise, points aren't loaded, but area previously was active
@@ -933,6 +933,26 @@ function Map(loadJSONFunc) {
                     that.map.on('click', that.clickOnAnAreaMarker);
                 }
             }
+
+            if (that.map.getSource("onTheFlyJSON")) {
+                // it doesn't fire render events if we zoom out, so we recolor anyways when we zoom
+                // out. but what about the cases when it does refire? then we have incomplete recoloring.
+                // TODO: investigate and fix
+                if (currentZoom < that.previousZoom) {
+                    that.selector.recolorDataset();
+                } else {
+                    that.onDatasetRendered(function(renderCallback) {
+                        console.log("hi");
+                        if (!that.selector.recoloring()) {
+                            that.selector.recolorDataset();
+                        }
+
+                        that.map.off("render", renderCallback);
+                    });
+                }
+            }
+
+            that.previousZoom = currentZoom;
         });
     };
 
