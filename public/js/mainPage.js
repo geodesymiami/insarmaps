@@ -190,7 +190,11 @@ function getGEOJSON(area) {
 
             myMap.onDatasetRendered(function(renderCallback) {
                 var attributesController = new AreaAttributesController(myMap, area);
-                attributesController.processAttributes();
+                try {
+                    attributesController.processAttributes();
+                } catch (e) {
+                    console.log("Exception: " + e);
+                }
                 myMap.map.off("render", renderCallback);
             });
 

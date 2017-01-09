@@ -351,7 +351,10 @@ function Map(loadJSONFunc) {
                                 that.graphsController.addRegressionLine(chartContainer, displacements_array);
                             }
 
-                            that.selector.recolorDataset();
+                            if (that.selector.bbox != null && that.selector.minIndex != -1
+                                && that.selector.maxIndex != -1) {
+                                that.selector.recolorDataset();
+                            }
                         }
                     },
                     dateTimeLabelFormats: {
