@@ -168,41 +168,43 @@
       </div>
     </div>
   </div>
-  <div id="search-form">
-    <div class="form-group">
-      <input type="text" class="form-control" placeholder="Satellite" id="input-satellite">
+  <div id="search-form-and-results-container">
+    <div id="search-form">
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="Satellite" id="input-satellite">
+      </div>
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="Relative Orbit" id="input-relative-orbit">
+      </div>
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="First Frame" id="input-first-frame">
+      </div>
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="Mode" id="input-mode">
+      </div>
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="Flight Direction" id="input-flight-direction">
+      </div>
+      <!-- enter button to search for files with attributes matching above input -->
+      <div id="enter-button-search-attributes">
+        <button class="btn btn-primary btn-block clickable-button">Enter</button>
+      </div>
     </div>
-    <div class="form-group">
-      <input type="text" class="form-control" placeholder="Relative Orbit" id="input-relative-orbit">
+    <div id="search-form-results">
+      <table class="tablesorter-bootstrap" id="search-form-results-table">
+        <thead>
+          <tr>
+            <th>Satellite</th>
+            <th>Rel Orbit</th>
+            <th>First_Frame</th>
+            <th>Mode</th>
+            <th>Flight Dir.</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
     </div>
-    <div class="form-group">
-      <input type="text" class="form-control" placeholder="First Frame" id="input-first-frame">
-    </div>
-    <div class="form-group">
-      <input type="text" class="form-control" placeholder="Mode" id="input-mode">
-    </div>
-    <div class="form-group">
-      <input type="text" class="form-control" placeholder="Flight Direction" id="input-flight-direction">
-    </div>
-    <!-- enter button to search for files with attributes matching above input -->
-    <div id="enter-button-search-attributes">
-      <button class="btn btn-primary btn-block clickable-button">Enter</button>
-    </div>
-  </div>
-  <div id="search-form-results">
-    <table class="tablesorter-bootstrap" id="search-form-results-table">
-      <thead>
-        <tr>
-          <th>Satellite</th>
-          <th>Rel Orbit</th>
-          <th>First_Frame</th>
-          <th>Mode</th>
-          <th>Flight Dir.</th>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
-    </table>
   </div>
   <div class="wrap" id="charts" title="Displacement time-series">
     <div class="top-right-buttons">
