@@ -32,7 +32,7 @@ $(window).load(function() {
 
             // add optional parameters if they exist
             if (satellite.length > 0) {
-                query += "satellite=" + satellite;
+                query += "&satellite=" + satellite;
             } 
 
             if (relativeOrbit.length > 0) {

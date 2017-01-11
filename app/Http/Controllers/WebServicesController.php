@@ -234,7 +234,8 @@ class WebServicesController extends Controller
 
     /**
     * Given a request object containing a url, return a json encoded array for data corresponding to point
-    * that best matches request parameters specified by user. Return null if parameters are invalid.
+    * that best matches request parameters specified by user. If more than one dataset contain this point, 
+    * return data for all datasets. If no datasets contain point, return NULL.
     *
     * @param Request $request - url containing parameters specified by user to search for a point in a dataset
     * @return array $json - contains decimaldates, stringdates, and displacement of point
@@ -242,17 +243,21 @@ class WebServicesController extends Controller
     public function processRequest(Request $request) {
       $json = [];
 
-      // Mandatory request parameters: latitude, longitude, dataset
-      // Optional request parameters: startTime, endTime, outPutType
+      // Required request parameters: latitude, longitude
       $latitude = 0.0;
       $longitude = 0.0;
-      $dataset = "";
-      $startTime = NULL;  // if dataset is valid, default value will be set to first date in dataset
-      $endTime = NULL;  // if dataset is valid, default value will be set to last date in dataset 
-      $outputType = "plot"; // default value is plot, json is used for debugging and checking values
+      $satellite = NULL;
+      $relativeOrbit = NULL;
+      $firstFrame = NULL;
+      $mode = NULL;
+      $flightDirection = NULL;
+      $startTime = NULL;  // if specified, returned datasets must occur during or after this time
+      $endTime = NULL;  // if specified, returned datasets must occur during or before this time
+      $outputType = "json"; // default value is json, other option is plot
 
       // extract parameter values from Request url
       $requests = $request->all();
+
       foreach ($requests as $key => $value) {
         switch ($key) {
           case 'latitude':
@@ -261,8 +266,20 @@ class WebServicesController extends Controller
           case 'longitude':
             $longitude = $value;
             break;
-          case 'dataset':
-            $dataset = $value;
+          case 'satellite':
+            $satellite = $value;
+            break;
+          case 'relativeOrbit':
+            $relativeOrbit = $value;
+            break;
+          case 'firstFrame':
+            $firstFrame = $value;
+            break;
+          case 'mode':
+            $mode = $value;
+            break;
+          case 'flightDirection':
+            $flightDirection = $value;
             break;
           case 'startTime':
             $startTime = $value;
@@ -278,12 +295,13 @@ class WebServicesController extends Controller
         }
       }
 
-      // check if startTime and endTime inputted by user are in in yyyy-mm-dd or yyyymmdd format
+      // check if startTime inputted by user is in in yyyy-mm-dd or yyyymmdd format
       if ($startTime !== NULL && $this->dateFormatter->verifyDate($startTime) === NULL) {
         $json["errors"] = "please input startTime in format yyyy-mm-dd (ex: 1990-12-19)";
         return json_encode($json);
       }
 
+      // check if inputted by user is in in yyyy-mm-dd or yyyymmdd format
       if ($endTime !== NULL && $this->dateFormatter->verifyDate($endTime) === NULL) {
         $json["errors"] = "please input endTime in format yyyy-mm-dd (ex: 2020-12-19)";
         return json_encode($json);
@@ -301,7 +319,23 @@ class WebServicesController extends Controller
         }
       }
 
-      // perform query to get point objects within +/- delta range of (longitude, latitude)
+      // New Webservice can display multiple points from different datasets matching user input
+      // Example url: http://homestead.app/WebServices?longitude=131.221&latitude=33.339&satellite=Alos&relativeOrbit=73&firstFrame=2950&mode=SM&flightDirection=D&startTime=1990-12-20&endTime=2020-12-20&outputType=json
+
+      // QUERY 1: get names of all datasets
+      // TODO: Search for dataset names based on optional parameters specified by user
+      $query = "SELECT unavco_name FROM area;";
+      $unavcoNames = DB::select(DB::raw($query));
+
+      $len = count($unavcoNames);
+      $datasets = [];
+      $data = []; // array of point data from all datasets that match closest to user query 
+
+      foreach ($unavcoNames as $unavcoName) {
+        array_push($datasets, $unavcoName->unavco_name);
+      }
+
+      // calculate polygon encapsulating longitude and latitude specified by user
       // delta = range of error for latitude and longitude values, can be changed as needed
       $delta = 0.0005;
       $p1_lat = $latitude - $delta;
@@ -315,27 +349,41 @@ class WebServicesController extends Controller
       $p5_lat = $latitude - $delta;
       $p5_long = $longitude - $delta;
 
-      $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $dataset . "
-            WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
+      // QUERY 2: for each dataset name, if point exists in dataset then 
+      // return data of first point returned by polygon created by (longitude, latitude) and delta
+      for ($i = 0; $i < $len; $i++) {
+        $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $datasets[$i] . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
 
-      // check if query fails due to dataset name not existing in database
-      try {
         $points = DB::select(DB::raw($query));
-      }
-      catch (Exception $e) {
-        $json["errors"] = "invalid dataset name - please check dataset";
-        return json_encode($json);
+
+        if (count($points) == 1) {
+          array_push($data, $points[0]);
+        }
+        else if (count($points) > 1) {
+          // find point closest to user specified (longitude, latitude) and add to data array
+          $numPoints = count($points);
+          $nearest = $points[0]; // closest point
+          $nearestDistance = $this->haversineGreatCircleDistance($latitude, $longitude, $nearest->st_y, $nearest->st_x);
+
+          for ($j = 1; $j < $numPoints; $j++) {
+            $currentDistance = $this->haversineGreatCircleDistance($latitude, $longitude, $points[$j]->st_y, $points[$j]->st_x);
+
+            if ($currentDistance < $nearestDistance) {
+              $nearest = $points[$j];
+              $nearestDistance = $currentDistance;
+            }
+          }
+
+          $data[$datasets[$i]] = $nearest;
+        }
       }
 
-      // check if query fails due to latitude and/or longitude outside area of dataset
-      if (count($points) == 0) {
-        $json["errors"] = "point was not found in dataset - please check latitude and longitude";
-        return json_encode($json);
+      // TODO: clean code above and make function getNearestPoint
+      foreach ($data as $key => $value) {
+        // $key = dataset name, $value = point object data returned by SQL
+        $jsonForPoint = $this->createJsonArray($key, $value, $startTime, $endTime);
+        $json[$key] = $jsonForPoint;
       }
-
-      // * Currently we hardcode by picking the first point in the $points array
-      // TODO: Come up with algorithm to get the closest point
-      $json = $this->createJsonArray($dataset, $points[0], $startTime, $endTime);
 
       // check if error occured based on startTime and endTime; if so return json
       // by default we return plot unless outputType = json (used for debugging)
@@ -343,6 +391,7 @@ class WebServicesController extends Controller
         return json_encode($json);
       }
 
+      // TODO: return plot of first dataset in json array - this will a take a backburner
       return $this->createPlotPicture($json["displacements"], $json["string_dates"]);
     }
 
@@ -393,6 +442,32 @@ class WebServicesController extends Controller
  
       // return result
       return array("m"=>$m, "b"=>$b);
+    }
+
+    /**
+    * Calculates the great-circle distance between two points, with
+    * the Haversine formula.
+    * @param float $latitudeFrom Latitude of start point in [deg decimal]
+    * @param float $longitudeFrom Longitude of start point in [deg decimal]
+    * @param float $latitudeTo Latitude of target point in [deg decimal]
+    * @param float $longitudeTo Longitude of target point in [deg decimal]
+    * @param float $earthRadius Mean earth radius in [m]
+    * @return float Distance between points in [m] (same as earthRadius)
+    */
+    function haversineGreatCircleDistance(
+      $latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000)
+    {
+      // convert from degrees to radians
+      $latFrom = deg2rad($latitudeFrom);
+      $lonFrom = deg2rad($longitudeFrom);
+      $latTo = deg2rad($latitudeTo);
+      $lonTo = deg2rad($longitudeTo);
+
+      $latDelta = $latTo - $latFrom;
+      $lonDelta = $lonTo - $lonFrom;
+
+      $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) + cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
+      return $angle * $earthRadius;
     }
 
     /**
