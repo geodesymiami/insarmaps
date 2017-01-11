@@ -389,12 +389,9 @@ function switchLayer(layer) {
     } else {
         myMap.setBaseMapLayer(layerID);
 
-        var id = "areas";
-
         if (myMap.areaFeatures != null) {
             styleLoadFunc = function(event) {
                 myMap.map.off("data", styleLoadFunc);
-
                 if (contourToggleButton.toggleState == ToggleStates.ON) {
                     myMap.addContourLines();
                 }
