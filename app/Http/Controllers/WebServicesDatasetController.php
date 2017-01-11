@@ -24,37 +24,56 @@ class WebServicesDatasetController extends Controller
       $firstFrame = 0;
       $mode = NULL;
       $flightDirection = NULL;
+      $query = NULL;
+      $queryParameters = "";
 
       // extract parameter values from Request url
       $requests = $request->all();
-
-      // INITIAL TEST
-      dd($requests);
-
       foreach ($requests as $key => $value) {
         switch ($key) {
           case 'satellite':
             $satellite = $value;
+            // dd(gettype($satellite));
             break;
           case 'relativeOrbit':
             $relativeOrbit = $value;
+            // dd(gettype($relativeOrbit));
             break;
           case 'firstFrame':
             $firstFrame = $value;
+            // dd(gettype($firstFrame));
             break;
           case 'mode':
             $mode = $value;
+            // dd(gettype($mode));
             break;
           case 'flightDirection':
             $flightDirection = $value;
+            // dd(gettype($flightDirection));
+            // $queryParameters += strval($value) + ",";
             break;
           default:
             break;
         }
       }
+      
+      dd($requests);
+      
+      $queryParameters += "{" + $satellite + "," + $relativeOrbit + "," + $firstFrame + "," + $mode + "," + $flightDirection + "}";
+      // INITIAL TEST
+      dd($queryParameters);
 
-      // TODO: current problem is that it is very difficult to check attributekeys and attributevalues using SQL
-      // Wondering if checking user input against dataset attributes logic should be done in server instead of database
+      // NOTE: Hackish query is inaccurate if multiple keys contains same value
+      // for example if relativeOrbit = 2000 and firstFrame = 2000, and user searches for firstFrame = 2000
+      // then query will return all datasets with attributevalues containing the value 2000, regardless if
+      // value was mapped to relativeOrbit or firstFrame
+
+      // SELECT * FROM area where attributevalues @> '{Alos, 73}'::varchar[];
+
+      // How to securely query
+      // $query = "SELECT decimaldates, stringdates FROM area WHERE unavco_name like ?";
+      // $dateInfos = DB::select($query, [$dataset]);
+
     }
 
     /**

@@ -8,33 +8,55 @@
 	<div id="webservice-explanation-paragraph">
 		<h4>Acceptable Values for Parameters:</h4>
 
-		<br>dataset should be in UNAVCO naming format: [mission]_[beam_mode]_[relative_orbit]_[first_frame]_[last_frame (if more than one frame)]_[first_date]_[last_date]. Ex: Alos_SM_72_2970_2980_20070205_20110403.
-		<br>longitude should be between -180.0 and 180.0. Ex: 131.67.
-		<br>latitude should be between -90.0 and 90.0. Ex: 32.53
+		<br>Longitude should be between -180.0 and 180.0. Ex: 131.67.
+		<br>Latitude should be between -90.0 and 90.0. Ex: 32.53
+		<br>Satellite - ex: Alos
+		<br>Relative Orbit - ex: 73
+		<br>First Frame - ex: 2950
+		<br>Mode - ex: SM
+		<br>Flight Direction - ex: D
 		<br>startTime should be in yyyy-mm-dd format. Ex: 1990-12-20.
 		<br>endTime should be in yyyy-mm-dd format. Ex: 2020-12-20.
-		<br>outputType should be json or plot.</br>
+		<br>outputType should be json, plot, or dataset.</br>
+		<br>Example webservice url: http://homestead.app/WebServices?longitude=131.67&latitude=32.53&satellite=Alos&relativeOrbit=73&firstFrame=2950&mode=SM&flightDirection=D& endTime=2020-12-20&outputType=json
 		<br>
 	</div>
 
+	<!-- TODO: delete webServicesDataset code - should be 4 of them in php, blade, js, and routes -->
 	<div class="input-group">
-		longitude (required)
+		Longitude (required)
 		<input type="text" class="form-control" placeholder="131.67" id="input-longitude">
 	</div>
 	<div class="input-group">
-		latitude (required):
+		Latitude (required):
 		<input type="text" class="form-control" placeholder="32.53" id="input-latitude">
 	</div>
 	<div class="input-group">
-		dataset (required):
-		<input type="text" class="form-control" placeholder="Alos_SM_72_2970_2980_20070205_20110403" id="input-dataset">
+		Satellite (optional)
+		<input type="text" class="form-control" placeholder="Alos" id="input-satellite">
 	</div>
 	<div class="input-group">
-		startTime (optional):
+		Relative Orbit (optional):
+		<input type="text" class="form-control" placeholder="73" id="input-relativeOrbit">
+	</div>
+	<div class="input-group">
+		First Frame (optional):
+		<input type="text" class="form-control" placeholder="2950" id="input-firstFrame">
+	</div>
+	<div class="input-group">
+		Mode (optional):
+		<input type="text" class="form-control" placeholder="SM" id="input-mode">
+	</div>
+	<div class="input-group">
+		Flight Direction (optional):
+		<input type="text" class="form-control" placeholder="D" id="input-flightDirection">
+	</div>
+	<div class="input-group">
+		Start Time (optional):
 		<input type="text" class="form-control" placeholder="1990-12-20" id="input-startTime">
 	</div>
 	<div class="input-group">
-		endTime (optional):
+		End Time (optional):
 		<input type="text" class="form-control" placeholder="2020-12-20" id="input-endTime">
 	</div>
 	<div class="input-group">
@@ -48,7 +70,7 @@
 
     <div class="form-group">
 		webservice url:
-		<input type="text" class="form-control" placeholder="http://homestead.app/WebServices?longitude=131.67&latitude=32.53&dataset=Alos_SM_72_2970_2980_20070205_20110403&startTime=1990-12-20& endTime=2020-12-20&outputType=plot" id="form-webservice-url">
+		<input type="text" class="form-control" placeholder="http://homestead.app/WebServices?longitude=131.67&latitude=32.53&satellite=Alos&relativeOrbit=73&firstFrame=2950&mode=SM&flightDirection=D& endTime=2020-12-20&outputType=json" id="form-webservice-url">
 	</div>
 </div>
 @endsection
