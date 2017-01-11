@@ -426,29 +426,8 @@ function switchLayer(layer) {
             layers: myMap.layers_
         });
 
-        var id = "areas";
-
         if (myMap.areaFeatures != null) {
             styleLoadFunc = function() {
-                var areaMarker = {
-                    type: "geojson",
-                    data: {}
-                }; // add the markers representing the available areas
-                areaMarker.data = {
-                    "type": "FeatureCollection",
-                    "features": myMap.areaFeatures
-                };
-                myMap.map.addSource(id, areaMarker);
-                myMap.map.addLayer({
-                    "id": id,
-                    "type": "symbol",
-                    "source": id,
-                    "layout": {
-                        "icon-image": "{marker-symbol}-15",
-                        "icon-allow-overlap": true
-                    }
-                });
-
                 if (contourToggleButton.toggleState == ToggleStates.ON) {
                     myMap.addContourLines();
                 }
