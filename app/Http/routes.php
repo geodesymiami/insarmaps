@@ -29,5 +29,11 @@ Route::controllers([
 Route::get("/adminPanel", "AdminPanelController@getAdminPanel");
 Route::post("/adminPanel/setPermissions/", "AdminPanelController@postSetUserPermissions");
 Route::get("/test/{table}/{table2}", "PermissionsController@getAllUserPermissions");
-// web services
+
+// web services for querying points
 Route::get("/WebServices/", "WebServicesController@processRequest");
+Route::get("/WebServicesUI/", "WebServicesController@renderView");
+
+// web services for querying datasets
+Route::get("/WebServicesDataset/", "WebServicesDatasetController@processRequest");
+Route::get("/WebServicesDatasetUI/", "WebServicesDatasetController@renderView");

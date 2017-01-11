@@ -8,76 +8,192 @@ use DateTime;
 use App\Http\Requests;
 use DB;
 
+use CpChart\Factory\Factory;
+use Exception;
+
+// NOTE: We currently use 3 date formats between various dependencies in SQL, Highcharts, etc. 
+// 1) yyyy-mm-dd / string (ex: 2010-12-20)
+// 2) decimal (ex: 2010.97)
+// 3) unix timestamp (ex: 1170692925)
+// Hence whenever a parameter or return value is a date, specify format to avoid confusion
+
+// Pipeline: WebServicesController.php gets parameters for query from RequestFormatter.php
+// and sends that to webServices.blade.php which generates HTML and uses webservicesUI.js to 
+// check if user input paramaters are valid and generate a webservice url
+
 class WebServicesController extends Controller
 {
     public function __construct() {
       $this->arrayFormatter = new PostgresArrayFormatter();
+      $this->dateFormatter = new DateFormatter();
+      $this->requestFormatter = new RequestFormatter();
     }
 
-    // assume input dateString is in format mm/dd/yyyy, ex: 12/19/2010
-    // return decimal version of dateString, ex: 2007.9671232877
-    public function dateToDecimal($dateString) {
-      $parsedDate = explode("/", $dateString);
+    /**
+    * Return array containing x and y axis data to create ploy using Highcharts.js library
+    *
+    * @param array $stringDates - strings representing VALID dates in yyyymmdd (ex: 20070808)
+    * @param array $displacements - doubles representing ground displacement in meters/year
+    * @return array $data - contains 2 arrays: $displacements and an array of unix dates
+    */
+    private function getDisplacementChartData($displacements, $stringDates) {
 
-      // php dateTime object requires format yyyy-mm-dd
-      $date = new DateTime();
-      $date->setDate($parsedDate[2], $parsedDate[0], $parsedDate[1]);
+      $data = []; 
+      $len = count($stringDates);
+      $unixDates = $this->dateFormatter->stringDateArrayToUnixTimestampArray($stringDates);
 
-      return $date->format("Y") + ($this->getDaysElapsed($date)) / 365.0;
+      for ($i = 0; $i < $len; $i++) {
+        // high charts wants milliseconds so multiply by 1000
+        array_push($data, [$unixDates[$i] * 1000, $displacements[$i]]);
+      }
+
+      return $data;
     }
 
-    // assume input date is in format of a PHP dateTime object with year Y,
-    // return days elapsed from beginning of year Y up to input date
-    public function getDaysElapsed($date) {
-      $date2 = new DateTime();
-      $date2->setDate($date->format("Y"), 1, 1);
-      $interval = date_diff($date, $date2);
+    /**
+    * Return Highcharts plot with x-axis = displacement and y-axis = date
+    *
+    * @param array $stringDates - strings representing dates in yyyy-mm-dd.0 format (ex: 20070808.0)
+    * @param array $displacements - doubles representing ground displacement in meters/year
+    * @return object $response - Highcharts plot object
+    */
+    private function createPlotPicture($displacements, $stringDates) {
+      $jsonString = '{
+        "title": {
+          "text": null
+        },
+          "subtitle": {
+            "text": "velocity: "
+          },
+          "navigator": {
+            "enabled": true
+          },
+          "scrollbar": {
+            "liveRedraw": false
+          },
+          "xAxis": {
+            "type": "datetime",
+            "dateTimeLabelFormats": {
+              "month": "%e. %b",
+              "year": "%Y"
+            },
+            "title": {
+              "text": "Date"
+            }
+          },
+          "yAxis": {
+            "title": {
+              "text": "Ground Displacement (cm)"
+            },
+            "legend": {
+              "layout": "vertical",
+              "align": "left",
+              "verticalAlign": "top",
+              "x": 100,
+              "y": 70,
+              "floating": true,
+              "backgroundColor": "#FFFFFF",
+              "borderWidth": 1
+            },
+            "plotLines": [{
+              "value": 0,
+              "width": 1,
+              "color": "#808080"
+            }]
+          },
+          "tooltip": {
+            "headerFormat": "",
+            "pointFormat": "{point.x:%e. %b %Y}: {point.y:.6f} cm"
+          },
+          "series": [{
+            "type": "scatter",
+            "name": "Displacement",
+            "data": [],
+            "marker": {
+              "enabled": true
+            },
+            "showInLegend": false
+          }],
+          "chart": {
+            "marginRight": 50
+          }
+      }';
 
-      return $interval->format("%a");
-    }
+      // pass true to get associative array instead of std class object
+      $json = json_decode($jsonString, true);
 
-    // given a decimal format min and max date range, return indices of dates 
-    // that best correspond to min and max from an array of valid decimal dates 
-    public function getDateIndices($minDate, $maxDate, $arrayOfDates) {
-      $minIndex = 0;
-      $maxIndex = 0;
-      $currentDate = 0; 
-      $minAndMaxDateIndices = []; 
-   
-      for ($i = 0; $i < count($arrayOfDates); $i++) {
-        $currentDate = $arrayOfDates[$i];
-        if ($currentDate >= $minDate) {
-          $minIndex = $i;
+      // debugging, remove when chart is fully working
+      switch (json_last_error()) {
+        case JSON_ERROR_NONE:
           break;
-        }
+        case JSON_ERROR_DEPTH:
+          echo ' - Maximum stack depth exceeded';
+          break;
+        case JSON_ERROR_STATE_MISMATCH:
+          echo ' - Underflow or the modes mismatch';
+          break;
+        case JSON_ERROR_CTRL_CHAR:
+          echo ' - Unexpected control character found';
+          break;
+        case JSON_ERROR_SYNTAX:
+          echo ' - Syntax error, malformed JSON';
+          break;
+        case JSON_ERROR_UTF8:
+          echo ' - Malformed UTF-8 characters, possibly incorrectly encoded';
+          break;
+        default:
+          echo ' - Unknown error';
+          break;
       }
 
-      for ($i = 0; $i < count($arrayOfDates); $i++) {
-        $currentDate = $arrayOfDates[$i];
-        if ($currentDate < $maxDate) {
-          $maxIndex = $i + 1;
-        }
+      $json["series"][0]["data"] = $this->getDisplacementChartData($displacements, $stringDates);
+
+      // calculate slope of linear regression line 
+      $decimalDates = $this->dateFormatter->stringDateArrayToDecimalArray($stringDates);
+
+      $linearRegression = $this->calcLinearRegressionLine($decimalDates, $displacements);
+
+      // check if linear regression calculation produced an error; if so return error
+      if (isset($linearRegression["errors"])) {
+        return json_encode($linearRegression);
       }
 
-      array_push($minAndMaxDateIndices, $minIndex);
-      array_push($minAndMaxDateIndices, $maxIndex);
+      $json["subtitle"]["text"] = "velocity: " . round($linearRegression["m"] * 1000, 2) . " mm/yr";
 
-      return $minAndMaxDateIndices;
-    }  
+      $jsonString = json_encode(($json));
 
+      $tempPictName = tempnam(storage_path(), "pict");
+      $command = "highcharts-export-server --instr '" . $jsonString . "' --outfile " . $tempPictName . " --type jpg";
 
-    // given a dataset name and point, returns json array containing
-    // decimaldates, stringdates, and displacement values of that point
-    public function createJsonArray($dataset, $point, $minDate, $maxDate) {
+      exec($command);
+      $headers = ["Content-Type" => "image/jpg", "Content-Length" => filesize($tempPictName)];
+      $response = response()->file($tempPictName, $headers)->deleteFileAfterSend(true);
+
+      return $response;
+    }
+
+    /**
+    * Given a VALID dataset name and VALID point that exists in dataset, 
+    * return json array containing data for that point within bounded time period or error message
+    *
+    * @param string $dataset - name of dataset
+    * @param string $point - point in dataset that user searched for using webservice
+    * @param string $startTime - lower boundary of dates in yyyy-mm-dd format
+    * @param string $endTime - upper boundary of dates in yyyy-mm-dd format
+    * @return array $json - if no error, contains decimaldates, stringdates, and displacement of point
+    */
+    public function createJsonArray($dataset, $point, $startTime, $endTime) {
       $json = [];
-      $decimal_dates = null;
-      $string_dates = null;
+      $decimal_dates = NULL;
+      $string_dates = NULL;
       $displacements = $point->d;
 
-      $minDateIndex = -1;
-      $maxDateIndex = -1;
-      $minAndMaxDateIndices = null;
+      $startTimeIndex = NULL;
+      $endTimeIndex = NULL;
+      $minAndendTimeIndices = NULL;
 
+      // how to get attributes for dataset instead of point
+      // $query = "SELECT attributekeys, attributevalues FROM area WHERE unavco_name like ?";
       $query = "SELECT decimaldates, stringdates FROM area WHERE unavco_name like ?";
       $dateInfos = DB::select($query, [$dataset]);
 
@@ -88,83 +204,106 @@ class WebServicesController extends Controller
 
       // convert SQL data from string to array format
       $decimal_dates = $this->arrayFormatter->postgresToPHPFloatArray($decimal_dates);
-      $string_dates = $this->arrayFormatter->postgresToPHPFloatArray($string_dates);
+      $string_dates = $this->arrayFormatter->postgresToPHPArray($string_dates);
       $displacements = $this->arrayFormatter->postgresToPHPFloatArray($displacements);
 
-      // * Select dates that best match minDate and maxDate - if not specified, minDate is first date
-      // and maxDate is last date in decimaldates and stringdates
-      // * Currently we are not accounting for condition where user specifies a minDate but no maxDate,
-      // or a maxDate but no minDate
-      // * Currently we are not accounting for condition where user types incorrect date - in future need
-      // to get a isValidDate checker
-      if ($minDate != -1 && $maxDate != -1) {
-        // convert minDate and maxDate into decimal dates
-        $minDate = $this->dateToDecimal($minDate);
-        $maxDate = $this->dateToDecimal($maxDate);
-        $minAndMaxDateIndices = $this->getDateIndices($minDate, $maxDate, $decimal_dates);
-        $minDateIndex = $minAndMaxDateIndices[0];
-        $maxDateIndex = $minAndMaxDateIndices[1];
-      } 
-      else {  // otherwise we set minDate and maxDate to default date array in specified dataset
-        $minDateIndex = 0;
-        $maxDateIndex = count($decimal_dates);
+      // get index of dates that best match boundary of startTime and endTime
+      $startTimeIndex = $this->dateFormatter->getStartTimeDateIndex($startTime, $string_dates);
+      $endTimeIndex = $this->dateFormatter->getEndTimeDateIndex($endTime, $string_dates);
+
+      // if startTime or endTime go beyond range of dates, create error message in json
+      if ($startTimeIndex === NULL) {
+        $lastDate = $this->dateFormatter->verifyDate($string_dates[count($string_dates)-1]);
+        $json["errors"] = "please input startTime earlier than or equal to " . $lastDate->format('Y-m-d');
       }
 
-      // put dates and displacement into json, limited by range 
-      // minDateIndex to (maxDateIndex - minDateIndex + 1)
-      $json["decimal_dates"] = array_slice($decimal_dates, $minDateIndex, ($maxDateIndex - $minDateIndex + 1));
-      $json["string_dates"] = array_slice($string_dates, $minDateIndex, ($maxDateIndex - $minDateIndex + 1));
-      $json["displacements"] = array_slice($displacements, $minDateIndex, ($maxDateIndex - $minDateIndex + 1));
+      if ($endTimeIndex === NULL) {
+        $firstDate = $this->dateFormatter->verifyDate($string_dates[0]);
+        $json["errors"] = "please input endTime later than or equal to " . $firstDate->format('Y-m-d');
+      }
+
+      // if no errors, put dates and displacement into json, bounded from startTime to endTime indices
+      if (empty($json["errors"])) {
+        $json["decimal_dates"] = array_slice($decimal_dates, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
+        $json["string_dates"] = array_slice($string_dates, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
+        $json["displacements"] = array_slice($displacements, $startTimeIndex, ($endTimeIndex - $startTimeIndex + 1));
+      }
 
       return $json;
     }
 
-
-    // main entry point into web services
-    // given a latitude, longitude, and dataset - return json array for stringdates, decimaldates,
-    // and displacements of point that corresponds to input data or return null if data is invalid
-    // user also has option of sending a minDate and maxDate to specify the range of dates they would
-    // like to view data from - this range is by default set to the first and last date of the dataset
+    /**
+    * Given a request object containing a url, return a json encoded array for data corresponding to point
+    * that best matches request parameters specified by user. Return null if parameters are invalid.
+    *
+    * @param Request $request - url containing parameters specified by user to search for a point in a dataset
+    * @return array $json - contains decimaldates, stringdates, and displacement of point
+    */
     public function processRequest(Request $request) {
       $json = [];
-    	$requests = $request->all();
-    	$len = count($requests);
 
-    	// we need latitude, longitude, dataset
-      // optional request vaues are minDate and maxDate
-    	// set lat and long to 1000.0 (impossible value) and dataset to empty string
-    	// if these initial values are retained then we did not get enough info to query
-    	$latitude = 1000.0;	
-    	$longitude = 1000.0;
-    	$dataset = "";
-      $minDate = -1;
-      $maxDate = -1;
+      // Mandatory request parameters: latitude, longitude, dataset
+      // Optional request parameters: startTime, endTime, outPutType
+      $latitude = 0.0;
+      $longitude = 0.0;
+      $dataset = "";
+      $startTime = NULL;  // if dataset is valid, default value will be set to first date in dataset
+      $endTime = NULL;  // if dataset is valid, default value will be set to last date in dataset 
+      $outputType = "plot"; // default value is plot, json is used for debugging and checking values
 
-    	foreach ($requests as $key => $value) {
-    		if ($key == "latitude") {
-    			$latitude = $value ;
-    		} 
-    		else if ($key == "longitude") {
-    			$longitude = $value ;
-    		} 
-    		else if ($key == "dataset") {
-    			$dataset = $value;
-    		}
-        else if ($key == "minDate") {
-          $minDate = $value;
+      // extract parameter values from Request url
+      $requests = $request->all();
+      foreach ($requests as $key => $value) {
+        switch ($key) {
+          case 'latitude':
+            $latitude = $value;
+            break;
+          case 'longitude':
+            $longitude = $value;
+            break;
+          case 'dataset':
+            $dataset = $value;
+            break;
+          case 'startTime':
+            $startTime = $value;
+            break;
+          case 'endTime':
+            $endTime = $value;
+            break;
+          case 'outputType':
+            $outputType = $value;
+            break;
+          default:
+            break;
         }
-        else if ($key == "maxDate") {
-          $maxDate = $value;
+      }
+
+      // check if startTime and endTime inputted by user are in in yyyy-mm-dd or yyyymmdd format
+      if ($startTime !== NULL && $this->dateFormatter->verifyDate($startTime) === NULL) {
+        $json["errors"] = "please input startTime in format yyyy-mm-dd (ex: 1990-12-19)";
+        return json_encode($json);
+      }
+
+      if ($endTime !== NULL && $this->dateFormatter->verifyDate($endTime) === NULL) {
+        $json["errors"] = "please input endTime in format yyyy-mm-dd (ex: 2020-12-19)";
+        return json_encode($json);
+      }
+
+      // check if startTime is less than or equal to endTime
+      if ($startTime !== NULL && $endTime !== NULL) {
+        $startDate = $this->dateFormatter->verifyDate($startTime);
+        $endDate = $this->dateFormatter->verifyDate($endTime);
+        $interval = $startDate->diff($endDate);
+
+        if ($interval->format("%a") > 0 && $startDate > $endDate) {
+          $json["errors"] = "please make sure startTime is a date earlier than endTime";
+          return json_encode($json);
         }
-    	}
+      }
 
-    	if ($latitude == 1000.0 || $longitude == 1000.0 || strlen($dataset) == 0) {
-    		echo "Error: Incomplete/Invalid Data for Retrieving a Point";
-    		return NULL;
-    	}
-
-    	// perform query
-    	$delta = 0.0002;	// range of error for latitude and longitude values, can be changed as needed
+      // perform query to get point objects within +/- delta range of (longitude, latitude)
+      // delta = range of error for latitude and longitude values, can be changed as needed
+      $delta = 0.0005;
       $p1_lat = $latitude - $delta;
       $p1_long = $longitude - $delta;
       $p2_lat = $latitude + $delta;
@@ -175,19 +314,94 @@ class WebServicesController extends Controller
       $p4_long = $longitude + $delta;
       $p5_lat = $latitude - $delta;
       $p5_long = $longitude - $delta;
-      $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $dataset . "
-            WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_lat . " " . $p1_long . ", " . $p2_lat . " " . $p2_long . ", " . $p3_lat . " " . $p3_long . ", " . $p4_lat . " " . $p4_long . ", " . $p5_lat . " " . $p5_long . ")', 4326)), wkb_geometry);";
 
-     	$points = DB::select(DB::raw($query));
+      $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $dataset . "
+            WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
+
+      // check if query fails due to dataset name not existing in database
+      try {
+        $points = DB::select(DB::raw($query));
+      }
+      catch (Exception $e) {
+        $json["errors"] = "invalid dataset name - please check dataset";
+        return json_encode($json);
+      }
+
+      // check if query fails due to latitude and/or longitude outside area of dataset
+      if (count($points) == 0) {
+        $json["errors"] = "point was not found in dataset - please check latitude and longitude";
+        return json_encode($json);
+      }
 
       // * Currently we hardcode by picking the first point in the $points array
-      // in future we will come up with algorithm to get the closest point
-      $json = $this->createJsonArray($dataset, $points[0], $minDate, $maxDate);
+      // TODO: Come up with algorithm to get the closest point
+      $json = $this->createJsonArray($dataset, $points[0], $startTime, $endTime);
 
-      // * TO DO: Construct picture of plot based on json
+      // check if error occured based on startTime and endTime; if so return json
+      // by default we return plot unless outputType = json (used for debugging)
+      if (isset($json["errors"]) || strcasecmp($outputType, "json") == 0) {
+        return json_encode($json);
+      }
 
-      return json_encode($json);
+      return $this->createPlotPicture($json["displacements"], $json["string_dates"]);
     }
 
 
+    // Thanks to Richard at: https://richardathome.wordpress.com/2006/01/25/a-php-linear-regression-function/
+    /**
+    * linear regression function
+    * @param $x array x-coords
+    * @param $y array y-coords
+    * @return array() m=>slope, b=>intercept
+    */
+    public static function calcLinearRegressionLine($x, $y) {
+
+      $json = [];
+
+      // calculate number points
+      $n = count($x);
+
+      // special case: zero or one values in $x, throw exception message
+      if ($n < 2) {
+        $json["errors"] = "time interval contained 0 or 1 date and could not make linear regression line - please enter a later endTime or earlier startTime";
+        return $json;
+      }
+
+      // ensure both arrays of points are the same size
+      if ($n != count($y)) {
+        $json["errors"] = "linear_regression(): Number of elements in coordinate arrays do not match";
+        return $json;
+      }
+
+      // calculate sums
+      $x_sum = array_sum($x);
+      $y_sum = array_sum($y);
+
+      $xx_sum = 0;
+      $xy_sum = 0;
+
+      for($i = 0; $i < $n; $i++) {
+        $xy_sum+=($x[$i]*$y[$i]);
+        $xx_sum+=($x[$i]*$x[$i]);
+      }
+
+      // calculate slope
+      $m = (($n * $xy_sum) - ($x_sum * $y_sum)) / (($n * $xx_sum) - ($x_sum * $x_sum));
+
+      // calculate intercept
+      $b = ($y_sum - ($m * $x_sum)) / $n;
+ 
+      // return result
+      return array("m"=>$m, "b"=>$b);
+    }
+
+    /**
+    * Return Laravel view object for webservice UI for querying points
+    *
+    * @return object $requestParameters - Laravel view object containing dictionary of query parameters
+    */
+    public function renderView() {
+      // return view("webServices", ["requestParameters" => $requestParameters]);
+      return view("webServices");
+    }
 }

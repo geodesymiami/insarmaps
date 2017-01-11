@@ -6,6 +6,7 @@ var detrendToggleButton = null;
 var topGraphToggleButton = null;
 var bottomGraphToggleButton = null;
 var contourToggleButton = null;
+var gpsStationsToggleButton = null;
 var myMap = null;
 
 function AreaAttributesPopup() {
@@ -43,15 +44,8 @@ function AreaAttributesPopup() {
             "processing_type": true
         };
 
-        attributekeys = JSON.parse(area.properties.attributekeys);
-        attributevalues = JSON.parse(area.properties.attributevalues);
-
-        var originalAttributes = [attributekeys, attributevalues];
-        var extra_attributes = JSON.parse(area.properties.extra_attributes);
-        // console.log(extra_attributes);
-        var attributesController = new AreaAttributesController(myMap, originalAttributes, extra_attributes, null);
+        var attributesController = new AreaAttributesController(myMap, area);
         var areaAttributes = attributesController.getAllAttributes();
-        // console.log(areaAttributes);
 
         for (var curKey in areaAttributes) {
             if (areaAttributes.hasOwnProperty(curKey)) {
@@ -153,21 +147,20 @@ function getGEOJSON(area) {
 
     $("#color-scale").toggleClass("active");
 
-    // when we click, we don't reset the size of modified markers one final time
-    myMap.areaMarkerLayer.resetSizeOfModifiedMarkers();
-
-    // set color scale
-    var areaExtraAttributes = JSON.parse(area.properties.extra_attributes);
+    // when we click, we don't reset the highlight of modified markers one final time
+    myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
 
     myMap.colorScale.defaultValues(); // set default values in case they were modified by another area
 
-    myMap.initLayer(tileJSON, "streets");
-    var styleLoadFunc = function() {
-        overlayToggleButton.set("on");
-        if (contourToggleButton.toggleState == ToggleStates.ON) {
-            myMap.addContourLines();
-        }
+    myMap.addDataset(tileJSON);
+    var styleLoadFunc = function(event) {
+        myMap.map.off("data", styleLoadFunc);
+        myMap.removeAreaMarkers();
 
+        overlayToggleButton.set("on");
+
+        // in case it's up
+        myMap.gpsStationPopup.remove();
         window.setTimeout(function() {
             var zoom = 8.0;
 
@@ -175,34 +168,41 @@ function getGEOJSON(area) {
             if (myMap.anAreaWasPreviouslyLoaded()) {
                 zoom = myMap.map.getZoom();
             }
-
             // set our tilejson to the one we've loaded. this will make sure anAreaWasPreviouslyLoaded method returns true after the
             // first time a dataset is selected
             myMap.tileJSON = tileJSON;
 
-            var lat = area.geometry.coordinates[1];
-            var long = area.geometry.coordinates[0];
+            var centerOfDataset = area.properties.centerOfDataset;
+
+            if (typeof centerOfDataset === "string") {
+                centerOfDataset = JSON.parse(centerOfDataset);
+            }
+
+            // converter accidentally switched lat and long...
+            // TODO: fix that and rerun datasets when pysar2unavco is fully finished
+            var lat = centerOfDataset.longitude;
+            var long = centerOfDataset.latitude;
 
             myMap.map.flyTo({
                 center: [long, lat],
                 zoom: zoom
             });
 
-            myMap.map.off("style.load", styleLoadFunc);
-            myMap.loadAreaMarkersExcluding([area.properties.unavco_name]);
-            window.setTimeout(function() {
-                var dates = JSON.parse(area.properties.decimal_dates);
-                var attributekeys = JSON.parse(area.properties.attributekeys);
-                var attributevalues = JSON.parse(area.properties.attributevalues);
-                var originalAttributes = [attributekeys, attributevalues];
+            myMap.onDatasetRendered(function(renderCallback) {
+                var attributesController = new AreaAttributesController(myMap, area);
+                try {
+                    attributesController.processAttributes();
+                } catch (e) {
+                    console.log("Exception: " + e);
+                }
+                myMap.map.off("render", renderCallback);
+            });
 
-                var attributesController = new AreaAttributesController(myMap, originalAttributes, areaExtraAttributes, JSON.parse(area.properties.decimal_dates));
-                attributesController.processAttributes();
-            }, 6000);
+            myMap.loadAreaMarkersExcluding([area.properties.unavco_name]);
         }, 1000);
     };
 
-    myMap.map.on("style.load", styleLoadFunc);
+    myMap.map.on("data", styleLoadFunc);
 }
 
 function goToTab(event, id) {
@@ -260,7 +260,7 @@ function ToggleButton(id) {
                 that.toggle();
             }
         } else {
-            console.log("invalid toggle option");
+            throw "invalid toggle option";
         }
     }
     this.onclick = function(clickFunction) {
@@ -280,14 +280,11 @@ var ToggleStates = {
 }
 
 function switchLayer(layer) {
-    var layerId = layer.target.id;
-
-    var tileset = 'mapbox.' + layerId;
+    var layerID = layer.target.id;
     var styleLoadFunc = null;
 
     // we assume in this case that an area has been clicked
-    if (overlayToggleButton.toggleState == ToggleStates.ON && myMap.tileJSON !=
-        null) {
+    if (overlayToggleButton.toggleState == ToggleStates.ON && myMap.anAreaWasPreviouslyLoaded()) {
         // remove selected point marker if it exists, and create a new GeoJSONSource for it
         // prevents crash of "cannot read property 'send' of undefined"
         // if (myMap.map.getLayer(layerID)) {
@@ -318,34 +315,17 @@ function switchLayer(layer) {
             }
         }
 
-        myMap.map.setStyle({
-            version: 8,
-            sprite: window.location.href + "maki/makiIcons",
-            glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
-            sources: {
-                "raster-tiles": {
-                    "type": "raster",
-                    "url": "mapbox://" + tileset,
-                    "tileSize": 256
-                },
-                'Mapbox Terrain V2': {
-                    type: 'vector',
-                    url: 'mapbox://mapbox.mapbox-terrain-v2'
-                },
-                'vector_layer_': {
-                    type: 'vector',
-                    tiles: myMap.tileJSON['tiles'],
-                    minzoom: myMap.tileJSON['minzoom'],
-                    maxzoom: myMap.tileJSON['maxzoom'],
-                    bounds: myMap.tileJSON['bounds']
-                }
-            },
-            layers: myMap.layers_
-        });
+        myMap.setBaseMapLayer(layerID);
 
         // finally, add back the click location marker, do on load of style to prevent
         // style not done loading error
         styleLoadFunc = function() {
+            myMap.map.off("data", styleLoadFunc);
+            myMap.addDataset(myMap.tileJSON);
+            if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
+                myMap.addGPSStationMarkers(gpsStations);
+            }
+
             if (mapHadClickLocationMarkerTop) {
                 myMap.removeTouchLocationMarkers();
 
@@ -404,41 +384,29 @@ function switchLayer(layer) {
             if (contourToggleButton.toggleState == ToggleStates.ON) {
                 myMap.addContourLines();
             }
-            myMap.map.off("style.load", styleLoadFunc);
         };
-        myMap.map.on("style.load", styleLoadFunc);
+        myMap.map.on("data", styleLoadFunc);
     } else {
-        myMap.map.setStyle({
-            version: 8,
-            sprite: window.location.href + "maki/makiIcons",
-            glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
-            sources: {
-                "raster-tiles": {
-                    "type": "raster",
-                    "url": "mapbox://" + tileset,
-                    "tileSize": 256
-                },
-                'Mapbox Terrain V2': {
-                    type: 'vector',
-                    url: 'mapbox://mapbox.mapbox-terrain-v2'
-                },
-            },
-            layers: myMap.layers_
-        });
+        myMap.setBaseMapLayer(layerID);
 
         if (myMap.areaFeatures != null) {
-            styleLoadFunc = function() {
+            styleLoadFunc = function(event) {
+                myMap.map.off("data", styleLoadFunc);
                 if (contourToggleButton.toggleState == ToggleStates.ON) {
                     myMap.addContourLines();
                 }
-                myMap.map.off("style.load", styleLoadFunc);
+                if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
+                    myMap.addGPSStationMarkers(gpsStations);
+                }
+
+                myMap.loadAreaMarkers();
             };
-            myMap.map.on("style.load", styleLoadFunc);
+
+            myMap.map.on("data", styleLoadFunc);
         }
     }
 
-    myMap.map.off("style.off");
-    myMap.loadAreaMarkers();
+    myMap.map.off("data");
 }
 
 function setupToggleButtons() {
@@ -447,65 +415,15 @@ function setupToggleButtons() {
     overlayToggleButton.onclick(function() {
         // on? add layers, otherwise remove them
         if (overlayToggleButton.toggleState == ToggleStates.ON) {
-            if (!myMap.tileJSON) {
+            if (!myMap.anAreaWasPreviouslyLoaded()) {
                 overlayToggleButton.set("off");
                 return;
             }
 
             $("#overlay-slider").slider("value", 100);
-            myMap.map.addSource("vector_layer_", {
-                type: 'vector',
-                tiles: myMap.tileJSON['tiles'],
-                minzoom: myMap.tileJSON['minzoom'],
-                maxzoom: myMap.tileJSON['maxzoom'],
-                bounds: myMap.tileJSON['bounds']
-            });
-
-            // for (var i = 1; i < 24; i++) {
-            //     var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
-            //     myMap.tileJSON.vector_layers.push(layer);
-            // }
-            var stops = myMap.colorScale.getMapboxStops();
-
-            myMap.tileJSON["vector_layers"].forEach(function(el) {
-                myMap.layers_.push({
-                    id: el['id'] + Math.random(),
-                    source: 'vector_layer_',
-                    'source-layer': el['id'],
-                    type: 'circle',
-                    layout: {
-                        'visibility': 'visible'
-                    },
-                    paint: {
-                        'circle-color': {
-                            property: 'm',
-                            stops: stops
-                        },
-                        'circle-radius': {
-                            // for an explanation of this array see here:
-                            // https://www.mapbox.com/blog/data-driven-styling/
-                            stops: [
-                                [5, 2],
-                                [8, 2],
-                                [13, 8],
-                                [21, 16],
-                                [34, 32]
-                            ]
-                        }
-                    }
-                });
-            });
-
-            for (var i = 1; i < myMap.layers_.length; i++) {
-                var layer = myMap.layers_[i];
-
-                myMap.map.addLayer(layer);
-            }
-
-            console.log("added that");
+            myMap.addDataset(myMap.tileJSON);
         } else {
             if (myMap.pointsLoaded()) {
-                console.log("loaded");
                 $("#overlay-slider").slider("value", 0);
                 myMap.removePoints();
                 myMap.removeTouchLocationMarkers();
@@ -578,11 +496,20 @@ function setupToggleButtons() {
             myMap.removeContourLines();
         }
     });
+
+    gpsStationsToggleButton = new ToggleButton("#gps-stations-toggle-button");
+    gpsStationsToggleButton.onclick(function() {
+        if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
+            // gpsStations global variable from gpsStations.js
+            myMap.addGPSStationMarkers(gpsStations);
+        } else {
+            myMap.removeGPSStationMarkers();
+        }
+    });
 }
 
 function search() {
     var areas = myMap.areaFeatures;
-    console.log(areas);
 
     if (!$('.wrap#select-area-wrap').hasClass('active')) {
         $('.wrap#select-area-wrap').toggleClass('active');
@@ -609,7 +536,6 @@ function search() {
         });
         var countries = fuse.search(query);
 
-        console.log(countries);
         // add our info in a table, first remove any old info
         $(".wrap#select-area-wrap").find(".content").find("#myTable").find(
             "#tableBody").empty();
@@ -625,6 +551,7 @@ function search() {
             properties.extra_attributes = JSON.stringify(properties.extra_attributes);
             properties.attributekeys = JSON.stringify(properties.attributekeys);
             properties.attributevalues = JSON.stringify(properties.attributevalues);
+            properties.centerOfDataset = JSON.stringify(properties.centerOfDataset);
 
             $("#tableBody").append("<tr id=" + properties.unavco_name +
                 "><td value='" + properties.unavco_name + "''>" +
@@ -642,7 +569,6 @@ function search() {
                     // don't load area if reference link is clicked
                     if (e.target.cellIndex == 0) {
                         clickedArea = country;
-                        console.log(country);
                         $('.wrap#select-area-wrap').toggleClass(
                             'active');
                         getGEOJSON(country);
@@ -651,7 +577,6 @@ function search() {
             })(country));
         }
     } else {
-        console.log("No such areas");
         $("#tableBody").html("No areas found");
     }
 }
@@ -860,9 +785,7 @@ $(window).load(function() {
     });
 
     $("#reset-button").on("click", function() {
-        if (myMap.pointsLoaded()) {
-            myMap.reset();
-        }
+        myMap.reset();
 
         myMap.map.flyTo({
             center: myMap.startingCoords,
@@ -954,10 +877,14 @@ $(window).load(function() {
         }
     });
 
+    $("#webservices-ui-button").on("click", function() {
+        window.location = "/WebServicesUI";
+    });
+
     prepareButtonsToHighlightOnHover();
 
     $("#download-as-text-button").click(function() {
-        window.open("/textFile/" + currentArea.unavco_name +
+        window.open("/textFile/" + currentArea.properties.unavco_name +
             "/" + currentPoint);
     });
 
@@ -973,7 +900,9 @@ $(window).load(function() {
             myMap.colorScale.min = min;
             myMap.colorScale.max = min;
 
-            myMap.recolorPoints();
+            myMap.refreshDataset();
         }
     });
+
+    $("#search-form-results-table").tablesorter();
 });

@@ -1,40 +1,48 @@
-function AreaAttributesController(map, attributes, extraAttributes, datesArray) {
+function AreaAttributesController(map, area) {
     var that = this;
 
     this.map = map;
     this.attributes = null;
-    this.datesArray = datesArray;
+    this.datesArray = null;
     this.colorOnPosition = false;
+    this.area = area;
+
+    // returns json of the property, if string converts to json, otherwise
+    // returns the property itself
+    this.propertyToJSON = function(property) {
+        if (typeof property == "string") {
+            return JSON.parse(property);
+        }
+
+        return property;
+    };
 
     this.constructAttributes = function() {
         // attributes should be an array, extraAttributes should be an object
         // let's just add all the key values from attributes to extraAttributes
-        if (!attributes) {
-            return null;
-        }
+        that.datesArray = that.propertyToJSON(that.area.properties.decimal_dates);
+        var attributeKeys = that.propertyToJSON(that.area.properties.attributekeys);
+        var attributeValues = that.propertyToJSON(that.area.properties.attributevalues);
 
-        var attributeKeys = attributes[0];
-        var attributeValues = attributes[1];
+        var extraAttributes = that.propertyToJSON(that.area.properties.extra_attributes);
 
-        if (extraAttributes) {
-            for (var i = 0; i < attributeKeys.length; i++) {
-                var curKey = attributeKeys[i];
-                var curValue = attributeValues[i];
-
-                extraAttributes[curKey] = curValue;
-            }
-
-            return extraAttributes;
-        }
-
-        // no extra attributes
         var fullAttributes = [];
-
         for (var i = 0; i < attributeKeys.length; i++) {
             var curKey = attributeKeys[i];
             var curValue = attributeValues[i];
 
             fullAttributes[curKey] = curValue;
+        }
+
+        // this way, we overwrite any attributes in extra attributes with the ones already
+        // there. this is so that extraAttributes has higher priority in deciding attributes
+        // while we migrate database to using separate table for attributes.
+        if (extraAttributes) {
+            for (var curKey in extraAttributes) {
+                if (extraAttributes.hasOwnProperty(curKey)) {
+                    fullAttributes[curKey] = extraAttributes[curKey];
+                }
+            }
         }
 
         return fullAttributes;
@@ -78,5 +86,10 @@ function AreaAttributesController(map, attributes, extraAttributes, datesArray) 
                 that.map.refreshDataset();
             }
         }
+    };
+
+    this.setArea = function(area) {
+        that.area = area;
+        that.attributes = that.constructAttributes();
     };
 }

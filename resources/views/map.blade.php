@@ -6,15 +6,20 @@
  <link rel="stylesheet" href="css/slideout.css" />
  <!--jQuery-->
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script> 
- <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.28.0/mapbox-gl.js'></script>
- <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.28.0/mapbox-gl.css' rel='stylesheet' />
+ <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.30.0/mapbox-gl.js'></script>
+ <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.30.0/mapbox-gl.css' rel='stylesheet' />
+<script src="http://cdn-geoweb.s3.amazonaws.com/terraformer/1.0.6/terraformer.min.js"></script>
+<script src="http://cdn-geoweb.s3.amazonaws.com/terraformer-wkt-parser/1.1.1/terraformer-wkt-parser.min.js"></script>
  
  <script src="https://code.jquery.com/jquery-1.12.2.js"></script>
  <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
  <link href="http://code.jquery.com/ui/1.11.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
- 
+ <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.3/css/theme.bootstrap.min.css" rel="stylesheet">
+
  <script type="text/javascript" src="js/regression.js"></script>
  <script type="text/javascript" src="js/canvasjs.min.js"></script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.3/js/jquery.tablesorter.min.js"></script>
  
  <script src="http://code.highcharts.com/stock/highstock.js"></script>
  <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
@@ -57,24 +62,9 @@
       </div>
     </div>
     <div id="top-map-buttons">
-      <div id="map-type-menu">
-        <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
-        <label for='streets'>Streets</label>
-        <input id='satellite' type='radio' name='rtoggle' value='satellite'>
-        <label for='satellite'>Satellite</label>
-      </div>
       <div id="overlay-options-wrapper">
         <div id="overlay-options">
-          <div id="overlay-options-toggles">
-            <div class="overlay_toggle">
-              <label>Data overlay</label>
-              <input id = "overlay-toggle-button" type="checkbox" name="overlayToggle"/>
-            </div>
-            <div class="overlay-toggle">
-              <label>Contour lines</label>
-              <input id = "contour-toggle-button" type="checkbox" name="overlayToggle"/>
-            </div>
-          </div>
+          Opacity:
           <div id="overlay-slider"></div>
         </div>
       </div>
@@ -89,11 +79,36 @@
        <button class="btn btn-primary-outline clickable-button">Logout</button>
      </div>
      @endif
-   </div>    
-   <div id="polygon-button-div">
-    <button class="btn btn-primary-outline map-button clickable-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="polygon-button">
-      <img src="img/polygon.svg" alt="polygon.svg">
-    </button>
+     <div id="polygon-button-div">
+      <button class="btn btn-primary-outline map-button clickable-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="polygon-button">
+        <img src="img/polygon.svg" alt="polygon.svg">
+      </button>
+    </div>
+    <div id="select-layer-button-div">
+      <button class="btn btn-primary-outline map-button clickable-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="select-layer-button">
+        <img src="img/layerSwitchIcon.png" alt="layerSwitchIcon.png" style="width: 20px; height: 20px">
+      </button>
+      <div id="overlay-options-toggles">
+        <div id="map-type-menu">
+          <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
+          <label for='streets'>Streets</label>
+          <input id='satellite' type='radio' name='rtoggle' value='satellite'>
+          <label for='satellite'>Satellite</label>
+        </div>
+        <div class="overlay_toggle">
+          <label>Data overlay</label>
+          <input id = "overlay-toggle-button" type="checkbox" name="overlayToggle"/>
+        </div>
+        <div class="overlay-toggle">
+          <label>Contour lines</label>
+          <input id = "contour-toggle-button" type="checkbox" name="overlayToggle"/>
+        </div>
+        <div class="overlay-toggle">
+          <label>GPS Stations (UNR)</label>
+          <input id = "gps-stations-toggle-button" type="checkbox" name="overlayToggle"/>
+        </div>
+      </div>
+    </div>
   </div>
   <div id="color-scale">
     <div id="color-scale-text-div" class="rotate">
@@ -152,6 +167,44 @@
           <p>Extra links to be added.</p>
         </div> -->
       </div>
+    </div>
+  </div>
+  <div id="search-form-and-results-container">
+    <div id="search-form">
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="Satellite" id="input-satellite">
+      </div>
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="Relative Orbit" id="input-relative-orbit">
+      </div>
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="First Frame" id="input-first-frame">
+      </div>
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="Mode" id="input-mode">
+      </div>
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="Flight Direction" id="input-flight-direction">
+      </div>
+      <!-- enter button to search for files with attributes matching above input -->
+      <div id="enter-button-search-attributes">
+        <button class="btn btn-primary btn-block clickable-button">Enter</button>
+      </div>
+    </div>
+    <div id="search-form-results">
+      <table class="tablesorter-bootstrap" id="search-form-results-table">
+        <thead>
+          <tr>
+            <th>Satellite</th>
+            <th>Rel Orbit</th>
+            <th>First_Frame</th>
+            <th>Mode</th>
+            <th>Flight Dir.</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
     </div>
   </div>
   <div class="wrap" id="charts" title="Displacement time-series">
@@ -241,6 +294,12 @@
             <button class="btn btn-primary-outline">Login</button>
           </div>          
         @endif
+        <p>
+          For accessing the data products via web services click here:
+        </p>
+        <div id="webservices-ui-button">
+          <button class="btn btn-primary-outline">Web Services</button>
+        </div>
         <img src="img/nasa.png" alt="nasa_logo" height="100px" width="auto">
         <img src="img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
         <div id="information-div-buttom-buttons">
@@ -262,6 +321,7 @@
     <script type="text/javascript" src="js/AreaMarkerLayer.js"></script>
     <script type="text/javascript" src="js/AreaAttributesController.js"></script>
     <script type="text/javascript" src="js/mainPage.js"></script>
+    <script type="text/javascript" src="js/SearchFile.js"></script>
     <script type="text/javascript" src="js/mainMap.js"></script>
     <script type="text/javascript" src="js/SquareSelector.js"></script>
     <script type="text/javascript" src="js/LineSelector.js"></script>

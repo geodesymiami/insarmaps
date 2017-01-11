@@ -144,7 +144,7 @@ function SquareSelector(map) {
         if (box) {
             var pixelBoundingBox = [that.map.map.project(box[0]), that.map.map.project(box[1])];
             features = that.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
-        // no bounding bax
+        // no bounding box
         } else {
             features = that.map.map.queryRenderedFeatures({ layers: pointLayers });
         }
@@ -291,24 +291,10 @@ function SquareSelector(map) {
     };
 
     this.recolorDataset = function() {
-        if (that.bbox == null) {
-            return;
-        }
-
-        // haven't selected min and max, so exit
-        if (that.minIndex == -1 || that.maxIndex == -1) {
-            return;
-        }
-
-        // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
-        if (that.lastbbox == that.bbox && that.lastMinIndex == that.minIndex && that.lastMaxIndex == that.maxIndex) {
-            return;
-        }
-
-        that.lastMinIndex = that.minIndex;
-        that.lastMaxIndex = that.maxIndex;
-        that.lastbbox = that.bbox;
-
         that.recolorDatasetWithBoundingBoxAndMultiplier(that.bbox, 1);
+    };
+
+    this.recoloring = function() {
+        return that.recoloringInProgress;
     };
 }
