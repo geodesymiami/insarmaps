@@ -351,8 +351,7 @@ function Map(loadJSONFunc) {
                                 that.graphsController.addRegressionLine(chartContainer, displacements_array);
                             }
 
-                            if (that.selector.bbox != null && that.selector.minIndex != -1
-                                && that.selector.maxIndex != -1) {
+                            if (that.selector.bbox != null && that.selector.minIndex != -1 && that.selector.maxIndex != -1) {
                                 that.selector.recolorDataset();
                             }
                         }
@@ -608,6 +607,19 @@ function Map(loadJSONFunc) {
         that.map.on('click', that.leftClickOnAPoint);
     };
 
+    this.polygonToLineString = function(polygonGeoJSON) {
+        var lineStringGeoJSON = {
+            type: "LineString",
+            coordinates: []
+        };
+        var coordinates = polygonGeoJSON.coordinates[0];
+        for (var i = 0; i < coordinates.length; i++) {
+            lineStringGeoJSON.coordinates.push(coordinates[i]);
+        }
+
+        return lineStringGeoJSON;
+    };
+
     this.loadAreaMarkersExcluding = function(toExclude) {
         loadJSONFunc("", "areas", function(response) {
             var json = JSON.parse(response);
@@ -639,9 +651,11 @@ function Map(loadJSONFunc) {
                 var attributes = attributesController.getAllAttributes();
 
                 var scene_footprint = attributes.scene_footprint;
-                var polygonGeojson = Terraformer.WKT.parse(scene_footprint);
+                var polygonGeoJSON = Terraformer.WKT.parse(scene_footprint);
+                var lineStringGeoJSON = that.polygonToLineString(polygonGeoJSON);
 
                 var id = "areas" + i;
+                var polygonID = "areas" + i + "fill"
 
                 that.areaMarkerLayer.addLayer(id);
 
@@ -649,7 +663,7 @@ function Map(loadJSONFunc) {
 
                 var feature = {
                     "type": "Feature",
-                    "geometry": polygonGeojson,
+                    "geometry": polygonGeoJSON,
                     "properties": {
                         "marker-symbol": "marker",
                         "layerID": id,
@@ -665,6 +679,16 @@ function Map(loadJSONFunc) {
                         "extra_attributes": properties.extra_attributes
                     }
                 };
+                var polygonFeature = {
+                    "type": "Feature",
+                    "geometry": polygonGeoJSON,
+                    "properties": {
+                        "marker-symbol": "fillPolygon",
+                        // the id of the corresponding fill layer...
+                        // allows for only highlighting on frame hover
+                        "layerID": id
+                    }
+                };
 
                 features.push(feature);
 
@@ -676,23 +700,43 @@ function Map(loadJSONFunc) {
 
                 if (that.map.getSource(id)) {
                     that.map.removeSource(id);
+                    that.map.removeSource(polygonID)
                 }
 
                 if (that.map.getLayer(id)) {
                     that.map.removeLayer(id);
+                    that.map.removeLayer(polygonID);
                 }
 
                 that.map.addSource(id, areaMarker);
+                areaMarker.data = {
+                    "type": "FeatureCollection",
+                    "features": [polygonFeature]
+                };
+                that.map.addSource(polygonID, areaMarker);
 
                 // if dataset loaded, insert areas before dataset layer
                 if (that.map.getLayer("chunk_1")) {
-                    that.map.addLayer({
+                     that.map.addLayer({
                         "id": id,
                         "type": "fill",
                         "source": id,
                         "paint": {
                             "fill-color": "rgba(0, 0, 255, 0.0)",
                             "fill-outline-color": "rgba(0, 0, 255, 1.0)"
+                        }
+                    }, "chunk_1");
+                    that.map.addLayer({
+                        "id": polygonID,
+                        "type": "line",
+                        "source": polygonID,
+                        "layout": {
+                            "line-join": "round",
+                            "line-cap": "round"
+                        },
+                        "paint": {
+                            "line-color": "rgba(0, 0, 255, 1.0)",
+                            "line-width": 10
                         }
                     }, "chunk_1");
                 } else {
@@ -703,6 +747,15 @@ function Map(loadJSONFunc) {
                         "paint": {
                             "fill-color": "rgba(0, 0, 255, 0.0)",
                             "fill-outline-color": "rgba(0, 0, 255, 1.0)"
+                        }
+                    });
+                    that.map.addLayer({
+                        "id": polygonID,
+                        "type": "line",
+                        "source": polygonID,
+                        "paint": {
+                            "line-color": "rgba(0, 0, 255, 1.0)",
+                            "line-width": 10
                         }
                     });
                 }
@@ -735,7 +788,10 @@ function Map(loadJSONFunc) {
     this.removeAreaMarkers = function() {
         for (var i = 0; i < that.areaFeatures.length; i++) {
             // see why we can't remove source here as well...
-            myMap.map.removeLayer(myMap.areaFeatures[i].properties.layerID);
+            that.map.removeLayer(myMap.areaFeatures[i].properties.layerID);
+            // remove fill layer allowing highlighting of our line string hacked
+            // polygons
+            that.map.removeLayer(myMap.areaFeatures[i].properties.layerID + "fill");
         }
 
         that.areaFeatures = [];
@@ -797,12 +853,11 @@ function Map(loadJSONFunc) {
 
             var markerSymbol = features[0].properties["marker-symbol"];
 
-            if (!markerSymbol) {
+            if (!markerSymbol || markerSymbol == "marker") {
                 that.areaMarkerLayer.resetHighlightsOfAllMarkers();
                 that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
                 return;
             }
-
             // a better way is to have two mousemove callbacks like we do with select area vs select marker
             if (features[0].layer.id == "gpsStations") {
                 that.gpsStationNamePopup.remove();
@@ -814,7 +869,7 @@ function Map(loadJSONFunc) {
                 return;
             }
 
-            if (markerSymbol == "marker") {
+            if (markerSymbol == "fillPolygon") {
                 // Populate the areaPopup and set its coordinates
                 // based on the feature found.
                 var html = "<table class='table' id='areas-under-mouse-table'>";
