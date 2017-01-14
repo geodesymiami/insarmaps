@@ -113,7 +113,7 @@ html[xmlns] .clearfix {
     position: relative;
     width: 100%;
     height: 70%;
-    z-index: 0;
+    z-index: 1;
 }
 
 .wrap {
@@ -709,6 +709,7 @@ input[type=number] {
     height: 30%;
     overflow-y: auto;
     position: relative;
+    z-index: 0;
 }
 
 #search-form {
