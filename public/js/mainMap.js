@@ -1006,7 +1006,6 @@ function Map(loadJSONFunc) {
                     that.selector.recolorDataset();
                 } else {
                     that.onDatasetRendered(function(renderCallback) {
-                        console.log("hi");
                         if (!that.selector.recoloring()) {
                             that.selector.recolorDataset();
                         }

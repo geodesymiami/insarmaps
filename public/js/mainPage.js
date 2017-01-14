@@ -109,9 +109,12 @@ function AreaAttributesPopup() {
         var attributesController = new AreaAttributesController(myMap, area);
 
         if (attributesController.areaHasAttribute("plotAttributePreset_Name")) {
-            console.log("we have it");
-        } else {
-            console.log("we dont have it");
+            var html = "<a href='#' id='preset-dataset-link'>" +
+            attributesController.getAttribute("plotAttributePreset_Name") + "</a>";
+            $("#reference-tab").html(html);
+            $("#preset-dataset-link").on("click", function() {
+                attributesController.processAttributes();
+            });
         }
     };
 };
