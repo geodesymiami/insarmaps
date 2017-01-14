@@ -92,4 +92,8 @@ function AreaAttributesController(map, area) {
         that.area = area;
         that.attributes = that.constructAttributes();
     };
+
+    this.areaHasAttribute = function(attribute) {
+        return that.attributes[attribute] != null;
+    };
 }

@@ -606,6 +606,10 @@ function Map(loadJSONFunc) {
 
         // remove click listener for selecting an area, and add new one for clicking on a point
         that.map.off("click", that.clickOnAnAreaMarker);
+        // also left clicking, only to add it again.
+        // TODO: check how to check what function handlers are registered
+        // while this works, it is ugly to remove and then add immediately
+        that.map.off("click", that.leftClickOnAPoint);
         that.map.on('click', that.leftClickOnAPoint);
     };
 
@@ -989,7 +993,7 @@ function Map(loadJSONFunc) {
                     that.removeAreaPopups();
                     that.loadAreaMarkers();
                     // remove click listener for selecting an area, and add new one for clicking on a point
-                    that.map.off("click");
+                    that.map.off("click", that.leftClickOnAPoint);
                     that.map.on('click', that.clickOnAnAreaMarker);
                 }
             }

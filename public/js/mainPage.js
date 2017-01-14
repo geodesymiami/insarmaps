@@ -87,6 +87,8 @@ function AreaAttributesPopup() {
         var link = $("#details-tab-link");
         clickEvent.currentTarget = link;
         link.trigger(clickEvent);
+
+        that.populateTabs(area);
     }
 
     this.show = function(area) {
@@ -102,11 +104,20 @@ function AreaAttributesPopup() {
     this.isMinimized = function() {
         return $('.wrap#area-attributes-div').hasClass('toggled');
     };
+
+    this.populateTabs = function(area) {
+        var attributesController = new AreaAttributesController(myMap, area);
+
+        if (attributesController.areaHasAttribute("plotAttributePreset_Name")) {
+            console.log("we have it");
+        } else {
+            console.log("we dont have it");
+        }
+    };
 };
 
 function getGEOJSON(area) {
     // currentPoint = 1;
-    currentArea = area;
 
     // var query = {
     //   "area": area,
@@ -136,6 +147,8 @@ function getGEOJSON(area) {
         myMap.removePoints();
         myMap.removeTouchLocationMarkers();
     }
+
+    currentArea = area;
     // make streets toggle button be only checked one
     $("#streets").prop("checked", true);
     for (var i = 1; i <= area.properties.num_chunks; i++) {
@@ -186,16 +199,6 @@ function getGEOJSON(area) {
             myMap.map.flyTo({
                 center: [long, lat],
                 zoom: zoom
-            });
-
-            myMap.onDatasetRendered(function(renderCallback) {
-                var attributesController = new AreaAttributesController(myMap, area);
-                try {
-                    attributesController.processAttributes();
-                } catch (e) {
-                    console.log("Exception: " + e);
-                }
-                myMap.map.off("render", renderCallback);
             });
 
             myMap.loadAreaMarkersExcluding([area.properties.unavco_name]);
