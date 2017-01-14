@@ -196,7 +196,9 @@ function Map(loadJSONFunc) {
         }
 
         // clicked on area marker, reload a new area.
-        if (feature.properties["marker-symbol"] == "marker" && that.anAreaWasPreviouslyLoaded()) {
+        var markerSymbol = feature.properties["marker-symbol"];
+        if ((markerSymbol == "marker" || markerSymbol == "fillPolygon")
+            && that.anAreaWasPreviouslyLoaded()) {
             if (that.pointsLoaded()) {
                 that.removePoints();
             }
@@ -679,15 +681,14 @@ function Map(loadJSONFunc) {
                         "extra_attributes": properties.extra_attributes
                     }
                 };
+
+                // use same properties as the main feature which will be used
+                // for the fill layer. We use the id of the corresponding fill layer...
+                // allows for only highlighting on frame hover
                 var polygonFeature = {
                     "type": "Feature",
                     "geometry": polygonGeoJSON,
-                    "properties": {
-                        "marker-symbol": "fillPolygon",
-                        // the id of the corresponding fill layer...
-                        // allows for only highlighting on frame hover
-                        "layerID": id
-                    }
+                    "properties": feature.properties
                 };
 
                 features.push(feature);
@@ -709,6 +710,7 @@ function Map(loadJSONFunc) {
                 }
 
                 that.map.addSource(id, areaMarker);
+                polygonFeature.properties["marker-symbol"] = "fillPolygon";
                 areaMarker.data = {
                     "type": "FeatureCollection",
                     "features": [polygonFeature]
