@@ -12,6 +12,11 @@ var myMap = null;
 function AreaAttributesPopup() {
     var that = this;
 
+    this.resetTabContents = function() {
+        $("#downloads-tab").html("<p>Download to Unavco InSAR data products to be implemented.</p>");
+        $("#reference-tab").html("<p>Reference to the papers to be added.</p>");
+    };
+
     this.populate = function(area) {
         var tableHTML = "";
         var attributekeys = null;
@@ -88,6 +93,7 @@ function AreaAttributesPopup() {
         clickEvent.currentTarget = link;
         link.trigger(clickEvent);
 
+        that.resetTabContents();
         that.populateTabs(area);
     }
 
