@@ -56,7 +56,6 @@ function SearchFile(container) {
 		$("#search-form-results-table tbody").append(html);
 		$("#" + rowID).css({ cursor: "pointer" });
 		$("#" + rowID).click(function() {
-			console.log(area);
 			getGEOJSON(area);
 		});
 	}
@@ -78,7 +77,7 @@ $(window).load(function() {
 		if (searchAttributes == null) {
 			alert("Please enter parameters before searching for a dataset");
 			return;
-		} 
+		}
 
 		// get array of all areas on map
 		var attributesController = new AreaAttributesController(myMap, myMap.areaFeatures[0]);

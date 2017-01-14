@@ -218,7 +218,7 @@ html[xmlns] .clearfix {
     transition: all 600ms;
     transform: translateY(0px);
     transition: all 0.5s;
-    z-index: 2;
+    z-index: 3;
 }
 
 .wrap.active:before {

@@ -110,11 +110,17 @@ function AreaAttributesPopup() {
 
         if (attributesController.areaHasAttribute("plotAttributePreset_Name")) {
             var html = "<a href='#' id='preset-dataset-link'>" +
-            attributesController.getAttribute("plotAttributePreset_Name") + "</a>";
+                attributesController.getAttribute("plotAttributePreset_Name") + "</a>";
             $("#reference-tab").html(html);
             $("#preset-dataset-link").on("click", function() {
                 attributesController.processAttributes();
             });
+        }
+
+        if (attributesController.areaHasAttribute("referencePdfUrl") &&
+            attributesController.areaHasAttribute("referenceText")) {
+            var html = "<a href='" + attributesController.getAttribute("referencePdfUrl") + "' target='_blank'>" + attributesController.getAttribute("referenceText") + "</a>";
+            $("#downloads-tab").html(html);
         }
     };
 };
@@ -541,12 +547,14 @@ function search() {
             ]
         });
         var countries = fuse.search(query);
+        var attributesController = new AreaAttributesController(myMap, countries[0]);
 
         // add our info in a table, first remove any old info
         $(".wrap#select-area-wrap").find(".content").find("#myTable").find(
             "#tableBody").empty();
         for (var i = 0; i < countries.length; i++) {
             var country = countries[i];
+            attributesController.setArea(country);
             var properties = country.properties;
 
             // so we don't have to check whether it's a string or proper object every time
@@ -559,10 +567,17 @@ function search() {
             properties.attributevalues = JSON.stringify(properties.attributevalues);
             properties.centerOfDataset = JSON.stringify(properties.centerOfDataset);
 
+            var referenceHTML = "Reference to the papers to be added.";
+            if (attributesController.areaHasAttribute("referencePdfUrl") &&
+                attributesController.areaHasAttribute("referenceText")) {
+                referenceHTML = "<a href='" + attributesController.getAttribute("referencePdfUrl") +
+                    "' target='_blank'>" + attributesController.getAttribute("referenceText") + "</a>";
+            }
+
             $("#tableBody").append("<tr id=" + properties.unavco_name +
                 "><td value='" + properties.unavco_name + "''>" +
                 properties.unavco_name + " (" + properties.project_name +
-                ")</td><td value='reference'>Reference to the papers to be added.</a></td></tr>"
+                ")</td><td value='reference'>" + referenceHTML + "</td></tr>"
             );
 
             // make cursor change when mouse hovers over row
