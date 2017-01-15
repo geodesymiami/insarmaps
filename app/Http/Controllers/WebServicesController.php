@@ -254,41 +254,68 @@ class WebServicesController extends Controller
       $startTime = NULL;  // if specified, returned datasets must occur during or after this time
       $endTime = NULL;  // if specified, returned datasets must occur during or before this time
       $outputType = "json"; // default value is json, other option is plot
+      $optionalSearch = FALSE; // if user specifies any optional parameter except outputType, set to true and adjust SQL
 
       // extract parameter values from Request url
       $requests = $request->all();
-
       foreach ($requests as $key => $value) {
         switch ($key) {
           case 'latitude':
-            $latitude = $value;
+            if (strlen($value) > 0) {
+              $latitude = $value;
+            }
             break;
           case 'longitude':
-            $longitude = $value;
+            if (strlen($value) > 0) {
+              $longitude = $value;
+            }
             break;
           case 'satellite':
-            $satellite = $value;
+            if (strlen($value) > 0) {
+              $satellite = $value;
+              $optionalSearch = TRUE;
+            }
             break;
           case 'relativeOrbit':
-            $relativeOrbit = $value;
+            if (strlen($value) > 0) {
+              $relativeOrbit = $value;
+              $optionalSearch = TRUE;
+            }
             break;
           case 'firstFrame':
-            $firstFrame = $value;
+            if (strlen($value) > 0) {
+              $firstFrame = $value;
+              $optionalSearch = TRUE;
+            }
             break;
           case 'mode':
-            $mode = $value;
+            if (strlen($value) > 0) {
+              $mode = $value;
+              $optionalSearch = TRUE;
+            }
             break;
           case 'flightDirection':
-            $flightDirection = $value;
+            if (strlen($value) > 0) {
+              $flightDirection = $value;
+              $optionalSearch = TRUE;
+            }
             break;
           case 'startTime':
-            $startTime = $value;
+            if (strlen($value) > 0) {
+              $startTime = $value;
+              $optionalSearch = TRUE;
+            }
             break;
           case 'endTime':
-            $endTime = $value;
+            if (strlen($value) > 0) {
+              $endTime = $value;
+              $optionalSearch = TRUE;
+            }
             break;
           case 'outputType':
-            $outputType = $value;
+            if (strlen($value) > 0) {
+              $outputType = $value;
+            }
             break;
           default:
             break;
@@ -322,17 +349,61 @@ class WebServicesController extends Controller
       // New Webservice can display multiple points from different datasets matching user input
       // Example url: http://homestead.app/WebServices?longitude=131.221&latitude=33.339&satellite=Alos&relativeOrbit=73&firstFrame=2950&mode=SM&flightDirection=D&startTime=1990-12-20&endTime=2020-12-20&outputType=json
 
-      // QUERY 1: get names of all datasets
-      // TODO: Search for dataset names based on optional parameters specified by user
+      // QUERY 1A: get names of all datasets
       $query = "SELECT unavco_name FROM area;";
       $unavcoNames = DB::select(DB::raw($query));
 
       $len = count($unavcoNames);
       $datasets = [];
       $data = []; // array of point data from all datasets that match closest to user query 
+      $queryConditions = []; // array of conditions to narrow query result based on webservice parameter
 
+      // format SQL result into a php array
       foreach ($unavcoNames as $unavcoName) {
         array_push($datasets, $unavcoName->unavco_name);
+      }
+
+      // QUERY 1B: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramaters
+      // Example query: SELECT * FROM area WHERE area.id = (SELECT area_id FROM extra_attributes WHERE attributekey='mission' AND attributevalue='Alos');
+      if ($optionalSearch) {
+        $query = "SELECT unavco_name FROM area WHERE area" . ".id = (SELECT area_id FROM extra_attributes WHERE ";
+
+        if (isset($satellite) && strlen($satellite) > 0) {
+          array_push($queryConditions, "attributekey='mission' AND attributevalue='" . $satellite . "'");
+        }
+
+        if (isset($mode) && strlen($mode) > 0) {
+          array_push($queryConditions, "attributekey='beam_mode' AND attributevalue='" . $mode . "'");
+        }
+
+        if (isset($relativeOrbit) && strlen($relativeOrbit) > 0) {
+          array_push($queryConditions, "attributekey='relative_orbit' AND attributevalue='" . $relativeOrbit . "'");
+        }
+
+        if (isset($firstFrame) && strlen($firstFrame) > 0) {
+          array_push($queryConditions, "attributekey='first_frame' AND attributevalue='" . $firstFrame . "'");
+        }
+
+        if (isset($flightDirection) && strlen($flightDirection) > 0) {
+          array_push($queryConditions, "attributekey='flight_direction' AND attributevalue='" . $flightDirection . "'");
+        }
+
+        if (count($queryConditions) == 1) {
+          $query = $query . $queryConditions[0] . ");";
+        }
+        else if (count($queryConditions) > 1) {
+          $query = $query . $queryConditions[0];
+          $len_queryConditions = count($queryConditions);
+          for ($i = 1; $i < $len_queryConditions; $i++) {
+            $query = $query . " AND " . $queryConditions[$i];
+          }
+          $query = $query . ");";
+        }
+
+        dd($query);
+
+        // $test = DB::select(DB::raw($query));
+        // dd($test);
       }
 
       // calculate polygon encapsulating longitude and latitude specified by user
