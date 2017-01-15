@@ -206,6 +206,9 @@
         </tbody>
       </table>
     </div>
+    <div class="top-right-buttons">
+      <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="search-form-and-results-minimize-button"><span aria-hidden="true">&or;</span></button>
+    </div>
   </div>
   <div class="wrap" id="charts" title="Displacement time-series">
     <div class="top-right-buttons">

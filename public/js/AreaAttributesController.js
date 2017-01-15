@@ -54,6 +54,10 @@ function AreaAttributesController(map, area) {
         return that.attributes;
     };
 
+    this.getAttribute = function(attributeKey) {
+        return that.attributes[attributeKey];
+    };
+
     this.processAttributes = function() {
         if (that.attributes) {
             that.map.colorScale.setScale(that.attributes.plotAttributePreset_colorBar);
@@ -91,5 +95,9 @@ function AreaAttributesController(map, area) {
     this.setArea = function(area) {
         that.area = area;
         that.attributes = that.constructAttributes();
+    };
+
+    this.areaHasAttribute = function(attribute) {
+        return that.attributes[attribute] != null;
     };
 }

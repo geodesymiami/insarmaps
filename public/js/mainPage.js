@@ -12,6 +12,11 @@ var myMap = null;
 function AreaAttributesPopup() {
     var that = this;
 
+    this.resetTabContents = function() {
+        $("#downloads-tab").html("<p>Download to Unavco InSAR data products to be implemented.</p>");
+        $("#reference-tab").html("<p>Reference to the papers to be added.</p>");
+    };
+
     this.populate = function(area) {
         var tableHTML = "";
         var attributekeys = null;
@@ -87,6 +92,9 @@ function AreaAttributesPopup() {
         var link = $("#details-tab-link");
         clickEvent.currentTarget = link;
         link.trigger(clickEvent);
+
+        that.resetTabContents();
+        that.populateTabs(area);
     }
 
     this.show = function(area) {
@@ -102,11 +110,29 @@ function AreaAttributesPopup() {
     this.isMinimized = function() {
         return $('.wrap#area-attributes-div').hasClass('toggled');
     };
+
+    this.populateTabs = function(area) {
+        var attributesController = new AreaAttributesController(myMap, area);
+
+        if (attributesController.areaHasAttribute("plotAttributePreset_Name")) {
+            var html = "<a href='#' id='preset-dataset-link'>" +
+                attributesController.getAttribute("plotAttributePreset_Name") + "</a>";
+            $("#reference-tab").html(html);
+            $("#preset-dataset-link").on("click", function() {
+                attributesController.processAttributes();
+            });
+        }
+
+        if (attributesController.areaHasAttribute("referencePdfUrl") &&
+            attributesController.areaHasAttribute("referenceText")) {
+            var html = "<a href='" + attributesController.getAttribute("referencePdfUrl") + "' target='_blank'>" + attributesController.getAttribute("referenceText") + "</a>";
+            $("#downloads-tab").html(html);
+        }
+    };
 };
 
 function getGEOJSON(area) {
     // currentPoint = 1;
-    currentArea = area;
 
     // var query = {
     //   "area": area,
@@ -136,6 +162,8 @@ function getGEOJSON(area) {
         myMap.removePoints();
         myMap.removeTouchLocationMarkers();
     }
+
+    currentArea = area;
     // make streets toggle button be only checked one
     $("#streets").prop("checked", true);
     for (var i = 1; i <= area.properties.num_chunks; i++) {
@@ -186,16 +214,6 @@ function getGEOJSON(area) {
             myMap.map.flyTo({
                 center: [long, lat],
                 zoom: zoom
-            });
-
-            myMap.onDatasetRendered(function(renderCallback) {
-                var attributesController = new AreaAttributesController(myMap, area);
-                try {
-                    attributesController.processAttributes();
-                } catch (e) {
-                    console.log("Exception: " + e);
-                }
-                myMap.map.off("render", renderCallback);
             });
 
             myMap.loadAreaMarkersExcluding([area.properties.unavco_name]);
@@ -535,12 +553,14 @@ function search() {
             ]
         });
         var countries = fuse.search(query);
+        var attributesController = new AreaAttributesController(myMap, countries[0]);
 
         // add our info in a table, first remove any old info
         $(".wrap#select-area-wrap").find(".content").find("#myTable").find(
             "#tableBody").empty();
         for (var i = 0; i < countries.length; i++) {
             var country = countries[i];
+            attributesController.setArea(country);
             var properties = country.properties;
 
             // so we don't have to check whether it's a string or proper object every time
@@ -553,10 +573,17 @@ function search() {
             properties.attributevalues = JSON.stringify(properties.attributevalues);
             properties.centerOfDataset = JSON.stringify(properties.centerOfDataset);
 
+            var referenceHTML = "Reference to the papers to be added.";
+            if (attributesController.areaHasAttribute("referencePdfUrl") &&
+                attributesController.areaHasAttribute("referenceText")) {
+                referenceHTML = "<a href='" + attributesController.getAttribute("referencePdfUrl") +
+                    "' target='_blank'>" + attributesController.getAttribute("referenceText") + "</a>";
+            }
+
             $("#tableBody").append("<tr id=" + properties.unavco_name +
                 "><td value='" + properties.unavco_name + "''>" +
                 properties.unavco_name + " (" + properties.project_name +
-                ")</td><td value='reference'>Reference to the papers to be added.</a></td></tr>"
+                ")</td><td value='reference'>" + referenceHTML + "</td></tr>"
             );
 
             // make cursor change when mouse hovers over row
@@ -746,6 +773,27 @@ $(window).load(function() {
                 }
             }).addClass("toggled");
         }
+    });
+    // TODO: these minimize buttons are dying to be put into a class
+    // to reduce redundant code
+    $("#search-form-and-results-minimize-button").on("click", function() {
+        // heights in percent
+        var container = $("#search-form-and-results-container");
+        if (container.hasClass("toggled")) {
+            $("#map-container").height("70%");
+            container.height("30%");
+            $("#search-form-and-results-minimize-button > span").html("&or;");
+            container.removeClass("toggled");
+        } else {
+            var containerNewHeight = 3;
+            var mapNewHeight = 100 - containerNewHeight;
+            $("#map-container").height(mapNewHeight + "%");
+            container.height(containerNewHeight + "%");
+            $("#search-form-and-results-minimize-button > span").html("&and;");
+            container.addClass("toggled");
+        }
+
+        myMap.map.resize();
     });
 
     // chart div resizable

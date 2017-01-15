@@ -24,7 +24,7 @@ def get_date(date_string):
 	return date(year, month, day)
 
 def mask_timeseries(timeseries_file, mask_file, out_file):
-	os.system("masking.py -f " + timeseries_file + " -m " + mask_file + " -o " + out_file)
+	os.system("mask.py -f " + timeseries_file + " -m " + mask_file + " -o " + out_file)
 	
 def usage():
 	print 'Correct format: python pysar2unavco.py -t timeseries.h5 -i incidence_angle.h5 -d DEM_error.h5 -c temporal_coherence.h5 -m mask.h5'
