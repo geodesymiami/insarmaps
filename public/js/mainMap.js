@@ -197,8 +197,7 @@ function Map(loadJSONFunc) {
 
         // clicked on area marker, reload a new area.
         var markerSymbol = feature.properties["marker-symbol"];
-        if ((markerSymbol == "marker" || markerSymbol == "fillPolygon")
-            && that.anAreaWasPreviouslyLoaded()) {
+        if ((markerSymbol == "marker" || markerSymbol == "fillPolygon") && that.anAreaWasPreviouslyLoaded()) {
             if (that.pointsLoaded()) {
                 that.removePoints();
             }
@@ -478,6 +477,16 @@ function Map(loadJSONFunc) {
         return markersAtPoint;
     };
 
+    this.getFirstPolygonFrameAtPoint = function(features) {
+        for (var i = 0; i < features.length; i++) {
+            if (features[i].properties["marker-symbol"] == "fillPolygon") {
+                return features[i];
+            }
+        }
+
+        return null;
+    };
+
     this.leftClickOnAPoint = function(e) {
         that.clickOnAPoint(e);
     };
@@ -723,7 +732,7 @@ function Map(loadJSONFunc) {
 
                 // if dataset loaded, insert areas before dataset layer
                 if (that.map.getLayer("chunk_1")) {
-                     that.map.addLayer({
+                    that.map.addLayer({
                         "id": id,
                         "type": "fill",
                         "source": id,
@@ -858,8 +867,9 @@ function Map(loadJSONFunc) {
             }
 
             var markerSymbol = features[0].properties["marker-symbol"];
+            var frameFeature = that.getFirstPolygonFrameAtPoint(features);
 
-            if (!markerSymbol || markerSymbol == "marker") {
+            if (!frameFeature) {
                 that.areaMarkerLayer.resetHighlightsOfAllMarkers();
                 that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
                 return;
@@ -875,110 +885,17 @@ function Map(loadJSONFunc) {
                 return;
             }
 
-            if (markerSymbol == "fillPolygon") {
-                // Populate the areaPopup and set its coordinates
-                // based on the feature found.
-                var html = "<table class='table' id='areas-under-mouse-table'>";
-                // make the html table
-                var previewButtonIDSuffix = "_preview_attribues";
+            // we have a frame feature so...
+            // Populate the areaPopup and set its coordinates
+            // based on the feature found.
+            var html = "<table class='table' id='areas-under-mouse-table'>";
+            // make the html table
+            var previewButtonIDSuffix = "_preview_attribues";
 
-                that.areaMarkerLayer.resetHighlightsOfAllMarkers();
-                that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
-                that.areaMarkerLayer.setAreaRowHighlighted(features[0].properties.unavco_name);
-                that.areaMarkerLayer.setPolygonHighlighted(features[0].properties.layerID, "rgba(0, 0, 255, 0.3)");
-                for (var i = 0; i < features.length; i++) {
-                    var unavco_name = features[i].properties.unavco_name;
-
-                    if (!unavco_name) {
-                        return;
-                    }
-
-                    var markerID = features[i].properties.layerID;
-
-                    var region = features[i].properties.region;
-
-                    var prettyNameAndComponents = that.prettyPrintProjectName(features[i].properties.project_name);
-                    var attributeValues = JSON.parse(features[i].properties.attributevalues);
-                    var first_date_index = JSON.parse(features[i].properties.attributekeys).indexOf("first_date");
-
-                    var first_date = attributeValues[first_date_index];
-                    var last_date = attributeValues[first_date_index + 1];
-
-                    var frameNumbersString = null;
-
-                    if (prettyNameAndComponents.frameNumbers[0] == prettyNameAndComponents.frameNumbers[1]) {
-                        frameNumbersString = prettyNameAndComponents.frameNumbers[0];
-                    } else {
-                        frameNumbersString = prettyNameAndComponents.frameNumbers.join(" ");
-                    }
-
-                    html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-html='true' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date + "<br>" +
-                        prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + region + " " + prettyNameAndComponents.missionSatellite +
-                        " " + prettyNameAndComponents.missionType + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + "><b>?</div></td></tr>";
-                }
-                html += "</table>";
-
-                // make table respond to clicks
-                for (var i = 0; i < features.length; i++) {
-                    var unavco_name = features[i].properties.unavco_name;
-
-                    if (!unavco_name) {
-                        return;
-                    }
-
-                    var project_name = features[i].properties.project_name;
-                    var lat = features[i].geometry.coordinates[0];
-                    var long = features[i].geometry.coordinates[1];
-
-                    var num_chunks = features[i].properties.num_chunks;
-
-                    var attributeKeys = features[i].properties.attributekeys;
-                    var attributeValues = features[i].properties.attributevalues;
-
-                    // make cursor change when mouse hovers over row
-                    $("#areas-under-mouse-table #" + unavco_name).css("cursor", "pointer");
-                    $(".preview-attributes-button").css({
-                        "cursor": "pointer",
-                        "border-radius": "100%",
-                        "background-color": "rgb(107, 190, 249)"
-                    });
-
-                    $("#" + unavco_name).css({
-                        "width": "90%",
-                        "float": "left",
-                        "padding-right": "10px"
-                    });
-
-                    // ugly click function declaration to JS not using block scope
-                    $("#" + unavco_name).click((function(area) {
-                        return function(e) {
-                            that.determineZoomOutZoom();
-                            clickedArea = area.properties.unavco_name;
-                            that.areaPopup.remove();
-                            getGEOJSON(area);
-                        };
-                    })(features[i]));
-                    $("#" + unavco_name + previewButtonIDSuffix).hover((function(area) {
-                        return function(e) {
-                            if ($('.wrap#area-attributes-div').hasClass('active')) {
-                                areaAttributesPopup.populate(area);
-                            } else {
-                                areaAttributesPopup.show(area);
-                            }
-                        };
-                    })(features[i]), function() {
-                        $('.wrap#area-attributes-div').toggleClass('active');
-                    });
-                }
-
-                $(".preview-attributes-button").css({
-                    "width": "15px",
-                    "float": "left"
-                });
-
-                $(".area-name-popup").tooltip(); // activate tooltips
-                prepareButtonsToHighlightOnHover();
-            }
+            that.areaMarkerLayer.resetHighlightsOfAllMarkers();
+            that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
+            that.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.unavco_name);
+            that.areaMarkerLayer.setPolygonHighlighted(frameFeature.properties.layerID, "rgba(0, 0, 255, 0.3)");
         });
 
         that.map.on('zoomend', function() {
