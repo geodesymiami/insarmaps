@@ -519,25 +519,24 @@ function Map(loadJSONFunc) {
         var layerID = "touchLocation";
 
         // remove cluster count check if you remove clustering
-        if (firstFeature.layer.id == "cluster-count" || firstFeature.layer.id == "contours" || firstFeature.layer.id == "contour_label") {
-            return;
+        var frameFeature = that.getFirstPolygonFrameAtPoint(features);
+        if (frameFeature) {
+            that.determineZoomOutZoom();
+
+            var feature = frameFeature;
+
+            var unavco_name = feature.properties.unavco_name;
+            var project_name = feature.properties.project_name;
+            var lat = feature.geometry.coordinates[0];
+            var long = feature.geometry.coordinates[1];
+            var num_chunks = feature.properties.num_chunks;
+            var attributeKeys = feature.properties.attributekeys;
+            var attributeValues = feature.properties.attributevalues;
+
+            var markerID = feature.properties.layerID;
+
+            getGEOJSON(feature);
         }
-
-        that.determineZoomOutZoom();
-
-        var feature = features[0];
-
-        var unavco_name = feature.properties.unavco_name;
-        var project_name = feature.properties.project_name;
-        var lat = feature.geometry.coordinates[0];
-        var long = feature.geometry.coordinates[1];
-        var num_chunks = feature.properties.num_chunks;
-        var attributeKeys = feature.properties.attributekeys;
-        var attributeValues = feature.properties.attributevalues;
-
-        var markerID = feature.properties.layerID;
-
-        getGEOJSON(feature);
     };
 
     this.setBaseMapLayer = function(mapType) {
@@ -854,8 +853,6 @@ function Map(loadJSONFunc) {
         // mainly used to show available areas under a marker
         that.map.on('mousemove', function(e) {
             var features = that.map.queryRenderedFeatures(e.point);
-            that.map.getCanvas().style.cursor =
-                (features.length && !(features[0].layer.id == "contours") && !(features[0].layer.id == "contour_label")) ? 'pointer' : '';
 
             // mouse not under a marker, clear all popups
             if (!features.length) {
@@ -863,39 +860,36 @@ function Map(loadJSONFunc) {
                 that.gpsStationNamePopup.remove();
                 that.areaMarkerLayer.resetHighlightsOfAllMarkers();
                 that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
+                that.map.getCanvas().style.cursor = '';
                 return;
             }
 
+            var layerID = features[0].layer.id;
+            var layerSource = features[0].layer.source;
             var markerSymbol = features[0].properties["marker-symbol"];
+            var itsAnreaPolygon = (markerSymbol === "fillPolygon") || (markerSymbol === "marker");
+            var itsAPoint = layerID === "vector_layer_";
+            var itsAGPSFeature = layerID === "gpsStations";
             var frameFeature = that.getFirstPolygonFrameAtPoint(features);
 
-            if (!frameFeature) {
-                that.areaMarkerLayer.resetHighlightsOfAllMarkers();
-                that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
-                return;
-            }
+            that.map.getCanvas().style.cursor = (itsAPoint || itsAnreaPolygon || itsAGPSFeature) ? 'pointer' : '';
+
             // a better way is to have two mousemove callbacks like we do with select area vs select marker
-            if (features[0].layer.id == "gpsStations") {
+            if (itsAGPSFeature) {
                 that.gpsStationNamePopup.remove();
                 var coordinates = features[0].geometry.coordinates;
                 that.gpsStationNamePopup.setLngLat(coordinates)
                     .setHTML(features[0].properties.stationName)
                     .addTo(that.map);
-
-                return;
+            } else if (frameFeature) {
+                that.areaMarkerLayer.resetHighlightsOfAllMarkers();
+                that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
+                that.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.unavco_name);
+                that.areaMarkerLayer.setPolygonHighlighted(frameFeature.properties.layerID, "rgba(0, 0, 255, 0.3)");
+            } else {
+                that.areaMarkerLayer.resetHighlightsOfAllMarkers();
+                that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
             }
-
-            // we have a frame feature so...
-            // Populate the areaPopup and set its coordinates
-            // based on the feature found.
-            var html = "<table class='table' id='areas-under-mouse-table'>";
-            // make the html table
-            var previewButtonIDSuffix = "_preview_attribues";
-
-            that.areaMarkerLayer.resetHighlightsOfAllMarkers();
-            that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
-            that.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.unavco_name);
-            that.areaMarkerLayer.setPolygonHighlighted(frameFeature.properties.layerID, "rgba(0, 0, 255, 0.3)");
         });
 
         that.map.on('zoomend', function() {
