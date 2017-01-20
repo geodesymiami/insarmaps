@@ -74,7 +74,7 @@ class WebServicesController extends Controller
           "xAxis": {
             "type": "datetime",
             "dateTimeLabelFormats": {
-              "month": "%e. %b",
+              "month": "%b %Y",
               "year": "%Y"
             },
             "title": {

@@ -358,7 +358,7 @@ function Map(loadJSONFunc) {
                         }
                     },
                     dateTimeLabelFormats: {
-                        month: '%e. %b',
+                        month: '%b %Y',
                         year: '%Y'
                     },
                     title: {
