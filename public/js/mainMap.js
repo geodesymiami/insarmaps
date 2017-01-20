@@ -868,7 +868,7 @@ function Map(loadJSONFunc) {
             var layerSource = features[0].layer.source;
             var markerSymbol = features[0].properties["marker-symbol"];
             var itsAnreaPolygon = (markerSymbol === "fillPolygon") || (markerSymbol === "marker");
-            var itsAPoint = layerID === "vector_layer_";
+            var itsAPoint = layerSource === "vector_layer_";
             var itsAGPSFeature = layerID === "gpsStations";
             var frameFeature = that.getFirstPolygonFrameAtPoint(features);
 

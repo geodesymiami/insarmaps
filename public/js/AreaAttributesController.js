@@ -86,8 +86,10 @@ function AreaAttributesController(map, area) {
                 that.map.selector.minIndex = possibleDates.minIndex;
                 that.map.selector.maxIndex = possibleDates.maxIndex;
                 that.map.selector.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed);
+                $("#color-scale-text-div").html("LOS Displacement (cm)");
             } else {
                 that.map.refreshDataset();
+                $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
             }
         }
     };
