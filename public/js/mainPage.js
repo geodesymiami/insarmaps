@@ -7,6 +7,7 @@ var topGraphToggleButton = null;
 var bottomGraphToggleButton = null;
 var contourToggleButton = null;
 var gpsStationsToggleButton = null;
+var areaFramesToggleButton = null;
 var myMap = null;
 
 function AreaAttributesPopup() {
@@ -526,6 +527,18 @@ function setupToggleButtons() {
             myMap.removeGPSStationMarkers();
         }
     });
+
+    areaFramesToggleButton = new ToggleButton("#dataset-frames-toggle-button");
+    areaFramesToggleButton.onclick(function() {
+        if (areaFramesToggleButton.toggleState == ToggleStates.ON) {
+            myMap.loadAreaMarkers();
+        } else {
+            myMap.removeAreaMarkers();
+        }
+    });
+
+    // turn on by default
+    areaFramesToggleButton.set("on");
 }
 
 function search() {

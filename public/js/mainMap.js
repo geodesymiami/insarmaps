@@ -750,7 +750,7 @@ function Map(loadJSONFunc) {
                         },
                         "paint": {
                             "line-color": "rgba(0, 0, 255, 1.0)",
-                            "line-width": 10
+                            "line-width": 5
                         }
                     }, "chunk_1");
                 } else {
@@ -769,7 +769,7 @@ function Map(loadJSONFunc) {
                         "source": polygonID,
                         "paint": {
                             "line-color": "rgba(0, 0, 255, 1.0)",
-                            "line-width": 10
+                            "line-width": 5
                         }
                     });
                 }

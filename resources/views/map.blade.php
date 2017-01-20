@@ -101,11 +101,15 @@
         </div>
         <div class="overlay-toggle">
           <label>Contour lines</label>
-          <input id = "contour-toggle-button" type="checkbox" name="overlayToggle"/>
+          <input id = "contour-toggle-button" type="checkbox"/>
         </div>
         <div class="overlay-toggle">
           <label>GPS Stations (UNR)</label>
-          <input id = "gps-stations-toggle-button" type="checkbox" name="overlayToggle"/>
+          <input id = "gps-stations-toggle-button" type="checkbox"/>
+        </div>
+        <div class="overlay-toggle">
+          <label>Show Swaths</label>
+          <input id = "dataset-frames-toggle-button" type="checkbox" name="overlayToggle"/>
         </div>
       </div>
     </div>
