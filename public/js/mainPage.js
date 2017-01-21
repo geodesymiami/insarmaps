@@ -650,6 +650,10 @@ function slideFunction(event, ui) {
 
 // when site loads, turn toggle on
 $(window).load(function() {
+    $(window).on('hashchange', function(e) {
+        history.replaceState("", document.title, e.originalEvent.oldURL);
+    });
+
     var NUM_CHUNKS = 300;
 
     myMap = new Map(loadJSON);
