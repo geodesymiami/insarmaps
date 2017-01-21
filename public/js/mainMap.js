@@ -310,6 +310,15 @@ function Map(loadJSONFunc) {
             // now add the new regression line as a second dataset in the chart
             firstToggle = true;
 
+            // if a time scale previously set manually or via extra attributes of area
+            // set these to the default starting range
+            var minDate = chart_data[0][0];
+            var maxDate = chart_data[chart_data.length - 1][0];
+            if (that.selector.minIndex != -1 && that.selector.maxIndex != -1) {
+                minDate = chart_data[that.selector.minIndex][0];
+                maxDate = chart_data[that.selector.maxIndex][0];
+            }
+
             var chartOpts = {
                 title: {
                     text: null
@@ -363,7 +372,9 @@ function Map(loadJSONFunc) {
                     },
                     title: {
                         text: 'Date'
-                    }
+                    },
+                    min: minDate,
+                    max: maxDate
                 },
                 yAxis: {
                     title: {
@@ -868,7 +879,7 @@ function Map(loadJSONFunc) {
             var layerSource = features[0].layer.source;
             var markerSymbol = features[0].properties["marker-symbol"];
             var itsAnreaPolygon = (markerSymbol === "fillPolygon") || (markerSymbol === "marker");
-            var itsAPoint = layerSource === "vector_layer_";
+            var itsAPoint = layerSource === "vector_layer_" || layerSource === "onTheFlyJSON";
             var itsAGPSFeature = layerID === "gpsStations";
             var frameFeature = that.getFirstPolygonFrameAtPoint(features);
 
