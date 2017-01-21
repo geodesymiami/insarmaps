@@ -81,7 +81,9 @@ function SquareSelector(map) {
         that.start = that.mousePos(e);
     };
 
-    this.canvas.addEventListener('mousedown', this.mouseDown, true);
+    this.prepareEventListeners = function() {
+        that.canvas.addEventListener('mousedown', that.mouseDown, true);
+    };
 
     this.finish = function(bbox) {
         document.removeEventListener('mousemove', that.onMouseMove);
@@ -96,6 +98,17 @@ function SquareSelector(map) {
         if (that.box) {
             that.box.parentNode.removeChild(that.box);
             that.box = null;
+        }
+
+        that.lastbbox = that.bbox;
+        if (that.bbox == null || that.minIndex == -1 || that.maxIndex == -1) {
+            return;
+        }
+
+        // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
+        if (that.lastbbox == that.bbox && that.lastMinIndex == that.minIndex && that.lastMaxIndex == that.maxIndex) {
+            console.log("here");
+            return;
         }
 
         // If bbox exists. use this value as the argument for `queryRenderedFeatures`
@@ -144,11 +157,13 @@ function SquareSelector(map) {
         if (box) {
             var pixelBoundingBox = [that.map.map.project(box[0]), that.map.map.project(box[1])];
             features = that.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
-        // no bounding box
+            // no bounding box
         } else {
             features = that.map.map.queryRenderedFeatures({ layers: pointLayers });
         }
 
+        that.lastbbox = that.bbox;
+        console.log("hi");
         if (features.length == 0) {
             return;
         }

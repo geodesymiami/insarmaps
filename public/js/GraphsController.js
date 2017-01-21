@@ -91,7 +91,12 @@ function GraphsController() {
                     afterSetExtremes: function(e) {
                         // we get called when graph is created
                         that.graphSettings[chartContainer].navigatorEvent = e;
-                        that.getValideDatesFromNavigatorExtremes(chartContainer);
+                        var dates = that.getValideDatesFromNavigatorExtremes(chartContainer);
+                        myMap.selector.lastMinIndex = myMap.selector.minIndex;
+                        myMap.selector.lastMaxIndex = myMap.selector.maxIndex;
+                        // set selector to work
+                        myMap.selector.minIndex = dates.minIndex;
+                        myMap.selector.maxIndex = dates.maxIndex;
 
                         var graphSettings = that.graphSettings[chartContainer];
                         // update velocity, even if we don't have a linear regression line, needed the extra check as this library calls this function when graph is created... sigh
@@ -114,6 +119,15 @@ function GraphsController() {
                             that.addRegressionLine(chartContainer, displacements_array);
                         }
 
+                        // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
+                        var selector = myMap.selector;
+                        // probably first time called which is a red herring
+                        if (selector.lastMinIndex == -1 || selector.lastMaxIndex == -1) {
+                            return;
+                        }
+                        if (selector.lastbbox == selector.bbox && selector.lastMinIndex == selector.minIndex && selector.lastMaxIndex == selector.maxIndex) {
+                            return;
+                        }
                         if (myMap.selector.bbox != null && myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
                             myMap.selector.recolorDataset();
                         }
@@ -231,10 +245,6 @@ function GraphsController() {
         var minDate = graphSettings.navigatorEvent.min;
         var maxDate = graphSettings.navigatorEvent.max;
         var minMax = that.mapDatesToArrayIndeces(minDate, maxDate, graphSettings.date_array);
-
-        // set selector to work
-        myMap.selector.minIndex = minMax.minIndex;
-        myMap.selector.maxIndex = minMax.maxIndex;
 
         return minMax;
     };

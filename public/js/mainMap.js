@@ -680,6 +680,7 @@ function Map(loadJSONFunc) {
 
         that.map.on("load", function() {
             that.selector = new SquareSelector(that);
+            that.selector.prepareEventListeners();
             that.loadAreaMarkers();
         });
 
