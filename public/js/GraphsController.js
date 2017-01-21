@@ -29,6 +29,173 @@ function GraphsController() {
         }
     };
 
+    this.JSONToGraph = function(json, chartContainer, clickEvent) {
+        var date_string_array = json.string_dates;
+        var date_array = convertStringsToDateArray(date_string_array);
+        var decimal_dates = json.decimal_dates;
+        var displacement_array = json.displacements;
+
+        // convert from m to cm
+        displacement_array.forEach(function(element, index, array) {
+            array[index] = 100 * array[index];
+        });
+
+        that.graphSettings[chartContainer].date_string_array = date_string_array;
+        that.graphSettings[chartContainer].date_array = date_array;
+        that.graphSettings[chartContainer].decimal_dates = decimal_dates;
+        that.graphSettings[chartContainer].displacement_array = displacement_array;
+
+        // returns array for displacement on chart
+        chart_data = getDisplacementChartData(displacement_array, date_string_array);
+
+        // calculate and render a linear regression of those dates and displacements
+        var result = calcLinearRegression(displacement_array, decimal_dates);
+        var slope = result["equation"][0];
+        var y = result["equation"][1];
+
+        // testing standard deviation calculation - we are using slope of linear reg line
+        // as mean which gives different answer from taking mean of displacements
+        var velocity_std = getStandardDeviation(displacement_array, slope);
+
+        // returns array for linear regression on chart
+        var regression_data = getRegressionChartData(slope, y, decimal_dates, chart_data);
+
+        // now add the new regression line as a second dataset in the chart
+        firstToggle = true;
+
+        // if a time scale previously set manually or via extra attributes of area
+        // set these to the default starting range
+        var minDate = chart_data[0][0];
+        var maxDate = chart_data[chart_data.length - 1][0];
+        if (myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
+            minDate = chart_data[myMap.selector.minIndex][0];
+            maxDate = chart_data[myMap.selector.maxIndex][0];
+        }
+
+        var chartOpts = {
+            title: {
+                text: null
+            },
+            subtitle: {
+                text: "velocity: " + (slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"
+            },
+            navigator: {
+                enabled: true
+            },
+            scrollbar: {
+                liveRedraw: false
+            },
+            xAxis: {
+                type: 'datetime',
+                events: { // get dates for slider bounds
+                    afterSetExtremes: function(e) {
+                        // we get called when graph is created
+                        that.graphSettings[chartContainer].navigatorEvent = e;
+                        that.getValideDatesFromNavigatorExtremes(chartContainer);
+
+                        var graphSettings = that.graphSettings[chartContainer];
+                        // update velocity, even if we don't have a linear regression line, needed the extra check as this library calls this function when graph is created... sigh
+                        var displacements = (detrendToggleButton.toggleState == ToggleStates.ON && graphSettings.detrend_displacement_array) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
+                        var regression_data = that.getLinearRegressionLine(chartContainer, displacements);
+                        var sub_slope = regression_data.linearRegressionData["equation"][0];
+                        var velocity_std = regression_data.stdDev;
+                        var chart = $("#" + chartContainer).highcharts();
+                        var velocityText = "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"
+
+                        that.highChartsOpts[chartContainer].subtitle.text = velocityText;
+
+                        chart.setTitle(null, {
+                            text: velocityText
+                        });
+
+                        if (regressionToggleButton.toggleState == ToggleStates.ON) {
+                            var graphSettings = that.graphSettings[chartContainer];
+                            var displacements_array = (detrendToggleButton.toggleState == ToggleStates.ON && graphSettings.detrend_displacement_array) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
+                            that.addRegressionLine(chartContainer, displacements_array);
+                        }
+
+                        if (myMap.selector.bbox != null && myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
+                            myMap.selector.recolorDataset();
+                        }
+                    }
+                },
+                dateTimeLabelFormats: {
+                    month: '%b %Y',
+                    year: '%Y'
+                },
+                title: {
+                    text: 'Date'
+                },
+                min: minDate,
+                max: maxDate
+            },
+            yAxis: {
+                title: {
+                    text: 'Ground Displacement (cm)'
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'left',
+                    verticalAlign: 'top',
+                    x: 100,
+                    y: 70,
+                    floating: true,
+                    backgroundColor: '#FFFFFF',
+                    borderWidth: 1,
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                headerFormat: '',
+                pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} cm'
+            },
+            series: [{
+                type: 'scatter',
+                name: 'Displacement',
+                data: chart_data,
+                marker: {
+                    enabled: true
+                },
+                showInLegend: false
+            }],
+            chart: {
+                marginRight: 50
+            }
+        };
+
+        that.graphSettings[chartContainer].navigatorEvent = clickEvent;
+
+        // take out navigator not only if this is the bottom graph, but if the second graph toggle is on, period
+        if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
+            chartOpts.navigator.enabled = false;
+        }
+
+        $('#' + chartContainer).highcharts(chartOpts);
+        that.highChartsOpts[chartContainer] = chartOpts;
+
+        that.setNavigatorHandlers();
+
+        // this calls recreate in the background.
+        // TODO: make detrend data functions not call recreate
+        if (detrendToggleButton.toggleState == ToggleStates.ON) {
+            that.detrendDataForGraph(chartContainer);
+        }
+
+        if (dotToggleButton.toggleState == ToggleStates.ON) {
+            that.toggleDots();
+        }
+
+        // this is hackish. due to bug which appears when we resize window before moving graph. jquery resizable
+        // size does weird stuff to the graph, so we have to set every new graph to the dimensions of the original graph
+        var width = $("#chartContainer").width();
+        var height = $("#chartContainer").height();
+        $("#" + chartContainer).highcharts().setSize(width, height, doAnimation = true);
+    };
+
     this.mapDatesToArrayIndeces = function(minDate, maxDate, arrayOfDates) {
         // lower limit index of subarray bounded by slider dates
         // must be >= minDate; upper limit <= maxDate                              
