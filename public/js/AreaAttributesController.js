@@ -68,7 +68,7 @@ function AreaAttributesController(map, area) {
             var date1 = null;
             var date2 = null;
 
-            if (that.attributes.plotAttributePreset_endDate) {
+            if (that.attributes.plotAttributePreset_Type == "displacement") {
                 that.colorOnPosition = true;
                 date1 = new Date(that.attributes.plotAttributePreset_startDate);
                 date2 = new Date(that.attributes.plotAttributePreset_endDate);
