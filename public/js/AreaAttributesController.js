@@ -1,30 +1,30 @@
+// returns json of the property, if string converts to json, otherwise
+// returns the property itself
+function propertyToJSON(property) {
+    if (typeof property == "string") {
+        return JSON.parse(property);
+    }
+
+    return property;
+}
+
 function AreaAttributesController(map, area) {
     var that = this;
 
     this.map = map;
     this.attributes = null;
     this.datesArray = null;
-    this.colorOnPosition = false;
+    this.colorOnDisplacement = false;
     this.area = area;
-
-    // returns json of the property, if string converts to json, otherwise
-    // returns the property itself
-    this.propertyToJSON = function(property) {
-        if (typeof property == "string") {
-            return JSON.parse(property);
-        }
-
-        return property;
-    };
 
     this.constructAttributes = function() {
         // attributes should be an array, extraAttributes should be an object
         // let's just add all the key values from attributes to extraAttributes
-        that.datesArray = that.propertyToJSON(that.area.properties.decimal_dates);
-        var attributeKeys = that.propertyToJSON(that.area.properties.attributekeys);
-        var attributeValues = that.propertyToJSON(that.area.properties.attributevalues);
+        that.datesArray = propertyToJSON(that.area.properties.decimal_dates);
+        var attributeKeys = propertyToJSON(that.area.properties.attributekeys);
+        var attributeValues = propertyToJSON(that.area.properties.attributevalues);
 
-        var extraAttributes = that.propertyToJSON(that.area.properties.extra_attributes);
+        var extraAttributes = propertyToJSON(that.area.properties.extra_attributes);
 
         var fullAttributes = [];
         for (var i = 0; i < attributeKeys.length; i++) {
@@ -63,13 +63,13 @@ function AreaAttributesController(map, area) {
             that.map.colorScale.setScale(that.attributes.plotAttributePreset_colorBar);
             var min = that.attributes.plotAttributePreset_displayMin;
             var max = that.attributes.plotAttributePreset_displayMax;
-            that.colorOnPosition = false;
+            myMap.colorOnDisplacement = false;
             var yearsElapsed = 0;
             var date1 = null;
             var date2 = null;
 
-            if (that.attributes.plotAttributePreset_endDate) {
-                that.colorOnPosition = true;
+            if (that.attributes.plotAttributePreset_Type == "displacement") {
+                myMap.colorOnDisplacement = true;
                 date1 = new Date(that.attributes.plotAttributePreset_startDate);
                 date2 = new Date(that.attributes.plotAttributePreset_endDate);
                 var millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
@@ -79,15 +79,17 @@ function AreaAttributesController(map, area) {
             }
             that.map.colorScale.setMinMax(min, max);
 
-            if (that.colorOnPosition) {
+            if (myMap.colorOnDisplacement) {
                 var decimalDate1 = dateToDecimal(date1);
                 var decimalDate2 = dateToDecimal(date2);
                 var possibleDates = that.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, that.datesArray);
                 that.map.selector.minIndex = possibleDates.minIndex;
                 that.map.selector.maxIndex = possibleDates.maxIndex;
                 that.map.selector.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed);
+                $("#color-scale-text-div").html("LOS Displacement (cm)");
             } else {
                 that.map.refreshDataset();
+                $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
             }
         }
     };

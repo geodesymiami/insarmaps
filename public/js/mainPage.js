@@ -7,6 +7,7 @@ var topGraphToggleButton = null;
 var bottomGraphToggleButton = null;
 var contourToggleButton = null;
 var gpsStationsToggleButton = null;
+var areaFramesToggleButton = null;
 var myMap = null;
 
 function AreaAttributesPopup() {
@@ -173,7 +174,9 @@ function getGEOJSON(area) {
 
     areaAttributesPopup.show(area);
 
-    $("#color-scale").toggleClass("active");
+    if (!$("#color-scale").hasClass("active")) {
+        $("#color-scale").toggleClass("active");
+    }
 
     // when we click, we don't reset the highlight of modified markers one final time
     myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
@@ -524,6 +527,18 @@ function setupToggleButtons() {
             myMap.removeGPSStationMarkers();
         }
     });
+
+    areaFramesToggleButton = new ToggleButton("#dataset-frames-toggle-button");
+    areaFramesToggleButton.onclick(function() {
+        if (areaFramesToggleButton.toggleState == ToggleStates.ON) {
+            myMap.loadAreaMarkers();
+        } else {
+            myMap.removeAreaMarkers();
+        }
+    });
+
+    // turn on by default
+    areaFramesToggleButton.set("on");
 }
 
 function search() {
@@ -635,6 +650,10 @@ function slideFunction(event, ui) {
 
 // when site loads, turn toggle on
 $(window).load(function() {
+    $(window).on('hashchange', function(e) {
+        history.replaceState("", document.title, e.originalEvent.oldURL);
+    });
+
     var NUM_CHUNKS = 300;
 
     myMap = new Map(loadJSON);
@@ -651,6 +670,31 @@ $(window).load(function() {
     }
 
     setupToggleButtons();
+
+    $("#color-on-dropdown").change(function() {
+        var selectedColoring = $(this).val();
+        if (selectedColoring === "displacement") {
+            myMap.colorOnDisplacement = true;
+            var dates = propertyToJSON(currentArea.properties.decimal_dates);
+            var decimalDate1 = dates[0];
+            var decimalDate2 = dates[dates.length - 1];
+            var yearsElapsed = decimalDate2 - decimalDate1;
+            var possibleDates = myMap.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, dates);
+            myMap.selector.minIndex = possibleDates.minIndex;
+            myMap.selector.maxIndex = possibleDates.maxIndex;
+            myMap.selector.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed);
+            $("#color-scale-text-div").html("LOS Displacement (cm)");
+        } else if (selectedColoring === "velocity") {
+            myMap.colorOnDisplacement = false;
+            if (myMap.map.getSource("onTheFlyJSON")) {
+                myMap.map.removeSource("onTheFlyJSON");
+                myMap.map.removeLayer("onTheFlyJSON");
+            }
+            $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
+        } else {
+            throw "Invalid dropdown selection";
+        }
+    });
 
     $('.slideout-menu-toggle').on('click', function(event) {
         event.preventDefault();

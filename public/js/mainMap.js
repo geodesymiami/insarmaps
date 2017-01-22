@@ -137,6 +137,7 @@ function Map(loadJSONFunc) {
     this.areas = null;
     this.areaFeatures = null;
     this.colorScale = new ColorScale(-2.00, 2.00);
+    this.colorOnDisplacement = false;
 
     this.areaMarkerLayer = new AreaMarkerLayer(this);
 
@@ -197,8 +198,7 @@ function Map(loadJSONFunc) {
 
         // clicked on area marker, reload a new area.
         var markerSymbol = feature.properties["marker-symbol"];
-        if ((markerSymbol == "marker" || markerSymbol == "fillPolygon")
-            && that.anAreaWasPreviouslyLoaded()) {
+        if ((markerSymbol == "marker" || markerSymbol == "fillPolygon") && that.anAreaWasPreviouslyLoaded()) {
             if (that.pointsLoaded()) {
                 that.removePoints();
             }
@@ -277,160 +277,8 @@ function Map(loadJSONFunc) {
             }
 
             var json = JSON.parse(response);
+            that.graphsController.JSONToGraph(json, chartContainer, e);
 
-            var date_string_array = json.string_dates;
-            var date_array = convertStringsToDateArray(date_string_array);
-            var decimal_dates = json.decimal_dates;
-            var displacement_array = json.displacements;
-
-            // convert from m to cm
-            displacement_array.forEach(function(element, index, array) {
-                array[index] = 100 * array[index];
-            });
-
-            that.graphsController.graphSettings[chartContainer].date_string_array = date_string_array;
-            that.graphsController.graphSettings[chartContainer].date_array = date_array;
-            that.graphsController.graphSettings[chartContainer].decimal_dates = decimal_dates;
-            that.graphsController.graphSettings[chartContainer].displacement_array = displacement_array;
-
-            // returns array for displacement on chart
-            chart_data = getDisplacementChartData(displacement_array, date_string_array);
-
-            // calculate and render a linear regression of those dates and displacements
-            var result = calcLinearRegression(displacement_array, decimal_dates);
-            var slope = result["equation"][0];
-            var y = result["equation"][1];
-
-            // testing standard deviation calculation - we are using slope of linear reg line
-            // as mean which gives different answer from taking mean of displacements
-            var velocity_std = getStandardDeviation(displacement_array, slope);
-
-            // returns array for linear regression on chart
-            var regression_data = getRegressionChartData(slope, y, decimal_dates, chart_data);
-
-            // now add the new regression line as a second dataset in the chart
-            firstToggle = true;
-
-            var chartOpts = {
-                title: {
-                    text: null
-                },
-                subtitle: {
-                    text: "velocity: " + (slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"
-                },
-                navigator: {
-                    enabled: true
-                },
-                scrollbar: {
-                    liveRedraw: false
-                },
-                xAxis: {
-                    type: 'datetime',
-                    events: { // get dates for slider bounds
-                        afterSetExtremes: function(e) {
-                            // we get called when graph is created
-                            that.graphsController.graphSettings[chartContainer].navigatorEvent = e;
-                            that.graphsController.getValideDatesFromNavigatorExtremes(chartContainer);
-
-                            var graphSettings = that.graphsController.graphSettings[chartContainer];
-                            // update velocity, even if we don't have a linear regression line, needed the extra check as this library calls this function when graph is created... sigh
-                            var displacements = (detrendToggleButton.toggleState == ToggleStates.ON && graphSettings.detrend_displacement_array) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
-                            var regression_data = that.graphsController.getLinearRegressionLine(chartContainer, displacements);
-                            var sub_slope = regression_data.linearRegressionData["equation"][0];
-                            var velocity_std = regression_data.stdDev;
-                            var chart = $("#" + chartContainer).highcharts();
-                            var velocityText = "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"
-
-                            that.graphsController.highChartsOpts[chartContainer].subtitle.text = velocityText;
-
-                            chart.setTitle(null, {
-                                text: velocityText
-                            });
-
-                            if (regressionToggleButton.toggleState == ToggleStates.ON) {
-                                var graphSettings = that.graphsController.graphSettings[chartContainer];
-                                var displacements_array = (detrendToggleButton.toggleState == ToggleStates.ON && graphSettings.detrend_displacement_array) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
-                                that.graphsController.addRegressionLine(chartContainer, displacements_array);
-                            }
-
-                            if (that.selector.bbox != null && that.selector.minIndex != -1 && that.selector.maxIndex != -1) {
-                                that.selector.recolorDataset();
-                            }
-                        }
-                    },
-                    dateTimeLabelFormats: {
-                        month: '%e. %b',
-                        year: '%Y'
-                    },
-                    title: {
-                        text: 'Date'
-                    }
-                },
-                yAxis: {
-                    title: {
-                        text: 'Ground Displacement (cm)'
-                    },
-                    legend: {
-                        layout: 'vertical',
-                        align: 'left',
-                        verticalAlign: 'top',
-                        x: 100,
-                        y: 70,
-                        floating: true,
-                        backgroundColor: '#FFFFFF',
-                        borderWidth: 1,
-                    },
-                    plotLines: [{
-                        value: 0,
-                        width: 1,
-                        color: '#808080'
-                    }]
-                },
-                tooltip: {
-                    headerFormat: '',
-                    pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} cm'
-                },
-                series: [{
-                    type: 'scatter',
-                    name: 'Displacement',
-                    data: chart_data,
-                    marker: {
-                        enabled: true
-                    },
-                    showInLegend: false
-                }],
-                chart: {
-                    marginRight: 50
-                }
-            };
-
-            that.graphsController.graphSettings[chartContainer].navigatorEvent = e;
-
-            // take out navigator not only if this is the bottom graph, but if the second graph toggle is on, period
-            if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-                chartOpts.navigator.enabled = false;
-            }
-
-            $('#' + chartContainer).highcharts(chartOpts);
-            that.graphsController.highChartsOpts[chartContainer] = chartOpts;
-
-            that.graphsController.setNavigatorHandlers();
-
-            // this calls recreate in the background.
-            // TODO: make detrend data functions not call recreate
-            if (detrendToggleButton.toggleState == ToggleStates.ON) {
-                that.graphsController.detrendDataForGraph(chartContainer);
-            }
-
-            if (dotToggleButton.toggleState == ToggleStates.ON) {
-                that.graphsController.toggleDots();
-            }
-
-            // this is hackish. due to bug which appears when we resize window before moving graph. jquery resizable
-            // size does weird stuff to the graph, so we have to set every new graph to the dimensions of the original graph
-            var width = $("#chartContainer").width();
-            var height = $("#chartContainer").height();
-            $("#" + chartContainer).highcharts().setSize(width, height, doAnimation = true);
             // request elevation of point from google api
             var elevationGetter = new google.maps.ElevationService;
             elevationGetter.getElevationForLocations({
@@ -478,6 +326,16 @@ function Map(loadJSONFunc) {
         return markersAtPoint;
     };
 
+    this.getFirstPolygonFrameAtPoint = function(features) {
+        for (var i = 0; i < features.length; i++) {
+            if (features[i].properties["marker-symbol"] == "fillPolygon") {
+                return features[i];
+            }
+        }
+
+        return null;
+    };
+
     this.leftClickOnAPoint = function(e) {
         that.clickOnAPoint(e);
     };
@@ -510,25 +368,24 @@ function Map(loadJSONFunc) {
         var layerID = "touchLocation";
 
         // remove cluster count check if you remove clustering
-        if (firstFeature.layer.id == "cluster-count" || firstFeature.layer.id == "contours" || firstFeature.layer.id == "contour_label") {
-            return;
+        var frameFeature = that.getFirstPolygonFrameAtPoint(features);
+        if (frameFeature) {
+            that.determineZoomOutZoom();
+
+            var feature = frameFeature;
+
+            var unavco_name = feature.properties.unavco_name;
+            var project_name = feature.properties.project_name;
+            var lat = feature.geometry.coordinates[0];
+            var long = feature.geometry.coordinates[1];
+            var num_chunks = feature.properties.num_chunks;
+            var attributeKeys = feature.properties.attributekeys;
+            var attributeValues = feature.properties.attributevalues;
+
+            var markerID = feature.properties.layerID;
+
+            getGEOJSON(feature);
         }
-
-        that.determineZoomOutZoom();
-
-        var feature = features[0];
-
-        var unavco_name = feature.properties.unavco_name;
-        var project_name = feature.properties.project_name;
-        var lat = feature.geometry.coordinates[0];
-        var long = feature.geometry.coordinates[1];
-        var num_chunks = feature.properties.num_chunks;
-        var attributeKeys = feature.properties.attributekeys;
-        var attributeValues = feature.properties.attributevalues;
-
-        var markerID = feature.properties.layerID;
-
-        getGEOJSON(feature);
     };
 
     this.setBaseMapLayer = function(mapType) {
@@ -563,6 +420,7 @@ function Map(loadJSONFunc) {
 
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
     this.addDataset = function(data) {
+        that.colorOnDisplacement = false;
         var stops = that.colorScale.getMapboxStops();
 
         that.map.addSource('vector_layer_', {
@@ -723,7 +581,7 @@ function Map(loadJSONFunc) {
 
                 // if dataset loaded, insert areas before dataset layer
                 if (that.map.getLayer("chunk_1")) {
-                     that.map.addLayer({
+                    that.map.addLayer({
                         "id": id,
                         "type": "fill",
                         "source": id,
@@ -742,7 +600,7 @@ function Map(loadJSONFunc) {
                         },
                         "paint": {
                             "line-color": "rgba(0, 0, 255, 1.0)",
-                            "line-width": 10
+                            "line-width": 5
                         }
                     }, "chunk_1");
                 } else {
@@ -761,7 +619,7 @@ function Map(loadJSONFunc) {
                         "source": polygonID,
                         "paint": {
                             "line-color": "rgba(0, 0, 255, 1.0)",
-                            "line-width": 10
+                            "line-width": 5
                         }
                     });
                 }
@@ -824,6 +682,7 @@ function Map(loadJSONFunc) {
 
         that.map.on("load", function() {
             that.selector = new SquareSelector(that);
+            that.selector.prepareEventListeners();
             that.loadAreaMarkers();
         });
 
@@ -845,8 +704,6 @@ function Map(loadJSONFunc) {
         // mainly used to show available areas under a marker
         that.map.on('mousemove', function(e) {
             var features = that.map.queryRenderedFeatures(e.point);
-            that.map.getCanvas().style.cursor =
-                (features.length && !(features[0].layer.id == "contours") && !(features[0].layer.id == "contour_label")) ? 'pointer' : '';
 
             // mouse not under a marker, clear all popups
             if (!features.length) {
@@ -854,130 +711,35 @@ function Map(loadJSONFunc) {
                 that.gpsStationNamePopup.remove();
                 that.areaMarkerLayer.resetHighlightsOfAllMarkers();
                 that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
+                that.map.getCanvas().style.cursor = '';
                 return;
             }
 
+            var layerID = features[0].layer.id;
+            var layerSource = features[0].layer.source;
             var markerSymbol = features[0].properties["marker-symbol"];
+            var itsAnreaPolygon = (markerSymbol === "fillPolygon") || (markerSymbol === "marker");
+            var itsAPoint = layerSource === "vector_layer_" || layerSource === "onTheFlyJSON";
+            var itsAGPSFeature = layerID === "gpsStations";
+            var frameFeature = that.getFirstPolygonFrameAtPoint(features);
 
-            if (!markerSymbol || markerSymbol == "marker") {
-                that.areaMarkerLayer.resetHighlightsOfAllMarkers();
-                that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
-                return;
-            }
+            that.map.getCanvas().style.cursor = (itsAPoint || itsAnreaPolygon || itsAGPSFeature) ? 'pointer' : '';
+
             // a better way is to have two mousemove callbacks like we do with select area vs select marker
-            if (features[0].layer.id == "gpsStations") {
+            if (itsAGPSFeature) {
                 that.gpsStationNamePopup.remove();
                 var coordinates = features[0].geometry.coordinates;
                 that.gpsStationNamePopup.setLngLat(coordinates)
                     .setHTML(features[0].properties.stationName)
                     .addTo(that.map);
-
-                return;
-            }
-
-            if (markerSymbol == "fillPolygon") {
-                // Populate the areaPopup and set its coordinates
-                // based on the feature found.
-                var html = "<table class='table' id='areas-under-mouse-table'>";
-                // make the html table
-                var previewButtonIDSuffix = "_preview_attribues";
-
+            } else if (frameFeature) {
                 that.areaMarkerLayer.resetHighlightsOfAllMarkers();
                 that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
-                that.areaMarkerLayer.setAreaRowHighlighted(features[0].properties.unavco_name);
-                that.areaMarkerLayer.setPolygonHighlighted(features[0].properties.layerID, "rgba(0, 0, 255, 0.3)");
-                for (var i = 0; i < features.length; i++) {
-                    var unavco_name = features[i].properties.unavco_name;
-
-                    if (!unavco_name) {
-                        return;
-                    }
-
-                    var markerID = features[i].properties.layerID;
-
-                    var region = features[i].properties.region;
-
-                    var prettyNameAndComponents = that.prettyPrintProjectName(features[i].properties.project_name);
-                    var attributeValues = JSON.parse(features[i].properties.attributevalues);
-                    var first_date_index = JSON.parse(features[i].properties.attributekeys).indexOf("first_date");
-
-                    var first_date = attributeValues[first_date_index];
-                    var last_date = attributeValues[first_date_index + 1];
-
-                    var frameNumbersString = null;
-
-                    if (prettyNameAndComponents.frameNumbers[0] == prettyNameAndComponents.frameNumbers[1]) {
-                        frameNumbersString = prettyNameAndComponents.frameNumbers[0];
-                    } else {
-                        frameNumbersString = prettyNameAndComponents.frameNumbers.join(" ");
-                    }
-
-                    html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-html='true' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date + "<br>" +
-                        prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + region + " " + prettyNameAndComponents.missionSatellite +
-                        " " + prettyNameAndComponents.missionType + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + "><b>?</div></td></tr>";
-                }
-                html += "</table>";
-
-                // make table respond to clicks
-                for (var i = 0; i < features.length; i++) {
-                    var unavco_name = features[i].properties.unavco_name;
-
-                    if (!unavco_name) {
-                        return;
-                    }
-
-                    var project_name = features[i].properties.project_name;
-                    var lat = features[i].geometry.coordinates[0];
-                    var long = features[i].geometry.coordinates[1];
-
-                    var num_chunks = features[i].properties.num_chunks;
-
-                    var attributeKeys = features[i].properties.attributekeys;
-                    var attributeValues = features[i].properties.attributevalues;
-
-                    // make cursor change when mouse hovers over row
-                    $("#areas-under-mouse-table #" + unavco_name).css("cursor", "pointer");
-                    $(".preview-attributes-button").css({
-                        "cursor": "pointer",
-                        "border-radius": "100%",
-                        "background-color": "rgb(107, 190, 249)"
-                    });
-
-                    $("#" + unavco_name).css({
-                        "width": "90%",
-                        "float": "left",
-                        "padding-right": "10px"
-                    });
-
-                    // ugly click function declaration to JS not using block scope
-                    $("#" + unavco_name).click((function(area) {
-                        return function(e) {
-                            that.determineZoomOutZoom();
-                            clickedArea = area.properties.unavco_name;
-                            that.areaPopup.remove();
-                            getGEOJSON(area);
-                        };
-                    })(features[i]));
-                    $("#" + unavco_name + previewButtonIDSuffix).hover((function(area) {
-                        return function(e) {
-                            if ($('.wrap#area-attributes-div').hasClass('active')) {
-                                areaAttributesPopup.populate(area);
-                            } else {
-                                areaAttributesPopup.show(area);
-                            }
-                        };
-                    })(features[i]), function() {
-                        $('.wrap#area-attributes-div').toggleClass('active');
-                    });
-                }
-
-                $(".preview-attributes-button").css({
-                    "width": "15px",
-                    "float": "left"
-                });
-
-                $(".area-name-popup").tooltip(); // activate tooltips
-                prepareButtonsToHighlightOnHover();
+                that.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.unavco_name);
+                that.areaMarkerLayer.setPolygonHighlighted(frameFeature.properties.layerID, "rgba(0, 0, 255, 0.3)");
+            } else {
+                that.areaMarkerLayer.resetHighlightsOfAllMarkers();
+                that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
             }
         });
 
@@ -998,15 +760,32 @@ function Map(loadJSONFunc) {
                 }
             }
 
-            if (that.map.getSource("onTheFlyJSON")) {
+            var onTheFlyJSON = that.map.getSource("onTheFlyJSON");
+            if ((onTheFlyJSON || that.colorOnDisplacement) && !that.selector.recoloring()) {
                 // it doesn't fire render events if we zoom out, so we recolor anyways when we zoom
                 // out. but what about the cases when it does refire? then we have incomplete recoloring.
                 // TODO: investigate and fix
                 if (currentZoom < that.previousZoom) {
-                    that.selector.recolorDataset();
+                    if (that.colorOnDisplacement) {
+                        var attributesController = new AreaAttributesController(that, currentArea);
+                        try {
+                            attributesController.processAttributes();
+                        } catch (e) {
+                            console.log("Exception: " + e);
+                        }
+                    } else {
+                        that.selector.recolorDataset();
+                    }
                 } else {
                     that.onDatasetRendered(function(renderCallback) {
-                        if (!that.selector.recoloring()) {
+                        if (that.colorOnDisplacement) {
+                            var attributesController = new AreaAttributesController(that, currentArea);
+                            try {
+                                attributesController.processAttributes();
+                            } catch (e) {
+                                console.log("Exception: " + e);
+                            }
+                        } else {
                             that.selector.recolorDataset();
                         }
 
@@ -1114,6 +893,7 @@ function Map(loadJSONFunc) {
 
         overlayToggleButton.set("off");
         that.tileJSON = null;
+        that.colorOnDisplacement = false;
     };
 
     this.addContourLines = function() {

@@ -81,7 +81,9 @@ function SquareSelector(map) {
         that.start = that.mousePos(e);
     };
 
-    this.canvas.addEventListener('mousedown', this.mouseDown, true);
+    this.prepareEventListeners = function() {
+        that.canvas.addEventListener('mousedown', that.mouseDown, true);
+    };
 
     this.finish = function(bbox) {
         document.removeEventListener('mousemove', that.onMouseMove);
@@ -96,6 +98,16 @@ function SquareSelector(map) {
         if (that.box) {
             that.box.parentNode.removeChild(that.box);
             that.box = null;
+        }
+
+        that.lastbbox = that.bbox;
+        if (that.bbox == null || that.minIndex == -1 || that.maxIndex == -1) {
+            return;
+        }
+
+        // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
+        if (that.lastbbox == that.bbox && that.lastMinIndex == that.minIndex && that.lastMaxIndex == that.maxIndex) {
+            return;
         }
 
         // If bbox exists. use this value as the argument for `queryRenderedFeatures`
@@ -144,17 +156,24 @@ function SquareSelector(map) {
         if (box) {
             var pixelBoundingBox = [that.map.map.project(box[0]), that.map.map.project(box[1])];
             features = that.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
-        // no bounding box
+            // no bounding box
         } else {
+            console.log("we should go here");
             features = that.map.map.queryRenderedFeatures({ layers: pointLayers });
         }
 
+        that.lastbbox = that.bbox;
         if (features.length == 0) {
             return;
         }
 
-        if (features.length >= 60000) {
-            return window.alert('Select a smaller number of features');
+        var MAX_FEATURES_TO_RECOLOR = 60000;
+        if (features.length >= MAX_FEATURES_TO_RECOLOR) {
+            window.alert('Recoloring ' + features.length +
+                ' features (max ' + MAX_FEATURES_TO_RECOLOR +
+                '). Please select a smaller number of features, zoom out, or zoom'
+                + ' in to a smaller section of the map.');
+            return;
         }
         // Run through the selected features and set a filter
         // to match features with unique FIPS codes to activate
