@@ -303,13 +303,15 @@ class WebServicesController extends Controller
           case 'startTime':
             if (strlen($value) > 0) {
               $startTime = $value;
-              $optionalSearch = TRUE;
+              // uncomment later when I get startTime filter working
+              // $optionalSearch = TRUE;
             }
             break;
           case 'endTime':
             if (strlen($value) > 0) {
               $endTime = $value;
-              $optionalSearch = TRUE;
+              // uncomment later when I get startTime filter working
+              // $optionalSearch = TRUE;
             }
             break;
           case 'outputType':
@@ -352,8 +354,6 @@ class WebServicesController extends Controller
       // QUERY 1A: get names of all datasets
       $query = "SELECT unavco_name FROM area;";
       $unavcoNames = DB::select(DB::raw($query));
-
-      $len = count($unavcoNames);
       $datasets = [];
       $data = []; // array of point data from all datasets that match closest to user query 
       $queryConditions = []; // array of conditions to narrow query result based on webservice parameter
@@ -364,46 +364,57 @@ class WebServicesController extends Controller
       }
 
       // QUERY 1B: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramaters
-      // Example query: SELECT * FROM area WHERE area.id = (SELECT area_id FROM extra_attributes WHERE attributekey='mission' AND attributevalue='Alos');
+      /* Example query: 
+      select unavco_name from area
+      inner join (select t.area_id from
+      ((select * from extra_attributes where attributekey='mission' and attributevalue='Alos') t
+      inner join (select * from extra_attributes where attributekey='beam_mode' and attributevalue='SM') t2
+      on t2.area_id=t.area_id
+      inner join (select * from extra_attributes where attributekey='flight_direction' and attributevalue='D') t3
+      on t3.area_id=t.area_id)) area_id_results
+      on area.id = area_id_results.area_id
+      */
+
+      /*
+      Example url: http://homestead.app/WebServices?longitude=131.246&latitude=33.025&mode=SM&satellite=Alos&flightDirection=D&relativeOrbit=72&startTime=2009-02-06&endTime=2011-04-03&outputType=json
+      */
+
       if ($optionalSearch) {
-        $query = "SELECT unavco_name FROM area WHERE area" . ".id = (SELECT area_id FROM extra_attributes WHERE ";
+        $query = "SELECT unavco_name FROM area INNER JOIN (select t1" . ".area_id FROM ";
 
         if (isset($satellite) && strlen($satellite) > 0) {
-          array_push($queryConditions, "attributekey='mission' AND attributevalue='" . $satellite . "'");
+          // (select * from extra_attributes where attributekey='mission' and attributevalue='Alos')
+          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='mission' AND attributevalue='" . $satellite . "')");
         }
 
         if (isset($mode) && strlen($mode) > 0) {
-          array_push($queryConditions, "attributekey='beam_mode' AND attributevalue='" . $mode . "'");
+          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='beam_mode' AND attributevalue='" . $mode . "')");
         }
 
         if (isset($relativeOrbit) && strlen($relativeOrbit) > 0) {
-          array_push($queryConditions, "attributekey='relative_orbit' AND attributevalue='" . $relativeOrbit . "'");
+          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='relative_orbit' AND attributevalue='" . $relativeOrbit . "')");
         }
 
         if (isset($firstFrame) && strlen($firstFrame) > 0) {
-          array_push($queryConditions, "attributekey='first_frame' AND attributevalue='" . $firstFrame . "'");
+          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='first_frame' AND attributevalue='" . $firstFrame . "')");
         }
 
         if (isset($flightDirection) && strlen($flightDirection) > 0) {
-          array_push($queryConditions, "attributekey='flight_direction' AND attributevalue='" . $flightDirection . "'");
+          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='flight_direction' AND attributevalue='" . $flightDirection . "')");
         }
 
         if (count($queryConditions) == 1) {
-          $query = $query . $queryConditions[0] . ");";
+          $query = $query . $queryConditions[0] . " t1";
         }
         else if (count($queryConditions) > 1) {
-          $query = $query . $queryConditions[0];
+          $query = $query . $queryConditions[0] . " t1";
           $len_queryConditions = count($queryConditions);
           for ($i = 1; $i < $len_queryConditions; $i++) {
-            $query = $query . " AND " . $queryConditions[$i];
+            $query = $query . " INNER JOIN " . $queryConditions[$i] . " t" . ($i+1) . " ON t" . $i . ".area_id = t" . ($i+1) . ".area_id";
           }
-          $query = $query . ");";
         }
-
-        dd($query);
-
-        // $test = DB::select(DB::raw($query));
-        // dd($test);
+        $query = $query . ") result ON area.id = result.area_id;";
+        $unavcoNames = DB::select(DB::raw($query));
       }
 
       // calculate polygon encapsulating longitude and latitude specified by user
@@ -422,6 +433,7 @@ class WebServicesController extends Controller
 
       // QUERY 2: for each dataset name, if point exists in dataset then 
       // return data of first point returned by polygon created by (longitude, latitude) and delta
+      $len = count($unavcoNames);
       for ($i = 0; $i < $len; $i++) {
         $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $datasets[$i] . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
 
@@ -448,7 +460,7 @@ class WebServicesController extends Controller
           $data[$datasets[$i]] = $nearest;
         }
       }
-
+      
       // TODO: clean code above and make function getNearestPoint
       foreach ($data as $key => $value) {
         // $key = dataset name, $value = point object data returned by SQL
