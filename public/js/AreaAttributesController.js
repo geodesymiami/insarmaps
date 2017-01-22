@@ -4,7 +4,7 @@ function AreaAttributesController(map, area) {
     this.map = map;
     this.attributes = null;
     this.datesArray = null;
-    this.colorOnPosition = false;
+    this.colorOnDisplacement = false;
     this.area = area;
 
     // returns json of the property, if string converts to json, otherwise
@@ -63,13 +63,14 @@ function AreaAttributesController(map, area) {
             that.map.colorScale.setScale(that.attributes.plotAttributePreset_colorBar);
             var min = that.attributes.plotAttributePreset_displayMin;
             var max = that.attributes.plotAttributePreset_displayMax;
-            myMap.colorOnPosition = false;
+            myMap.colorOnDisplacement = false;
             var yearsElapsed = 0;
             var date1 = null;
             var date2 = null;
 
             if (that.attributes.plotAttributePreset_Type == "displacement") {
-                myMap.colorOnPosition = true;
+                console.log(that.attributes.plotAttributePreset_startDate);
+                myMap.colorOnDisplacement = true;
                 date1 = new Date(that.attributes.plotAttributePreset_startDate);
                 date2 = new Date(that.attributes.plotAttributePreset_endDate);
                 var millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
@@ -79,7 +80,7 @@ function AreaAttributesController(map, area) {
             }
             that.map.colorScale.setMinMax(min, max);
 
-            if (myMap.colorOnPosition) {
+            if (myMap.colorOnDisplacement) {
                 var decimalDate1 = dateToDecimal(date1);
                 var decimalDate2 = dateToDecimal(date2);
                 var possibleDates = that.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, that.datesArray);

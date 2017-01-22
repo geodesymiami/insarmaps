@@ -671,6 +671,30 @@ $(window).load(function() {
 
     setupToggleButtons();
 
+    $("#color-on-dropdown").change(function() {
+        var selectedColoring = $(this).val();
+        if (selectedColoring === "displacement") {
+            myMap.colorOnDisplacement = true;
+            console.log(currentArea);
+            // var decimalDate1 = dateToDecimal(date1);
+            // var decimalDate2 = dateToDecimal(date2);
+            // var possibleDates = that.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, that.datesArray);
+            // that.map.selector.minIndex = possibleDates.minIndex;
+            // that.map.selector.maxIndex = possibleDates.maxIndex;
+            // that.map.selector.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed);
+            $("#color-scale-text-div").html("LOS Displacement (cm)");
+        } else if (selectedColoring === "velocity") {
+            myMap.colorOnDisplacement = false;
+            if (myMap.map.getSource("onTheFlyJSON")) {
+                myMap.map.removeSource("onTheFlyJSON");
+                myMap.map.removeLayer("onTheFlyJSON");
+            }
+            $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
+        } else {
+            throw "Invalid dropdown selection";
+        }
+    });
+
     $('.slideout-menu-toggle').on('click', function(event) {
         event.preventDefault();
         // create menu variables

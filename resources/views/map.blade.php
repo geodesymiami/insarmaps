@@ -140,6 +140,13 @@
           <label>Show Swaths</label>
           <input id = "dataset-frames-toggle-button" type="checkbox" name="overlayToggle"/>
         </div>
+        <div>
+          <label>Color On:</label>
+          <select id="color-on-dropdown">
+            <option value="velocity">Velocity</option>
+            <option value="displacement">Displacement</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
