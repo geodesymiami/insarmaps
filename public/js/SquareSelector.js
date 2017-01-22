@@ -107,7 +107,6 @@ function SquareSelector(map) {
 
         // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
         if (that.lastbbox == that.bbox && that.lastMinIndex == that.minIndex && that.lastMaxIndex == that.maxIndex) {
-            console.log("here");
             return;
         }
 
@@ -163,13 +162,17 @@ function SquareSelector(map) {
         }
 
         that.lastbbox = that.bbox;
-        console.log("hi");
         if (features.length == 0) {
             return;
         }
 
-        if (features.length >= 60000) {
-            return window.alert('Select a smaller number of features');
+        var MAX_FEATURES_TO_RECOLOR = 60000;
+        if (features.length >= MAX_FEATURES_TO_RECOLOR) {
+            window.alert('Recoloring ' + features.length +
+                ' features (max ' + MAX_FEATURES_TO_RECOLOR +
+                '). Please select a smaller number of features, zoom out, or zoom'
+                + ' in to a smaller section of the map.');
+            return;
         }
         // Run through the selected features and set a filter
         // to match features with unique FIPS codes to activate

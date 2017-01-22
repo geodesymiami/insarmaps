@@ -137,6 +137,7 @@ function Map(loadJSONFunc) {
     this.areas = null;
     this.areaFeatures = null;
     this.colorScale = new ColorScale(-2.00, 2.00);
+    this.colorOnPosition = false;
 
     this.areaMarkerLayer = new AreaMarkerLayer(this);
 
@@ -419,6 +420,7 @@ function Map(loadJSONFunc) {
 
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
     this.addDataset = function(data) {
+        that.colorOnPosition = false;
         var stops = that.colorScale.getMapboxStops();
 
         that.map.addSource('vector_layer_', {
@@ -758,15 +760,32 @@ function Map(loadJSONFunc) {
                 }
             }
 
-            if (that.map.getSource("onTheFlyJSON")) {
+            var onTheFlyJSON = that.map.getSource("onTheFlyJSON");
+            if ((onTheFlyJSON || that.colorOnPosition) && !that.selector.recoloring()) {
                 // it doesn't fire render events if we zoom out, so we recolor anyways when we zoom
                 // out. but what about the cases when it does refire? then we have incomplete recoloring.
                 // TODO: investigate and fix
                 if (currentZoom < that.previousZoom) {
-                    that.selector.recolorDataset();
+                    if (that.colorOnPosition) {
+                        var attributesController = new AreaAttributesController(that, currentArea);
+                        try {
+                            attributesController.processAttributes();
+                        } catch (e) {
+                            console.log("Exception: " + e);
+                        }
+                    } else {
+                        that.selector.recolorDataset();
+                    }
                 } else {
                     that.onDatasetRendered(function(renderCallback) {
-                        if (!that.selector.recoloring()) {
+                        if (that.colorOnPosition) {
+                            var attributesController = new AreaAttributesController(that, currentArea);
+                            try {
+                                attributesController.processAttributes();
+                            } catch (e) {
+                                console.log("Exception: " + e);
+                            }
+                        } else {
                             that.selector.recolorDataset();
                         }
 
@@ -874,6 +893,7 @@ function Map(loadJSONFunc) {
 
         overlayToggleButton.set("off");
         that.tileJSON = null;
+        that.colorOnPosition = false;
     };
 
     this.addContourLines = function() {

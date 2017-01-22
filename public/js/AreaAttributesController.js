@@ -63,13 +63,13 @@ function AreaAttributesController(map, area) {
             that.map.colorScale.setScale(that.attributes.plotAttributePreset_colorBar);
             var min = that.attributes.plotAttributePreset_displayMin;
             var max = that.attributes.plotAttributePreset_displayMax;
-            that.colorOnPosition = false;
+            myMap.colorOnPosition = false;
             var yearsElapsed = 0;
             var date1 = null;
             var date2 = null;
 
             if (that.attributes.plotAttributePreset_Type == "displacement") {
-                that.colorOnPosition = true;
+                myMap.colorOnPosition = true;
                 date1 = new Date(that.attributes.plotAttributePreset_startDate);
                 date2 = new Date(that.attributes.plotAttributePreset_endDate);
                 var millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
@@ -79,7 +79,7 @@ function AreaAttributesController(map, area) {
             }
             that.map.colorScale.setMinMax(min, max);
 
-            if (that.colorOnPosition) {
+            if (myMap.colorOnPosition) {
                 var decimalDate1 = dateToDecimal(date1);
                 var decimalDate2 = dateToDecimal(date2);
                 var possibleDates = that.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, that.datesArray);
