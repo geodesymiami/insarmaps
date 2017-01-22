@@ -158,6 +158,7 @@ function SquareSelector(map) {
             features = that.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
             // no bounding box
         } else {
+            console.log("we should go here");
             features = that.map.map.queryRenderedFeatures({ layers: pointLayers });
         }
 

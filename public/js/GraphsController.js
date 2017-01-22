@@ -219,7 +219,7 @@ function GraphsController() {
         for (var i = 0; i < arrayOfDates.length; i++) {
             var currentDate = arrayOfDates[i];
 
-            if (currentDate > minDate) {
+            if (currentDate >= minDate) {
                 minIndex = i;
                 break;
             }

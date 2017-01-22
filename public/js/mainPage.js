@@ -675,13 +675,14 @@ $(window).load(function() {
         var selectedColoring = $(this).val();
         if (selectedColoring === "displacement") {
             myMap.colorOnDisplacement = true;
-            console.log(currentArea);
-            // var decimalDate1 = dateToDecimal(date1);
-            // var decimalDate2 = dateToDecimal(date2);
-            // var possibleDates = that.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, that.datesArray);
-            // that.map.selector.minIndex = possibleDates.minIndex;
-            // that.map.selector.maxIndex = possibleDates.maxIndex;
-            // that.map.selector.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed);
+            var dates = propertyToJSON(currentArea.properties.decimal_dates);
+            var decimalDate1 = dates[0];
+            var decimalDate2 = dates[dates.length - 1];
+            var yearsElapsed = decimalDate2 - decimalDate1;
+            var possibleDates = myMap.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, dates);
+            myMap.selector.minIndex = possibleDates.minIndex;
+            myMap.selector.maxIndex = possibleDates.maxIndex;
+            myMap.selector.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed);
             $("#color-scale-text-div").html("LOS Displacement (cm)");
         } else if (selectedColoring === "velocity") {
             myMap.colorOnDisplacement = false;

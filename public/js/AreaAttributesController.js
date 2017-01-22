@@ -1,3 +1,13 @@
+// returns json of the property, if string converts to json, otherwise
+// returns the property itself
+function propertyToJSON(property) {
+    if (typeof property == "string") {
+        return JSON.parse(property);
+    }
+
+    return property;
+}
+
 function AreaAttributesController(map, area) {
     var that = this;
 
@@ -7,24 +17,14 @@ function AreaAttributesController(map, area) {
     this.colorOnDisplacement = false;
     this.area = area;
 
-    // returns json of the property, if string converts to json, otherwise
-    // returns the property itself
-    this.propertyToJSON = function(property) {
-        if (typeof property == "string") {
-            return JSON.parse(property);
-        }
-
-        return property;
-    };
-
     this.constructAttributes = function() {
         // attributes should be an array, extraAttributes should be an object
         // let's just add all the key values from attributes to extraAttributes
-        that.datesArray = that.propertyToJSON(that.area.properties.decimal_dates);
-        var attributeKeys = that.propertyToJSON(that.area.properties.attributekeys);
-        var attributeValues = that.propertyToJSON(that.area.properties.attributevalues);
+        that.datesArray = propertyToJSON(that.area.properties.decimal_dates);
+        var attributeKeys = propertyToJSON(that.area.properties.attributekeys);
+        var attributeValues = propertyToJSON(that.area.properties.attributevalues);
 
-        var extraAttributes = that.propertyToJSON(that.area.properties.extra_attributes);
+        var extraAttributes = propertyToJSON(that.area.properties.extra_attributes);
 
         var fullAttributes = [];
         for (var i = 0; i < attributeKeys.length; i++) {
@@ -69,7 +69,6 @@ function AreaAttributesController(map, area) {
             var date2 = null;
 
             if (that.attributes.plotAttributePreset_Type == "displacement") {
-                console.log(that.attributes.plotAttributePreset_startDate);
                 myMap.colorOnDisplacement = true;
                 date1 = new Date(that.attributes.plotAttributePreset_startDate);
                 date2 = new Date(that.attributes.plotAttributePreset_endDate);
