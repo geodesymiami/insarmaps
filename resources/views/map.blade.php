@@ -87,7 +87,7 @@
         <!-- <span class="input-group-btn">
           <button class="btn btn-default" id="search-button" type="button">Search</button>
         </span> -->
-        <input type="text" class="form-control" placeholder="Search for..." id="search-input">
+        <input type="text" class="form-control" placeholder="Search for..." id="search-input"/>
       </div>
     </div>
     <div id="top-map-buttons">
@@ -119,9 +119,9 @@
       </button>
       <div id="overlay-options-toggles">
         <div id="map-type-menu">
-          <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked">
+          <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked"/>
           <label for='streets'>Streets</label>
-          <input id='satellite' type='radio' name='rtoggle' value='satellite'>
+          <input id='satellite' type='radio' name='rtoggle' value='satellite'/>
           <label for='satellite'>Satellite</label>
         </div>
         <div class="overlay_toggle">
@@ -161,12 +161,12 @@
       <div id="scale-values">
         <div id="left-scale-minimum">
           <div class="form-group">
-            <input type="number" class="form-control" id="min-scale-value">
+            <input type="number" class="form-control" id="min-scale-value"/>
           </div>
         </div>
         <div id="right-scale-maximum">
           <div class="form-group">
-            <input type="number" class="form-control" id="max-scale-value">
+            <input type="number" class="form-control" id="max-scale-value"/>
           </div>
         </div>
       </div>
@@ -212,19 +212,19 @@
   <div id="search-form-and-results-container">
     <div id="search-form">
       <div class="form-group">
-        <input type="text" class="form-control" placeholder="Satellite" id="input-satellite">
+        <input type="text" class="form-control" placeholder="Satellite" value="Alos"id="input-satellite"/>
       </div>
       <div class="form-group">
-        <input type="text" class="form-control" placeholder="Relative Orbit" id="input-relative-orbit">
+        <input type="text" class="form-control" placeholder="Relative Orbit" value="73" id="input-relative-orbit"/>
       </div>
       <div class="form-group">
-        <input type="text" class="form-control" placeholder="First Frame" id="input-first-frame">
+        <input type="text" class="form-control" placeholder="First Frame" value="2950" id="input-first-frame"/>
       </div>
       <div class="form-group">
-        <input type="text" class="form-control" placeholder="Mode" id="input-mode">
+        <input type="text" class="form-control" placeholder="Mode" value="SM" id="input-mode"/>
       </div>
       <div class="form-group">
-        <input type="text" class="form-control" placeholder="Flight Direction" id="input-flight-direction">
+        <input type="text" class="form-control" placeholder="Flight Direction" value="D" id="input-flight-direction"/>
       </div>
       <!-- enter button to search for files with attributes matching above input -->
       <div id="enter-button-search-attributes">
