@@ -363,22 +363,12 @@ class WebServicesController extends Controller
         array_push($datasets, $unavcoName->unavco_name);
       }
 
-      // QUERY 1B: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramaters
-      /* Example query: 
-      select unavco_name from area
-      inner join (select t.area_id from
-      ((select * from extra_attributes where attributekey='mission' and attributevalue='Alos') t
-      inner join (select * from extra_attributes where attributekey='beam_mode' and attributevalue='SM') t2
-      on t2.area_id=t.area_id
-      inner join (select * from extra_attributes where attributekey='flight_direction' and attributevalue='D') t3
-      on t3.area_id=t.area_id)) area_id_results
-      on area.id = area_id_results.area_id
-      */
+
+      // QUERY 1B: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
 
       /*
       Example url: http://homestead.app/WebServices?longitude=131.246&latitude=33.025&mode=SM&satellite=Alos&flightDirection=D&relativeOrbit=72&startTime=2009-02-06&endTime=2011-04-03&outputType=json
       */
-
       if ($optionalSearch) {
         $query = "SELECT unavco_name FROM area INNER JOIN (select t1" . ".area_id FROM ";
 
@@ -460,15 +450,25 @@ class WebServicesController extends Controller
           $data[$datasets[$i]] = $nearest;
         }
       }
-      
+
       // TODO: clean code above and make function getNearestPoint
+      // dd($data);
       foreach ($data as $key => $value) {
         // $key = dataset name, $value = point object data returned by SQL
         $jsonForPoint = $this->createJsonArray($key, $value, $startTime, $endTime);
         $json[$key] = $jsonForPoint;
       }
 
-      // check if error occured based on startTime and endTime; if so return json
+      // if user specified outputType to be dataset names instead of json, return dataset names
+      if (strcasecmp($outputType, "dataset") == 0) {
+        $datasets = [];
+        foreach ($json as $key => $value) {
+          array_push($datasets, $key);
+        }
+        return json_encode($datasets);
+      }
+
+      // TODO: check if error occured based on startTime and endTime; if so return json 
       // by default we return plot unless outputType = json (used for debugging)
       if (isset($json["errors"]) || strcasecmp($outputType, "json") == 0) {
         return json_encode($json);
