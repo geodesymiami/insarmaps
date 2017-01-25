@@ -762,29 +762,27 @@ function Map(loadJSONFunc) {
 
             var onTheFlyJSON = that.map.getSource("onTheFlyJSON");
             if ((onTheFlyJSON || that.colorOnDisplacement) && !that.selector.recoloring()) {
+                var dates = propertyToJSON(currentArea.properties.decimal_dates);
+                var startDate = dates[0];
+                var endDate = dates[dates.length - 1];
+                if (that.selector.minIndex != -1 && that.selector.maxIndex != -1) {
+                    startDate = dates[that.selector.minIndex];
+                    endDate = dates[that.selector.maxIndex];
+                }
+                console.log("IT IS " + (endDate - startDate));
                 // it doesn't fire render events if we zoom out, so we recolor anyways when we zoom
                 // out. but what about the cases when it does refire? then we have incomplete recoloring.
                 // TODO: investigate and fix
                 if (currentZoom < that.previousZoom) {
                     if (that.colorOnDisplacement) {
-                        var attributesController = new AreaAttributesController(that, currentArea);
-                        try {
-                            attributesController.processAttributes();
-                        } catch (e) {
-                            console.log("Exception: " + e);
-                        }
+                        that.selector.recolorOnDisplacement(startDate, endDate);
                     } else {
                         that.selector.recolorDataset();
                     }
                 } else {
                     that.onDatasetRendered(function(renderCallback) {
                         if (that.colorOnDisplacement) {
-                            var attributesController = new AreaAttributesController(that, currentArea);
-                            try {
-                                attributesController.processAttributes();
-                            } catch (e) {
-                                console.log("Exception: " + e);
-                            }
+                            that.selector.recolorOnDisplacement(startDate, endDate);
                         } else {
                             that.selector.recolorDataset();
                         }

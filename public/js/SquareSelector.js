@@ -136,6 +136,16 @@ function SquareSelector(map) {
         return pointIsInPolygon;
     };
 
+    this.setMinMax = function(min, max) {
+        that.minIndex = min;
+        that.maxIndex = max;
+    };
+
+    this.recolorOnDisplacement = function(startDecimalDate, endDecimalDate) {
+        var yearsElapsed = endDecimalDate - startDecimalDate;
+        that.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed);
+    };
+
     this.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier) {
         if (that.recoloringInProgress) {
             return;
@@ -158,7 +168,6 @@ function SquareSelector(map) {
             features = that.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
             // no bounding box
         } else {
-            console.log("we should go here");
             features = that.map.map.queryRenderedFeatures({ layers: pointLayers });
         }
 
