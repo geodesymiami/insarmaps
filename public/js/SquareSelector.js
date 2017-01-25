@@ -141,6 +141,12 @@ function SquareSelector(map) {
         that.maxIndex = max;
     };
 
+    this.reset = function(area) {
+        var dates = propertyToJSON(area.properties.decimal_dates);
+        that.minIndex = 0;
+        that.maxIndex = dates.length - 1;
+    };
+
     this.recolorOnDisplacement = function(startDecimalDate, endDecimalDate) {
         var yearsElapsed = endDecimalDate - startDecimalDate;
         that.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed);

@@ -182,6 +182,7 @@ function getGEOJSON(area) {
     myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
 
     myMap.colorScale.defaultValues(); // set default values in case they were modified by another area
+    myMap.selector.reset(currentArea);
 
     myMap.addDataset(tileJSON);
     var styleLoadFunc = function(event) {
@@ -676,13 +677,17 @@ $(window).load(function() {
         if (selectedColoring === "displacement") {
             myMap.colorOnDisplacement = true;
             var dates = propertyToJSON(currentArea.properties.decimal_dates);
-            var decimalDate1 = dates[0];
-            var decimalDate2 = dates[dates.length - 1];
-            var yearsElapsed = decimalDate2 - decimalDate1;
-            var possibleDates = myMap.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, dates);
+            var startDate = dates[0];
+            var endDate = dates[dates.length - 1];
+            if (myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
+                startDate = dates[myMap.selector.minIndex];
+                endDate = dates[myMap.selector.maxIndex];
+            }
+
+            var possibleDates = myMap.graphsController.mapDatesToArrayIndeces(startDate, endDate, dates);
             myMap.selector.minIndex = possibleDates.minIndex;
             myMap.selector.maxIndex = possibleDates.maxIndex;
-            myMap.selector.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed);
+            myMap.selector.recolorOnDisplacement(startDate, endDate);
             $("#color-scale-text-div").html("LOS Displacement (cm)");
         } else if (selectedColoring === "velocity") {
             myMap.colorOnDisplacement = false;

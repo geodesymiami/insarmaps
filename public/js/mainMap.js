@@ -769,7 +769,6 @@ function Map(loadJSONFunc) {
                     startDate = dates[that.selector.minIndex];
                     endDate = dates[that.selector.maxIndex];
                 }
-                console.log("IT IS " + (endDate - startDate));
                 // it doesn't fire render events if we zoom out, so we recolor anyways when we zoom
                 // out. but what about the cases when it does refire? then we have incomplete recoloring.
                 // TODO: investigate and fix
@@ -876,6 +875,9 @@ function Map(loadJSONFunc) {
 
         that.removeGPSStationMarkers();
         gpsStationsToggleButton.set("off");
+
+        $("#color-on-dropdown").val("velocity");
+        $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
 
         that.loadAreaMarkers();
 
