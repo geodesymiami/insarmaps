@@ -233,6 +233,38 @@ class WebServicesController extends Controller
     }
 
     /**
+    * Given an array of points, return point closest to user specified (longitude, latitude)
+    *
+    * @param float $latitude
+    * @param float $longitude 
+    * @param array $points - list of points around the (longitude, latitude)
+    * @return array - point object array containing displacements, latitude, longitude, and pid
+    */
+    public function getNearestPoint($latitude, $longitude, $points) {
+
+      $numPoints = count($points);
+      $nearest = $points[0];
+
+      if ($numPoints == 1) {
+        return $nearest;
+      }
+      else if (count($points) > 1) {
+        $nearestDistance = $this->haversineGreatCircleDistance($latitude, $longitude, $nearest->st_y, $nearest->st_x);
+
+        for ($j = 1; $j < $numPoints; $j++) {
+          $currentDistance = $this->haversineGreatCircleDistance($latitude, $longitude, $points[$j]->st_y, $points[$j]->st_x);
+
+          if ($currentDistance < $nearestDistance) {
+            $nearest = $points[$j];
+            $nearestDistance = $currentDistance;
+          }
+        }
+      }
+    
+      return $nearest;
+    }
+
+    /**
     * Given a request object containing a url, return a json encoded array for data corresponding to point
     * that best matches request parameters specified by user. If more than one dataset contain this point, 
     * return data for all datasets. If no datasets contain point, return NULL.
@@ -348,15 +380,12 @@ class WebServicesController extends Controller
         }
       }
 
-      // New Webservice can display multiple points from different datasets matching user input
-      // Example url: http://homestead.app/WebServices?longitude=131.221&latitude=33.339&satellite=Alos&relativeOrbit=73&firstFrame=2950&mode=SM&flightDirection=D&startTime=1990-12-20&endTime=2020-12-20&outputType=json
-
       // QUERY 1A: get names of all datasets
       $query = "SELECT unavco_name FROM area;";
       $unavcoNames = DB::select(DB::raw($query));
       $datasets = [];
       $data = []; // array of point data from all datasets that match closest to user query 
-      $queryConditions = []; // array of conditions to narrow query result based on webservice parameter
+      $queryConditions = []; // array of conditions to narrow query result based on webservice parameters
 
       // format SQL result into a php array
       foreach ($unavcoNames as $unavcoName) {
@@ -365,9 +394,8 @@ class WebServicesController extends Controller
 
 
       // QUERY 1B: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
-
       /*
-      Example url: http://homestead.app/WebServices?longitude=131.246&latitude=33.025&mode=SM&satellite=Alos&flightDirection=D&relativeOrbit=72&startTime=2009-02-06&endTime=2011-04-03&outputType=json
+      Example url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&mission=Alos&startTime=2009-02-06&endTime=2011-04-03&outputType=json
       */
       if ($optionalSearch) {
         $query = "SELECT unavco_name FROM area INNER JOIN (select t1" . ".area_id FROM ";
@@ -428,31 +456,12 @@ class WebServicesController extends Controller
         $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $datasets[$i] . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
 
         $points = DB::select(DB::raw($query));
-
-        if (count($points) == 1) {
-          array_push($data, $points[0]);
-        }
-        else if (count($points) > 1) {
-          // find point closest to user specified (longitude, latitude) and add to data array
-          $numPoints = count($points);
-          $nearest = $points[0]; // closest point
-          $nearestDistance = $this->haversineGreatCircleDistance($latitude, $longitude, $nearest->st_y, $nearest->st_x);
-
-          for ($j = 1; $j < $numPoints; $j++) {
-            $currentDistance = $this->haversineGreatCircleDistance($latitude, $longitude, $points[$j]->st_y, $points[$j]->st_x);
-
-            if ($currentDistance < $nearestDistance) {
-              $nearest = $points[$j];
-              $nearestDistance = $currentDistance;
-            }
-          }
-
+        if (count($points) > 0) {
+          $nearest = $this->getNearestPoint($latitude, $longitude, $points);
           $data[$datasets[$i]] = $nearest;
         }
       }
 
-      // TODO: clean code above and make function getNearestPoint
-      // dd($data);
       foreach ($data as $key => $value) {
         // $key = dataset name, $value = point object data returned by SQL
         $jsonForPoint = $this->createJsonArray($key, $value, $startTime, $endTime);
