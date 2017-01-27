@@ -60,6 +60,22 @@ function SquareSelector(map) {
         that.finish(that.bbox);
     };
 
+    this.enableSelectMode = function() {
+        if (!that.polygonButtonSelected) {
+            that.polygonButtonSelected = true;
+        }
+    };
+
+    this.disableSelectMode = function() {
+        if (that.polygonButtonSelected) {
+            that.polygonButtonSelected = false;
+        }
+    };
+
+    this.inSelectMode = function() {
+        return that.polygonButtonSelected;
+    };
+
     this.onKeyDown = function(e) {
         // If the ESC key is pressed
         if (e.keyCode === 27) finish();
@@ -186,8 +202,7 @@ function SquareSelector(map) {
         if (features.length >= MAX_FEATURES_TO_RECOLOR) {
             window.alert('Recoloring ' + features.length +
                 ' features (max ' + MAX_FEATURES_TO_RECOLOR +
-                '). Please select a smaller number of features, zoom out, or zoom'
-                + ' in to a smaller section of the map.');
+                '). Please select a smaller number of features, zoom out, or zoom' + ' in to a smaller section of the map.');
             return;
         }
         // Run through the selected features and set a filter

@@ -109,8 +109,13 @@
      </div>
      @endif
      <div id="polygon-button-div">
-      <button class="btn btn-primary-outline map-button clickable-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="polygon-button">
+      <button class="btn btn-primary-outline map-button clickable-button no-padding" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="polygon-button">
         <img src="img/polygon.svg" alt="polygon.svg">
+      </button>
+    </div>
+    <div id="area-bbox-filter-button-div">
+      <button class="btn btn-primary-outline map-button clickable-button no-padding" data-toggle="tooltip" data-placement="right" title="Filter Areas" id="area-bbox-filter-button">
+        A
       </button>
     </div>
     <div id="select-layer-button-div">

@@ -254,6 +254,12 @@ function hideLoadingScreen() {
     }
 }
 
+// enum-style object to denote toggle state
+var ToggleStates = {
+    OFF: 0,
+    ON: 1
+};
+
 function ToggleButton(id) {
     var that = this;
     this.id = id;
@@ -293,12 +299,6 @@ function ToggleButton(id) {
             clickFunction();
         });
     };
-}
-
-// enum-style object to denote toggle state
-var ToggleStates = {
-    OFF: 0,
-    ON: 1
 }
 
 function switchLayer(layer) {
@@ -903,10 +903,14 @@ $(window).load(function() {
     });
 
     $("#polygon-button").on("click", function() {
-        myMap.selector.polygonButtonSelected = !myMap.selector.polygonButtonSelected;
+        if (myMap.selector.inSelectMode()) {
+            myMap.selector.disableSelectMode();
+        } else {
+            myMap.selector.enableSelectMode();
+        }
 
         // reset bounding box
-        if (!myMap.selector.polygonButtonSelected) {
+        if (!myMap.selector.inSelectMode()) {
             myMap.selector.bbox = null;
             // Remove these events now that finish has been called.
             myMap.selector.polygonButtonSelected = false;
