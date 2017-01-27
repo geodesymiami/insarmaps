@@ -675,6 +675,10 @@ $(window).load(function() {
     $("#color-on-dropdown").change(function() {
         var selectedColoring = $(this).val();
         if (selectedColoring === "displacement") {
+            if (!currentArea) {
+                return;
+            }
+
             myMap.colorOnDisplacement = true;
             var dates = propertyToJSON(currentArea.properties.decimal_dates);
             var startDate = dates[0];
