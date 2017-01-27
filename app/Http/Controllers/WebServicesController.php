@@ -402,7 +402,6 @@ class WebServicesController extends Controller
         $query = "SELECT unavco_name FROM area INNER JOIN (select t1" . ".area_id FROM ";
 
         if (isset($satellite) && strlen($satellite) > 0) {
-          // (select * from extra_attributes where attributekey='mission' and attributevalue='Alos')
           array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='mission' AND attributevalue='" . $satellite . "')");
         }
 
@@ -455,7 +454,7 @@ class WebServicesController extends Controller
       $len = count($unavcoNames);
       for ($i = 0; $i < $len; $i++) {
         $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $datasets[$i] . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
-
+        
         $points = DB::select(DB::raw($query));
         if (count($points) > 0) {
           $nearest = $this->getNearestPoint($latitude, $longitude, $points);
