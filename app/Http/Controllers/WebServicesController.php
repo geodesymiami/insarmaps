@@ -276,8 +276,9 @@ class WebServicesController extends Controller
       $json = [];
 
       // Required request parameters: latitude, longitude
-      $latitude = 0.0;
-      $longitude = 0.0;
+      // default value for latitude and longitude is 1000.0 (impossible value)
+      $latitude = 1000.0; 
+      $longitude = 1000.0;
       $satellite = NULL;
       $relativeOrbit = NULL;
       $firstFrame = NULL;
@@ -285,8 +286,8 @@ class WebServicesController extends Controller
       $flightDirection = NULL;
       $startTime = NULL;  // if specified, returned datasets must occur during or after this time
       $endTime = NULL;  // if specified, returned datasets must occur during or before this time
-      $outputType = "json"; // default value is json, other option is plot
-      $optionalSearch = FALSE; // if user specifies any optional parameter except outputType, set to true and adjust SQL
+      $outputType = "json"; // default value is json, other option is dataset
+      $attributeSearch = FALSE; // if user specifies any search parameter except latitude, longitude, or outputType, set to true and adjust SQL
 
       // extract parameter values from Request url
       $requests = $request->all();
@@ -305,45 +306,41 @@ class WebServicesController extends Controller
           case 'satellite':
             if (strlen($value) > 0) {
               $satellite = $value;
-              $optionalSearch = TRUE;
+              $attributeSearch = TRUE;
             }
             break;
           case 'relativeOrbit':
             if (strlen($value) > 0) {
               $relativeOrbit = $value;
-              $optionalSearch = TRUE;
+              $attributeSearch = TRUE;
             }
             break;
           case 'firstFrame':
             if (strlen($value) > 0) {
               $firstFrame = $value;
-              $optionalSearch = TRUE;
+              $attributeSearch = TRUE;
             }
             break;
           case 'mode':
             if (strlen($value) > 0) {
               $mode = $value;
-              $optionalSearch = TRUE;
+              $attributeSearch = TRUE;
             }
             break;
           case 'flightDirection':
             if (strlen($value) > 0) {
               $flightDirection = $value;
-              $optionalSearch = TRUE;
+              $attributeSearch = TRUE;
             }
             break;
           case 'startTime':
             if (strlen($value) > 0) {
               $startTime = $value;
-              // uncomment later when I get startTime filter working
-              // $optionalSearch = TRUE;
             }
             break;
           case 'endTime':
             if (strlen($value) > 0) {
               $endTime = $value;
-              // uncomment later when I get startTime filter working
-              // $optionalSearch = TRUE;
             }
             break;
           case 'outputType':
@@ -392,12 +389,16 @@ class WebServicesController extends Controller
         array_push($datasets, $unavcoName->unavco_name);
       }
 
+      // if user only specifies dataset and no other attribute, return all dataset names;
+      if ((strcasecmp($outputType, "dataset") == 0) && !$attributeSearch && $longitude == 1000.0 && $latitude == 1000.0) {
+        return json_encode($datasets);
+      }
 
       // QUERY 1B: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
       /*
       Example url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&mission=Alos&startTime=2009-02-06&endTime=2011-04-03&outputType=json
       */
-      if ($optionalSearch) {
+      if ($attributeSearch) {
         $query = "SELECT unavco_name FROM area INNER JOIN (select t1" . ".area_id FROM ";
 
         if (isset($satellite) && strlen($satellite) > 0) {
