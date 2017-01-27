@@ -183,6 +183,8 @@ function getGEOJSON(area) {
 
     myMap.colorScale.defaultValues(); // set default values in case they were modified by another area
     myMap.selector.reset(currentArea);
+    $("#color-on-dropdown").val("velocity");
+    $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
 
     myMap.addDataset(tileJSON);
     var styleLoadFunc = function(event) {
@@ -933,6 +935,10 @@ $(window).load(function() {
             backgroundColor: buttonColor,
             opacity: opacity
         }, 200);
+    });
+
+    $("#area-bbox-filter-button").on("click", function() {
+
     });
 
     $(function() {
