@@ -153,7 +153,7 @@ function getGEOJSON(area) {
         ],
         "bounds": [130.267778, 31.752321, 131.191112, 32.634544],
         "tiles": [
-            "http://129.171.97.228:8888/" + area.properties.unavco_name +
+            "http://129.171.60.12:8888/" + area.properties.unavco_name +
             "/{z}/{x}/{y}.pbf"
         ],
         "vector_layers": []
