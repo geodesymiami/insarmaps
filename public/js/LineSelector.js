@@ -9,27 +9,27 @@ function LineSelector(map) {
     SquareSelector.call(this, map);
 
     // remove event listener from base constructor calling
-    document.removeEventListener("mousedown", that.mouseDown);
+    document.removeEventListener("mousedown", this.mouseDown);
 
     this.setStartPoint = false;
     this.mouseDown = function(e) {
-        if (!that.setStartPoint) {
-            that.start = that.mousePos(e);
-            that.setStartPoint = true;
+        if (!this.setStartPoint) {
+            this.start = this.mousePos(e);
+            this.setStartPoint = true;
         } else {
-            that.current = that.mousePos(e);
-            that.setStartPoint = false;
-            var polygonCoordinates = that.getPolygonBbox(that.start, that.current);
-            that.finish(polygonCoordinates);
+            this.current = this.mousePos(e);
+            this.setStartPoint = false;
+            var polygonCoordinates = this.getPolygonBbox(this.start, this.current);
+            this.finish(polygonCoordinates);
         }
     };
 
     this.getPolygonBbox = function(start, end) {
-        var DISTANCE = that.lineWidth; // to be made dynamic
+        var DISTANCE = this.lineWidth; // to be made dynamic
 
         var RAD_TO_DEG = 180.0 / Math.PI;
-        var startPoint = that.map.map.unproject(start);
-        var endPoint = that.map.map.unproject(end);
+        var startPoint = this.map.map.unproject(start);
+        var endPoint = this.map.map.unproject(end);
 
         var dy = endPoint.lat - startPoint.lat;
         var dx = endPoint.lng - startPoint.lng;
@@ -38,8 +38,8 @@ function LineSelector(map) {
 
         var otherStart = [start.x + (DISTANCE * Math.cos(angle)), start.y + (DISTANCE * Math.sin(angle))];
         var otherEnd = [end.x + (DISTANCE * Math.cos(angle)), end.y + (DISTANCE * Math.sin(angle))];
-        var otherStartUnprojected = that.map.map.unproject(otherStart);
-        var otherEndUnprojected = that.map.map.unproject(otherEnd);
+        var otherStartUnprojected = this.map.map.unproject(otherStart);
+        var otherEndUnprojected = this.map.map.unproject(otherEnd);
 
         var polygonCoordinates = [
             [
@@ -50,7 +50,7 @@ function LineSelector(map) {
             ]
         ]; // no idea why 3D array, just see their api
 
-        that.polygonVertices = polygonCoordinates;
+        this.polygonVertices = polygonCoordinates;
 
         return polygonCoordinates;
     };
@@ -75,7 +75,7 @@ function LineSelector(map) {
     };
 
     this.getPointsInPolygon = function(polygonVertices) {
-        var features = that.map.map.queryRenderedFeatures();
+        var features = this.map.map.queryRenderedFeatures();
         var featuresInPolygon = [];
         var featuresMap = [];
 
@@ -83,7 +83,7 @@ function LineSelector(map) {
             var feature = features[i];
             var featureCoordinates = feature.geometry.coordinates;
 
-            if (that.pointInPolygon(polygonVertices, featureCoordinates)) {
+            if (this.pointInPolygon(polygonVertices, featureCoordinates)) {
                 var curFeatureKey = feature.properties.p.toString();
 
                 // mapbox gives us duplicate tiles (see documentation to see how query rendered features works)
@@ -99,17 +99,17 @@ function LineSelector(map) {
     };
 
     this.finish = function(bbox) {
-        if (that.map.map.getSource("topographyLine")) {
-            that.map.map.removeLayer("topographyLine");
-            that.map.map.removeSource("topographyLine");
+        if (this.map.map.getSource("topographyLine")) {
+            this.map.map.removeLayer("topographyLine");
+            this.map.map.removeSource("topographyLine");
         }
 
-        if (that.map.map.getSource("test")) {
-            that.map.map.removeLayer("test");
-            that.map.map.removeSource("test");
+        if (this.map.map.getSource("test")) {
+            this.map.map.removeLayer("test");
+            this.map.map.removeSource("test");
         }
 
-        that.map.map.addSource('topographyLine', {
+        this.map.map.addSource('topographyLine', {
             'type': 'geojson',
             'data': {
                 'type': 'Feature',
@@ -120,7 +120,7 @@ function LineSelector(map) {
             }
         });
 
-        that.map.map.addLayer({
+        this.map.map.addLayer({
             'id': 'topographyLine',
             'type': 'fill',
             'source': 'topographyLine',
@@ -130,7 +130,7 @@ function LineSelector(map) {
                 'fill-opacity': 0.8
             }
         });
-        var selectedFeatures = that.getPointsInPolygon(that.polygonVertices[0]);
+        var selectedFeatures = this.getPointsInPolygon(this.polygonVertices[0]);
         //console.log(selectedFeatures);
         var googleFetcher = new GoogleElevationChunkedQuerier({
             onDone: function(results) {
@@ -152,13 +152,13 @@ function LineSelector(map) {
                         var json = JSON.parse(response);
 
                         var dataToBeSorted = [];
-                        var startPoint = new mapboxgl.LngLat(that.polygonVertices[0][0][0], that.polygonVertices[0][0][1]);
+                        var startPoint = new mapboxgl.LngLat(this.polygonVertices[0][0][0], this.polygonVertices[0][0][1]);
                         // extract elevations into one array for HighCharts
                         for (var i = 0; i < results.length; i++) {
                             for (var j = 0; j < results[i].length; j++) {
                                 var result = results[i][j];
                                 var curPoint = new mapboxgl.LngLat(result.location.lng(), result.location.lat());
-                                var distanceToStart = that.getDistanceBetweenPoints(startPoint, curPoint);
+                                var distanceToStart = this.getDistanceBetweenPoints(startPoint, curPoint);
 
                                 var displacement_array = json.displacements[j];
                                 var decimal_dates = json.decimal_dates;
@@ -190,7 +190,7 @@ function LineSelector(map) {
                             velocities.push(data.velocity);
                         }
 
-                        that.graphTopography(elevations, velocities, distances);
+                        this.graphTopography(elevations, velocities, distances);
                     },
                     error: function(xhr, ajaxOptions, thrownError) {
                         console.log("failed " + xhr.responseText);
@@ -310,5 +310,5 @@ function LineSelector(map) {
         console.log("did it");
     };
 
-    document.addEventListener("mousedown", that.mouseDown);
+    document.addEventListener("mousedown", this.mouseDown);
 }

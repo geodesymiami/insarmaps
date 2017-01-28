@@ -202,15 +202,15 @@ function ColorScale(min, max) {
 
     this.setScale = function(scale) {
         if (scale == "jet") {
-            that.currentScale = that.jet;
+            this.currentScale = this.jet;
         } else if (scale == "zishiCustom") {
-            that.currentScale = that.zishiCustom;
+            this.currentScale = this.zishiCustom;
         } else if (scale == "jet_r") {
-            that.currentScale = that.jet_r;
+            this.currentScale = this.jet_r;
         } else if (scale == "hsv") {
-            that.currentScale = that.hsv;
+            this.currentScale = this.hsv;
         } else if (scale == "bwr") {
-            that.currentScale = that.bwr;
+            this.currentScale = this.bwr;
         } else {
             throw "Invalid Color Scale (" + scale + ") selected";
         }
@@ -236,31 +236,31 @@ function ColorScale(min, max) {
     };
 
     this.initVisualScale = function() {
-        $("#min-scale-value").val(that.min);
-        $("#max-scale-value").val(that.max);
+        $("#min-scale-value").val(this.min);
+        $("#max-scale-value").val(this.max);
     };
 
     this.setMin = function(min) {
-        that.min = min;
-        $("#min-scale-value").val(that.min);
+        this.min = min;
+        $("#min-scale-value").val(this.min);
     };
 
     this.setMax = function(max) {
-        that.max = max;
-        $("#max-scale-value").val(that.max);
+        this.max = max;
+        $("#max-scale-value").val(this.max);
     };
 
     this.setMinMax = function(min, max) {
-        that.setMin(min);
-        that.setMax(max);
+        this.setMin(min);
+        this.setMax(max);
     };
 
     this.defaultValues = function() {
-        that.setScale("jet");
-        that.setMinMax(-2.0, 2.0);
+        this.setScale("jet");
+        this.setMinMax(-2.0, 2.0);
     };
 
     this.getMapboxStops = function() {
-        return that.colorsToMapboxStops(that.min, that.max, this.currentScale);
+        return this.colorsToMapboxStops(this.min, this.max, this.currentScale);
     };
 }

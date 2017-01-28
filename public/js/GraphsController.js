@@ -40,10 +40,10 @@ function GraphsController() {
             array[index] = 100 * array[index];
         });
 
-        that.graphSettings[chartContainer].date_string_array = date_string_array;
-        that.graphSettings[chartContainer].date_array = date_array;
-        that.graphSettings[chartContainer].decimal_dates = decimal_dates;
-        that.graphSettings[chartContainer].displacement_array = displacement_array;
+        this.graphSettings[chartContainer].date_string_array = date_string_array;
+        this.graphSettings[chartContainer].date_array = date_array;
+        this.graphSettings[chartContainer].decimal_dates = decimal_dates;
+        this.graphSettings[chartContainer].displacement_array = displacement_array;
 
         // returns array for displacement on chart
         chart_data = getDisplacementChartData(displacement_array, date_string_array);
@@ -90,33 +90,33 @@ function GraphsController() {
                 events: { // get dates for slider bounds
                     afterSetExtremes: function(e) {
                         // we get called when graph is created
-                        that.graphSettings[chartContainer].navigatorEvent = e;
-                        var dates = that.getValideDatesFromNavigatorExtremes(chartContainer);
+                        this.graphSettings[chartContainer].navigatorEvent = e;
+                        var dates = this.getValideDatesFromNavigatorExtremes(chartContainer);
                         myMap.selector.lastMinIndex = myMap.selector.minIndex;
                         myMap.selector.lastMaxIndex = myMap.selector.maxIndex;
                         // set selector to work
                         myMap.selector.minIndex = dates.minIndex;
                         myMap.selector.maxIndex = dates.maxIndex;
 
-                        var graphSettings = that.graphSettings[chartContainer];
+                        var graphSettings = this.graphSettings[chartContainer];
                         // update velocity, even if we don't have a linear regression line, needed the extra check as this library calls this function when graph is created... sigh
                         var displacements = (detrendToggleButton.toggleState == ToggleStates.ON && graphSettings.detrend_displacement_array) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
-                        var regression_data = that.getLinearRegressionLine(chartContainer, displacements);
+                        var regression_data = this.getLinearRegressionLine(chartContainer, displacements);
                         var sub_slope = regression_data.linearRegressionData["equation"][0];
                         var velocity_std = regression_data.stdDev;
                         var chart = $("#" + chartContainer).highcharts();
                         var velocityText = "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"
 
-                        that.highChartsOpts[chartContainer].subtitle.text = velocityText;
+                        this.highChartsOpts[chartContainer].subtitle.text = velocityText;
 
                         chart.setTitle(null, {
                             text: velocityText
                         });
 
                         if (regressionToggleButton.toggleState == ToggleStates.ON) {
-                            var graphSettings = that.graphSettings[chartContainer];
+                            var graphSettings = this.graphSettings[chartContainer];
                             var displacements_array = (detrendToggleButton.toggleState == ToggleStates.ON && graphSettings.detrend_displacement_array) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
-                            that.addRegressionLine(chartContainer, displacements_array);
+                            this.addRegressionLine(chartContainer, displacements_array);
                         }
 
                         // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
@@ -131,7 +131,7 @@ function GraphsController() {
                         if (myMap.selector.bbox != null && myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
                             myMap.selector.recolorDataset();
                         }
-                    }
+                    }.bind(this)
                 },
                 dateTimeLabelFormats: {
                     month: '%b %Y',
@@ -181,7 +181,7 @@ function GraphsController() {
             }
         };
 
-        that.graphSettings[chartContainer].navigatorEvent = clickEvent;
+        this.graphSettings[chartContainer].navigatorEvent = clickEvent;
 
         // take out navigator not only if this is the bottom graph, but if the second graph toggle is on, period
         if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
@@ -189,18 +189,18 @@ function GraphsController() {
         }
 
         $('#' + chartContainer).highcharts(chartOpts);
-        that.highChartsOpts[chartContainer] = chartOpts;
+        this.highChartsOpts[chartContainer] = chartOpts;
 
-        that.setNavigatorHandlers();
+        this.setNavigatorHandlers();
 
         // this calls recreate in the background.
         // TODO: make detrend data functions not call recreate
         if (detrendToggleButton.toggleState == ToggleStates.ON) {
-            that.detrendDataForGraph(chartContainer);
+            this.detrendDataForGraph(chartContainer);
         }
 
         if (dotToggleButton.toggleState == ToggleStates.ON) {
-            that.toggleDots();
+            this.toggleDots();
         }
 
         // this is hackish. due to bug which appears when we resize window before moving graph. jquery resizable
@@ -240,17 +240,17 @@ function GraphsController() {
 
     // do as name says, return struct with min and max dates to be optionally used
     this.getValideDatesFromNavigatorExtremes = function(chartContainer) {
-        var graphSettings = that.graphSettings[chartContainer];
+        var graphSettings = this.graphSettings[chartContainer];
 
         var minDate = graphSettings.navigatorEvent.min;
         var maxDate = graphSettings.navigatorEvent.max;
-        var minMax = that.mapDatesToArrayIndeces(minDate, maxDate, graphSettings.date_array);
+        var minMax = this.mapDatesToArrayIndeces(minDate, maxDate, graphSettings.date_array);
 
         return minMax;
     };
 
     this.getLinearRegressionLine = function(chartContainer, displacement_array) {
-        var graphSettings = that.graphSettings[chartContainer];
+        var graphSettings = this.graphSettings[chartContainer];
         var validDates = this.getValideDatesFromNavigatorExtremes(
             chartContainer);
         // returns array for displacement on chart
@@ -285,7 +285,7 @@ function GraphsController() {
     };
 
     this.addRegressionLine = function(chartContainer, displacement_array) {
-        var graphSettings = that.graphSettings[chartContainer];
+        var graphSettings = this.graphSettings[chartContainer];
         var chart = $("#" + chartContainer).highcharts();
 
         // returns array for displacement on chart
@@ -300,7 +300,7 @@ function GraphsController() {
         // returns array for linear regression on chart
         var regression_data = getRegressionChartData(slope, y,
             graphSettings.decimal_dates, chart_data);
-        var regression_data = that.getLinearRegressionLine(chartContainer,
+        var regression_data = this.getLinearRegressionLine(chartContainer,
             displacement_array);
         // calculate regression based on current range        
         if (graphSettings.navigatorEvent != null) {
@@ -308,11 +308,11 @@ function GraphsController() {
                 [0];
             var velocity_std = regression_data.stdDev;
             // remove an existing sub array from chart
-            that.removeRegressionLine(chartContainer);
+            this.removeRegressionLine(chartContainer);
             var velocityText = "velocity: " + (sub_slope * 10).toFixed(2).toString() +
                 " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() +
                 " mm/yr";
-            that.highChartsOpts[chartContainer].subtitle.text =
+            this.highChartsOpts[chartContainer].subtitle.text =
                 velocityText;
             chart.setTitle(null, {
                 text: velocityText
@@ -364,9 +364,9 @@ function GraphsController() {
     };
 
     this.connectDots = function() {
-        var graphOpts = that.highChartsOpts["chartContainer"];
+        var graphOpts = this.highChartsOpts["chartContainer"];
         graphOpts.series[0].type = "line";
-        that.recreateGraph("chartContainer");
+        this.recreateGraph("chartContainer");
         var chart = $("#chartContainer").highcharts();
 
         // prevents bug resulting from toggling line connecting points on the graph
@@ -374,7 +374,7 @@ function GraphsController() {
         // the loop below to delete the linear regression line doesn't get deleted, resulting in two of them
         // i suspect that high charts is doing something with the series array when you use update, resulting in that
         // issue, since the loop works afterwards (when user actually uses the navigator) as normal
-        if (that.graphSettings["chartContainer"].firstToggle) {
+        if (this.graphSettings["chartContainer"].firstToggle) {
             var seriesLength = chart.series.length;
 
             for (var i = seriesLength - 1; i > -1; i--) {
@@ -384,7 +384,7 @@ function GraphsController() {
                 }
             }
 
-            that.graphSettings["chartContainer"].firstToggle = false;
+            this.graphSettings["chartContainer"].firstToggle = false;
         }
 
         // repeat for other chart        
@@ -394,9 +394,9 @@ function GraphsController() {
             return;
         }
 
-        var graphOpts = that.highChartsOpts["chartContainer2"];
+        var graphOpts = this.highChartsOpts["chartContainer2"];
         graphOpts.series[0].type = "line";
-        that.recreateGraph("chartContainer2");
+        this.recreateGraph("chartContainer2");
         chart = $("#chartContainer2").highcharts();
 
         // prevents bug resulting from toggling line connecting points on the graph
@@ -404,7 +404,7 @@ function GraphsController() {
         // the loop below to delete the linear regression line doesn't get deleted, resulting in two of them
         // i suspect that high charts is doing something with the series array when you use update, resulting in that
         // issue, since the loop works afterwards (when user actually uses the navigator) as normal
-        if (that.graphSettings["chartContainer2"].firstToggle) {
+        if (this.graphSettings["chartContainer2"].firstToggle) {
             var seriesLength = chart.series.length;
 
             for (var i = seriesLength - 1; i > -1; i--) {
@@ -413,14 +413,14 @@ function GraphsController() {
                     break;
                 }
             }
-            that.graphSettings["chartContainer2"].firstToggle = false;
+            this.graphSettings["chartContainer2"].firstToggle = false;
         }
     };
 
     this.disconnectDots = function() {
-        var graphOpts = that.highChartsOpts["chartContainer"];
+        var graphOpts = this.highChartsOpts["chartContainer"];
         graphOpts.series[0].type = "scatter";
-        that.recreateGraph("chartContainer");
+        this.recreateGraph("chartContainer");
         var chart = $("#chartContainer").highcharts(graphOpts);
 
         // prevents bug resulting from toggling line connecting points on the graph
@@ -428,7 +428,7 @@ function GraphsController() {
         // the loop below to delete the linear regression line doesn't get deleted, resulting in two of them
         // i suspect that high charts is doing something with the series array when you use update, resulting in that
         // issue, since the loop works afterwards (when user actually uses the navigator) as normal
-        if (that.graphSettings["chartContainer"].firstToggle) {
+        if (this.graphSettings["chartContainer"].firstToggle) {
             var seriesLength = chart.series.length;
 
             for (var i = seriesLength - 1; i > -1; i--) {
@@ -438,11 +438,11 @@ function GraphsController() {
                 }
             }
 
-            that.graphSettings["chartContainer"].firstToggle = false;
+            this.graphSettings["chartContainer"].firstToggle = false;
         }
         // no idea why disconnecting dots requires an extra call to setExtremes (without this), the extremes are the max...
         var graphDOM = $("#chartContainer").highcharts();
-        var graphSettings = that.graphSettings["chartContainer"];
+        var graphSettings = this.graphSettings["chartContainer"];
         graphDOM.xAxis[0].setExtremes(graphSettings.navigatorEvent.min,
             graphSettings.navigatorEvent.max);
 
@@ -453,9 +453,9 @@ function GraphsController() {
             return;
         }
 
-        var graphOpts = that.highChartsOpts["chartContainer2"];
+        var graphOpts = this.highChartsOpts["chartContainer2"];
         graphOpts.series[0].type = "scatter";
-        that.recreateGraph("chartContainer2");
+        this.recreateGraph("chartContainer2");
         chart = $("#chartContainer2").highcharts();
 
         // prevents bug resulting from toggling line connecting points on the graph
@@ -463,7 +463,7 @@ function GraphsController() {
         // the loop below to delete the linear regression line doesn't get deleted, resulting in two of them
         // i suspect that high charts is doing something with the series array when you use update, resulting in that
         // issue, since the loop works afterwards (when user actually uses the navigator) as normal
-        if (that.graphSettings["chartContainer2"].firstToggle) {
+        if (this.graphSettings["chartContainer2"].firstToggle) {
             var seriesLength = chart.series.length;
 
             for (var i = seriesLength - 1; i > -1; i--) {
@@ -472,10 +472,10 @@ function GraphsController() {
                     break;
                 }
             }
-            that.graphSettings["chartContainer2"].firstToggle = false;
+            this.graphSettings["chartContainer2"].firstToggle = false;
         }
         graphDOM = $("#chartContainer2").highcharts();
-        graphSettings = that.graphSettings["chartContainer2"];
+        graphSettings = this.graphSettings["chartContainer2"];
         graphDOM.xAxis[0].setExtremes(graphSettings.navigatorEvent.min,
             graphSettings.navigatorEvent.max);
     };
@@ -484,42 +484,42 @@ function GraphsController() {
         var chart = $("#chartContainer").highcharts();
 
         if (dotToggleButton.toggleState == ToggleStates.ON) {
-            that.connectDots();
+            this.connectDots();
         } else {
-            that.disconnectDots();
+            this.disconnectDots();
         }
     };
 
     this.addRegressionLines = function() {
-        var graphSettings = that.graphSettings["chartContainer"];
+        var graphSettings = this.graphSettings["chartContainer"];
         var displacements_array = (detrendToggleButton.toggleState ==
             ToggleStates.ON && graphSettings.detrend_displacement_array
         ) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
-        that.addRegressionLine("chartContainer", displacements_array);
+        this.addRegressionLine("chartContainer", displacements_array);
         var chart2 = $("#chartContainer2").highcharts();
         if (chart2 !== undefined) {
-            graphSettings = that.graphSettings["chartContainer2"];
+            graphSettings = this.graphSettings["chartContainer2"];
             displacements_array = (detrendToggleButton.toggleState ==
                     ToggleStates.ON && graphSettings.detrend_displacement_array
                 ) ? graphSettings.detrend_displacement_array :
                 graphSettings.displacement_array;
-            that.addRegressionLine("chartContainer2", displacements_array);
+            this.addRegressionLine("chartContainer2", displacements_array);
         }
     };
 
     this.removeRegressionLines = function() {
-        that.removeRegressionLine("chartContainer");
+        this.removeRegressionLine("chartContainer");
         var chart2 = $("#chartContainer2").highcharts();
         if (chart2 !== undefined) {
-            that.removeRegressionLine("chartContainer2");
+            this.removeRegressionLine("chartContainer2");
         }
     };
 
     this.toggleRegressionLines = function() {
         if (regressionToggleButton.toggleState == ToggleStates.ON) {
-            that.addRegressionLines();
+            this.addRegressionLines();
         } else {
-            that.removeRegressionLines();
+            this.removeRegressionLines();
         }
     };
 
@@ -532,19 +532,19 @@ function GraphsController() {
         var newWidth = $("#chartContainer").width();
         var newHeight = $("#chartContainer").height();
         $("#chartContainer").height(newHeight);
-        var graphOpts = that.highChartsOpts["chartContainer"];
+        var graphOpts = this.highChartsOpts["chartContainer"];
         graphOpts.navigator.enabled = false;
 
-        that.recreateGraph("chartContainer");
+        this.recreateGraph("chartContainer");
 
         // if chart is already rendered but just hidden, recreate it to resize
         var chart2 = $("#chartContainer2").highcharts();
         if (chart2 !== undefined) {
-            that.recreateGraph("chartContainer2");
+            this.recreateGraph("chartContainer2");
         }
 
         $("#select-graph-focus-div").css("display", "block");
-        that.selectedGraph = "Bottom Graph";
+        this.selectedGraph = "Bottom Graph";
 
         topGraphToggleButton.set("off");
         bottomGraphToggleButton.set("on");
@@ -565,25 +565,25 @@ function GraphsController() {
         $("#chartContainer").height("100%");
         var newWidth = $("#chartContainer").width();
         var newHeight = $("#chartContainer").height();
-        var graphOpts = that.highChartsOpts["chartContainer"];
+        var graphOpts = this.highChartsOpts["chartContainer"];
         graphOpts.navigator.enabled = true;
 
-        that.recreateGraph("chartContainer");
+        this.recreateGraph("chartContainer");
 
-        that.selectedGraph = "Top Graph";
+        this.selectedGraph = "Top Graph";
     };
 
     this.toggleSecondGraph = function() {
         if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-            that.prepareForSecondGraph();
+            this.prepareForSecondGraph();
         } else {
-            that.removeSecondGraph();
+            this.removeSecondGraph();
         }
     };
 
     // TODO: make detrend data functions not call recreate
     this.detrendDataForGraph = function(chartContainer) {
-        var graphSettings = that.graphSettings[chartContainer];
+        var graphSettings = this.graphSettings[chartContainer];
         // returns array for displacement on chart
         var chart_data = getDisplacementChartData(graphSettings.displacement_array,
             graphSettings.date_string_array);
@@ -605,14 +605,14 @@ function GraphsController() {
 
         chart_data = getDisplacementChartData(graphSettings.detrend_displacement_array,
             graphSettings.date_string_array);
-        that.highChartsOpts[chartContainer].series[0].data = chart_data;
-        that.highChartsOpts[chartContainer].subtitle.text = "velocity: " +
+        this.highChartsOpts[chartContainer].series[0].data = chart_data;
+        this.highChartsOpts[chartContainer].subtitle.text = "velocity: " +
             (slope * 10).toFixed(2).toString() + " mm/yr" // slope in mm
-        that.recreateGraphs();
+        this.recreateGraphs();
     };
 
     this.removeDetrendForGraph = function(chartContainer) {
-        var graphSettings = that.graphSettings[chartContainer];
+        var graphSettings = this.graphSettings[chartContainer];
         // returns array for displacement on chart
         var chart_data = getDisplacementChartData(graphSettings.displacement_array,
             graphSettings.date_string_array);
@@ -624,25 +624,25 @@ function GraphsController() {
         var y = result["equation"][1];
         chart_data = getDisplacementChartData(graphSettings.displacement_array,
             graphSettings.date_string_array);
-        that.highChartsOpts[chartContainer].series[0].data = chart_data;
-        that.highChartsOpts[chartContainer].subtitle.text = "velocity: " +
+        this.highChartsOpts[chartContainer].series[0].data = chart_data;
+        this.highChartsOpts[chartContainer].subtitle.text = "velocity: " +
             (slope * 10).toFixed(2).toString() + " mm/yr" // slope in mm
-        that.recreateGraphs();
+        this.recreateGraphs();
     };
 
     this.detrendData = function() {
-        that.detrendDataForGraph("chartContainer");
+        this.detrendDataForGraph("chartContainer");
         var chart2 = $("#chartContainer2").highcharts();
         if (chart2 !== undefined) {
-            that.detrendDataForGraph("chartContainer2");
+            this.detrendDataForGraph("chartContainer2");
         }
     };
 
     this.removeDetrend = function() {
-        that.removeDetrendForGraph("chartContainer");
+        this.removeDetrendForGraph("chartContainer");
         var chart2 = $("#chartContainer2").highcharts();
         if (chart2 !== undefined) {
-            that.removeDetrendForGraph("chartContainer2");
+            this.removeDetrendForGraph("chartContainer2");
         }
     };
 
@@ -660,8 +660,8 @@ function GraphsController() {
     };
 
     this.recreateGraph = function(chartContainer) {
-        var graphSettings = that.graphSettings[chartContainer];
-        var graphOpts = that.highChartsOpts[chartContainer];
+        var graphSettings = this.graphSettings[chartContainer];
+        var graphOpts = this.highChartsOpts[chartContainer];
         $("#" + chartContainer).highcharts(graphOpts);
         var chart = $("#" + chartContainer).highcharts();
 
@@ -675,19 +675,19 @@ function GraphsController() {
         });
 
         if (regressionToggleButton.toggleState == ToggleStates.ON) {
-            that.addRegressionLines();
+            this.addRegressionLines();
         }
     };
 
     // recreates graphs, preserving the selected ranges on the high charts navigator
     this.recreateGraphs = function() {
-        that.recreateGraph("chartContainer");
-        that.recreateGraph("chartContainer2");
+        this.recreateGraph("chartContainer");
+        this.recreateGraph("chartContainer2");
 
         if (regressionToggleButton.toggleState == ToggleStates.ON) {
-            that.addRegressionLines();
+            this.addRegressionLines();
         }
 
-        that.setNavigatorHandlers();
+        this.setNavigatorHandlers();
     };
 }

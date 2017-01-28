@@ -94,18 +94,18 @@ function AreaAttributesPopup() {
         clickEvent.currentTarget = link;
         link.trigger(clickEvent);
 
-        that.resetTabContents();
-        that.populateTabs(area);
+        this.resetTabContents();
+        this.populateTabs(area);
     }
 
     this.show = function(area) {
         if (!$('.wrap#area-attributes-div').hasClass('active')) {
             $('.wrap#area-attributes-div').toggleClass('active');
-        } else if (that.isMinimized()) {
+        } else if (this.isMinimized()) {
             $("#area-attributes-div-minimize-button").click();
         }
 
-        that.populate(area);
+        this.populate(area);
     };
 
     this.isMinimized = function() {
@@ -271,35 +271,35 @@ function ToggleButton(id) {
     this.firstToggle = true;
 
     this.toggle = function() {
-        if (that.toggleState == ToggleStates.ON) {
-            that.toggleState = ToggleStates.OFF;
+        if (this.toggleState == ToggleStates.ON) {
+            this.toggleState = ToggleStates.OFF;
             $(this.id).prop('checked', false);
         } else {
-            that.toggleState = ToggleStates.ON;
+            this.toggleState = ToggleStates.ON;
             $(this.id).prop('checked', true);
         }
     };
 
     this.set = function(state) {
         if (state == "on") {
-            if (that.toggleState == ToggleStates.OFF) {
-                that.toggle();
+            if (this.toggleState == ToggleStates.OFF) {
+                this.toggle();
             }
         } else if (state == "off") {
-            if (that.toggleState == ToggleStates.ON) {
-                that.toggle();
+            if (this.toggleState == ToggleStates.ON) {
+                this.toggle();
             }
         } else {
             throw "invalid toggle option";
         }
     }
     this.onclick = function(clickFunction) {
-        $(that.id).on("click", function() {
+        $(this.id).on("click", function() {
             // toggle states
-            that.toggle();
+            this.toggle();
 
             clickFunction();
-        });
+        }.bind(this));
     };
 }
 
@@ -659,11 +659,14 @@ $(window).load(function() {
 
     var NUM_CHUNKS = 300;
 
+    // inheritance of LineSelector class
+    RecolorSelector.prototype = new SquareSelector();
+    AreaFilterSelector.prototype = new SquareSelector();
+    LineSelector.prototype = new SquareSelector();
+    setupRecolorSelector();
+    setUpAreaFilterSelector();
     myMap = new Map(loadJSON);
     myMap.addMapToPage("map-container");
-
-    // inheritance of LineSelector class
-    LineSelector.prototype = new SquareSelector(myMap);
 
     var layerList = document.getElementById('map-type-menu');
     var inputs = layerList.getElementsByTagName('input');
