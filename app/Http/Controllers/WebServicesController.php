@@ -286,6 +286,7 @@ class WebServicesController extends Controller
       $flightDirection = NULL;
       $startTime = NULL;  // if specified, returned datasets must occur during or after this time
       $endTime = NULL;  // if specified, returned datasets must occur during or before this time
+      $box = "";  // string containing wkt geometry to get datasets bounded in a box
       $outputType = "json"; // default value is json, other option is dataset
       $attributeSearch = FALSE; // if user specifies any search parameter except latitude, longitude, or outputType, set to true and adjust SQL
 
@@ -343,6 +344,11 @@ class WebServicesController extends Controller
               $endTime = $value;
             }
             break;
+          case 'box':
+            if (strlen($value) > 0) {
+              $box = $value;
+            }
+            break;
           case 'outputType':
             if (strlen($value) > 0) {
               $outputType = $value;
@@ -352,7 +358,7 @@ class WebServicesController extends Controller
             break;
         }
       }
-
+      
       // check if startTime inputted by user is in in yyyy-mm-dd or yyyymmdd format
       if ($startTime !== NULL && $this->dateFormatter->verifyDate($startTime) === NULL) {
         $json["errors"] = "please input startTime in format yyyy-mm-dd (ex: 1990-12-19)";
@@ -397,6 +403,8 @@ class WebServicesController extends Controller
       // QUERY 1B: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
       /*
       Example url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&mission=Alos&startTime=2009-02-06&endTime=2011-04-03&outputType=json
+
+      Another url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&box=LINESTRING(%20130.9695%2032.2865,%20130.9695%2032.2875,%20130.9705%2032.2875,%20130.9705%2032.2865,%20130.9695%2032.2865)&mission=Alos&mode=SM&startTime=2009-02-06&endTime=2011-04-03&outputType=dataset
       */
       if ($attributeSearch) {
         $query = "SELECT unavco_name FROM area INNER JOIN (select t1" . ".area_id FROM ";
@@ -435,6 +443,28 @@ class WebServicesController extends Controller
         $unavcoNames = DB::select(DB::raw($query));
       }
 
+      $datasets = [];
+      foreach ($unavcoNames as $unavcoName) {
+        array_push($datasets, $unavcoName->unavco_name);
+      }
+      // dd($datasets);
+
+      // QUERY 2A: if user inputted bounding box option, check which datasets have points in the bounding box
+      if (strlen($box) > 0) {
+        $datasetsInBox = [];
+        $len = count($datasets);;
+        for ($i = 0; $i < $len; $i++) {
+          $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $datasets[$i] . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('". $box . "', 4326)), wkb_geometry);";
+
+          $points = DB::select(DB::raw($query));
+          if (count($points) > 0) {
+            array_push($datasetsInBox, $datasets[$i]);
+          }
+        }
+
+        return json_encode($datasetsInBox);
+      }
+
       // calculate polygon encapsulating longitude and latitude specified by user
       // delta = range of error for latitude and longitude values, can be changed as needed
       $delta = 0.0005;
@@ -449,13 +479,13 @@ class WebServicesController extends Controller
       $p5_lat = $latitude - $delta;
       $p5_long = $longitude - $delta;
 
-      // QUERY 2: for each dataset name, if point exists in dataset then 
+      // QUERY 2B: otherwise for each dataset name, if point exists in dataset then 
       // return data of first point returned by polygon created by (longitude, latitude) and delta
-      $len = count($unavcoNames);
+      // $len = count($unavcoNames);
       for ($i = 0; $i < $len; $i++) {
         $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $datasets[$i] . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
-        
         $points = DB::select(DB::raw($query));
+
         if (count($points) > 0) {
           $nearest = $this->getNearestPoint($latitude, $longitude, $points);
           $data[$datasets[$i]] = $nearest;
