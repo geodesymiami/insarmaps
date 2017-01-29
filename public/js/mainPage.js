@@ -346,6 +346,7 @@ function switchLayer(layer) {
         styleLoadFunc = function() {
             myMap.map.off("data", styleLoadFunc);
             myMap.addDataset(myMap.tileJSON);
+            myMap.loadAreaMarkersExcluding([currentArea.properties.unavco_name])
             if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
                 myMap.addGPSStationMarkers(gpsStations);
             }
