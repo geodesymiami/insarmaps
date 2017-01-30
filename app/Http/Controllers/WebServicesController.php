@@ -289,6 +289,7 @@ class WebServicesController extends Controller
       $box = "";  // string containing wkt geometry to get datasets bounded in a box
       $outputType = "json"; // default value is json, other option is dataset
       $attributeSearch = FALSE; // if user specifies any search parameter except latitude, longitude, or outputType, set to true and adjust SQL
+      $csv_array = []; // final array containing dataset names and attributes
 
       // extract parameter values from Request url
       $requests = $request->all();
@@ -387,24 +388,23 @@ class WebServicesController extends Controller
       $query = "SELECT id, unavco_name FROM area;";
       $unavcoNames = DB::select(DB::raw($query));
       $datasets_id = [];
-      $datasets = [];
-      $datasets_attributes = [];
+      $datasets = []; // each dataset is identified by area id key
 
       $data = []; // array of point data from all datasets that match closest to user query 
       $queryConditions = []; // array of conditions to narrow query result based on webservice parameters
 
       // format SQL result into a php array where each dataset is mapped to area_id
       foreach ($unavcoNames as $unavcoName) {
+        $datasets[$unavcoName->id] = $unavcoName->unavco_name;
+        // array_push($datasets_id, $unavcoName->id);
         // array_push($datasets, $unavcoName->unavco_name);
-        array_push($datasets_id, $unavcoName->id);
-        array_push($datasets, $unavcoName->unavco_name);
       }
 
       // QUERY 1B: get attributes for with all datasets
+      // for each dataset area id, get all attributes from it
       $query = "WITH ids(id) AS (VALUES";
-      // for each dataset id, get all attributes from it
-      foreach ($datasets_id as $id) {
-        $query = $query . "(" . $id . "),";
+      foreach ($datasets as $key => $value) {
+        $query = $query . "(" . $key . "),";
       }
 
       $query = rtrim($query, ",");
@@ -414,7 +414,6 @@ class WebServicesController extends Controller
       $attributesDict = [];
   
       // get all attributes from attributes hashmap organized by dataset area_id
-      //dd(array("d"=>"lemon", "a"=>"orange", "b"=>"banana", "c"=>"apple"));
       foreach ($attributes as $attribute) {
         $key = $attribute->attributekey;
         $value = $attribute->attributevalue;
@@ -423,16 +422,30 @@ class WebServicesController extends Controller
         $attributesDict[$attribute->area_id][$key] = $value;
       }
 
-      // TODO: sort keys from attributemap in alphabetical order of keys
-      ksort($attributesDict["17"]);
-      dd($attributesDict["17"]);
-      //dd($attributesDict["17"]);
-      //dd($test);
+      // sort keys from attributemap in alphabetical order of keys
+      // since not all datasets have all 27 attributes remove the ones lacking attributes
+      // finally add dataset name to beginning of sorted array
+      // TODO: insert all attributes to datasets lacking 27 attributes
+      foreach($datasets as $key => $value) {
+        if (count($attributesDict[$key]) == 27) {
+          ksort($attributesDict[$key]);
+        }
+        else {
+          unset($attributesDict[$key]);
+          unset($datasets[$key]);
+        }
+      }
 
       // if user only specifies dataset and no other attribute, return all dataset names;
       if ((strcasecmp($outputType, "dataset") == 0) && !$attributeSearch && $longitude == 1000.0 && $latitude == 1000.0) {
-
-        return json_encode($datasets);
+        foreach ($datasets as $key => $value) {
+          array_unshift($attributesDict[$key], $value);
+          array_push($csv_array, array_values($attributesDict[$key]));
+        }
+        
+        return json_encode($csv_array);
+      
+        // return json_encode(array_values($attributesDict));
       }
 
       // QUERY 1C: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
@@ -480,7 +493,6 @@ class WebServicesController extends Controller
 
       $datasets_id = [];
       $datasets = [];
-      $datasets_attributes = [];
       foreach ($unavcoNames as $unavcoName) {
         array_push($datasets_id, $unavcoName->id);
         array_push($datasets, $unavcoName->unavco_name);
