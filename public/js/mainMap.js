@@ -687,6 +687,7 @@ function Map(loadJSONFunc) {
         this.map.on("load", function() {
             this.selector = new RecolorSelector();
             this.selector.map = this;
+            this.selector.associatedButton = $("#polygon-button");
             this.selector.prepareEventListeners();
             this.loadAreaMarkers(function(areaFeatures) {
                 if (viewOptions.startDataset) {

@@ -289,6 +289,7 @@ class WebServicesController extends Controller
       $box = "";  // string containing wkt geometry to get datasets bounded in a box
       $outputType = "json"; // default value is json, other option is dataset
       $attributeSearch = FALSE; // if user specifies any search parameter except latitude, longitude, or outputType, set to true and adjust SQL
+      $csv_array = []; // final array containing dataset names and attributes
 
       // extract parameter values from Request url
       $requests = $request->all();
@@ -387,24 +388,23 @@ class WebServicesController extends Controller
       $query = "SELECT id, unavco_name FROM area;";
       $unavcoNames = DB::select(DB::raw($query));
       $datasets_id = [];
-      $datasets = [];
-      $datasets_attributes = [];
+      $datasets = []; // each dataset is identified by area id key
 
       $data = []; // array of point data from all datasets that match closest to user query 
       $queryConditions = []; // array of conditions to narrow query result based on webservice parameters
 
       // format SQL result into a php array where each dataset is mapped to area_id
       foreach ($unavcoNames as $unavcoName) {
+        $datasets[$unavcoName->id] = $unavcoName->unavco_name;
+        // array_push($datasets_id, $unavcoName->id);
         // array_push($datasets, $unavcoName->unavco_name);
-        array_push($datasets_id, $unavcoName->id);
-        array_push($datasets, $unavcoName->unavco_name);
       }
 
       // QUERY 1B: get attributes for with all datasets
+      // for each dataset area id, get all attributes from it
       $query = "WITH ids(id) AS (VALUES";
-      // for each dataset id, get all attributes from it
-      foreach ($datasets_id as $id) {
-        $query = $query . "(" . $id . "),";
+      foreach ($datasets as $key => $value) {
+        $query = $query . "(" . $key . "),";
       }
 
       $query = rtrim($query, ",");
@@ -414,7 +414,6 @@ class WebServicesController extends Controller
       $attributesDict = [];
   
       // get all attributes from attributes hashmap organized by dataset area_id
-      //dd(array("d"=>"lemon", "a"=>"orange", "b"=>"banana", "c"=>"apple"));
       foreach ($attributes as $attribute) {
         $key = $attribute->attributekey;
         $value = $attribute->attributevalue;
@@ -423,16 +422,28 @@ class WebServicesController extends Controller
         $attributesDict[$attribute->area_id][$key] = $value;
       }
 
-      // TODO: sort keys from attributemap in alphabetical order of keys
-      ksort($attributesDict["17"]);
-      dd($attributesDict["17"]);
-      //dd($attributesDict["17"]);
-      //dd($test);
+      // sort keys from attributemap in alphabetical order of keys
+      // since not all datasets have all 27 attributes remove the ones lacking attributes
+      // finally add dataset name to beginning of sorted array
+      // TODO: insert all attributes to datasets lacking 27 attributes
+      foreach($datasets as $key => $value) {
+        if (count($attributesDict[$key]) == 27) {
+          ksort($attributesDict[$key]);
+        }
+        else {
+          unset($attributesDict[$key]);
+          unset($datasets[$key]);
+        }
+      }
 
       // if user only specifies dataset and no other attribute, return all dataset names;
       if ((strcasecmp($outputType, "dataset") == 0) && !$attributeSearch && $longitude == 1000.0 && $latitude == 1000.0) {
-
-        return json_encode($datasets);
+        foreach ($datasets as $key => $value) {
+          array_unshift($attributesDict[$key], $value);
+          array_push($csv_array, array_values($attributesDict[$key]));
+        }
+        
+        return json_encode($csv_array);
       }
 
       // QUERY 1C: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
@@ -478,28 +489,34 @@ class WebServicesController extends Controller
         $unavcoNames = DB::select(DB::raw($query));
       }
 
-      $datasets_id = [];
       $datasets = [];
-      $datasets_attributes = [];
       foreach ($unavcoNames as $unavcoName) {
-        array_push($datasets_id, $unavcoName->id);
-        array_push($datasets, $unavcoName->unavco_name);
+        $datasets[$unavcoName->id] = $unavcoName->unavco_name;
       }
 
       // QUERY 2A: if user inputted bounding box option, check which datasets have points in the bounding box
       if (strlen($box) > 0) {
         $datasetsInBox = [];
-        $len = count($datasets);;
-        for ($i = 0; $i < $len; $i++) {
-          $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $datasets[$i] . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('". $box . "', 4326)), wkb_geometry);";
-
+        $len = count($datasets);
+        foreach ($datasets as $key => $value) {
+          $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $value . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('". $box . "', 4326)), wkb_geometry);";
           $points = DB::select(DB::raw($query));
+
+          // get dataset names paired by area id
           if (count($points) > 0) {
-            array_push($datasetsInBox, $datasets[$i]);
+            $datasetsInBox[$key] = $value;
           }
         }
-
-        return json_encode($datasetsInBox);
+        
+        // return datasets that exists in attributeDict and datasets in box
+        foreach ($datasetsInBox as $key => $value) {
+          if (array_key_exists($key, $attributesDict) && array_key_exists($key, $datasetsInBox)) {
+            array_unshift($attributesDict[$key], $datasets[$key]);
+            array_push($csv_array, array_values($attributesDict[$key]));
+          }
+        }
+        // TODO: tell zishi to construct area objects as in GeoJSONController, not just return dataset names
+        return json_encode($csv_array);
       }
 
       // calculate polygon encapsulating longitude and latitude specified by user
@@ -518,34 +535,40 @@ class WebServicesController extends Controller
 
       // QUERY 2B: otherwise for each dataset name, if point exists in dataset then 
       // return data of first point returned by polygon created by (longitude, latitude) and delta
-      // $len = count($unavcoNames);
-      for ($i = 0; $i < $len; $i++) {
-        $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $datasets[$i] . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
+      // key = area id, value = dataset name
+      foreach ($datasets as $key => $value) {
+        $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $value . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
         $points = DB::select(DB::raw($query));
 
         if (count($points) > 0) {
           $nearest = $this->getNearestPoint($latitude, $longitude, $points);
-          $data[$datasets[$i]] = $nearest;
+          $data[$key] = $nearest;
         }
       }
 
+      // $key = dataset name, $value = point object data returned by SQL
       foreach ($data as $key => $value) {
-        // $key = dataset name, $value = point object data returned by SQL
-        $jsonForPoint = $this->createJsonArray($key, $value, $startTime, $endTime);
+        $jsonForPoint = $this->createJsonArray($datasets[$key], $value, $startTime, $endTime);
         $json[$key] = $jsonForPoint;
       }
 
       // if user specified outputType to be dataset names instead of json, return dataset names
+      // json array contains all the datasets filtered by search
+      // attributesDict contains all attributes with their dict, but removes datasets that do not have all attributes
+      // need to return all datasets in json array that have all attributes
       if (strcasecmp($outputType, "dataset") == 0) {
-        $datasets = [];
         foreach ($json as $key => $value) {
-          array_push($datasets, $key);
+          // if dataset exists in attributeDict and json array
+          if (array_key_exists($key, $attributesDict) && array_key_exists($key, $json)) {
+            array_unshift($attributesDict[$key], $datasets[$key]);
+            array_push($csv_array, array_values($attributesDict[$key]));
+          }
         }
-        return json_encode($datasets);
+        return json_encode($csv_array);
       }
 
       // TODO: check if error occured based on startTime and endTime; if so return json 
-      // by default we return plot unless outputType = json (used for debugging)
+      // by default we return json unless outputType = dataset
       if (isset($json["errors"]) || strcasecmp($outputType, "json") == 0) {
         return json_encode($json);
       }
