@@ -497,18 +497,26 @@ class WebServicesController extends Controller
       // QUERY 2A: if user inputted bounding box option, check which datasets have points in the bounding box
       if (strlen($box) > 0) {
         $datasetsInBox = [];
-        $len = count($datasets);;
-        for ($i = 0; $i < $len; $i++) {
-          $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $datasets[$i] . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('". $box . "', 4326)), wkb_geometry);";
-
+        $len = count($datasets);
+        foreach ($datasets as $key => $value) {
+          $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $value . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('". $box . "', 4326)), wkb_geometry);";
           $points = DB::select(DB::raw($query));
+
+          // get dataset names paired by area id
           if (count($points) > 0) {
-            array_push($datasetsInBox, $datasets[$i]);
+            $datasetsInBox[$key] = $value;
           }
         }
-
+        
+        // return datasets that exists in attributeDict and datasets in box
+        foreach ($datasetsInBox as $key => $value) {
+          if (array_key_exists($key, $attributesDict) && array_key_exists($key, $datasetsInBox)) {
+            array_unshift($attributesDict[$key], $datasets[$key]);
+            array_push($csv_array, array_values($attributesDict[$key]));
+          }
+        }
         // TODO: tell zishi to construct area objects as in GeoJSONController, not just return dataset names
-        return json_encode($datasetsInBox);
+        return json_encode($csv_array);
       }
 
       // calculate polygon encapsulating longitude and latitude specified by user
@@ -540,7 +548,7 @@ class WebServicesController extends Controller
 
       // $key = dataset name, $value = point object data returned by SQL
       foreach ($data as $key => $value) {
-        $jsonForPoint = $this->createJsonArray($key, $value, $startTime, $endTime);
+        $jsonForPoint = $this->createJsonArray($datasets[$key], $value, $startTime, $endTime);
         $json[$key] = $jsonForPoint;
       }
 
@@ -560,7 +568,7 @@ class WebServicesController extends Controller
       }
 
       // TODO: check if error occured based on startTime and endTime; if so return json 
-      // by default we return plot unless outputType = json (used for debugging)
+      // by default we return json unless outputType = dataset
       if (isset($json["errors"]) || strcasecmp($outputType, "json") == 0) {
         return json_encode($json);
       }
