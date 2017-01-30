@@ -1035,7 +1035,7 @@ function Map(loadJSONFunc) {
                     stops: stops
                 });
             }
-        });
+        }.bind(this));
 
         if (this.map.getLayer("onTheFlyJSON")) {
             this.map.setPaintProperty("onTheFlyJSON", "circle-color", {
