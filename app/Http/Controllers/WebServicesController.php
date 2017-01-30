@@ -384,30 +384,65 @@ class WebServicesController extends Controller
       }
 
       // QUERY 1A: get names of all datasets
-      $query = "SELECT unavco_name FROM area;";
+      $query = "SELECT id, unavco_name FROM area;";
       $unavcoNames = DB::select(DB::raw($query));
+      $datasets_id = [];
       $datasets = [];
+      $datasets_attributes = [];
+
       $data = []; // array of point data from all datasets that match closest to user query 
       $queryConditions = []; // array of conditions to narrow query result based on webservice parameters
 
-      // format SQL result into a php array
+      // format SQL result into a php array where each dataset is mapped to area_id
       foreach ($unavcoNames as $unavcoName) {
+        // array_push($datasets, $unavcoName->unavco_name);
+        array_push($datasets_id, $unavcoName->id);
         array_push($datasets, $unavcoName->unavco_name);
       }
 
+      // QUERY 1B: get attributes for with all datasets
+      $query = "WITH ids(id) AS (VALUES";
+      // for each dataset id, get all attributes from it
+      foreach ($datasets_id as $id) {
+        $query = $query . "(" . $id . "),";
+      }
+
+      $query = rtrim($query, ",");
+      $query = $query . ")"; // add last )
+      $query = $query . "SELECT * from extra_attributes INNER JOIN ids curID ON (extra_attributes.area_id = curID.id)";
+      $attributes = DB::select(DB::raw($query));
+      $attributesDict = [];
+  
+      // get all attributes from attributes hashmap organized by dataset area_id
+      //dd(array("d"=>"lemon", "a"=>"orange", "b"=>"banana", "c"=>"apple"));
+      foreach ($attributes as $attribute) {
+        $key = $attribute->attributekey;
+        $value = $attribute->attributevalue;
+        $keyValue = [$key => $value];
+        
+        $attributesDict[$attribute->area_id][$key] = $value;
+      }
+
+      // TODO: sort keys from attributemap in alphabetical order of keys
+      ksort($attributesDict["17"]);
+      dd($attributesDict["17"]);
+      //dd($attributesDict["17"]);
+      //dd($test);
+
       // if user only specifies dataset and no other attribute, return all dataset names;
       if ((strcasecmp($outputType, "dataset") == 0) && !$attributeSearch && $longitude == 1000.0 && $latitude == 1000.0) {
+
         return json_encode($datasets);
       }
 
-      // QUERY 1B: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
+      // QUERY 1C: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
       /*
       Example url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&mission=Alos&startTime=2009-02-06&endTime=2011-04-03&outputType=json
 
       Another url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&box=LINESTRING(%20130.9695%2032.2865,%20130.9695%2032.2875,%20130.9705%2032.2875,%20130.9705%2032.2865,%20130.9695%2032.2865)&mission=Alos&mode=SM&startTime=2009-02-06&endTime=2011-04-03&outputType=dataset
       */
       if ($attributeSearch) {
-        $query = "SELECT unavco_name FROM area INNER JOIN (select t1" . ".area_id FROM ";
+        $query = "SELECT id, unavco_name FROM area INNER JOIN (select t1" . ".area_id FROM ";
 
         if (isset($satellite) && strlen($satellite) > 0) {
           array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='mission' AND attributevalue='" . $satellite . "')");
@@ -443,11 +478,13 @@ class WebServicesController extends Controller
         $unavcoNames = DB::select(DB::raw($query));
       }
 
+      $datasets_id = [];
       $datasets = [];
+      $datasets_attributes = [];
       foreach ($unavcoNames as $unavcoName) {
+        array_push($datasets_id, $unavcoName->id);
         array_push($datasets, $unavcoName->unavco_name);
       }
-      // dd($datasets);
 
       // QUERY 2A: if user inputted bounding box option, check which datasets have points in the bounding box
       if (strlen($box) > 0) {
