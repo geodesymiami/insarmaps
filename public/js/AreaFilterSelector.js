@@ -13,8 +13,43 @@ function setUpAreaFilterSelector() {
             this.box = null;
         }
 
+        var polygonVertices = this.getVerticesOfSquareBbox(bbox);
+        var serverBboxCoords = ""
+        var bboxString = "LINESTRING()";
+        var buffer = 0; // REMOVE POTENTIALLY
+        for (var i = 0; i < polygonVertices.length; i++) {
+            switch (i) {
+                case 0: // nw
+                    polygonVertices[i].lng -= buffer;
+                    polygonVertices[i].lat += buffer;
+                    serverBboxCoords += polygonVertices[i].lng + " " +  polygonVertices[i].lat + ",";
+                    break;
+                case 1: // ne
+                    polygonVertices[i].lng += buffer;
+                    polygonVertices[i].lat += buffer;
+                    serverBboxCoords += polygonVertices[i].lng + " " +  polygonVertices[i].lat + ",";
+                    break;
+                case 2: // se
+                    polygonVertices[i].lng += buffer;
+                    polygonVertices[i].lat -= buffer;
+                    serverBboxCoords += polygonVertices[i].lng + " " +  polygonVertices[i].lat + ",";
+                    break;
+                case 3: // sw
+                    polygonVertices[i].lng -= buffer;
+                    polygonVertices[i].lat -= buffer;
+                    serverBboxCoords += polygonVertices[i].lng + " " +  polygonVertices[i].lat + ",";
+                    break;
+                default:
+                    throw "invalid counter";
+                    break;
+            }
+        }
+         // add initial vertext again to close linestring
+         serverBboxCoords += polygonVertices[0].lng + " " +  polygonVertices[0].lat;
+         console.log(serverBboxCoords);
+
         $.ajax({
-            url: "/WebServices?bbox=" + "BBOX TO BE INSERTED",
+            url: "/WebServices?box=LINESTRING(" + serverBboxCoords + ")",
             success: function(response) {
                 console.log(response);
             },

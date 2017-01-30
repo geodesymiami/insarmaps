@@ -7,6 +7,7 @@ function SquareSelector() {
     this.lastMaxIndex = -1;
     this.bbox = null;
     this.lastbbox = null;
+    this.associatedButton = null;
 
     this.canvas = null;
     this.polygonButtonSelected = false;
@@ -60,19 +61,51 @@ function SquareSelector() {
     };
 
     this.enableSelectMode = function() {
-        if (!this.polygonButtonSelected) {
+        if (!this.inSelectMode()) {
             this.polygonButtonSelected = true;
         }
+
+        var buttonColor = "#dcdee2";
+        var opacity = 0.7;
+
+        $(this.associatedButton).animate({
+            backgroundColor: buttonColor,
+            opacity: opacity
+        }, 200);
     };
 
     this.disableSelectMode = function() {
-        if (this.polygonButtonSelected) {
+        if (this.inSelectMode()) {
             this.polygonButtonSelected = false;
         }
+
+        var buttonColor = "white";
+        var opacity = 1.0;
+
+        $(this.associatedButton).animate({
+            backgroundColor: buttonColor,
+            opacity: opacity
+        }, 200);
     };
 
     this.inSelectMode = function() {
         return this.polygonButtonSelected;
+    };
+
+    this.toggleMode = function() {
+        if (this.inSelectMode()) {
+            this.disableSelectMode();
+        } else {
+            this.enableSelectMode();
+        }
+
+        // reset bounding box
+        if (!this.inSelectMode()) {
+            this.bbox = null;
+            // Remove these events now that finish has been called.
+            this.polygonButtonSelected = false;
+            this.map.map.dragPan.enable();
+        }
     };
 
     this.onKeyDown = function(e) {
@@ -115,6 +148,78 @@ function SquareSelector() {
         document.removeEventListener('mousemove', this.onMouseMove);
         document.removeEventListener('keydown', this.onKeyDown);
         document.removeEventListener('mouseup', this.onMouseUp);
+    };
+
+    // courtesy of: https://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+    // see: http://stackoverflow.com/questions/11716268/point-in-polygon-algorithm
+    this.pointInPolygon = function(vertices, testPoint) {
+        var i, j = 0;
+        var pointIsInPolygon = false;
+        var numberVertices = vertices.length;
+
+        var x = 0;
+        var y = 1;
+
+        for (i = 0, j = numberVertices - 1; i < numberVertices; j = i++) {
+            if (((vertices[i][y] > testPoint[y]) != (vertices[j][y] > testPoint[y])) &&
+                (testPoint[x] < (vertices[j][x] - vertices[i][x]) * (testPoint[y] - vertices[i][y]) / (vertices[j][y] - vertices[i][y]) + vertices[i][x])) {
+                pointIsInPolygon = !pointIsInPolygon;
+            }
+        }
+
+        return pointIsInPolygon;
+    };
+
+    this.getVerticesOfSquareBbox = function(bbox) {
+        // create generic lat long object literals, else jquery has trouble
+        // sending over array
+        var mapboxPoint1 = bbox[0];
+        var mapboxPoint2 = bbox[1];
+
+        var multiplier = 1.2;
+        var highestLat, lowestLat, highestLong, lowestLong = 0;
+
+        // get lowest lat and long
+        if (mapboxPoint1.lat > mapboxPoint2.lat) {
+            highestLat = mapboxPoint1.lat;
+            lowestLat = mapboxPoint2.lat;
+        } else {
+            highestLat = mapboxPoint2.lat;
+            lowestLat = mapboxPoint1.lat;
+        }
+
+        if (mapboxPoint1.lng > mapboxPoint2.lng) {
+            highestLong = mapboxPoint1.lng;
+            lowestLong = mapboxPoint2.lng;
+        } else {
+            highestLong = mapboxPoint2.lng;
+            lowestLong = mapboxPoint1.lng;
+        }
+
+        var nw = {
+            lat: highestLat,
+            lng: lowestLong
+        };
+        var ne = {
+            lat: highestLat,
+            lng: highestLong
+        }
+        var se = {
+            lat: lowestLat,
+            lng: highestLong
+        };
+
+        var sw = {
+            lat: lowestLat,
+            lng: lowestLong
+        };
+
+        var vertices = [nw, ne, se, sw];
+        for (var i = 0; i < vertices.length; i++) {
+            console.log(vertices[i].lat + "," + vertices[i].lng);
+        }
+
+        return vertices;
     };
 
     this.setMinMax = function(min, max) {
@@ -160,26 +265,6 @@ function setupRecolorSelector() {
         if (bbox) {
             this.recolorDataset();
         }
-    };
-
-    // courtesy of: https://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
-    // see: http://stackoverflow.com/questions/11716268/point-in-polygon-algorithm
-    SquareSelector.prototype.pointInPolygon = function(vertices, testPoint) {
-        var i, j = 0;
-        var pointIsInPolygon = false;
-        var numberVertices = vertices.length;
-
-        var x = 0;
-        var y = 1;
-
-        for (i = 0, j = numberVertices - 1; i < numberVertices; j = i++) {
-            if (((vertices[i][y] > testPoint[y]) != (vertices[j][y] > testPoint[y])) &&
-                (testPoint[x] < (vertices[j][x] - vertices[i][x]) * (testPoint[y] - vertices[i][y]) / (vertices[j][y] - vertices[i][y]) + vertices[i][x])) {
-                pointIsInPolygon = !pointIsInPolygon;
-            }
-        }
-
-        return pointIsInPolygon;
     };
 
     SquareSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate) {

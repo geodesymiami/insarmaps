@@ -511,6 +511,7 @@ class WebServicesController extends Controller
           }
         }
 
+        // TODO: tell zishi to construct area objects as in GeoJSONController, not just return dataset names
         return json_encode($datasetsInBox);
       }
 
