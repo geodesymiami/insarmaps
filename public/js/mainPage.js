@@ -919,36 +919,29 @@ $(window).load(function() {
     });
 
     $("#polygon-button").on("click", function() {
-        if (myMap.selector.inSelectMode()) {
+        if (!(myMap.selector instanceof RecolorSelector)) {
+            // deactivate old selector button
             myMap.selector.disableSelectMode();
-        } else {
-            myMap.selector.enableSelectMode();
+            myMap.selector = new RecolorSelector();
+            myMap.selector.map = myMap;
+            myMap.selector.associatedButton = this;
+            myMap.selector.prepareEventListeners();
         }
 
-        // reset bounding box
-        if (!myMap.selector.inSelectMode()) {
-            myMap.selector.bbox = null;
-            // Remove these events now that finish has been called.
-            myMap.selector.polygonButtonSelected = false;
-            myMap.map.dragPan.enable();
-        }
-
-        var buttonColor = "#dcdee2";
-        var opacity = 0.7;
-
-        if (!myMap.selector.polygonButtonSelected) {
-            buttonColor = "white";
-            opacity = 1.0;
-        }
-
-        $("#polygon-button").animate({
-            backgroundColor: buttonColor,
-            opacity: opacity
-        }, 200);
+        myMap.selector.toggleMode();
     });
 
     $("#area-bbox-filter-button").on("click", function() {
+        if (!(myMap.selector instanceof AreaFilterSelector)) {
+            // deactivate old selector button
+            myMap.selector.disableSelectMode();
+            myMap.selector = new AreaFilterSelector();
+            myMap.selector.map = myMap;
+            myMap.selector.associatedButton = this;
+            myMap.selector.prepareEventListeners();
+        }
 
+        myMap.selector.toggleMode();
     });
 
     $(function() {
