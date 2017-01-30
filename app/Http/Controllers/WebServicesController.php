@@ -444,8 +444,6 @@ class WebServicesController extends Controller
         }
         
         return json_encode($csv_array);
-      
-        // return json_encode(array_values($attributesDict));
       }
 
       // QUERY 1C: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
@@ -491,11 +489,9 @@ class WebServicesController extends Controller
         $unavcoNames = DB::select(DB::raw($query));
       }
 
-      $datasets_id = [];
       $datasets = [];
       foreach ($unavcoNames as $unavcoName) {
-        array_push($datasets_id, $unavcoName->id);
-        array_push($datasets, $unavcoName->unavco_name);
+        $datasets[$unavcoName->id] = $unavcoName->unavco_name;
       }
 
       // QUERY 2A: if user inputted bounding box option, check which datasets have points in the bounding box
@@ -530,30 +526,36 @@ class WebServicesController extends Controller
 
       // QUERY 2B: otherwise for each dataset name, if point exists in dataset then 
       // return data of first point returned by polygon created by (longitude, latitude) and delta
-      // $len = count($unavcoNames);
-      for ($i = 0; $i < $len; $i++) {
-        $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $datasets[$i] . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
+      // key = area id, value = dataset name
+      foreach ($datasets as $key => $value) {
+        $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $value . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
         $points = DB::select(DB::raw($query));
 
         if (count($points) > 0) {
           $nearest = $this->getNearestPoint($latitude, $longitude, $points);
-          $data[$datasets[$i]] = $nearest;
+          $data[$key] = $nearest;
         }
       }
 
+      // $key = dataset name, $value = point object data returned by SQL
       foreach ($data as $key => $value) {
-        // $key = dataset name, $value = point object data returned by SQL
         $jsonForPoint = $this->createJsonArray($key, $value, $startTime, $endTime);
         $json[$key] = $jsonForPoint;
       }
 
       // if user specified outputType to be dataset names instead of json, return dataset names
+      // json array contains all the datasets filtered by search
+      // attributesDict contains all attributes with their dict, but removes datasets that do not have all attributes
+      // need to return all datasets in json array that have all attributes
       if (strcasecmp($outputType, "dataset") == 0) {
-        $datasets = [];
         foreach ($json as $key => $value) {
-          array_push($datasets, $key);
+          // if dataset exists in attributeDict and json array
+          if (array_key_exists($key, $attributesDict) && array_key_exists($key, $json)) {
+            array_unshift($attributesDict[$key], $datasets[$key]);
+            array_push($csv_array, array_values($attributesDict[$key]));
+          }
         }
-        return json_encode($datasets);
+        return json_encode($csv_array);
       }
 
       // TODO: check if error occured based on startTime and endTime; if so return json 
