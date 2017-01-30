@@ -328,13 +328,9 @@
 
     </div>
   </div>
-    <?php
-    echo "
-    <script type=\"text/javascript\">
-      var fileName = \"$fileName\";
+    <script type="text/javascript">
+      var viewOptions = {!! json_encode($viewOptions) !!};
     </script>
-    ";
-    ?>
     <script type="text/javascript" src="js/gpsStations.js"></script>
     <script type="text/javascript" src="js/ColorScale.js"></script>
     <script type="text/javascript" src="js/AreaMarkerLayer.js"></script>

@@ -400,7 +400,7 @@ function Map(loadJSONFunc) {
         });
         this.map.setStyle({
             version: 8,
-            sprite: window.location.href + "maki/makiIcons",
+            sprite: getRootUrl() + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
@@ -484,7 +484,7 @@ function Map(loadJSONFunc) {
         return lineStringGeoJSON;
     };
 
-    this.loadAreaMarkersExcluding = function(toExclude) {
+    this.loadAreaMarkersExcluding = function(toExclude, after) {
         loadJSONFunc("", "areas", function(response) {
             var json = JSON.parse(response);
             this.areas = json;
@@ -642,11 +642,15 @@ function Map(loadJSONFunc) {
                 "type": "FeatureCollection",
                 "features": features
             };
+
+            if (after) {
+                after(features);
+            }
         }.bind(this));
     };
 
-    this.loadAreaMarkers = function() {
-        this.loadAreaMarkersExcluding(null);
+    this.loadAreaMarkers = function(after) {
+        this.loadAreaMarkersExcluding(null, after);
     };
 
     this.removeAreaMarkers = function() {
@@ -684,7 +688,17 @@ function Map(loadJSONFunc) {
             this.selector = new RecolorSelector();
             this.selector.map = this;
             this.selector.prepareEventListeners();
-            this.loadAreaMarkers();
+            this.loadAreaMarkers(function(areaFeatures) {
+                if (viewOptions.startDataset) {
+                    for (var i = 0; i < areaFeatures.length; i++) {
+                        if (areaFeatures[i].properties.unavco_name === viewOptions.startDataset) {
+                            showLoadingScreen("Loading requested dataset...");
+                            getGEOJSON(areaFeatures[i]);
+                            break;
+                        }
+                    }
+                }
+            });
         }.bind(this));
 
         this.setBaseMapLayer("streets");
@@ -755,7 +769,7 @@ function Map(loadJSONFunc) {
                     // otherwise, points aren't loaded, but area previously was active
                 } else if (this.anAreaWasPreviouslyLoaded()) {
                     this.removeAreaPopups();
-                    this.loadAreaMarkers();
+                    this.loadAreaMarkers(null);
                     // remove click listener for selecting an area, and add new one for clicking on a point
                     this.map.off("click", this.leftClickOnAPoint);
                     this.map.on('click', this.clickOnAnAreaMarker);
@@ -881,7 +895,7 @@ function Map(loadJSONFunc) {
         $("#color-on-dropdown").val("velocity");
         $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
 
-        this.loadAreaMarkers();
+        this.loadAreaMarkers(null);
 
         // remove old click listeners, and add new one for clicking on an area marker
         this.map.off("click", this.leftClickOnAPoint);

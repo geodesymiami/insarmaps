@@ -10,6 +10,10 @@ var gpsStationsToggleButton = null;
 var areaFramesToggleButton = null;
 var myMap = null;
 
+function getRootUrl() {
+    return window.location.origin ? window.location.origin + '/' : window.location.protocol + '/' + window.location.host + '/';
+}
+
 function AreaAttributesPopup() {
     var that = this;
 
@@ -222,7 +226,9 @@ function getGEOJSON(area) {
                 zoom: zoom
             });
 
-            myMap.loadAreaMarkersExcluding([area.properties.unavco_name]);
+            myMap.loadAreaMarkersExcluding([area.properties.unavco_name], null);
+            // in case someone called loading screen
+            hideLoadingScreen();
         }, 1000);
     };
 
@@ -346,7 +352,7 @@ function switchLayer(layer) {
         styleLoadFunc = function() {
             myMap.map.off("data", styleLoadFunc);
             myMap.addDataset(myMap.tileJSON);
-            myMap.loadAreaMarkersExcluding([currentArea.properties.unavco_name])
+            myMap.loadAreaMarkersExcluding([currentArea.properties.unavco_name], null)
             if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
                 myMap.addGPSStationMarkers(gpsStations);
             }
@@ -424,7 +430,7 @@ function switchLayer(layer) {
                     myMap.addGPSStationMarkers(gpsStations);
                 }
 
-                myMap.loadAreaMarkers();
+                myMap.loadAreaMarkers(null);
             };
 
             myMap.map.on("data", styleLoadFunc);
@@ -535,7 +541,7 @@ function setupToggleButtons() {
     areaFramesToggleButton = new ToggleButton("#dataset-frames-toggle-button");
     areaFramesToggleButton.onclick(function() {
         if (areaFramesToggleButton.toggleState == ToggleStates.ON) {
-            myMap.loadAreaMarkers();
+            myMap.loadAreaMarkers(null);
         } else {
             myMap.removeAreaMarkers();
         }
