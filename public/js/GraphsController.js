@@ -174,7 +174,12 @@ function GraphsController() {
                 marker: {
                     enabled: true
                 },
-                showInLegend: false
+                showInLegend: false,
+                events: {
+                    click: function(e) {
+                        console.log(e);
+                    }
+                }
             }],
             chart: {
                 marginRight: 50

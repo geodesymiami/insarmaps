@@ -264,6 +264,15 @@ class WebServicesController extends Controller
       return $nearest;
     }
 
+    // convert csv array to csv string
+    public function csvArrayToString($csv_array) {
+      $csv_string = "";
+      foreach ($csv_array as $csv) {
+        $csv_string = $csv_string . implode(",", $csv) . "\n";
+      }
+      return $csv_string;
+    }
+
     /**
     * Given a request object containing a url, return a json encoded array for data corresponding to point
     * that best matches request parameters specified by user. If more than one dataset contain this point, 
@@ -290,6 +299,7 @@ class WebServicesController extends Controller
       $outputType = "json"; // default value is json, other option is dataset
       $attributeSearch = FALSE; // if user specifies any search parameter except latitude, longitude, or outputType, set to true and adjust SQL
       $csv_array = []; // final array containing dataset names and attributes
+      $csv_string = "";
 
       // extract parameter values from Request url
       $requests = $request->all();
@@ -443,7 +453,8 @@ class WebServicesController extends Controller
           array_push($csv_array, array_values($attributesDict[$key]));
         }
         
-        return json_encode($csv_array);
+        $csv_string = $this->csvArrayToString($csv_array);
+        return json_encode($csv_string);
       }
 
       // QUERY 1C: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
@@ -498,6 +509,7 @@ class WebServicesController extends Controller
       if (strlen($box) > 0) {
         $datasetsInBox = [];
         $len = count($datasets);
+        // TODO: get polygon value from extra_attributes table in order to figure out if polygon intersects bounding box - replace the current method of checking all points
         foreach ($datasets as $key => $value) {
           $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $value . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('". $box . "', 4326)), wkb_geometry);";
           $points = DB::select(DB::raw($query));
@@ -516,7 +528,9 @@ class WebServicesController extends Controller
           }
         }
         // TODO: tell zishi to construct area objects as in GeoJSONController, not just return dataset names
-        return json_encode($csv_array);
+        // return json_encode($csv_array);
+        $csv_string = $this->csvArrayToString($csv_array);
+        return json_encode($csv_string);
       }
 
       // calculate polygon encapsulating longitude and latitude specified by user
@@ -564,7 +578,8 @@ class WebServicesController extends Controller
             array_push($csv_array, array_values($attributesDict[$key]));
           }
         }
-        return json_encode($csv_array);
+        $csv_string = $this->csvArrayToString($csv_array);
+        return json_encode($csv_string);
       }
 
       // TODO: check if error occured based on startTime and endTime; if so return json 

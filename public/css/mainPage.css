@@ -713,8 +713,7 @@ input[type=number] {
 
 #search-form {
     width: 20%;
-    float: left;
-}
+    float: left;}
 
 #search-form-results {
     width: 80%;
