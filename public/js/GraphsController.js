@@ -145,7 +145,7 @@ function GraphsController() {
             },
             yAxis: {
                 title: {
-                    text: 'Ground Displacement (cm)'
+                    text: 'LOS Displacement (cm)'
                 },
                 legend: {
                     layout: 'vertical',

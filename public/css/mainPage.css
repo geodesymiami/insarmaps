@@ -713,11 +713,14 @@ input[type=number] {
 
 #search-form {
     width: 20%;
-    float: left;}
+    float: left;
+    border-right: 4px solid;
+}
 
 #search-form-results {
-    width: 80%;
+    width: 76%;
     float: left;
+    margin-left: 0.2cm;
 }
 
 #areas-under-mouse-table {
