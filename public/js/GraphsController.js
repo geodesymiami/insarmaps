@@ -76,6 +76,9 @@ function GraphsController() {
         // set a counter for keeping track of number of clicks to graph points
         var pointClickedCounter = 0;
 
+        // edge case: set an index for the last point clicked so user cannot click a single dot twice
+        var lastPointClicked = -1;
+
         var chartOpts = {
             title: {
                 text: null
@@ -186,6 +189,21 @@ function GraphsController() {
                         pointClickedCounter++;
                         var graphSettings = this.graphSettings[chartContainer];
                         var chartData = graphSettings.chart_data;
+                        var chart = $('#' + chartContainer).highcharts();
+                        var extremes = chart.xAxis[0].getExtremes();
+                        var minMax = this.mapDatesToArrayIndeces(extremes.min, extremes.max, graphSettings.date_array);
+                    
+                        console.log(minMax.maxIndex - minMax.minIndex);
+                        // only two points in view, so return
+                        if ((minMax.maxIndex - minMax.minIndex) < 2) {
+                            return;
+                        }
+
+                        // stop user from clicking same point twice
+                        if (e.point.index == lastPointClicked) {
+                            console.log("repeat");
+                            return;
+                        }
                         if (pointClickedCounter % 2 == 1) {
                             myMap.selector.minIndex = e.point.index;
                             var minDate = chartData[e.point.index][0];
@@ -196,6 +214,7 @@ function GraphsController() {
                             var maxDate = chartData[e.point.index - 1][0];
                             this.setNavigatorMax(chartContainer, maxDate);
                         }
+                        lastPointClicked = e.point.index;
 
                     }.bind(this)
                 }
@@ -214,6 +233,7 @@ function GraphsController() {
 
         $('#' + chartContainer).highcharts(chartOpts);
         this.highChartsOpts[chartContainer] = chartOpts;
+        console.log(chartOpts);
 
         this.setNavigatorHandlers();
 
@@ -708,6 +728,7 @@ function GraphsController() {
         var graphOpts = this.highChartsOpts[chartContainer];
         $("#" + chartContainer).highcharts(graphOpts);
         var chart = $("#" + chartContainer).highcharts();
+        console.log(chart);
 
         if (!chart) {
             return;
