@@ -47,6 +47,7 @@ function GraphsController() {
 
         // returns array for displacement on chart
         chart_data = getDisplacementChartData(displacement_array, date_string_array);
+        this.graphSettings[chartContainer].chart_data = chart_data;
 
         // calculate and render a linear regression of those dates and displacements
         var result = calcLinearRegression(displacement_array, decimal_dates);
@@ -71,6 +72,9 @@ function GraphsController() {
             minDate = chart_data[myMap.selector.minIndex][0];
             maxDate = chart_data[myMap.selector.maxIndex][0];
         }
+
+        // set a counter for keeping track of number of clicks to graph points
+        var pointClickedCounter = 0;
 
         var chartOpts = {
             title: {
@@ -176,9 +180,24 @@ function GraphsController() {
                 },
                 showInLegend: false,
                 events: {
+                    // feature: when user clicks point, set point to be min or max index
+                    // of graph depending on odd or even number of clicks
                     click: function(e) {
-                        console.log(e);
-                    }
+                        pointClickedCounter++;
+                        var graphSettings = this.graphSettings[chartContainer];
+                        var chartData = graphSettings.chart_data;
+                        if (pointClickedCounter % 2 == 1) {
+                            myMap.selector.minIndex = e.point.index;
+                            var minDate = chartData[e.point.index][0];
+                            this.setNavigatorMin(chartContainer, minDate);
+                        }
+                        else {
+                            myMap.selector.maxIndex = e.point.index;
+                            var maxDate = chartData[e.point.index - 1][0];
+                            this.setNavigatorMax(chartContainer, maxDate);
+                        }
+
+                    }.bind(this)
                 }
             }],
             chart: {
@@ -662,6 +681,26 @@ function GraphsController() {
 
         // resize chart container div's as they don't resize with jquery resizable
         $("#chartContainer").height(chartContainersNewHeight);
+    };
+
+    this.setNavigatorMin = function(chartContainer, min) {
+        var chart = $("#" + chartContainer).highcharts();
+        var curExtremes = chart.xAxis[0].getExtremes();
+
+        if (!chart) {
+            return;
+        }
+        chart.xAxis[0].setExtremes(min, curExtremes.max);
+    };
+
+    this.setNavigatorMax = function(chartContainer, max) {        
+        var chart = $("#" + chartContainer).highcharts();
+        var curExtremes = chart.xAxis[0].getExtremes();
+
+        if (!chart) {
+            return;
+        }
+        chart.xAxis[0].setExtremes(curExtremes.min, max);
     };
 
     this.recreateGraph = function(chartContainer) {
