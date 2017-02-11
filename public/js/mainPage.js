@@ -184,6 +184,14 @@ function getGEOJSON(area) {
 
     // when we click, we don't reset the highlight of modified markers one final time
     myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
+    // get a recolor selector
+    var button = $("#polygon-button");
+    button.attr("data-original-title", "Select Points");
+    myMap.selector.disableSelectMode(); // in case it is selected
+    myMap.selector = new RecolorSelector();
+    myMap.selector.map = myMap;
+    myMap.selector.associatedButton = button;
+    myMap.selector.prepareEventListeners();
 
     myMap.colorScale.defaultValues(); // set default values in case they were modified by another area
     myMap.selector.reset(currentArea);
@@ -916,28 +924,6 @@ $(window).load(function() {
     });
 
     $("#polygon-button").on("click", function() {
-        if (!(myMap.selector instanceof RecolorSelector)) {
-            // deactivate old selector button
-            myMap.selector.disableSelectMode();
-            myMap.selector = new RecolorSelector();
-            myMap.selector.map = myMap;
-            myMap.selector.associatedButton = this;
-            myMap.selector.prepareEventListeners();
-        }
-
-        myMap.selector.toggleMode();
-    });
-
-    $("#area-bbox-filter-button").on("click", function() {
-        if (!(myMap.selector instanceof AreaFilterSelector)) {
-            // deactivate old selector button
-            myMap.selector.disableSelectMode();
-            myMap.selector = new AreaFilterSelector();
-            myMap.selector.map = myMap;
-            myMap.selector.associatedButton = this;
-            myMap.selector.prepareEventListeners();
-        }
-
         myMap.selector.toggleMode();
     });
 

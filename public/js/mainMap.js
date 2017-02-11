@@ -685,7 +685,7 @@ function Map(loadJSONFunc) {
         });
 
         this.map.on("load", function() {
-            this.selector = new RecolorSelector();
+            this.selector = new AreaFilterSelector();
             this.selector.map = this;
             this.selector.associatedButton = $("#polygon-button");
             this.selector.prepareEventListeners();
@@ -912,6 +912,15 @@ function Map(loadJSONFunc) {
         overlayToggleButton.set("off");
         this.tileJSON = null;
         this.colorOnDisplacement = false;
+
+        // change square selector back to filtering areas
+        var button = $("#polygon-button");
+        button.attr("data-original-title", "Filter Areas");
+        this.selector.disableSelectMode(); // in case it is selected
+        this.selector = new AreaFilterSelector();
+        this.selector.map = this;
+        this.selector.associatedButton = button;
+        this.selector.prepareEventListeners();
     };
 
     this.addContourLines = function() {
