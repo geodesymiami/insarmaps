@@ -73,11 +73,9 @@
   </div>
   <div id="loading-screen" class="overlay-div">
     <div id="loading-screen-contents">
-      <div id="loading-text-div">
-        Recoloring in progress...
-      </div>
-      <div class="loading-circle">
-      </div>
+      Recoloring in progress...
+    <div class="loading-circle">
+    </div>
     </div>
   </div>
   <div id="map-container">

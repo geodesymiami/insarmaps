@@ -405,7 +405,9 @@ div.menu {
 }
 
 #loading-screen {
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.0);
+    color: black;
+    font-size: 15px;
 }
 
 #loading-screen-contents {
@@ -414,11 +416,6 @@ div.menu {
     right: 50%;
     bottom: 50%;
     left: 50%;
-}
-
-#loading-text-div {
-    color: white;
-    font-size: 15px;
 }
 
 .loading-circle {
