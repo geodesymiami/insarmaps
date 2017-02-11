@@ -540,12 +540,18 @@ div.menu {
     top: 50%;
     left: 0;
     z-index: 99;
+    text-align: center;
 }
 
 #color-scale.active {
     display: block;
     background-color: rgba(255, 255, 255, 0.5);
     width: 75px;
+}
+
+#color-scale-main-container {
+    width: 58px;
+    float: right;
 }
 
 #color-scale-picture-div {
@@ -560,7 +566,7 @@ div.menu {
 
 #scale-values {
     position: relative;
-    width: 50%;
+    width: 27px;
     float: left;
     height: 256px;
 }
@@ -574,7 +580,7 @@ div.menu {
 }
 
 #left-scale-minimum {
-    bottom: 0;
+    bottom: -15px;
 }
 
 #scale-values .form-group > input {

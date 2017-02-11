@@ -196,19 +196,21 @@
     <div id="color-scale-text-div" class="rotate">
       LOS Velocity [cm/yr]
     </div>
-    <div id="color-scale-and-values-container" class="clearfix">
-      <div id="color-scale-picture-div"> 
-        <img src="img/matlab_colorscale.jpg" alt="matlab_colorscale.jpg">
-      </div>
-      <div id="scale-values">
-        <div id="left-scale-minimum">
-          <div class="form-group">
-            <input type="number" class="form-control" id="min-scale-value"/>
-          </div>
+    <div id="color-scale-main-container">
+      <div id="color-scale-and-values-container" class="clearfix">
+        <div id="color-scale-picture-div">
+          <img src="img/matlab_colorscale.jpg" alt="matlab_colorscale.jpg">
         </div>
-        <div id="right-scale-maximum">
-          <div class="form-group">
-            <input type="number" class="form-control" id="max-scale-value"/>
+        <div id="scale-values">
+          <div id="left-scale-minimum">
+            <div class="form-group">
+              <input type="number" class="form-control" id="min-scale-value"/>
+            </div>
+          </div>
+          <div id="right-scale-maximum">
+            <div class="form-group">
+              <input type="number" class="form-control" id="max-scale-value"/>
+            </div>
           </div>
         </div>
       </div>
