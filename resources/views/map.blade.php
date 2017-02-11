@@ -155,6 +155,48 @@
       </div>
     </div>
   </div>
+  <!-- by default, it is toggled, or minimized -->
+  <div id="search-form-and-results-container" class="toggled">
+    <div id="search-form">
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="Satellite" value="Alos"id="input-satellite"/>
+      </div>
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="Relative Orbit" value="73" id="input-relative-orbit"/>
+      </div>
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="First Frame" value="2950" id="input-first-frame"/>
+      </div>
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="Mode" value="SM" id="input-mode"/>
+      </div>
+      <div class="form-group">
+        <input type="text" class="form-control" placeholder="Flight Direction" value="D" id="input-flight-direction"/>
+      </div>
+      <!-- enter button to search for files with attributes matching above input -->
+      <div id="enter-button-search-attributes">
+        <button class="btn btn-primary btn-block clickable-button">Enter</button>
+      </div>
+    </div>
+    <div id="search-form-results">
+      <table class="tablesorter-bootstrap" id="search-form-results-table">
+        <thead>
+          <tr>
+            <th>Satellite</th>
+            <th>Rel Orbit</th>
+            <th>First_Frame</th>
+            <th>Mode</th>
+            <th>Flight Dir.</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+    <div class="top-right-buttons">
+      <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="search-form-and-results-minimize-button"><span aria-hidden="true">&and;</span></button>
+    </div>
+  </div>
   <div id="color-scale">
     <div id="color-scale-text-div" class="rotate">
       LOS Velocity [cm/yr]
@@ -212,47 +254,6 @@
           <p>Extra links to be added.</p>
         </div> -->
       </div>
-    </div>
-  </div>
-  <div id="search-form-and-results-container">
-    <div id="search-form">
-      <div class="form-group">
-        <input type="text" class="form-control" placeholder="Satellite" value="Alos"id="input-satellite"/>
-      </div>
-      <div class="form-group">
-        <input type="text" class="form-control" placeholder="Relative Orbit" value="73" id="input-relative-orbit"/>
-      </div>
-      <div class="form-group">
-        <input type="text" class="form-control" placeholder="First Frame" value="2950" id="input-first-frame"/>
-      </div>
-      <div class="form-group">
-        <input type="text" class="form-control" placeholder="Mode" value="SM" id="input-mode"/>
-      </div>
-      <div class="form-group">
-        <input type="text" class="form-control" placeholder="Flight Direction" value="D" id="input-flight-direction"/>
-      </div>
-      <!-- enter button to search for files with attributes matching above input -->
-      <div id="enter-button-search-attributes">
-        <button class="btn btn-primary btn-block clickable-button">Enter</button>
-      </div>
-    </div>
-    <div id="search-form-results">
-      <table class="tablesorter-bootstrap" id="search-form-results-table">
-        <thead>
-          <tr>
-            <th>Satellite</th>
-            <th>Rel Orbit</th>
-            <th>First_Frame</th>
-            <th>Mode</th>
-            <th>Flight Dir.</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
-    </div>
-    <div class="top-right-buttons">
-      <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="search-form-and-results-minimize-button"><span aria-hidden="true">&or;</span></button>
     </div>
   </div>
   <div class="wrap" id="charts" title="Displacement time-series">

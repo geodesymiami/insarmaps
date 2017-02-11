@@ -112,7 +112,7 @@ html[xmlns] .clearfix {
 #map-container {
     position: relative;
     width: 100%;
-    height: 70%;
+    height: 100%;
     z-index: 1;
 }
 
@@ -704,11 +704,14 @@ input[type=number] {
 }
 
 #search-form-and-results-container {
-    width: 80%;
-    height: 30%;
+    width: 60%;
+    height: 3%;
     overflow-y: auto;
-    position: relative;
-    z-index: 0;
+    position: absolute;
+    z-index: 99;
+    bottom: 0;
+    left: 0;
+    background: white;
 }
 
 #search-form {

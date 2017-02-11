@@ -845,14 +845,11 @@ $(window).load(function() {
         // heights in percent
         var container = $("#search-form-and-results-container");
         if (container.hasClass("toggled")) {
-            $("#map-container").height("70%");
             container.height("30%");
             $("#search-form-and-results-minimize-button > span").html("&or;");
             container.removeClass("toggled");
         } else {
             var containerNewHeight = 3;
-            var mapNewHeight = 100 - containerNewHeight;
-            $("#map-container").height(mapNewHeight + "%");
             container.height(containerNewHeight + "%");
             $("#search-form-and-results-minimize-button > span").html("&and;");
             container.addClass("toggled");
