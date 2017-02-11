@@ -685,6 +685,7 @@ function Map(loadJSONFunc) {
         });
 
         this.map.on("load", function() {
+            this.map.getCanvas().style.cursor = 'auto';
             this.selector = new AreaFilterSelector();
             this.selector.map = this;
             this.selector.associatedButton = $("#polygon-button");
@@ -728,7 +729,7 @@ function Map(loadJSONFunc) {
                 this.gpsStationNamePopup.remove();
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
                 this.areaMarkerLayer.resetHighlightsOfAllAreaRows();
-                this.map.getCanvas().style.cursor = '';
+                this.map.getCanvas().style.cursor = 'auto';
                 return;
             }
 
