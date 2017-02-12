@@ -267,12 +267,12 @@ function setupRecolorSelector() {
         }
     };
 
-    SquareSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate) {
+    SquareSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate, loadingText) {
         var yearsElapsed = endDecimalDate - startDecimalDate;
-        this.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed);
+        this.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed, loadingText);
     };
 
-    SquareSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier) {
+    SquareSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingText) {
         if (this.recoloringInProgress) {
             return;
         }
@@ -309,13 +309,7 @@ function setupRecolorSelector() {
                 '). Please select a smaller number of features, zoom out, or zoom' + ' in to a smaller section of the map.');
             return;
         }
-        // Run through the selected features and set a filter
-        // to match features with unique FIPS codes to activate
-        // the `counties-highlighted` layer.
-        // var filter = features.reduce(function(memo, feature) {
-        //     memo.push(feature.properties.FIPS);
-        //     return memo;
-        // }, ['in', 'FIPS']);
+
         var geoJSONData = {
             "type": "FeatureCollection",
             "features": []
@@ -331,7 +325,7 @@ function setupRecolorSelector() {
             return a.properties.p - b.properties.p;
         });
 
-        showLoadingScreen("Recoloring in progress...");
+        showLoadingScreen(loadingText);
 
         for (var i = 0; i < features.length; i++) {
             var long = features[i].geometry.coordinates[0];

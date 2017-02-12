@@ -792,14 +792,14 @@ function Map(loadJSONFunc) {
                 // TODO: investigate and fix
                 if (currentZoom < this.previousZoom) {
                     if (this.colorOnDisplacement) {
-                        this.selector.recolorOnDisplacement(startDate, endDate);
+                        this.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress... for fast zoom in and out, switch to velocity or disable or deselect on the fly coloring");
                     } else {
                         this.selector.recolorDataset();
                     }
                 } else {
                     this.onDatasetRendered(function(renderCallback) {
                         if (this.colorOnDisplacement) {
-                            this.selector.recolorOnDisplacement(startDate, endDate);
+                            this.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress... for fast zoom in and out, switch to velocity or disable or deselect on the fly coloring");
                         } else {
                             this.selector.recolorDataset();
                         }
