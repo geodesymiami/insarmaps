@@ -86,6 +86,8 @@ function SquareSelector() {
             backgroundColor: buttonColor,
             opacity: opacity
         }, 200);
+
+        this.map.map.dragPan.enable();
     };
 
     this.inSelectMode = function() {
