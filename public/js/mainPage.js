@@ -852,18 +852,23 @@ $(window).load(function() {
     $("#search-form-and-results-minimize-button").on("click", function() {
         // heights in percent
         var container = $("#search-form-and-results-container");
-        if (container.hasClass("toggled")) {
-            container.height("30%");
-            $("#search-form-and-results-minimize-button > span").html("&or;");
-            container.removeClass("toggled");
-        } else {
-            var containerNewHeight = 3;
-            container.height(containerNewHeight + "%");
-            $("#search-form-and-results-minimize-button > span").html("&and;");
+        if (!container.hasClass("toggled")) {
+            $("#search-form-and-results-maximize-button").css("display", "block");
+            container.css("display", "none");
             container.addClass("toggled");
         }
 
         myMap.map.resize();
+    });
+
+    $("#search-form-and-results-maximize-button").on("click", function() {
+        var container = $("#search-form-and-results-container");
+        if (container.hasClass("toggled")) {
+            $(this).css("display", "none");
+            container.css("display", "block");
+            container.addClass("toggled");
+            container.removeClass("toggled");
+        }
     });
 
     // chart div resizable

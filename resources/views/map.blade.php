@@ -189,7 +189,7 @@
       </table>
     </div>
     <div class="top-right-buttons">
-      <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="search-form-and-results-minimize-button"><span aria-hidden="true">&and;</span></button>
+      <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-minimize-button"></button>
     </div>
   </div>
   <div id="color-scale">
@@ -217,6 +217,9 @@
     </div>
   </div>
   <div id="point-details"></div>
+  <div>
+    <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Filter Areas"></button>
+  </div>
   <div class="wrap" id="area-attributes-div" title="Attributes">    
     <div class="top-right-buttons">
       <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"><span aria-hidden="true">&or;</span></button>

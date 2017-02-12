@@ -712,8 +712,9 @@ input[type=number] {
 }
 
 #search-form-and-results-container {
+    display: none; /* hide by default */
     width: 60%;
-    height: 3%;
+    height: 30%;
     overflow-y: auto;
     position: absolute;
     z-index: 99;
@@ -732,6 +733,34 @@ input[type=number] {
     width: 76%;
     float: left;
     margin-left: 0.2cm;
+}
+
+#search-form-and-results-maximize-button {
+    position: absolute;
+    bottom: 45px;
+    left: 0;
+    z-index: 99;
+    background-color: rgba(0, 0, 0, 0.0);
+}
+
+#search-form-and-results-minimize-button {
+    background-color: black;
+}
+
+.minimize-button, .maximize-button {
+    padding: 0 !important;
+    border: 0 !important;
+    width: 16px;
+    height: 16px;
+    background-image: url(https://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/classic/theme-neptune/resources/images/tools/tool-sprites.png);
+}
+
+.minimize-button {
+    background-position: 0 -208px;
+}
+
+.maximize-button {
+    background-position: 0 -224px;
 }
 
 #areas-under-mouse-table {
