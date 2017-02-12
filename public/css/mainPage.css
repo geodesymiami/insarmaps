@@ -173,7 +173,7 @@ html[xmlns] .clearfix {
 }
 
 .wrap#area-attributes-div .top-right-buttons {
-    top: -5px;
+    top: 0px;
 }
 
 #close-button,
@@ -631,14 +631,8 @@ input[type=number] {
 }
 
 #graph-div-minimize-button {
-    padding-right: 10px;
-}
-
-
-/*minize button red color*/
-
-.minimize {
-    color: red !important;
+    margin-right: 10px;
+    margin-top: 6px;
 }
 
 .chart-containers {
@@ -743,16 +737,13 @@ input[type=number] {
     background-color: rgba(0, 0, 0, 0.0);
 }
 
-#search-form-and-results-minimize-button {
-    background-color: black;
-}
-
 .minimize-button, .maximize-button {
     padding: 0 !important;
     border: 0 !important;
     width: 16px;
     height: 16px;
-    background-image: url(https://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/classic/theme-neptune/resources/images/tools/tool-sprites.png);
+    background-image: url(https://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/classic/theme-neptune/resources/images/tools/tool-sprites.png) !important;
+    background-color: red;
 }
 
 .minimize-button {

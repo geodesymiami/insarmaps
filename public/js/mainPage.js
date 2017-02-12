@@ -14,8 +14,16 @@ function getRootUrl() {
     return window.location.origin ? window.location.origin + '/' : window.location.protocol + '/' + window.location.host + '/';
 }
 
+function DivState() {
+    this.height = 0;
+    this.width = 0;
+    this.animating = false;
+}
+
 function AreaAttributesPopup() {
     var that = this;
+
+    this.oldDivState = new DivState();
 
     this.resetTabContents = function() {
         $("#downloads-tab").html("<p>Download to Unavco InSAR data products to be implemented.</p>");
@@ -113,7 +121,58 @@ function AreaAttributesPopup() {
     };
 
     this.isMinimized = function() {
-        return $('.wrap#area-attributes-div').hasClass('toggled');
+        return $('#area-attributes-div-minimize-button').hasClass('maximize-button');
+    };
+
+    this.maximize = function(animated) {
+        var areaAttributesWrap = $('.wrap#area-attributes-div');
+        var button = $("#area-attributes-div-minimize-button");
+        var that = this;
+        if (animated) {
+            this.oldDivState.animating = true;
+            areaAttributesWrap.animate({
+                "height": that.oldDivState.height,
+                "width": that.oldDivState.width
+            }, {
+                done: function() {
+                    areaAttributesWrap.tooltip(
+                        "disable");
+                    button.removeClass("maximize-button")
+                        .addClass("minimize-button");
+                    that.oldDivState.animating =
+                        false;
+                }
+            });
+        } else {
+            areaAttributesWrap.width(this.oldDivState.width);
+            areaAttributesWrap.height(this.oldDivState.height);
+        }
+    };
+
+    this.minimize = function(animated) {
+        var that = this;
+        var areaAttributesWrap = $('.wrap#area-attributes-div');
+        var button = $("#area-attributes-div-minimize-button");
+        this.oldDivState.width = areaAttributesWrap.width();
+        this.oldDivState.height = areaAttributesWrap.height();
+
+        var topRightButtonsWidth = areaAttributesWrap.find(
+            ".top-right-buttons").width() + 10;
+        areaAttributesWrap.css("overflow-y", "hidden");
+
+        $(".wrap#area-attributes-div").animate({
+            "height": "5%",
+            "width": topRightButtonsWidth
+        }, {
+            done: function() {
+                areaAttributesWrap.tooltip(
+                    "enable");
+                button.removeClass("minimize-button")
+                    .addClass("maximize-button");
+                that.oldDivState.animating =
+                    false;
+            }
+        });
     };
 
     this.populateTabs = function(area) {
@@ -641,12 +700,6 @@ function search() {
     }
 }
 
-function DivState() {
-    this.height = 0;
-    this.width = 0;
-    this.animating = false;
-}
-
 function prepareButtonsToHighlightOnHover() {
     $(".clickable-button").hover(function() {
         $(this).addClass("hovered");
@@ -750,6 +803,9 @@ $(window).load(function() {
     $(".wrap#charts").tooltip("disable");
     $(".wrap#area-attributes-div").tooltip("disable");
 
+    // below code might be able to be reduced by using AreaAttributesPopup
+    // class functionality. We can use a super class of the two and define
+    // subclasses
     var oldGraphDiv = new DivState();
 
     $("#graph-div-minimize-button").on("click", function(event) {
@@ -758,20 +814,19 @@ $(window).load(function() {
         }
 
         var chartWrap = $(".wrap#charts");
+        var button = $("#graph-div-minimize-button");
         oldGraphDiv.animating = true;
-        if (chartWrap.hasClass("toggled")) {
+        if (button.hasClass("maximize-button")) {
             chartWrap.animate({
                 "height": oldGraphDiv.height,
                 "width": oldGraphDiv.width
             }, {
                 done: function() {
                     chartWrap.tooltip("disable");
-                    $(
-                        "#graph-div-minimize-button > span"
-                    ).html("&or;");
+                    button.removeClass("maximize-button").addClass("minimize-button");
                     oldGraphDiv.animating = false;
                 }
-            }).removeClass("toggled");
+            });
 
             $(".wrap#charts").resizable("enable");
             $(".wrap#charts").draggable("enable");
@@ -794,57 +849,22 @@ $(window).load(function() {
             }, {
                 done: function() {
                     chartWrap.tooltip("enable");
-                    $(
-                        "#graph-div-minimize-button > span"
-                    ).html("&and;");
+                    button.removeClass("minimize-button").addClass("maximize-button");
                     oldGraphDiv.animating = false;
                 }
-            }).addClass("toggled");
+            });
         }
     });
-
-    var oldAttributeDiv = new DivState();
 
     $("#area-attributes-div-minimize-button").on("click", function(
         event) {
         var areaAttributesWrap = $(".wrap#area-attributes-div");
         areaAttributesWrap.css("overflow-y", "auto");
-        oldAttributeDiv.animating = true;
-        if (areaAttributesWrap.hasClass("toggled")) {
-            areaAttributesWrap.animate({
-                "height": oldAttributeDiv.height,
-                "width": oldAttributeDiv.width
-            }, {
-                done: function() {
-                    areaAttributesWrap.tooltip(
-                        "disable");
-                    $(
-                        "#area-attributes-div-minimize-button > span"
-                    ).html("&or;");
-                    oldAttributeDiv.animating =
-                        false;
-                }
-            }).removeClass("toggled");
+
+        if (areaAttributesPopup.isMinimized()) {
+            areaAttributesPopup.maximize(true);
         } else {
-            oldAttributeDiv.width = areaAttributesWrap.width();
-            oldAttributeDiv.height = areaAttributesWrap.height();
-            var topRightButtonsWidth = areaAttributesWrap.find(
-                ".top-right-buttons").width() + 10;
-            areaAttributesWrap.css("overflow-y", "hidden");
-            $(".wrap#area-attributes-div").animate({
-                "height": "5%",
-                "width": topRightButtonsWidth
-            }, {
-                done: function() {
-                    areaAttributesWrap.tooltip(
-                        "enable");
-                    $(
-                        "#area-attributes-div-minimize-button > span"
-                    ).html("&and;");
-                    oldAttributeDiv.animating =
-                        false;
-                }
-            }).addClass("toggled");
+            areaAttributesPopup.minimize(true);
         }
     });
     // TODO: these minimize buttons are dying to be put into a class

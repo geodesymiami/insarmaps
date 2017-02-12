@@ -222,7 +222,7 @@
   </div>
   <div class="wrap" id="area-attributes-div" title="Attributes">    
     <div class="top-right-buttons">
-      <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"><span aria-hidden="true">&or;</span></button>
+      <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"></button>
     </div>
     <div class="content">
         <div id="area-attributes-areaname-div">
@@ -259,7 +259,7 @@
   <div class="wrap" id="charts" title="Displacement time-series">
     <div class="top-right-buttons">
       <button type="button" class="close close-button" data-dismiss="modal" aria-label="Close" id="graph-div-button"><span aria-hidden="true">&times;</span></button>
-      <button type="button" class="close minimize" data-dismiss="modal" aria-label="Close" id="graph-div-minimize-button"><span aria-hidden="true">&or;</span></button>
+      <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="graph-div-minimize-button"></button>
     </div>
     <div class="content">
       <div class="chart-containers" id="chart-containers">
