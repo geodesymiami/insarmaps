@@ -800,7 +800,6 @@ ul.tab {
     overflow: hidden;
     border: 1px solid #ccc;
     background-color: #f1f1f1;
-    height: 25px;
 }
 
 ul.tab li {
@@ -811,7 +810,7 @@ ul.tab li {
 ul.tab li a {
     color: black;
     text-align: center;
-    padding: 14px 16px;
+    padding: 2px 16px;
     text-decoration: none;
     transition: 0.3s;
     font-size: 13px;
