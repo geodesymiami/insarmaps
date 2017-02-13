@@ -113,6 +113,11 @@
         <img src="img/polygon.svg" alt="polygon.svg">
       </button>
     </div>
+    <div>
+      <button class="btn btn-primary-outline map-button clickable-button no-padding" data-toggle="tooltip" data-placement="right" title="Hide Swaths" id="dataset-frames-toggle-button">
+          S
+      </button>
+    </div>
     <div id="select-layer-button-div">
       <button class="btn btn-primary-outline map-button clickable-button" data-toggle="tooltip" data-placement="right" title="More Options" id="select-layer-button">
         <img src="img/layerSwitchIcon.png" alt="layerSwitchIcon.png" style="width: 20px; height: 20px">
@@ -135,10 +140,6 @@
         <div class="overlay-toggle">
           <label>GPS Stations (UNR)</label>
           <input id = "gps-stations-toggle-button" type="checkbox"/>
-        </div>
-        <div class="overlay-toggle">
-          <label>Show Swaths</label>
-          <input id = "dataset-frames-toggle-button" type="checkbox" name="overlayToggle"/>
         </div>
         <div>
           <label>Color On:</label>

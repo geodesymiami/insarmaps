@@ -7,7 +7,6 @@ var topGraphToggleButton = null;
 var bottomGraphToggleButton = null;
 var contourToggleButton = null;
 var gpsStationsToggleButton = null;
-var areaFramesToggleButton = null;
 var myMap = null;
 
 function getRootUrl() {
@@ -604,18 +603,6 @@ function setupToggleButtons() {
             myMap.removeGPSStationMarkers();
         }
     });
-
-    areaFramesToggleButton = new ToggleButton("#dataset-frames-toggle-button");
-    areaFramesToggleButton.onclick(function() {
-        if (areaFramesToggleButton.toggleState == ToggleStates.ON) {
-            myMap.loadAreaMarkers(null);
-        } else {
-            myMap.removeAreaMarkers();
-        }
-    });
-
-    // turn on by default
-    areaFramesToggleButton.set("on");
 }
 
 function search() {
@@ -950,6 +937,22 @@ $(window).load(function() {
 
     $("#polygon-button").on("click", function() {
         myMap.selector.toggleMode();
+    });
+
+    // TODO: need to consolidate this if has class pattern into Toggable Class
+    // We can also have a class for square selector type square buttons if he wants more
+    $("#dataset-frames-toggle-button").on("click", function() {
+        if ($(this).hasClass("toggled")) {
+            myMap.loadAreaMarkers(null);
+            $(this).attr("data-original-title", "Hide Swaths");
+            $(this).removeClass("toggled");
+        } else {
+            myMap.removeAreaMarkers();
+            $(this).attr("data-original-title", "Show Swaths");
+            $(this).addClass("toggled");
+        }
+
+        $(this).tooltip("close");
     });
 
     $(function() {
