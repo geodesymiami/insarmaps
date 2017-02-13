@@ -192,7 +192,7 @@ function GraphsController() {
                         var chart = $('#' + chartContainer).highcharts();
                         var extremes = chart.xAxis[0].getExtremes();
                         var minMax = this.mapDatesToArrayIndeces(extremes.min, extremes.max, graphSettings.date_array);
-                    
+
                         console.log(minMax.maxIndex - minMax.minIndex);
                         // only two points in view, so return
                         if ((minMax.maxIndex - minMax.minIndex) < 2) {
@@ -208,8 +208,7 @@ function GraphsController() {
                             myMap.selector.minIndex = e.point.index;
                             var minDate = chartData[e.point.index][0];
                             this.setNavigatorMin(chartContainer, minDate);
-                        }
-                        else {
+                        } else {
                             myMap.selector.maxIndex = e.point.index;
                             var maxDate = chartData[e.point.index - 1][0];
                             this.setNavigatorMax(chartContainer, maxDate);
@@ -221,6 +220,9 @@ function GraphsController() {
             }],
             chart: {
                 marginRight: 50
+            },
+            exporting: {
+                enabled: false
             }
         };
 
@@ -713,7 +715,7 @@ function GraphsController() {
         chart.xAxis[0].setExtremes(min, curExtremes.max);
     };
 
-    this.setNavigatorMax = function(chartContainer, max) {        
+    this.setNavigatorMax = function(chartContainer, max) {
         var chart = $("#" + chartContainer).highcharts();
         var curExtremes = chart.xAxis[0].getExtremes();
 
