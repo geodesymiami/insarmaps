@@ -27,6 +27,7 @@ function AreaAttributesPopup() {
     this.resetTabContents = function() {
         $("#downloads-tab").html("<p>Download to Unavco InSAR data products to be implemented.</p>");
         $("#reference-tab").html("<p>Reference to the papers to be added.</p>");
+        $("#figures-tab").html("<p>Figures to be added</p>")
     };
 
     this.populate = function(area) {
@@ -180,7 +181,7 @@ function AreaAttributesPopup() {
         if (attributesController.areaHasAttribute("plotAttributePreset_Name")) {
             var html = "<a href='#' id='preset-dataset-link'>" +
                 attributesController.getAttribute("plotAttributePreset_Name") + "</a>";
-            $("#reference-tab").html(html);
+            $("#figures-tab").html(html);
             $("#preset-dataset-link").on("click", function() {
                 attributesController.processAttributes();
             });
@@ -189,7 +190,7 @@ function AreaAttributesPopup() {
         if (attributesController.areaHasAttribute("referencePdfUrl") &&
             attributesController.areaHasAttribute("referenceText")) {
             var html = "<a href='" + attributesController.getAttribute("referencePdfUrl") + "' target='_blank'>" + attributesController.getAttribute("referenceText") + "</a>";
-            $("#downloads-tab").html(html);
+            $("#reference-tab").html(html);
         }
     };
 };

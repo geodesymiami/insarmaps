@@ -232,6 +232,7 @@
           <li><a href="#" id="details-tab-link" class="tablinks" onclick="goToTab(event, 'details-tab')">Details</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'downloads-tab')">Downloads</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'reference-tab')">Reference</a></li>
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'figures-tab')">Figures</a></li>
           <!-- <li><a href="#" class="tablinks" onclick="goToTab(event, 'links-tab')">Links</a></li> -->
         </ul>
 
@@ -250,6 +251,10 @@
 
         <div id="reference-tab" class="tabcontent">
           <p>Reference to the papers to be added.</p>
+        </div>
+
+        <div id="figures-tab" class="tabcontent">
+          <p>Figures to be added.</p>
         </div>
         <!-- <div id="links-tab" class="tabcontent">
           <p>Extra links to be added.</p>
