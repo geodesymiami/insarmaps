@@ -932,7 +932,11 @@ $(window).load(function() {
     });
 
     $(function() {
-        $('[data-toggle="tooltip"]').tooltip();
+        $('[data-toggle="tooltip"]').tooltip().click(function() {
+            $('.tooltip').fadeOut('fast', function() {
+                $('.tooltip').remove();
+            });
+        });
     });
 
     $("#polygon-button").on("click", function() {
@@ -951,8 +955,6 @@ $(window).load(function() {
             $(this).attr("data-original-title", "Show Swaths");
             $(this).addClass("toggled");
         }
-
-        $(this).tooltip("close");
     });
 
     $(function() {
