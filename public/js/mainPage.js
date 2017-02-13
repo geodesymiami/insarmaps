@@ -246,11 +246,11 @@ function getGEOJSON(area) {
     var button = $("#polygon-button");
     button.attr("data-original-title", "Select Points");
     myMap.selector.disableSelectMode(); // in case it is selected
-    myMap.selector.removeEventListeners();
+    myMap.selector.removeEventListeners(); // remove old event listeners
     myMap.selector = new RecolorSelector();
     myMap.selector.map = myMap;
     myMap.selector.associatedButton = button;
-    myMap.selector.prepareEventListeners();
+    myMap.selector.prepareEventListeners(); // and add new ones
 
     myMap.colorScale.defaultValues(); // set default values in case they were modified by another area
     myMap.selector.reset(currentArea);

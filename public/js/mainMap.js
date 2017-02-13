@@ -918,10 +918,11 @@ function Map(loadJSONFunc) {
         var button = $("#polygon-button");
         button.attr("data-original-title", "Filter Areas");
         this.selector.disableSelectMode(); // in case it is selected
+        this.selector.removeEventListeners(); // remove old event listeners
         this.selector = new AreaFilterSelector();
         this.selector.map = this;
         this.selector.associatedButton = button;
-        this.selector.prepareEventListeners();
+        this.selector.prepareEventListeners(); // and add new ones
     };
 
     this.addContourLines = function() {
