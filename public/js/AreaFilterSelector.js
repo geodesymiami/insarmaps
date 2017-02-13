@@ -7,7 +7,7 @@ function AreaFilterSelector() {}
 // rather than on full load of the page...
 function setUpAreaFilterSelector() {
     AreaFilterSelector.prototype.finish = function(bbox) {
-        this.removeEventListeners();
+        this.removeInternalEventListeners();
         if (this.box) {
             this.box.parentNode.removeChild(this.box);
             this.box = null;

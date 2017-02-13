@@ -146,10 +146,14 @@ function SquareSelector() {
         this.canvas.addEventListener('mousedown', this.mouseDown, true);
     };
 
-    this.removeEventListeners = function() {
+    this.removeInternalEventListeners = function() {
         document.removeEventListener('mousemove', this.onMouseMove);
         document.removeEventListener('keydown', this.onKeyDown);
         document.removeEventListener('mouseup', this.onMouseUp);
+    };
+
+    this.removeEventListeners = function() {
+        this.canvas.removeEventListener('mousedown', this.mouseDown, true);
     };
 
     // courtesy of: https://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
@@ -239,9 +243,9 @@ function SquareSelector() {
 function RecolorSelector() {}
 
 function setupRecolorSelector() {
-    //SquareSelector.prototype.recoloringInProgress = false;
-    SquareSelector.prototype.finish = function(bbox) {
-        this.removeEventListeners();
+    RecolorSelector.prototype.recoloringInProgress = false;
+    RecolorSelector.prototype.finish = function(bbox) {
+        this.removeInternalEventListeners();
 
         // re enable dragpan only if polygon button isn't selected
         if (!this.map.selector.polygonButtonSelected) {
@@ -269,12 +273,12 @@ function setupRecolorSelector() {
         }
     };
 
-    SquareSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate, loadingText) {
+    RecolorSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate, loadingText) {
         var yearsElapsed = endDecimalDate - startDecimalDate;
         this.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed, loadingText);
     };
 
-    SquareSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingText) {
+    RecolorSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingText) {
         if (this.recoloringInProgress) {
             return;
         }
@@ -439,15 +443,11 @@ function setupRecolorSelector() {
         });
     };
 
-    SquareSelector.prototype.recolorDataset = function() {
+    RecolorSelector.prototype.recolorDataset = function() {
         this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1);
     };
 
-    SquareSelector.prototype.inSelectMode = function() {
-        return this.recoloringInProgress;
-    };
-
-    SquareSelector.prototype.recoloring = function() {
+    RecolorSelector.prototype.recoloring = function() {
         return this.recoloringInProgress;
     };
 }

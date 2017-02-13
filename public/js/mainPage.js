@@ -246,6 +246,7 @@ function getGEOJSON(area) {
     var button = $("#polygon-button");
     button.attr("data-original-title", "Select Points");
     myMap.selector.disableSelectMode(); // in case it is selected
+    myMap.selector.removeEventListeners();
     myMap.selector = new RecolorSelector();
     myMap.selector.map = myMap;
     myMap.selector.associatedButton = button;
