@@ -112,7 +112,13 @@ function SquareSelector() {
 
     this.onKeyDown = function(e) {
         // If the ESC key is pressed
-        if (e.keyCode === 27) this.finish();
+        var ESCAPE_KEY = 27;
+        if (e.keyCode === ESCAPE_KEY) {
+            this.disableSelectMode(); // when escape is pressed, exist select mode
+            // Capture xy coordinates
+            this.bbox = [this.map.map.unproject(this.start), this.map.map.unproject(this.current)];
+            this.finish(this.bbox);
+        }
     };
     // Set `true` to dispatch the event before other functions
     // call it. This is necessary for disabling the default map
@@ -120,6 +126,11 @@ function SquareSelector() {
     this.mouseDown = function(e) {
         // Continue the rest of the function if the shiftkey is pressed.
         if (!(e.shiftKey && e.button === 0) && !this.polygonButtonSelected) return;
+        // box currently being drawn, so don't continue adding callbacks
+        // as they are already in place...
+        if (this.box) {
+            return;
+        }
         // Disable default drag zooming when the shift key is held down.
         this.map.map.dragPan.disable();
 
@@ -131,7 +142,6 @@ function SquareSelector() {
         this.onKeyDown = this.onKeyDown.bind(this);
         // Call functions for the following events
         document.addEventListener('mousemove', this.onMouseMove);
-        document.addEventListener('mouseup', this.onMouseUp);
         document.addEventListener('keydown', this.onKeyDown);
 
         // Capture the first xy coordinates
@@ -149,7 +159,6 @@ function SquareSelector() {
     this.removeInternalEventListeners = function() {
         document.removeEventListener('mousemove', this.onMouseMove);
         document.removeEventListener('keydown', this.onKeyDown);
-        document.removeEventListener('mouseup', this.onMouseUp);
     };
 
     this.removeEventListeners = function() {

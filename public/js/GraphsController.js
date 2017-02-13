@@ -730,7 +730,6 @@ function GraphsController() {
         var graphOpts = this.highChartsOpts[chartContainer];
         $("#" + chartContainer).highcharts(graphOpts);
         var chart = $("#" + chartContainer).highcharts();
-        console.log(chart);
 
         if (!chart) {
             return;
