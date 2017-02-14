@@ -230,9 +230,6 @@ function SquareSelector() {
         };
 
         var vertices = [nw, ne, se, sw];
-        for (var i = 0; i < vertices.length; i++) {
-            console.log(vertices[i].lat + "," + vertices[i].lng);
-        }
 
         return vertices;
     };
