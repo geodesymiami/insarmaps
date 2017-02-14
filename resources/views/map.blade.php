@@ -81,15 +81,6 @@
     </div>
   </div>
   <div id="map-container">
-    <!--search bar-->
-    <div id="search-bar">
-      <div class="input-group">
-        <!-- <span class="input-group-btn">
-          <button class="btn btn-default" id="search-button" type="button">Search</button>
-        </span> -->
-        <input type="text" class="form-control" placeholder="Search for..." id="search-input"/>
-      </div>
-    </div>
     <div id="top-map-buttons">
       <div id="overlay-options-wrapper">
         <div id="overlay-options">
@@ -154,6 +145,15 @@
   <!-- by default, it is toggled, or minimized -->
   <div id="search-form-and-results-container" class="toggled">
     <div id="search-form">
+      <!--search bar-->
+      <div id="search-bar">
+        <div class="input-group">
+          <!-- <span class="input-group-btn">
+            <button class="btn btn-default" id="search-button" type="button">Search</button>
+          </span> -->
+          <input type="text" class="form-control" placeholder="Search for..." id="search-input"/>
+        </div>
+      </div>
       <div class="form-group">
         <input type="text" class="form-control" placeholder="Satellite" value="Alos"id="input-satellite"/>
       </div>

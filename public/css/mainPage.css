@@ -339,21 +339,17 @@ div.menu {
 }
 
 #search-bar {
-    position: absolute;
-    top: 0px;
-    left: 0px;
     z-index: 99;
 }
 
 #search-bar .input-group {
-    margin: 10px 0 0 10px;
     max-width: 240px;
 }
 
 #top-map-buttons {
     position: absolute;
     top: 10px;
-    left: 205px;
+    left: 0px;
     z-index: 99;
     height: 50px;
 }
