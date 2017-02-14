@@ -27,10 +27,13 @@ class WebServicesBoxController extends Controller
       $longitude3 = 1000.0;
       $latitude4 = 1000.0; 
       $longitude4 = 1000.0;
+      $bbox = null;
 
       // extract parameter values from Request url
       $requests = $request->all();
       // dd($requests);
+      // TODO: ask zishi why he gets lat and long like this instead of just getting
+      // the box. if it's just miscommunication, remove extraneous switch checks
       foreach ($requests as $key => $value) {
         switch ($key) {
           case 'latitude1':
@@ -57,6 +60,8 @@ class WebServicesBoxController extends Controller
           case 'longitude4':
             $longitude4 = $value;
             break;
+          case 'box':
+            $bbox = $value;
           default:
             break;
         }
@@ -65,28 +70,10 @@ class WebServicesBoxController extends Controller
       // Example webservice url: http://homestead.app/WebServicesBox?longitude1=130.7685&latitude1=32.8655&longitude2=130.7685&latitude2=32.8665&longitude3=130.7695&latitude3=32.8665&longitude4=130.7695&latitude4=32.8655
 
       // QUERY 1: get names of all datasets
-      $query = "SELECT unavco_name FROM area;";
-      $unavcoNames = DB::select(DB::raw($query));
-      $datasets = [];
-      $dataInBox = [];
+      $bbox = "'" . $bbox . "'";
+      $controller = new GeoJSONController();
 
-      // format SQL result into a php array
-      foreach ($unavcoNames as $unavcoName) {
-        array_push($datasets, $unavcoName->unavco_name);
-      }
-
-      // QUERY 2: check which datasets have points in the bounding box
-      $len = count($unavcoNames);
-      for ($i = 0; $i < $len; $i++) {
-        $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $datasets[$i] . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $longitude1 . " " . $latitude1 . ", " . $longitude2 . " " . $latitude2 . ", " . $longitude3 . " " . $latitude3. ", " . $longitude4 . " " . $latitude4 . ", " . $longitude1 . " " . $latitude1 . ")', 4326)), wkb_geometry);";
-
-        $points = DB::select(DB::raw($query));
-        if (count($points) > 0) {
-          array_push($dataInBox, $datasets[$i]);
-        }
-      }
-
-      return json_encode($dataInBox);
+      return $controller->getAreas($bbox);
     }
 
     /**
