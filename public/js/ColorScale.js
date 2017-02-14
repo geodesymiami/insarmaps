@@ -215,7 +215,7 @@ function ColorScale(min, max) {
             throw "Invalid Color Scale (" + scale + ") selected";
         }
 
-        var imgSrc = "img/" + scale + "_scale.png";
+        var imgSrc = "img/" + scale + "_scale.PNG";
         $("#color-scale-picture-div > img").attr("src", imgSrc);
     };
 
