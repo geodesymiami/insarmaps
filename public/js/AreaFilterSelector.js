@@ -53,6 +53,9 @@ function setUpAreaFilterSelector() {
             url: "/WebServicesBox?box=LINESTRING(" + serverBboxCoords + ")",
             success: function(response) {
                 var json = JSON.parse(response);
+                if (json.areas.length == 0) {
+                    return;
+                }
 
                 $("#search-form-results-table tbody").empty();
 
