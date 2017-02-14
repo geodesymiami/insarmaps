@@ -214,6 +214,9 @@ function ColorScale(min, max) {
         } else {
             throw "Invalid Color Scale (" + scale + ") selected";
         }
+
+        var imgSrc = "img/" + scale + "_scale.png";
+        $("#color-scale-picture-div > img").attr("src", imgSrc);
     };
 
     this.colorsToMapboxStops = function(min, max, colors) {

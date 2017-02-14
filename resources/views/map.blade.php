@@ -200,7 +200,7 @@
     <div id="color-scale-main-container">
       <div id="color-scale-and-values-container" class="clearfix">
         <div id="color-scale-picture-div">
-          <img src="img/matlab_colorscale.jpg" alt="matlab_colorscale.jpg">
+          <img src="img/jet_scale.png" alt="jet_scale.png" style="width: 30px; height: 255px">
         </div>
         <div id="scale-values">
           <div id="left-scale-minimum">
