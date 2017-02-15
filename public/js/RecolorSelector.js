@@ -25,14 +25,20 @@ function setupRecolorSelector() {
             return;
         }
 
-        // If bbox exists. use this value as the argument for `queryRenderedFeatures`
-        if (bbox) {
+        if (this.map.colorOnDisplacement) {
+            var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
+            var startDate = new Date(dates[this.minIndex]);
+            var endDate = new Date(dates[this.maxIndex]);
+            this.recolorOnDisplacement(startDate, endDate, "Recoloring...");
+        } else {
             this.recolorDataset();
         }
     };
 
     RecolorSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate, loadingText) {
-        var yearsElapsed = endDecimalDate - startDecimalDate;
+        var millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
+        var yearsElapsed = (endDecimalDate - startDecimalDate) / millisecondsPerYear;
+
         this.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed, loadingText);
     };
 

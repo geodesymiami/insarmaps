@@ -4,8 +4,9 @@
 // had promise, but it required us using a stockchart, which in turn required us re styling the
 // stock chart to look like a regular graph. To save headaches, we simply re create the graph... performance
 // penalty is not noticeable.
-function GraphsController() {
+function GraphsController(map) {
     var that = this;
+    this.map = map;
     this.highChartsOpts = [];
     this.selectedGraph = "Top Graph";
     this.graphSettings = {
@@ -127,7 +128,7 @@ function GraphsController() {
                         }
 
                         // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
-                        var selector = myMap.selector;
+                        var selector = this.map.selector;
                         // probably first time called which is a red herring
                         if (selector.lastMinIndex == -1 || selector.lastMaxIndex == -1) {
                             return;
@@ -135,8 +136,15 @@ function GraphsController() {
                         if (selector.lastbbox == selector.bbox && selector.lastMinIndex == selector.minIndex && selector.lastMaxIndex == selector.maxIndex) {
                             return;
                         }
-                        if (myMap.selector.bbox != null && myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
-                            myMap.selector.recolorDataset();
+                        if (selector.bbox != null && selector.minIndex != -1 && selector.maxIndex != -1) {
+                            if (this.map.colorOnDisplacement) {
+                                var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
+                                var startDate = new Date(dates[this.map.selector.minIndex]);
+                                var endDate = new Date(dates[this.map.selector.maxIndex]);
+                                this.map.selector.recolorOnDisplacement(startDate, endDate, "Recoloring...");
+                            } else {
+                                this.map.selector.recolorDataset();
+                            }
                         }
                     }.bind(this)
                 },
@@ -235,7 +243,6 @@ function GraphsController() {
 
         $('#' + chartContainer).highcharts(chartOpts);
         this.highChartsOpts[chartContainer] = chartOpts;
-        console.log(chartOpts);
 
         this.setNavigatorHandlers();
 

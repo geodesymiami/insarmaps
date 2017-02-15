@@ -228,6 +228,7 @@ function getGEOJSON(area) {
     }
 
     currentArea = area;
+
     // make streets toggle button be only checked one
     $("#streets").prop("checked", true);
     for (var i = 1; i <= area.properties.num_chunks; i++) {

@@ -63,29 +63,25 @@ function AreaAttributesController(map, area) {
             this.map.colorScale.setScale(this.attributes.plotAttributePreset_colorBar);
             var min = this.attributes.plotAttributePreset_displayMin;
             var max = this.attributes.plotAttributePreset_displayMax;
-            myMap.colorOnDisplacement = false;
+            this.map.colorOnDisplacement = false;
             var yearsElapsed = 0;
             var date1 = null;
             var date2 = null;
 
             if (this.attributes.plotAttributePreset_Type == "displacement") {
-                myMap.colorOnDisplacement = true;
+                this.map.colorOnDisplacement = true;
                 date1 = new Date(this.attributes.plotAttributePreset_startDate);
                 date2 = new Date(this.attributes.plotAttributePreset_endDate);
-                var millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
-                var daysPerYear = 365;
-
-                var yearsElapsed = (date2 - date1) / millisecondsPerYear;
             }
             this.map.colorScale.setMinMax(min, max);
 
-            if (myMap.colorOnDisplacement) {
+            if (this.map.colorOnDisplacement) {
                 var decimalDate1 = dateToDecimal(date1);
                 var decimalDate2 = dateToDecimal(date2);
                 var possibleDates = this.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, this.datesArray);
                 this.map.selector.minIndex = possibleDates.minIndex;
-                this.map.selector.maxIndex = possibleDates.maxIndex;
-                this.map.selector.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed);
+                this.map.selector.maxIndex = possibleDates.maxIndex + 1;
+                this.map.selector.recolorOnDisplacement(date1, date2, "Recoloring...");
                 $("#color-scale-text-div").html("LOS Displacement (cm)");
             } else {
                 this.map.refreshDataset();

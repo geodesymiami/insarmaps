@@ -26,15 +26,18 @@ var getStandardDeviation = function(displacements, slope) {
 }
 
 // falk's date string is in format yyyymmdd - ex: 20090817 
-// take an array of these strings and return an array of date objects
+var customDateStringToJSDate = function(dateString) {
+    var year = dateString.substr(0, 4);
+    var month = dateString.substr(4, 2);
+    var day = dateString.substr(6, 2);
+    return new Date(year, month - 1, day);
+}
+
+// take an array of these string dates and return an array of date objects
 var convertStringsToDateArray = function(date_string_array) {
     var date_array = [];
-    for (i = 0; i < date_string_array.length; i++) {
-        var year = date_string_array[i].toString().substr(0, 4);
-        var month = date_string_array[i].toString().substr(4, 2);
-        var day = date_string_array[i].toString().substr(6, 2);
-        var date = new Date(year, month - 1, day);
-        date_array.push(date);
+    for (var i = 0; i < date_string_array.length; i++) {
+        date_array.push(customDateStringToJSDate(date_string_array[i].toString()));
     }
     return date_array;
 }
@@ -132,7 +135,7 @@ function Map(loadJSONFunc) {
     };
     this.selector = null;
     this.zoomOutZoom = 7.0;
-    this.graphsController = new GraphsController();
+    this.graphsController = new GraphsController(this);
     this.areas = null;
     this.areaFeatures = null;
     this.colorScale = new ColorScale(-2.00, 2.00);
@@ -536,6 +539,7 @@ function Map(loadJSONFunc) {
                     "num_chunks": properties.num_chunks,
                     "country": properties.country,
                     "decimal_dates": properties.decimal_dates,
+                    "string_dates": properties.string_dates,
                     "attributekeys": properties.attributekeys,
                     "attributevalues": properties.attributevalues,
                     "extra_attributes": properties.extra_attributes
@@ -786,12 +790,12 @@ function Map(loadJSONFunc) {
 
             var onTheFlyJSON = this.map.getSource("onTheFlyJSON");
             if ((onTheFlyJSON || this.colorOnDisplacement) && !this.selector.recoloring()) {
-                var dates = propertyToJSON(currentArea.properties.decimal_dates);
-                var startDate = dates[0];
-                var endDate = dates[dates.length - 1];
+                var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
+                var startDate = new Date(dates[0]);
+                var endDate = new Date(dates[dates.length - 1]);
                 if (this.selector.minIndex != -1 && this.selector.maxIndex != -1) {
-                    startDate = dates[this.selector.minIndex];
-                    endDate = dates[this.selector.maxIndex];
+                    startDate = new Date(dates[this.selector.minIndex]);
+                    endDate = new Date(dates[this.selector.maxIndex]);
                 }
                 // it doesn't fire render events if we zoom out, so we recolor anyways when we zoom
                 // out. but what about the cases when it does refire? then we have incomplete recoloring.
