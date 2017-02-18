@@ -743,7 +743,7 @@ $(window).load(function() {
             }
 
             myMap.colorOnDisplacement = true;
-            var dates = propertyToJSON(currentArea.properties.decimal_dates);
+            var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.decimal_dates));
             var startDate = dates[0];
             var endDate = dates[dates.length - 1];
             if (myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
