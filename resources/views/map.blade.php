@@ -85,40 +85,45 @@
       <div id="search-form">
         <!--search bar-->
         <div id="search-bar">
-          <div class="input-group">
+          <div class="input-group custom-input">
             <!-- <span class="input-group-btn">
               <button class="btn btn-default" id="search-button" type="button">Search</button>
             </span> -->
-            <input type="text" class="form-control" placeholder="Search for..." id="search-input"/>
+            <input type="text" placeholder="Search for..." id="search-input"/>
+            <div class="custom-input-dropdown" id="toggle-other-bars">
+              <i class="caret"></i>
+            </div>
           </div>
         </div>
-        <div class="form-group custom-input">
-          <input type="text" placeholder="Satellite" value="Alos" id="input-satellite">
-          <div class="custom-input-dropdown">
-            <i class="caret"></i>
+        <div id="hidden-search-bars-container" class="active">
+          <div class="form-group custom-input">
+            <input type="text" placeholder="Satellite" value="Alos" id="input-satellite">
+            <div class="custom-input-dropdown" data-target="input-satellite">
+              <i class="caret"></i>
+            </div>
           </div>
-        </div>
-        <div class="form-group custom-input">
-          <input type="text" placeholder="Relative Orbit" value="73" id="input-relative-orbit"/>
-        </div>
-        <div class="form-group custom-input">
-          <input type="text" placeholder="First Frame" value="2950" id="input-first-frame"/>
-        </div>
-        <div class="form-group custom-input">
-          <input type="text" placeholder="Mode" value="SM" id="input-mode"/>
-          <div class="custom-input-dropdown">
-            <i class="caret"></i>
+          <div class="form-group custom-input">
+            <input type="text" placeholder="Relative Orbit" value="73" id="input-relative-orbit"/>
           </div>
-        </div>
-        <div class="form-group custom-input">
-          <input type="text" placeholder="Flight Direction" value="D" id="input-flight-direction"/>
-          <div class="custom-input-dropdown">
-            <i class="caret"></i>
+          <div class="form-group custom-input">
+            <input type="text" placeholder="First Frame" value="2950" id="input-first-frame"/>
           </div>
-        </div>
-        <!-- enter button to search for files with attributes matching above input -->
-        <div id="enter-button-search-attributes">
-          <button class="btn btn-primary btn-block clickable-button">Enter</button>
+          <div class="form-group custom-input">
+            <input type="text" placeholder="Mode" value="SM" id="input-mode"/>
+            <div class="custom-input-dropdown" data-target="input-mode">
+              <i class="caret"></i>
+            </div>
+          </div>
+          <div class="form-group custom-input">
+            <input type="text" placeholder="Flight Direction" value="D" id="input-flight-direction"/>
+            <div class="custom-input-dropdown" data-target="input-flight-direction">
+              <i class="caret"></i>
+            </div>
+          </div>
+          <!-- enter button to search for files with attributes matching above input -->
+          <div id="enter-button-search-attributes">
+            <button class="btn btn-primary btn-block clickable-button">Enter</button>
+          </div>
         </div>
       </div>
       <div id="overlay-options-wrapper">

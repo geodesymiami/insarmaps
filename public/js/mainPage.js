@@ -995,6 +995,17 @@ $(window).load(function() {
         search();
     });
 
+    $(".custom-input-dropdown").on("click", function() {
+        var id = $(this).attr("id");
+
+        if (id === "toggle-other-bars") {
+            $("#hidden-search-bars-container").toggleClass("active");
+        } else {
+            var targetID = $(this).attr("data-target");
+            console.log(targetID);
+        }
+    });
+
     $("#login-logout-button").on('click', function() {
         if ($("#login-logout-button").hasClass("logged-in")) {
             window.location = "/auth/logout";

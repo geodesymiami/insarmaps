@@ -59,6 +59,11 @@ html[xmlns] .clearfix {
     height: 1%;
 }
 
+/*TODO: consolidate the .active classes to mainly use/remove redundant code*/
+.active {
+    display: block !important;
+}
+
 .hovered {
     background-color: #dcdee2 !important;
 }
@@ -700,6 +705,10 @@ input[type=number] {
     opacity: 0.6;
 }
 
+#hidden-search-bars-container {
+    display: none;
+}
+
 .custom-input {
     -moz-appearance: textfield;
     -webkit-appearance: textfield;
@@ -729,6 +738,10 @@ input[type=number] {
     float: left;
     height: 100%;
     display: table;
+}
+
+.custom-input-dropdown:hover {
+    cursor: pointer;
 }
 
 #search-form-and-results-container {
