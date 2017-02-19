@@ -95,30 +95,24 @@
             </div>
           </div>
         </div>
-        <div id="hidden-search-bars-container" class="active">
+        <div id="hidden-search-bars-container">
           <div class="form-group custom-input">
-            <input type="text" placeholder="Satellite" value="Alos" id="input-satellite">
-            <div class="custom-input-dropdown" data-target="input-satellite">
-              <i class="caret"></i>
-            </div>
+            <input type="text" placeholder="Satellite" id="input-satellite" list="satellites-list"/>
+            <datalist id="satellites-list"></datalist>
           </div>
           <div class="form-group custom-input">
-            <input type="text" placeholder="Relative Orbit" value="73" id="input-relative-orbit"/>
+            <input type="text" placeholder="Relative Orbit" id="input-relative-orbit"/>
           </div>
           <div class="form-group custom-input">
-            <input type="text" placeholder="First Frame" value="2950" id="input-first-frame"/>
+            <input type="text" placeholder="First Frame" id="input-first-frame"/>
           </div>
           <div class="form-group custom-input">
-            <input type="text" placeholder="Mode" value="SM" id="input-mode"/>
-            <div class="custom-input-dropdown" data-target="input-mode">
-              <i class="caret"></i>
-            </div>
+            <input type="text" placeholder="Mode" id="input-mode" list="modes-list"/>
+            <datalist id="modes-list"></datalist>
           </div>
           <div class="form-group custom-input">
-            <input type="text" placeholder="Flight Direction" value="D" id="input-flight-direction"/>
-            <div class="custom-input-dropdown" data-target="input-flight-direction">
-              <i class="caret"></i>
-            </div>
+            <input type="text" placeholder="Flight Direction" id="input-flight-direction" list="flight-direction-list"/>
+            <datalist id="flight-direction-list"></datalist>
           </div>
           <!-- enter button to search for files with attributes matching above input -->
           <div id="enter-button-search-attributes">

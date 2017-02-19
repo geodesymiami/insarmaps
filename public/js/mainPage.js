@@ -1000,9 +1000,6 @@ $(window).load(function() {
 
         if (id === "toggle-other-bars") {
             $("#hidden-search-bars-container").toggleClass("active");
-        } else {
-            var targetID = $(this).attr("data-target");
-            console.log(targetID);
         }
     });
 
