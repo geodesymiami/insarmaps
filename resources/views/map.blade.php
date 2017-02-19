@@ -82,6 +82,45 @@
   </div>
   <div id="map-container">
     <div id="top-map-buttons">
+      <div id="search-form">
+        <!--search bar-->
+        <div id="search-bar">
+          <div class="input-group">
+            <!-- <span class="input-group-btn">
+              <button class="btn btn-default" id="search-button" type="button">Search</button>
+            </span> -->
+            <input type="text" class="form-control" placeholder="Search for..." id="search-input"/>
+          </div>
+        </div>
+        <div class="form-group custom-input">
+          <input type="text" placeholder="Satellite" value="Alos" id="input-satellite">
+          <div class="custom-input-dropdown">
+            <i class="caret"></i>
+          </div>
+        </div>
+        <div class="form-group custom-input">
+          <input type="text" placeholder="Relative Orbit" value="73" id="input-relative-orbit"/>
+        </div>
+        <div class="form-group custom-input">
+          <input type="text" placeholder="First Frame" value="2950" id="input-first-frame"/>
+        </div>
+        <div class="form-group custom-input">
+          <input type="text" placeholder="Mode" value="SM" id="input-mode"/>
+          <div class="custom-input-dropdown">
+            <i class="caret"></i>
+          </div>
+        </div>
+        <div class="form-group custom-input">
+          <input type="text" placeholder="Flight Direction" value="D" id="input-flight-direction"/>
+          <div class="custom-input-dropdown">
+            <i class="caret"></i>
+          </div>
+        </div>
+        <!-- enter button to search for files with attributes matching above input -->
+        <div id="enter-button-search-attributes">
+          <button class="btn btn-primary btn-block clickable-button">Enter</button>
+        </div>
+      </div>
       <div id="overlay-options-wrapper">
         <div id="overlay-options">
           Opacity:
@@ -144,36 +183,6 @@
   </div>
   <!-- by default, it is toggled, or minimized -->
   <div id="search-form-and-results-container" class="toggled">
-    <div id="search-form">
-      <!--search bar-->
-      <div id="search-bar">
-        <div class="input-group">
-          <!-- <span class="input-group-btn">
-            <button class="btn btn-default" id="search-button" type="button">Search</button>
-          </span> -->
-          <input type="text" class="form-control" placeholder="Search for..." id="search-input"/>
-        </div>
-      </div>
-      <div class="form-group">
-        <input type="text" class="form-control" placeholder="Satellite" value="Alos"id="input-satellite"/>
-      </div>
-      <div class="form-group">
-        <input type="text" class="form-control" placeholder="Relative Orbit" value="73" id="input-relative-orbit"/>
-      </div>
-      <div class="form-group">
-        <input type="text" class="form-control" placeholder="First Frame" value="2950" id="input-first-frame"/>
-      </div>
-      <div class="form-group">
-        <input type="text" class="form-control" placeholder="Mode" value="SM" id="input-mode"/>
-      </div>
-      <div class="form-group">
-        <input type="text" class="form-control" placeholder="Flight Direction" value="D" id="input-flight-direction"/>
-      </div>
-      <!-- enter button to search for files with attributes matching above input -->
-      <div id="enter-button-search-attributes">
-        <button class="btn btn-primary btn-block clickable-button">Enter</button>
-      </div>
-    </div>
     <div id="search-form-results">
       <table class="tablesorter-bootstrap" id="search-form-results-table">
         <thead>
@@ -264,7 +273,6 @@
   </div>
   <div class="wrap" id="charts" title="Displacement time-series">
     <div class="top-right-buttons">
-      <button type="button" class="close close-button" data-dismiss="modal" aria-label="Close" id="graph-div-button"><span aria-hidden="true">&times;</span></button>
       <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="graph-div-minimize-button"></button>
     </div>
     <div class="content">

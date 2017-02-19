@@ -995,10 +995,6 @@ $(window).load(function() {
         search();
     });
 
-    $(".close-button").on("click", function() {
-        $(this).parent().parent().toggleClass("active");
-    });
-
     $("#login-logout-button").on('click', function() {
         if ($("#login-logout-button").hasClass("logged-in")) {
             window.location = "/auth/logout";
