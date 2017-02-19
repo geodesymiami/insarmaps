@@ -66,5 +66,9 @@ function setUpAreaFilterSelector() {
                 console.log("failed " + xhr.responseText);
             }
         })
-    }
+    };
+
+    AreaFilterSelector.prototype.filterAreas = function(bbox) {
+        this.finish(bbox);
+    };
 }

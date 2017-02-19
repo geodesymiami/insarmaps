@@ -134,6 +134,7 @@ function Map(loadJSONFunc) {
         data: {}
     };
     this.selector = null;
+    this.areaFilterSelector = null;
     this.zoomOutZoom = 7.0;
     this.graphsController = new GraphsController(this);
     this.areas = null;
@@ -696,7 +697,7 @@ function Map(loadJSONFunc) {
 
         this.map.on("load", function() {
             this.map.getCanvas().style.cursor = 'auto';
-            this.selector = new AreaFilterSelector();
+            this.selector = new RecolorSelector();
             this.selector.map = this;
             this.selector.associatedButton = $("#polygon-button");
             this.selector.prepareEventListeners();
@@ -711,6 +712,8 @@ function Map(loadJSONFunc) {
                     }
                 }
             });
+            this.areaFilterSelector = new AreaFilterSelector();
+            this.areaFilterSelector.map = this;
         }.bind(this));
 
         this.setBaseMapLayer("streets");
@@ -774,6 +777,12 @@ function Map(loadJSONFunc) {
         this.map.on('zoomend', function() {
             var currentZoom = this.map.getZoom();
 
+            if (this.areaSwathsLoaded()) {
+                console.log("loaded");
+                var bounds = this.map.getBounds();
+                var bbox = [bounds._ne, bounds._sw];
+                this.areaFilterSelector.filterAreas(bbox);
+            }
             // reshow area markers once we zoom out enough
             if (currentZoom < this.zoomOutZoom) {
                 if (this.pointsLoaded()) {
@@ -825,6 +834,13 @@ function Map(loadJSONFunc) {
 
     this.pointsLoaded = function() {
         return this.map.getSource("vector_layer_") != null;
+    };
+
+    this.areaSwathsLoaded = function() {
+        // we always have areas0 at minimum if areas swaths loaded
+        // how to avoid checking points loaded? remove area sources when
+        // we click on a point
+        return this.map.getSource("areas0") != null && !this.pointsLoaded();
     };
 
     this.anAreaWasPreviouslyLoaded = function() {
