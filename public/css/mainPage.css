@@ -748,6 +748,11 @@ input[type=number] {
     cursor: pointer;
 }
 
+/* always datalist dropdown arrows */
+input::-webkit-calendar-picker-indicator {
+    opacity: 100;
+}
+
 #search-form-and-results-container {
     display: none; /* hide by default */
     width: 45%;

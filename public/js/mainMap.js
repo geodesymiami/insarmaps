@@ -639,6 +639,7 @@ function Map(loadJSONFunc) {
 
         $("#search-form-results-table").trigger("update");
         this.areaFeatures = features;
+        populateSearchDatalists();
 
         // add the markers representing the available areas
         areaMarker.data = {
