@@ -807,6 +807,11 @@ $(window).load(function() {
                     chartWrap.tooltip("disable");
                     button.removeClass("maximize-button").addClass("minimize-button");
                     oldGraphDiv.animating = false;
+                    // doesn't seem to be the proper size when done is called, causing
+                    // recreateGraphs to create graphs so small they can't be seen.
+                    window.setTimeout(function() {
+                        myMap.graphsController.recreateGraphs();
+                    }, 1000);
                 }
             });
 
