@@ -755,7 +755,7 @@ input::-webkit-calendar-picker-indicator {
 
 #search-form-and-results-container {
     display: none; /* hide by default */
-    width: 45%;
+    width: 35%;
     height: 30%;
     overflow-y: auto;
     position: absolute;
@@ -781,9 +781,8 @@ input::-webkit-calendar-picker-indicator {
 }
 
 #search-form-results {
-    width: 76%;
+    width: 100%;
     float: left;
-    margin-left: 0.2cm;
 }
 
 #search-form-and-results-maximize-button {

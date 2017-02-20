@@ -7,22 +7,24 @@ function populateSearchDataList(dataListID, areas, attribute) {
     var attributesController = new AreaAttributesController(myMap, areas[0]);
 
     var attributesSeenAlready = [];
+    // empty it just in case
+    datalistObj.empty();
     for (var i = 0; i < areas.length; i++) {
-		attributesController.setArea(areas[i]);
-		var fileAttributes = attributesController.getAllAttributes();
-		var attributeValue = fileAttributes[attribute];
+        attributesController.setArea(areas[i]);
+        var fileAttributes = attributesController.getAllAttributes();
+        var attributeValue = fileAttributes[attribute];
 
-		if (!attributesSeenAlready[attributeValue]) {
-			attributesSeenAlready[attributeValue] = true;
-			datalistObj.append("<option value='" + attributeValue + "'>")
-		}
+        if (!attributesSeenAlready[attributeValue]) {
+            attributesSeenAlready[attributeValue] = true;
+            datalistObj.append("<option value='" + attributeValue + "'>")
+        }
     }
 }
 
 function populateSearchDatalists() {
-	populateSearchDataList("satellites-list", myMap.areaFeatures, "mission");
-	populateSearchDataList("modes-list", myMap.areaFeatures, "beam_mode");
-	populateSearchDataList("flight-direction-list", myMap.areaFeatures, "flight_direction");
+    populateSearchDataList("satellites-list", myMap.areaFeatures, "mission");
+    populateSearchDataList("modes-list", myMap.areaFeatures, "beam_mode");
+    populateSearchDataList("flight-direction-list", myMap.areaFeatures, "flight_direction");
 }
 
 function SearchFile(container) {
@@ -85,21 +87,13 @@ function SearchFile(container) {
             getGEOJSON(area);
         });
     }
-}
 
-$(window).load(function() {
-    var searcher = new SearchFile("search-form");
-
-    /**
-     * Return an array containing areas with all attributes matching user inputted attributes
-     * @return {Array} matchingAreas if user inputs at least one search criteria, display alert otherwise
-     */
-    $("#enter-button-search-attributes").click(function() {
+    this.search = function() {
         $("#search-form-results-table tbody").empty();
         var matchingAreas = [];
 
         // special case if user inputs no attributes to search by, we get null instead of a dictionary
-        var searchAttributes = searcher.getSearchAttributes();
+        var searchAttributes = this.getSearchAttributes();
         if (searchAttributes == null) {
             alert("Please enter parameters before searching for a dataset");
             return;
@@ -128,7 +122,7 @@ $(window).load(function() {
             // if all attributes match, add area to array matchingAreas and generate HTML row displaying that area's attributes
             if (attributesMatch) {
                 matchingAreas.push(areas[i]);
-                searcher.generateMatchingAreaHTML(fileAttributes, areas[i]);
+                this.generateMatchingAreaHTML(fileAttributes, areas[i]);
             }
         }
 
@@ -141,5 +135,26 @@ $(window).load(function() {
         $("#search-form-results-table").trigger("update");
 
         return matchingAreas;
+    };
+}
+
+$(window).load(function() {
+    var searcher = new SearchFile("search-form");
+
+    document.addEventListener("keydown", function(e) {
+        var ENTER_KEY = 13;
+
+        if (e.keyCode === ENTER_KEY) {
+            searcher.search();
+        }
+    });
+
+    /**
+     * Return an array containing areas with all attributes matching user inputted attributes
+     * @return {Array} matchingAreas if user inputs at least one search criteria, display alert otherwise
+     */
+    // he said no enter button, but leave this logic just in case
+    $("#enter-button-search-attributes").click(function() {
+        searcher.search();
     });
 });

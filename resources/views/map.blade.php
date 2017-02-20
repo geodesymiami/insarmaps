@@ -115,9 +115,9 @@
             <datalist id="flight-direction-list"></datalist>
           </div>
           <!-- enter button to search for files with attributes matching above input -->
-          <div id="enter-button-search-attributes">
+          <!-- <div id="enter-button-search-attributes">
             <button class="btn btn-primary btn-block clickable-button">Enter</button>
-          </div>
+          </div> -->
         </div>
       </div>
       <div id="overlay-options-wrapper">
