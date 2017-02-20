@@ -795,7 +795,7 @@ input::-webkit-calendar-picker-indicator {
     width: 16px;
     height: 16px;
     background-image: url(https://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/classic/theme-neptune/resources/images/tools/tool-sprites.png) !important;
-    background-color: red;
+    background-color: grey;
 }
 
 .minimize-button {

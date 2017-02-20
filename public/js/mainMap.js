@@ -779,7 +779,6 @@ function Map(loadJSONFunc) {
             var currentZoom = this.map.getZoom();
 
             if (this.areaSwathsLoaded()) {
-                console.log("loaded");
                 var bounds = this.map.getBounds();
                 var bbox = [bounds._ne, bounds._sw];
                 this.areaFilterSelector.filterAreas(bbox);
