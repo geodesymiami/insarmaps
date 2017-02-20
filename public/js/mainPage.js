@@ -690,14 +690,6 @@ function search() {
     }
 }
 
-function prepareButtonsToHighlightOnHover() {
-    $(".clickable-button").hover(function() {
-        $(this).addClass("hovered");
-    }, function() {
-        $(this).removeClass("hovered");
-    });
-}
-
 function slideFunction(event, ui) {
     // start at 1 to avoid base map layer
     for (var i = 1; i < myMap.layers_.length; i++) {
@@ -1014,8 +1006,6 @@ $(window).load(function() {
     $("#webservices-ui-button").on("click", function() {
         window.location = "/WebServicesUI";
     });
-
-    prepareButtonsToHighlightOnHover();
 
     $("#download-as-text-button").click(function() {
         window.open("/textFile/" + currentArea.properties.unavco_name +

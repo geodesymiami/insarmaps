@@ -64,10 +64,6 @@ html[xmlns] .clearfix {
     display: block !important;
 }
 
-.hovered {
-    background-color: #dcdee2 !important;
-}
-
 .page-container {
     position: relative;
     display: block;
@@ -761,7 +757,7 @@ input::-webkit-calendar-picker-indicator {
     position: absolute;
     z-index: 99;
     bottom: 0;
-    left: 0;
+    left: 75px; /* don't overlap with colorscale div */
     background: white;
 }
 

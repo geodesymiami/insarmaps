@@ -116,7 +116,7 @@
           </div>
           <!-- enter button to search for files with attributes matching above input -->
           <!-- <div id="enter-button-search-attributes">
-            <button class="btn btn-primary btn-block clickable-button">Enter</button>
+            <button class="btn btn-primary btn-block">Enter</button>
           </div> -->
         </div>
       </div>
@@ -127,28 +127,28 @@
         </div>
       </div>
       <div id="reset-button">
-        <button class="btn btn-primary-outline clickable-button">Reset</button>
+        <button class="btn btn-primary-outline">Reset</button>
       </div>
       <div id="information-button">                
-        <button class="btn btn-primary-outline clickable-button">About</button>
+        <button class="btn btn-primary-outline">About</button>
       </div>
       @if (Auth::check()) 
       <div class="logged-in" id="login-logout-button">
-       <button class="btn btn-primary-outline clickable-button">Logout</button>
+       <button class="btn btn-primary-outline">Logout</button>
      </div>
      @endif
      <div id="polygon-button-div">
-      <button class="btn btn-primary-outline map-button clickable-button no-padding" data-toggle="tooltip" data-placement="right" title="Filter Areas" id="polygon-button">
+      <button class="btn btn-primary-outline map-button no-padding" data-toggle="tooltip" data-placement="right" title="Filter Areas" id="polygon-button">
         <img src="img/polygon.svg" alt="polygon.svg">
       </button>
     </div>
     <div>
-      <button class="btn btn-primary-outline map-button clickable-button no-padding" data-toggle="tooltip" data-placement="right" title="Hide Swaths" id="dataset-frames-toggle-button">
+      <button class="btn btn-primary-outline map-button no-padding" data-toggle="tooltip" data-placement="right" title="Hide Swaths" id="dataset-frames-toggle-button">
           S
       </button>
     </div>
     <div id="select-layer-button-div">
-      <button class="btn btn-primary-outline map-button clickable-button" data-toggle="tooltip" data-placement="right" title="More Options" id="select-layer-button">
+      <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="More Options" id="select-layer-button">
         <img src="img/layerSwitchIcon.png" alt="layerSwitchIcon.png" style="width: 20px; height: 20px">
       </button>
       <div id="overlay-options-toggles">
@@ -312,7 +312,7 @@
           <input id = "detrend-toggle-button" type="checkbox" name="overlayToggle"/>          
         </div>
         <div id="download-as-text-button">
-          <button class="btn btn-primary-outline clickable-button">Download as TXT</button>
+          <button class="btn btn-primary-outline">Download as TXT</button>
         </div>
       </div>
     </div> 
