@@ -632,9 +632,9 @@ function Map(loadJSONFunc) {
 
         // make search form table highlight on hover
         $("#search-form-results-table tr").hover(function() {
-            $(this).css({ "background-color": "rgba(0, 86, 173, 0.5)" });
+            searchTableHoverIn(this);
         }, function() {
-            $(this).css({ "background-color": "white" });
+            searchTableHoverOut(this);
         });
 
         $("#search-form-results-table").trigger("update");
@@ -767,7 +767,7 @@ function Map(loadJSONFunc) {
             } else if (frameFeature) {
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
                 this.areaMarkerLayer.resetHighlightsOfAllAreaRows();
-                this.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.unavco_name);
+                this.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.layerID);
                 this.areaMarkerLayer.setPolygonHighlighted(frameFeature.properties.layerID, "rgba(0, 0, 255, 0.3)");
             } else {
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();

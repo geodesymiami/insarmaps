@@ -27,6 +27,20 @@ function populateSearchDatalists() {
     populateSearchDataList("flight-direction-list", myMap.areaFeatures, "flight_direction");
 }
 
+function searchTableHoverIn(jQueryThis) {
+    $(jQueryThis).css({ "background-color": "rgba(0, 86, 173, 0.5)" });
+    var id = $(jQueryThis).attr("id");
+    if (id) {
+        var layerID = id.split("-search-row")[0];
+        myMap.areaMarkerLayer.setPolygonHighlighted(layerID, "rgba(0, 0, 255, 0.3)");
+    }
+}
+
+function searchTableHoverOut(jQueryThis) {
+    $(jQueryThis).css({ "background-color": "white" });
+    myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
+}
+
 function SearchFile(container) {
     this.container = container;
 
@@ -79,7 +93,7 @@ function SearchFile(container) {
         first_frame = first_frame.toString() != "0" ? first_frame : "N/A";
         var mode = fileAttributes.beam_mode;
         var flight_direction = fileAttributes.flight_direction;
-        var rowID = area.properties.unavco_name + "-search-row";
+        var rowID = area.properties.layerID + "-search-row";
         var html = "<tr id='" + rowID + "'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" + first_frame + "</td><td>" + mode + "</td><td>" + flight_direction + "</td></tr>";
         $("#search-form-results-table tbody").append(html);
         $("#" + rowID).css({ cursor: "pointer" });
@@ -127,9 +141,9 @@ function SearchFile(container) {
         }
 
         $("#search-form-results-table tr").hover(function() {
-            $(this).css({ "background-color": "rgba(0, 86, 173, 0.5)" });
+            searchTableHoverIn(this);
         }, function() {
-            $(this).css({ "background-color": "white" });
+            searchTableHoverOut(this);
         });
 
         $("#search-form-results-table").trigger("update");
