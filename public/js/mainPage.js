@@ -987,6 +987,10 @@ $(window).load(function() {
         search();
     });
 
+    $(".close-button").on("click", function() {
+        $(this).parent().parent().toggleClass("active");
+    });
+
     $(".custom-input-dropdown").on("click", function() {
         var id = $(this).attr("id");
 
