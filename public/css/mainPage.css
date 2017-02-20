@@ -502,6 +502,10 @@ div.menu {
     padding: 0 !important;
 }
 
+#select-layer-button-div {
+    min-width: 173px;
+}
+
 #select-layer-button-div:hover > #overlay-options-toggles {
     display: block;
 }
@@ -744,7 +748,7 @@ input[type=number] {
     cursor: pointer;
 }
 
-/* always datalist dropdown arrows */
+/* always show datalist dropdown arrows */
 input::-webkit-calendar-picker-indicator {
     opacity: 100;
 }
@@ -804,6 +808,10 @@ input::-webkit-calendar-picker-indicator {
 
 .maximize-button {
     background-position: 0 -224px;
+}
+
+.clickable-button:hover {
+    background-color: #dcdee2 !important;
 }
 
 #areas-under-mouse-table {

@@ -138,7 +138,7 @@
      </div>
      @endif
      <div id="polygon-button-div">
-      <button class="btn btn-primary-outline map-button no-padding" data-toggle="tooltip" data-placement="right" title="Filter Areas" id="polygon-button">
+      <button class="btn btn-primary-outline map-button no-padding clickable-button" data-toggle="tooltip" data-placement="right" title="Filter Areas" id="polygon-button">
         <img src="img/polygon.svg" alt="polygon.svg">
       </button>
     </div>
