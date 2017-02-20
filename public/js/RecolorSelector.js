@@ -3,8 +3,6 @@ function RecolorSelector() {}
 function setupRecolorSelector() {
     RecolorSelector.prototype.recoloringInProgress = false;
     RecolorSelector.prototype.finish = function(bbox) {
-        this.removeInternalEventListeners();
-
         // re enable dragpan only if polygon button isn't selected
         if (!this.map.selector.polygonButtonSelected) {
             this.map.map.dragPan.enable();
@@ -22,6 +20,12 @@ function setupRecolorSelector() {
 
         // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
         if (this.lastbbox == this.bbox && this.lastMinIndex == this.minIndex && this.lastMaxIndex == this.maxIndex) {
+            return;
+        }
+
+        // cancelled recoloring at any point...
+        if (this.cancelRecoloring) {
+            this.cancelRecoloring = false;
             return;
         }
 
@@ -43,9 +47,8 @@ function setupRecolorSelector() {
     };
 
     RecolorSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingText) {
-        if (this.recoloringInProgress) {
-            return;
-        }
+        // let the caller check if a coloring is in progress. otherwise user has to sometimes
+        //  wait if they cancel a recoloring and want to do another one
 
         if (this.map.map.getSource("onTheFlyJSON")) {
             this.map.map.removeSource("onTheFlyJSON");
@@ -136,6 +139,10 @@ function setupRecolorSelector() {
                 points: query
             },
             success: function(response) {
+                if (this.cancelRecoloring) {
+                    this.cancelRecoloring = false;
+                    return;
+                }
                 console.log("Received points");
                 // console.log(response);
                 var json = JSON.parse(response);

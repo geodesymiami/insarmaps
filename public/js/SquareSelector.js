@@ -8,6 +8,7 @@ function SquareSelector() {
     this.bbox = null;
     this.lastbbox = null;
     this.associatedButton = null;
+    this.cancelRecoloring = false;
 
     this.canvas = null;
     this.polygonButtonSelected = false;
@@ -55,6 +56,7 @@ function SquareSelector() {
     };
 
     this.onMouseUp = function(e) {
+        this.removeMouseListeners();
         // Capture xy coordinates
         this.bbox = [this.map.map.unproject(this.start), this.map.map.unproject(this.mousePos(e))];
         this.finish(this.bbox);
@@ -110,14 +112,17 @@ function SquareSelector() {
         }
     };
 
+    // allow cancelling of recolorings.
+    // TODO: figure out way to avoid race conditions with ajax success functions
+    // idea: attach state to each function and when user presses cancel, set that
+    // state to invalid
     this.onKeyDown = function(e) {
         // If the ESC key is pressed
         var ESCAPE_KEY = 27;
+
         if (e.keyCode === ESCAPE_KEY) {
-            this.disableSelectMode(); // when escape is pressed, exist select mode
-            // Capture xy coordinates
-            this.bbox = [this.map.map.unproject(this.start), this.map.map.unproject(this.current)];
-            this.finish(this.bbox);
+            this.cancelRecoloring = true;
+            hideLoadingScreen();
         }
     };
     // Set `true` to dispatch the event before other functions
@@ -131,6 +136,7 @@ function SquareSelector() {
         if (this.box) {
             return;
         }
+        this.cancelRecoloring = false;
         // Disable default drag zooming when the shift key is held down.
         this.map.map.dragPan.disable();
 
@@ -157,10 +163,13 @@ function SquareSelector() {
         this.canvas.addEventListener('mousedown', this.mouseDown, true);
     };
 
-    this.removeInternalEventListeners = function() {
+    this.removeKeyListeners = function() {
+        document.removeEventListener('keydown', this.onKeyDown);
+    };
+
+    this.removeMouseListeners = function() {
         document.removeEventListener('mousemove', this.onMouseMove);
         document.removeEventListener('mouseup', this.onMouseUp);
-        document.removeEventListener('keydown', this.onKeyDown);
     };
 
     this.removeEventListeners = function() {
