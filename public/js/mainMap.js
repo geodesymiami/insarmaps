@@ -759,7 +759,7 @@ function Map(loadJSONFunc) {
             var itsAGPSFeature = (layerID === "gpsStations");
             var frameFeature = this.getFirstPolygonFrameAtPoint(features);
 
-            this.map.getCanvas().style.cursor = (itsAPoint || itsAnreaPolygon || itsAGPSFeature) ? 'pointer' : '';
+            this.map.getCanvas().style.cursor = (itsAPoint || itsAnreaPolygon || itsAGPSFeature || frameFeature) ? 'pointer' : '';
 
             // a better way is to have two mousemove callbacks like we do with select area vs select marker
             if (itsAGPSFeature) {

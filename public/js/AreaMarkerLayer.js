@@ -54,7 +54,7 @@ function AreaMarkerLayer(map) {
 
     this.resetHighlightsOfAllAreaRows = function(excluding) {
         $("#search-form-results-table tr").each(function() {
-            if (excluding && $(this).attr("id") != excluding.properties.layerID + "-search-row") {
+            if (!excluding || $(this).attr("id") != excluding.properties.layerID + "-search-row") {
                $(this).css({ "background-color": "white"});
             }
         });
