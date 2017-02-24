@@ -144,7 +144,7 @@
     </div>
     <div>
       <button class="btn btn-primary-outline map-button no-padding" data-toggle="tooltip" data-placement="right" title="Hide Swaths" id="dataset-frames-toggle-button">
-          S
+          <img src="img/swathIcon.png" alt="swathIcon.png" style="width: 20px; height: 20px">
       </button>
     </div>
     <div id="select-layer-button-div">
