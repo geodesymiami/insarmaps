@@ -754,9 +754,9 @@ function Map(loadJSONFunc) {
             var layerID = features[0].layer.id;
             var layerSource = features[0].layer.source;
             var markerSymbol = features[0].properties["marker-symbol"];
-            var itsAnreaPolygon = (markerSymbol === "fillPolygon") || (markerSymbol === "marker");
-            var itsAPoint = layerSource === "vector_layer_" || layerSource === "onTheFlyJSON";
-            var itsAGPSFeature = layerID === "gpsStations";
+            var itsAnreaPolygon = (markerSymbol === "fillPolygon");
+            var itsAPoint = (layerSource === "vector_layer_" || layerSource === "onTheFlyJSON");
+            var itsAGPSFeature = (layerID === "gpsStations");
             var frameFeature = this.getFirstPolygonFrameAtPoint(features);
 
             this.map.getCanvas().style.cursor = (itsAPoint || itsAnreaPolygon || itsAGPSFeature) ? 'pointer' : '';
