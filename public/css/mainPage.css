@@ -418,6 +418,10 @@ div.menu {
     transform: translateX(-50%);
 }
 
+#loading-text-div {
+    max-width: 350px;
+}
+
 .loading-circle {
     margin: 0 auto;
     border: 5px solid #f3f3f3; /* Light grey */

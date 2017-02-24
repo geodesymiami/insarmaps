@@ -746,7 +746,7 @@ $(window).load(function() {
             var possibleDates = myMap.graphsController.mapDatesToArrayIndeces(startDate, endDate, dates);
             myMap.selector.minIndex = possibleDates.minIndex;
             myMap.selector.maxIndex = possibleDates.maxIndex;
-            myMap.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress (ESCAPE to interrupt)... for fast zoom in and out, switch to velocity or disable or deselect on the fly coloring");
+            myMap.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress (ESCAPE to interrupt)... for fast zoom, switch to velocity or disable or deselect on the fly coloring");
             $("#color-scale-text-div").html("LOS Displacement (cm)");
         } else if (selectedColoring === "velocity") {
             myMap.colorOnDisplacement = false;
