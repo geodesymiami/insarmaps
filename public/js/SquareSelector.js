@@ -9,6 +9,7 @@ function SquareSelector() {
     this.lastbbox = null;
     this.associatedButton = null;
     this.cancelRecoloring = false;
+    this.lastAjaxRequest = null;
 
     this.canvas = null;
     this.polygonButtonSelected = false;
@@ -122,6 +123,10 @@ function SquareSelector() {
 
         if (e.keyCode === ESCAPE_KEY) {
             this.cancelRecoloring = true;
+            if (this.lastAjaxRequest) {
+                this.lastAjaxRequest.abort();
+                this.lastAjaxRequest = null;
+            }
             hideLoadingScreen();
         }
     };

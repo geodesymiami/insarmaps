@@ -131,7 +131,7 @@ function setupRecolorSelector() {
         //console.log(query);
         this.recoloringInProgress = true;
 
-        $.ajax({
+        this.lastAjaxRequest = $.ajax({
             url: "/points",
             type: "post",
             async: true,
