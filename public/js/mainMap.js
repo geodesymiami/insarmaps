@@ -506,10 +506,6 @@ function Map(loadJSONFunc) {
         for (var i = 0; i < json.areas.length; i++) {
             var area = json.areas[i];
 
-            if (toExclude != null && toExclude.indexOf(area.properties.unavco_name) != -1) {
-                continue;
-            }
-
             var lat = area.coords.latitude;
             var long = area.coords.longitude;
 
@@ -557,6 +553,13 @@ function Map(loadJSONFunc) {
             };
 
             features.push(feature);
+            searchFormController.generateMatchingAreaHTML(attributes, feature);
+
+            // exclude this area from showing on the map, but we still want to add it
+            // to our areaFeatures array so we can highlight the current area
+            if (toExclude != null && toExclude.indexOf(area.properties.unavco_name) != -1) {
+                continue;
+            }
 
             // add the markers representing the available areas
             areaMarker.data = {
@@ -626,8 +629,6 @@ function Map(loadJSONFunc) {
                     }
                 });
             }
-
-            searchFormController.generateMatchingAreaHTML(attributes, feature);
         };
 
         // make search form table highlight on hover
@@ -667,11 +668,14 @@ function Map(loadJSONFunc) {
 
     this.removeAreaMarkers = function() {
         for (var i = 0; i < this.areaFeatures.length; i++) {
-            // see why we can't remove source here as well...
-            this.map.removeLayer(myMap.areaFeatures[i].properties.layerID);
-            // remove fill layer allowing highlighting of our line string hacked
-            // polygons
-            this.map.removeLayer(myMap.areaFeatures[i].properties.layerID + "fill");
+            var id = this.areaFeatures[i].properties.layerID;
+            if (this.map.getLayer(id)) {
+                // see why we can't remove source here as well...
+                this.map.removeLayer(id);
+                // remove fill layer allowing highlighting of our line string hacked
+                // polygons
+                this.map.removeLayer(id + "fill");
+            }
         }
 
         this.areaFeatures = [];

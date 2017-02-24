@@ -295,7 +295,9 @@ function getGEOJSON(area) {
                 zoom: zoom
             });
 
-            myMap.loadAreaMarkersExcluding([area.properties.unavco_name], null);
+            myMap.loadAreaMarkersExcluding([area.properties.unavco_name], function() {
+                myMap.areaMarkerLayer.setAreaRowHighlighted(area.properties.layerID);
+            });
             // in case someone called loading screen
             hideLoadingScreen();
         }, 1000);

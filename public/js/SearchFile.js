@@ -98,7 +98,9 @@ function SearchFile(container) {
         $("#search-form-results-table tbody").append(html);
         $("#" + rowID).css({ cursor: "pointer" });
         $("#" + rowID).click(function() {
-            getGEOJSON(area);
+            if (!currentArea || area.properties.layerID != currentArea.properties.layerID) {
+                getGEOJSON(area);
+            }
         });
     }
 
