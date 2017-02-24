@@ -52,9 +52,11 @@ function AreaMarkerLayer(map) {
         $("#" + unavcoName + "-search-row").css({ "background-color": "rgba(0, 86, 173, 0.5)" });
     };
 
-    this.resetHighlightsOfAllAreaRows = function() {
+    this.resetHighlightsOfAllAreaRows = function(excluding) {
         $("#search-form-results-table tr").each(function() {
-            $(this).css({ "background-color": "white"});
+            if (excluding && $(this).attr("id") != excluding.properties.layerID + "-search-row") {
+               $(this).css({ "background-color": "white"});
+            }
         });
     };
 

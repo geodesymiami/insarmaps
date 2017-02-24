@@ -746,7 +746,7 @@ function Map(loadJSONFunc) {
                 this.areaPopup.remove();
                 this.gpsStationNamePopup.remove();
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
-                this.areaMarkerLayer.resetHighlightsOfAllAreaRows();
+                this.areaMarkerLayer.resetHighlightsOfAllAreaRows(currentArea);
                 this.map.getCanvas().style.cursor = 'auto';
                 return;
             }
@@ -770,12 +770,12 @@ function Map(loadJSONFunc) {
                     .addTo(this.map);
             } else if (frameFeature) {
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
-                this.areaMarkerLayer.resetHighlightsOfAllAreaRows();
+                this.areaMarkerLayer.resetHighlightsOfAllAreaRows(currentArea);
                 this.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.layerID);
                 this.areaMarkerLayer.setPolygonHighlighted(frameFeature.properties.layerID, "rgba(0, 0, 255, 0.3)");
             } else {
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
-                this.areaMarkerLayer.resetHighlightsOfAllAreaRows();
+                this.areaMarkerLayer.resetHighlightsOfAllAreaRows(currentArea);
             }
         }.bind(this));
 
