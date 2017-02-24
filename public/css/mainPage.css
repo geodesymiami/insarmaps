@@ -868,16 +868,15 @@ ul.tab {
 
 ul.tab li {
     float: left;
-    width: 33%;
+    width: 25%;
 }
 
 ul.tab li a {
     color: black;
     text-align: center;
-    padding: 2px 16px;
     text-decoration: none;
     transition: 0.3s;
-    font-size: 13px;
+    font-size: 10px;
 }
 
 ul.tab li a:hover {
