@@ -182,7 +182,6 @@ class DateFormatter
 
       // WebServicesController.php already checked that startTime is valid date
       $startDate = $this->verifyDate($startTime);
-
       for ($i = 0; $i < count($stringDates); $i++) {
         $currentDate = $this->verifyDate($stringDates[$i]);
         $interval = $startDate->diff($currentDate);

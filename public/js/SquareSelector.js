@@ -1,18 +1,20 @@
-function SquareSelector(map) {
+function SquareSelector() {
     var that = this;
-    this.map = map;
+    this.map = null;
     this.minIndex = -1;
     this.maxIndex = -1;
     this.lastMinIndex = -1;
     this.lastMaxIndex = -1;
     this.bbox = null;
     this.lastbbox = null;
-    this.recoloringInProgress = false;
+    this.associatedButton = null;
+    this.cancelRecoloring = false;
+    this.lastAjaxRequest = null;
 
-    this.canvas = map.map.getCanvasContainer();
+    this.canvas = null;
     this.polygonButtonSelected = false;
 
-    // Variable to hold the that.starting xy coordinates
+    // Variable to hold the this.starting xy coordinates
     // when `mousedown` occured.
     this.start;
 
@@ -24,84 +26,159 @@ function SquareSelector(map) {
     this.box;
 
     this.mousePos = function(e) {
-        var rect = that.canvas.getBoundingClientRect();
+        var rect = this.canvas.getBoundingClientRect();
         return new mapboxgl.Point(
-            e.clientX - rect.left - that.canvas.clientLeft,
-            e.clientY - rect.top - that.canvas.clientTop
+            e.clientX - rect.left - this.canvas.clientLeft,
+            e.clientY - rect.top - this.canvas.clientTop
         );
     };
     this.onMouseMove = function(e) {
         // Capture the ongoing xy coordinates
-        that.current = that.mousePos(e);
+        this.current = this.mousePos(e);
 
         // Append the box element if it doesnt exist
-        if (!that.box) {
-            that.box = document.createElement('div');
-            that.box.classList.add('boxdraw');
-            that.canvas.appendChild(that.box);
+        if (!this.box) {
+            this.box = document.createElement('div');
+            this.box.classList.add('boxdraw');
+            this.canvas.appendChild(this.box);
         }
 
-        var minX = Math.min(that.start.x, that.current.x),
-            maxX = Math.max(that.start.x, that.current.x),
-            minY = Math.min(that.start.y, that.current.y),
-            maxY = Math.max(that.start.y, that.current.y);
+        var minX = Math.min(this.start.x, this.current.x),
+            maxX = Math.max(this.start.x, this.current.x),
+            minY = Math.min(this.start.y, this.current.y),
+            maxY = Math.max(this.start.y, this.current.y);
 
         // Adjust width and xy position of the box element ongoing
         var pos = 'translate(' + minX + 'px,' + minY + 'px)';
-        that.box.style.transform = pos;
-        that.box.style.WebkitTransform = pos;
-        that.box.style.width = maxX - minX + 'px';
-        that.box.style.height = maxY - minY + 'px';
+        this.box.style.transform = pos;
+        this.box.style.WebkitTransform = pos;
+        this.box.style.width = maxX - minX + 'px';
+        this.box.style.height = maxY - minY + 'px';
     };
 
     this.onMouseUp = function(e) {
+        this.removeMouseListeners();
         // Capture xy coordinates
-        that.bbox = [that.map.map.unproject(that.start), that.map.map.unproject(that.mousePos(e))];
-        that.finish(that.bbox);
+        this.bbox = [this.map.map.unproject(this.start), this.map.map.unproject(this.mousePos(e))];
+        this.finish(this.bbox);
     };
 
+    this.enableSelectMode = function() {
+        if (!this.inSelectMode()) {
+            this.polygonButtonSelected = true;
+        }
+
+        var buttonColor = "#dcdee2";
+        var opacity = 0.7;
+
+        $(this.associatedButton).animate({
+            backgroundColor: buttonColor,
+            opacity: opacity
+        }, 200);
+    };
+
+    this.disableSelectMode = function() {
+        if (this.inSelectMode()) {
+            this.polygonButtonSelected = false;
+        }
+
+        var buttonColor = "white";
+        var opacity = 1.0;
+
+        $(this.associatedButton).animate({
+            backgroundColor: buttonColor,
+            opacity: opacity
+        }, 200);
+
+        this.map.map.dragPan.enable();
+    };
+
+    this.inSelectMode = function() {
+        return this.polygonButtonSelected;
+    };
+
+    this.toggleMode = function() {
+        if (this.inSelectMode()) {
+            this.disableSelectMode();
+        } else {
+            this.enableSelectMode();
+        }
+
+        // reset bounding box
+        if (!this.inSelectMode()) {
+            this.bbox = null;
+            // Remove these events now that finish has been called.
+            this.polygonButtonSelected = false;
+            this.map.map.dragPan.enable();
+        }
+    };
+
+    // allow cancelling of recolorings.
+    // TODO: figure out way to avoid race conditions with ajax success functions
+    // idea: attach state to each function and when user presses cancel, set that
+    // state to invalid
     this.onKeyDown = function(e) {
         // If the ESC key is pressed
-        if (e.keyCode === 27) finish();
+        var ESCAPE_KEY = 27;
+
+        if (e.keyCode === ESCAPE_KEY) {
+            this.cancelRecoloring = true;
+            if (this.lastAjaxRequest) {
+                this.lastAjaxRequest.abort();
+                this.lastAjaxRequest = null;
+            }
+            hideLoadingScreen();
+        }
     };
     // Set `true` to dispatch the event before other functions
     // call it. This is necessary for disabling the default map
     // dragging behaviour.
     this.mouseDown = function(e) {
         // Continue the rest of the function if the shiftkey is pressed.
-        if (!(e.shiftKey && e.button === 0) && !that.polygonButtonSelected) return;
+        if (!(e.shiftKey && e.button === 0) && !this.polygonButtonSelected) return;
+        // box currently being drawn, so don't continue adding callbacks
+        // as they are already in place...
+        if (this.box) {
+            return;
+        }
+        this.cancelRecoloring = false;
         // Disable default drag zooming when the shift key is held down.
-        that.map.map.dragPan.disable();
+        this.map.map.dragPan.disable();
+
+        // below 3 lines explanation: js rebinds this to something else
+        // when called in a call back, this makes sure that this points
+        // to our actual object... long story short - makes inheritance work
+        this.onMouseMove = this.onMouseMove.bind(this);
+        this.onMouseUp = this.onMouseUp.bind(this);
+        this.onKeyDown = this.onKeyDown.bind(this);
         // Call functions for the following events
-        document.addEventListener('mousemove', that.onMouseMove);
-        document.addEventListener('mouseup', that.onMouseUp);
-        document.addEventListener('keydown', that.onKeyDown);
+        document.addEventListener('mousemove', this.onMouseMove);
+        document.addEventListener('mouseup', this.onMouseUp);
+        document.addEventListener('keydown', this.onKeyDown);
 
         // Capture the first xy coordinates
-        that.start = that.mousePos(e);
+        this.start = this.mousePos(e);
     };
 
-    this.canvas.addEventListener('mousedown', this.mouseDown, true);
-
-    this.finish = function(bbox) {
-        document.removeEventListener('mousemove', that.onMouseMove);
-        document.removeEventListener('keydown', that.onKeyDown);
-        document.removeEventListener('mouseup', that.onMouseUp);
-
-        // re enable dragpan only if polygon button isn't selected
-        if (!that.map.selector.polygonButtonSelected) {
-            that.map.map.dragPan.enable();
+    this.prepareEventListeners = function() {
+        if (!this.canvas) {
+            this.canvas = this.map.map.getCanvasContainer()
         }
+        this.mouseDown = this.mouseDown.bind(this);
+        this.canvas.addEventListener('mousedown', this.mouseDown, true);
+    };
 
-        if (that.box) {
-            that.box.parentNode.removeChild(that.box);
-            that.box = null;
-        }
+    this.removeKeyListeners = function() {
+        document.removeEventListener('keydown', this.onKeyDown);
+    };
 
-        // If bbox exists. use this value as the argument for `queryRenderedFeatures`
-        if (bbox) {
-            that.recolorDataset();
-        }
+    this.removeMouseListeners = function() {
+        document.removeEventListener('mousemove', this.onMouseMove);
+        document.removeEventListener('mouseup', this.onMouseUp);
+    };
+
+    this.removeEventListeners = function() {
+        this.canvas.removeEventListener('mousedown', this.mouseDown, true);
     };
 
     // courtesy of: https://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
@@ -124,177 +201,63 @@ function SquareSelector(map) {
         return pointIsInPolygon;
     };
 
-    this.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier) {
-        if (that.recoloringInProgress) {
-            return;
-        }
+    this.getVerticesOfSquareBbox = function(bbox) {
+        // create generic lat long object literals, else jquery has trouble
+        // sending over array
+        var mapboxPoint1 = bbox[0];
+        var mapboxPoint2 = bbox[1];
 
-        if (that.map.map.getSource("onTheFlyJSON")) {
-            that.map.map.removeSource("onTheFlyJSON");
-            that.map.map.removeLayer("onTheFlyJSON");
-        }
+        var multiplier = 1.2;
+        var highestLat, lowestLat, highestLong, lowestLong = 0;
 
-        // get the names of all the layers
-        var pointLayers = [];
-        for (var i = 1; i < that.map.layers_.length; i++) {
-            pointLayers.push(that.map.layers_[i].id);
-        }
-
-        var features = null;
-        if (box) {
-            var pixelBoundingBox = [that.map.map.project(box[0]), that.map.map.project(box[1])];
-            features = that.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
-        // no bounding box
+        // get lowest lat and long
+        if (mapboxPoint1.lat > mapboxPoint2.lat) {
+            highestLat = mapboxPoint1.lat;
+            lowestLat = mapboxPoint2.lat;
         } else {
-            features = that.map.map.queryRenderedFeatures({ layers: pointLayers });
+            highestLat = mapboxPoint2.lat;
+            lowestLat = mapboxPoint1.lat;
         }
 
-        if (features.length == 0) {
-            return;
+        if (mapboxPoint1.lng > mapboxPoint2.lng) {
+            highestLong = mapboxPoint1.lng;
+            lowestLong = mapboxPoint2.lng;
+        } else {
+            highestLong = mapboxPoint2.lng;
+            lowestLong = mapboxPoint1.lng;
         }
 
-        if (features.length >= 60000) {
-            return window.alert('Select a smaller number of features');
+        var nw = {
+            lat: highestLat,
+            lng: lowestLong
+        };
+        var ne = {
+            lat: highestLat,
+            lng: highestLong
         }
-        // Run through the selected features and set a filter
-        // to match features with unique FIPS codes to activate
-        // the `counties-highlighted` layer.
-        // var filter = features.reduce(function(memo, feature) {
-        //     memo.push(feature.properties.FIPS);
-        //     return memo;
-        // }, ['in', 'FIPS']);
-        var geoJSONData = {
-            "type": "FeatureCollection",
-            "features": []
+        var se = {
+            lat: lowestLat,
+            lng: highestLong
         };
 
-        var featuresMap = [];
+        var sw = {
+            lat: lowestLat,
+            lng: lowestLong
+        };
 
-        var query = currentArea.properties.unavco_name + "/";
+        var vertices = [nw, ne, se, sw];
 
-        // may be placebo effect, but seems to speed up query from db. also
-        // sort by p in ascending order so we match displacements with the features
-        features.sort(function(a, b) {
-            return a.properties.p - b.properties.p;
-        });
-
-        showLoadingScreen("Recoloring in progress...");
-
-        for (var i = 0; i < features.length; i++) {
-            var long = features[i].geometry.coordinates[0];
-            var lat = features[i].geometry.coordinates[1];
-            var curFeatureKey = features[i].properties.p.toString();
-
-            // mapbox gives us duplicate tiles (see documentation to see how query rendered features works)
-            // yet we only want unique features, not duplicates
-            if (featuresMap[curFeatureKey] != null) {
-                continue;
-            }
-
-            query += features[i].properties.p.toString() + "/";
-            featuresMap[curFeatureKey] = "1";
-
-            geoJSONData.features.push({
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [long, lat]
-                },
-                "properties": {
-                    "m": 0,
-                    "p": features[i].properties.p
-                }
-            });
-        }
-
-        //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
-        //console.log(query);
-        that.recoloringInProgress = true;
-
-        $.ajax({
-            url: "/points",
-            type: "post",
-            async: true,
-            data: {
-                points: query
-            },
-            success: function(response) {
-                console.log("Received points");
-                // console.log(response);
-                var json = JSON.parse(response);
-                // if (geoJSONData.features.length != json.displacements.length) {
-                //     console.log("not the same size json is " + json.displacements.length + " while features is " + geoJSONData.features.length);
-                // }
-                for (var i = 0; i < geoJSONData.features.length; i++) {
-                    var curFeature = geoJSONData.features[i];
-
-                    var date_string_array = json.string_dates;
-                    var date_array = convertStringsToDateArray(date_string_array);
-                    var decimal_dates = json.decimal_dates;
-                    var displacement_array = json.displacements[i];
-                    var sub_displacements = displacement_array.slice(that.minIndex, that.maxIndex + 1);
-                    var sub_decimal_dates = decimal_dates.slice(that.minIndex, that.maxIndex + 1);
-
-                    // // returns array for displacement on chart
-                    // chart_data = getDisplacementChartData(displacement_array, date_string_array);
-
-                    // calculate and render a linear regression of those dates and displacements
-                    var result = calcLinearRegression(sub_displacements, sub_decimal_dates);
-                    var slope = result["equation"][0] * multiplier; // useful to get other derivatives such as position instead of velocity
-                    var y = result["equation"][1];
-                    // console.log("before " + curFeature.properties.m)
-                    // console.log("slope is " + slope);
-                    // console.log(curFeature);
-                    curFeature.properties.m = slope;
-                    // console.log("after " + curFeature.properties.m);
-                    // console.log(curFeature);
-                }
-                if (that.map.map.getSource("onTheFlyJSON")) {
-                    that.map.map.removeSource("onTheFlyJSON");
-                    that.map.map.removeLayer("onTheFlyJSON");
-                }
-                that.map.map.addSource("onTheFlyJSON", {
-                    "type": "geojson",
-                    "data": geoJSONData
-                });
-
-                that.map.map.addLayer({
-                    "id": "onTheFlyJSON",
-                    "type": "circle",
-                    "source": "onTheFlyJSON",
-                    "paint": {
-                        'circle-color': {
-                            property: 'm',
-                            stops: that.map.colorScale.getMapboxStops()
-                        },
-                        'circle-radius': {
-                            // for an explanation of this array see here:
-                            // https://www.mapbox.com/blog/data-driven-styling/
-                            stops: [
-                                [5, 2],
-                                [8, 2],
-                                [13, 8],
-                                [21, 16],
-                                [34, 32]
-                            ]
-                        }
-                    }
-                });
-                that.recoloringInProgress = false;
-                hideLoadingScreen();
-            },
-            error: function(xhr, ajaxOptions, thrownError) {
-                console.log("failed " + xhr.responseText);
-                hideLoadingScreen();
-            }
-        });
+        return vertices;
     };
 
-    this.recolorDataset = function() {
-        that.recolorDatasetWithBoundingBoxAndMultiplier(that.bbox, 1);
+    this.setMinMax = function(min, max) {
+        this.minIndex = min;
+        this.maxIndex = max;
     };
 
-    this.recoloring = function() {
-        return that.recoloringInProgress;
+    this.reset = function(area) {
+        var dates = propertyToJSON(area.properties.decimal_dates);
+        this.minIndex = 0;
+        this.maxIndex = dates.length - 1;
     };
 }

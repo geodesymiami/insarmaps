@@ -37,3 +37,6 @@ Route::get("/WebServicesUI/", "WebServicesController@renderView");
 // web services for querying datasets
 Route::get("/WebServicesDataset/", "WebServicesDatasetController@processRequest");
 Route::get("/WebServicesDatasetUI/", "WebServicesDatasetController@renderView");
+
+// web services for querying dataset via bounding box
+Route::get("/WebServicesBox/", "WebServicesBoxController@processRequest");

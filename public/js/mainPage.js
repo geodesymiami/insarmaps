@@ -9,8 +9,26 @@ var contourToggleButton = null;
 var gpsStationsToggleButton = null;
 var myMap = null;
 
+function getRootUrl() {
+    return window.location.origin ? window.location.origin + '/' : window.location.protocol + '/' + window.location.host + '/';
+}
+
+function DivState() {
+    this.height = 0;
+    this.width = 0;
+    this.animating = false;
+}
+
 function AreaAttributesPopup() {
     var that = this;
+
+    this.oldDivState = new DivState();
+
+    this.resetTabContents = function() {
+        $("#downloads-tab").html("<p>Download to Unavco InSAR data products to be implemented.</p>");
+        $("#reference-tab").html("<p>Reference to the papers to be added.</p>");
+        $("#figures-tab").html("<p>Figures to be added</p>")
+    };
 
     this.populate = function(area) {
         var tableHTML = "";
@@ -87,26 +105,98 @@ function AreaAttributesPopup() {
         var link = $("#details-tab-link");
         clickEvent.currentTarget = link;
         link.trigger(clickEvent);
+
+        this.resetTabContents();
+        this.populateTabs(area);
     }
 
     this.show = function(area) {
         if (!$('.wrap#area-attributes-div').hasClass('active')) {
             $('.wrap#area-attributes-div').toggleClass('active');
-        } else if (that.isMinimized()) {
+        } else if (this.isMinimized()) {
             $("#area-attributes-div-minimize-button").click();
         }
 
-        that.populate(area);
+        this.populate(area);
     };
 
     this.isMinimized = function() {
-        return $('.wrap#area-attributes-div').hasClass('toggled');
+        return $('#area-attributes-div-minimize-button').hasClass('maximize-button');
+    };
+
+    this.maximize = function(animated) {
+        var areaAttributesWrap = $('.wrap#area-attributes-div');
+        var button = $("#area-attributes-div-minimize-button");
+        var that = this;
+        if (animated) {
+            this.oldDivState.animating = true;
+            areaAttributesWrap.animate({
+                "height": that.oldDivState.height,
+                "width": that.oldDivState.width
+            }, {
+                done: function() {
+                    areaAttributesWrap.tooltip(
+                        "disable");
+                    button.removeClass("maximize-button")
+                        .addClass("minimize-button");
+                    that.oldDivState.animating =
+                        false;
+                }
+            });
+        } else {
+            areaAttributesWrap.width(this.oldDivState.width);
+            areaAttributesWrap.height(this.oldDivState.height);
+        }
+    };
+
+    this.minimize = function(animated) {
+        var that = this;
+        var areaAttributesWrap = $('.wrap#area-attributes-div');
+        var button = $("#area-attributes-div-minimize-button");
+        this.oldDivState.width = areaAttributesWrap.width();
+        this.oldDivState.height = areaAttributesWrap.height();
+
+        var topRightButtonsWidth = areaAttributesWrap.find(
+            ".top-right-buttons").width() + 10;
+        areaAttributesWrap.css("overflow-y", "hidden");
+
+        $(".wrap#area-attributes-div").animate({
+            "height": "5%",
+            "width": topRightButtonsWidth
+        }, {
+            done: function() {
+                areaAttributesWrap.tooltip(
+                    "enable");
+                button.removeClass("minimize-button")
+                    .addClass("maximize-button");
+                that.oldDivState.animating =
+                    false;
+            }
+        });
+    };
+
+    this.populateTabs = function(area) {
+        var attributesController = new AreaAttributesController(myMap, area);
+
+        if (attributesController.areaHasAttribute("plotAttributePreset_Name")) {
+            var html = "<a href='#' id='preset-dataset-link'>" +
+                attributesController.getAttribute("plotAttributePreset_Name") + "</a>";
+            $("#figures-tab").html(html);
+            $("#preset-dataset-link").on("click", function() {
+                attributesController.processAttributes();
+            });
+        }
+
+        if (attributesController.areaHasAttribute("referencePdfUrl") &&
+            attributesController.areaHasAttribute("referenceText")) {
+            var html = attributesController.getAttribute("referenceText") + " <a href='" + attributesController.getAttribute("referencePdfUrl") + "' target='_blank'>PDF</a>";
+            $("#reference-tab").html(html);
+        }
     };
 };
 
 function getGEOJSON(area) {
     // currentPoint = 1;
-    currentArea = area;
 
     // var query = {
     //   "area": area,
@@ -126,7 +216,7 @@ function getGEOJSON(area) {
         ],
         "bounds": [130.267778, 31.752321, 131.191112, 32.634544],
         "tiles": [
-            "http://129.171.97.228:8888/" + area.properties.unavco_name +
+            "http://129.171.60.12:8888/" + area.properties.unavco_name +
             "/{z}/{x}/{y}.pbf"
         ],
         "vector_layers": []
@@ -136,6 +226,9 @@ function getGEOJSON(area) {
         myMap.removePoints();
         myMap.removeTouchLocationMarkers();
     }
+
+    currentArea = area;
+
     // make streets toggle button be only checked one
     $("#streets").prop("checked", true);
     for (var i = 1; i <= area.properties.num_chunks; i++) {
@@ -145,12 +238,26 @@ function getGEOJSON(area) {
 
     areaAttributesPopup.show(area);
 
-    $("#color-scale").toggleClass("active");
+    if (!$("#color-scale").hasClass("active")) {
+        $("#color-scale").toggleClass("active");
+    }
 
     // when we click, we don't reset the highlight of modified markers one final time
     myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
+    // get a recolor selector
+    var button = $("#polygon-button");
+    button.attr("data-original-title", "Select Points");
+    myMap.selector.disableSelectMode(); // in case it is selected
+    myMap.selector.removeEventListeners(); // remove old event listeners
+    myMap.selector = new RecolorSelector();
+    myMap.selector.map = myMap;
+    myMap.selector.associatedButton = button;
+    myMap.selector.prepareEventListeners(); // and add new ones
 
     myMap.colorScale.defaultValues(); // set default values in case they were modified by another area
+    myMap.selector.reset(currentArea);
+    $("#color-on-dropdown").val("velocity");
+    $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
 
     myMap.addDataset(tileJSON);
     var styleLoadFunc = function(event) {
@@ -188,17 +295,11 @@ function getGEOJSON(area) {
                 zoom: zoom
             });
 
-            myMap.onDatasetRendered(function(renderCallback) {
-                var attributesController = new AreaAttributesController(myMap, area);
-                try {
-                    attributesController.processAttributes();
-                } catch (e) {
-                    console.log("Exception: " + e);
-                }
-                myMap.map.off("render", renderCallback);
+            myMap.loadAreaMarkersExcluding([area.properties.unavco_name], function() {
+                myMap.areaMarkerLayer.setAreaRowHighlighted(area.properties.layerID);
             });
-
-            myMap.loadAreaMarkersExcluding([area.properties.unavco_name]);
+            // in case someone called loading screen
+            hideLoadingScreen();
         }, 1000);
     };
 
@@ -232,6 +333,12 @@ function hideLoadingScreen() {
     }
 }
 
+// enum-style object to denote toggle state
+var ToggleStates = {
+    OFF: 0,
+    ON: 1
+};
+
 function ToggleButton(id) {
     var that = this;
     this.id = id;
@@ -241,42 +348,36 @@ function ToggleButton(id) {
     this.firstToggle = true;
 
     this.toggle = function() {
-        if (that.toggleState == ToggleStates.ON) {
-            that.toggleState = ToggleStates.OFF;
+        if (this.toggleState == ToggleStates.ON) {
+            this.toggleState = ToggleStates.OFF;
             $(this.id).prop('checked', false);
         } else {
-            that.toggleState = ToggleStates.ON;
+            this.toggleState = ToggleStates.ON;
             $(this.id).prop('checked', true);
         }
     };
 
     this.set = function(state) {
         if (state == "on") {
-            if (that.toggleState == ToggleStates.OFF) {
-                that.toggle();
+            if (this.toggleState == ToggleStates.OFF) {
+                this.toggle();
             }
         } else if (state == "off") {
-            if (that.toggleState == ToggleStates.ON) {
-                that.toggle();
+            if (this.toggleState == ToggleStates.ON) {
+                this.toggle();
             }
         } else {
             throw "invalid toggle option";
         }
     }
     this.onclick = function(clickFunction) {
-        $(that.id).on("click", function() {
+        $(this.id).on("click", function() {
             // toggle states
-            that.toggle();
+            this.toggle();
 
             clickFunction();
-        });
+        }.bind(this));
     };
-}
-
-// enum-style object to denote toggle state
-var ToggleStates = {
-    OFF: 0,
-    ON: 1
 }
 
 function switchLayer(layer) {
@@ -322,6 +423,7 @@ function switchLayer(layer) {
         styleLoadFunc = function() {
             myMap.map.off("data", styleLoadFunc);
             myMap.addDataset(myMap.tileJSON);
+            myMap.loadAreaMarkersExcluding([currentArea.properties.unavco_name], null)
             if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
                 myMap.addGPSStationMarkers(gpsStations);
             }
@@ -399,7 +501,7 @@ function switchLayer(layer) {
                     myMap.addGPSStationMarkers(gpsStations);
                 }
 
-                myMap.loadAreaMarkers();
+                myMap.loadAreaMarkers(null);
             };
 
             myMap.map.on("data", styleLoadFunc);
@@ -535,12 +637,14 @@ function search() {
             ]
         });
         var countries = fuse.search(query);
+        var attributesController = new AreaAttributesController(myMap, countries[0]);
 
         // add our info in a table, first remove any old info
         $(".wrap#select-area-wrap").find(".content").find("#myTable").find(
             "#tableBody").empty();
         for (var i = 0; i < countries.length; i++) {
             var country = countries[i];
+            attributesController.setArea(country);
             var properties = country.properties;
 
             // so we don't have to check whether it's a string or proper object every time
@@ -553,10 +657,17 @@ function search() {
             properties.attributevalues = JSON.stringify(properties.attributevalues);
             properties.centerOfDataset = JSON.stringify(properties.centerOfDataset);
 
+            var referenceHTML = "Reference to the papers to be added.";
+            if (attributesController.areaHasAttribute("referencePdfUrl") &&
+                attributesController.areaHasAttribute("referenceText")) {
+                referenceHTML = "<a href='" + attributesController.getAttribute("referencePdfUrl") +
+                    "' target='_blank'>" + attributesController.getAttribute("referenceText") + "</a>";
+            }
+
             $("#tableBody").append("<tr id=" + properties.unavco_name +
                 "><td value='" + properties.unavco_name + "''>" +
                 properties.unavco_name + " (" + properties.project_name +
-                ")</td><td value='reference'>Reference to the papers to be added.</a></td></tr>"
+                ")</td><td value='reference'>" + referenceHTML + "</td></tr>"
             );
 
             // make cursor change when mouse hovers over row
@@ -581,20 +692,6 @@ function search() {
     }
 }
 
-function DivState() {
-    this.height = 0;
-    this.width = 0;
-    this.animating = false;
-}
-
-function prepareButtonsToHighlightOnHover() {
-    $(".clickable-button").hover(function() {
-        $(this).addClass("hovered");
-    }, function() {
-        $(this).removeClass("hovered");
-    });
-}
-
 function slideFunction(event, ui) {
     // start at 1 to avoid base map layer
     for (var i = 1; i < myMap.layers_.length; i++) {
@@ -608,13 +705,20 @@ function slideFunction(event, ui) {
 
 // when site loads, turn toggle on
 $(window).load(function() {
+    $(window).on('hashchange', function(e) {
+        history.replaceState("", document.title, e.originalEvent.oldURL);
+    });
+
     var NUM_CHUNKS = 300;
 
+    // inheritance of LineSelector class
+    RecolorSelector.prototype = new SquareSelector();
+    AreaFilterSelector.prototype = new SquareSelector();
+    LineSelector.prototype = new SquareSelector();
+    setupRecolorSelector();
+    setUpAreaFilterSelector();
     myMap = new Map(loadJSON);
     myMap.addMapToPage("map-container");
-
-    // inheritance of LineSelector class
-    LineSelector.prototype = new SquareSelector(myMap);
 
     var layerList = document.getElementById('map-type-menu');
     var inputs = layerList.getElementsByTagName('input');
@@ -624,6 +728,39 @@ $(window).load(function() {
     }
 
     setupToggleButtons();
+
+    $("#color-on-dropdown").change(function() {
+        var selectedColoring = $(this).val();
+        if (selectedColoring === "displacement") {
+            if (!currentArea) {
+                return;
+            }
+
+            myMap.colorOnDisplacement = true;
+            var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.decimal_dates));
+            var startDate = dates[0];
+            var endDate = dates[dates.length - 1];
+            if (myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
+                startDate = dates[myMap.selector.minIndex];
+                endDate = dates[myMap.selector.maxIndex];
+            }
+
+            var possibleDates = myMap.graphsController.mapDatesToArrayIndeces(startDate, endDate, dates);
+            myMap.selector.minIndex = possibleDates.minIndex;
+            myMap.selector.maxIndex = possibleDates.maxIndex;
+            myMap.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress (ESCAPE to interrupt)... for fast zoom, switch to velocity or disable or deselect on the fly coloring");
+            $("#color-scale-text-div").html("LOS Displacement (cm)");
+        } else if (selectedColoring === "velocity") {
+            myMap.colorOnDisplacement = false;
+            if (myMap.map.getSource("onTheFlyJSON")) {
+                myMap.map.removeSource("onTheFlyJSON");
+                myMap.map.removeLayer("onTheFlyJSON");
+            }
+            $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
+        } else {
+            throw "Invalid dropdown selection";
+        }
+    });
 
     $('.slideout-menu-toggle').on('click', function(event) {
         event.preventDefault();
@@ -650,6 +787,9 @@ $(window).load(function() {
     $(".wrap#charts").tooltip("disable");
     $(".wrap#area-attributes-div").tooltip("disable");
 
+    // below code might be able to be reduced by using AreaAttributesPopup
+    // class functionality. We can use a super class of the two and define
+    // subclasses
     var oldGraphDiv = new DivState();
 
     $("#graph-div-minimize-button").on("click", function(event) {
@@ -658,20 +798,24 @@ $(window).load(function() {
         }
 
         var chartWrap = $(".wrap#charts");
+        var button = $("#graph-div-minimize-button");
         oldGraphDiv.animating = true;
-        if (chartWrap.hasClass("toggled")) {
+        if (button.hasClass("maximize-button")) {
             chartWrap.animate({
                 "height": oldGraphDiv.height,
                 "width": oldGraphDiv.width
             }, {
                 done: function() {
                     chartWrap.tooltip("disable");
-                    $(
-                        "#graph-div-minimize-button > span"
-                    ).html("&or;");
+                    button.removeClass("maximize-button").addClass("minimize-button");
                     oldGraphDiv.animating = false;
+                    // doesn't seem to be the proper size when done is called, causing
+                    // recreateGraphs to create graphs so small they can't be seen.
+                    window.setTimeout(function() {
+                        myMap.graphsController.recreateGraphs();
+                    }, 1000);
                 }
-            }).removeClass("toggled");
+            });
 
             $(".wrap#charts").resizable("enable");
             $(".wrap#charts").draggable("enable");
@@ -694,57 +838,45 @@ $(window).load(function() {
             }, {
                 done: function() {
                     chartWrap.tooltip("enable");
-                    $(
-                        "#graph-div-minimize-button > span"
-                    ).html("&and;");
+                    button.removeClass("minimize-button").addClass("maximize-button");
                     oldGraphDiv.animating = false;
                 }
-            }).addClass("toggled");
+            });
         }
     });
-
-    var oldAttributeDiv = new DivState();
 
     $("#area-attributes-div-minimize-button").on("click", function(
         event) {
         var areaAttributesWrap = $(".wrap#area-attributes-div");
         areaAttributesWrap.css("overflow-y", "auto");
-        oldAttributeDiv.animating = true;
-        if (areaAttributesWrap.hasClass("toggled")) {
-            areaAttributesWrap.animate({
-                "height": oldAttributeDiv.height,
-                "width": oldAttributeDiv.width
-            }, {
-                done: function() {
-                    areaAttributesWrap.tooltip(
-                        "disable");
-                    $(
-                        "#area-attributes-div-minimize-button > span"
-                    ).html("&or;");
-                    oldAttributeDiv.animating =
-                        false;
-                }
-            }).removeClass("toggled");
+
+        if (areaAttributesPopup.isMinimized()) {
+            areaAttributesPopup.maximize(true);
         } else {
-            oldAttributeDiv.width = areaAttributesWrap.width();
-            oldAttributeDiv.height = areaAttributesWrap.height();
-            var topRightButtonsWidth = areaAttributesWrap.find(
-                ".top-right-buttons").width() + 10;
-            areaAttributesWrap.css("overflow-y", "hidden");
-            $(".wrap#area-attributes-div").animate({
-                "height": "5%",
-                "width": topRightButtonsWidth
-            }, {
-                done: function() {
-                    areaAttributesWrap.tooltip(
-                        "enable");
-                    $(
-                        "#area-attributes-div-minimize-button > span"
-                    ).html("&and;");
-                    oldAttributeDiv.animating =
-                        false;
-                }
-            }).addClass("toggled");
+            areaAttributesPopup.minimize(true);
+        }
+    });
+    // TODO: these minimize buttons are dying to be put into a class
+    // to reduce redundant code
+    $("#search-form-and-results-minimize-button").on("click", function() {
+        // heights in percent
+        var container = $("#search-form-and-results-container");
+        if (!container.hasClass("toggled")) {
+            $("#search-form-and-results-maximize-button").css("display", "block");
+            container.css("display", "none");
+            container.addClass("toggled");
+        }
+
+        myMap.map.resize();
+    });
+
+    $("#search-form-and-results-maximize-button").on("click", function() {
+        var container = $("#search-form-and-results-container");
+        if (container.hasClass("toggled")) {
+            $(this).css("display", "none");
+            container.css("display", "block");
+            container.addClass("toggled");
+            container.removeClass("toggled");
         }
     });
 
@@ -802,32 +934,29 @@ $(window).load(function() {
     });
 
     $(function() {
-        $('[data-toggle="tooltip"]').tooltip();
+        $('[data-toggle="tooltip"]').tooltip().click(function() {
+            $('.tooltip').fadeOut('fast', function() {
+                $('.tooltip').remove();
+            });
+        });
     });
 
     $("#polygon-button").on("click", function() {
-        myMap.selector.polygonButtonSelected = !myMap.selector.polygonButtonSelected;
+        myMap.selector.toggleMode();
+    });
 
-        // reset bounding box
-        if (!myMap.selector.polygonButtonSelected) {
-            myMap.selector.bbox = null;
-            // Remove these events now that finish has been called.
-            myMap.selector.polygonButtonSelected = false;
-            myMap.map.dragPan.enable();
+    // TODO: need to consolidate this if has class pattern into Toggable Class
+    // We can also have a class for square selector type square buttons if he wants more
+    $("#dataset-frames-toggle-button").on("click", function() {
+        if ($(this).hasClass("toggled")) {
+            myMap.loadAreaMarkers(null);
+            $(this).attr("data-original-title", "Hide Swaths");
+            $(this).removeClass("toggled");
+        } else {
+            myMap.removeAreaMarkers();
+            $(this).attr("data-original-title", "Show Swaths");
+            $(this).addClass("toggled");
         }
-
-        var buttonColor = "#dcdee2";
-        var opacity = 0.7;
-
-        if (!myMap.selector.polygonButtonSelected) {
-            buttonColor = "white";
-            opacity = 1.0;
-        }
-
-        $("#polygon-button").animate({
-            backgroundColor: buttonColor,
-            opacity: opacity
-        }, 200);
     });
 
     $(function() {
@@ -869,6 +998,14 @@ $(window).load(function() {
         $(this).parent().parent().toggleClass("active");
     });
 
+    $(".custom-input-dropdown").on("click", function() {
+        var id = $(this).attr("id");
+
+        if (id === "toggle-other-bars") {
+            $("#hidden-search-bars-container").toggleClass("active");
+        }
+    });
+
     $("#login-logout-button").on('click', function() {
         if ($("#login-logout-button").hasClass("logged-in")) {
             window.location = "/auth/logout";
@@ -880,8 +1017,6 @@ $(window).load(function() {
     $("#webservices-ui-button").on("click", function() {
         window.location = "/WebServicesUI";
     });
-
-    prepareButtonsToHighlightOnHover();
 
     $("#download-as-text-button").click(function() {
         window.open("/textFile/" + currentArea.properties.unavco_name +

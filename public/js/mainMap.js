@@ -26,15 +26,18 @@ var getStandardDeviation = function(displacements, slope) {
 }
 
 // falk's date string is in format yyyymmdd - ex: 20090817 
-// take an array of these strings and return an array of date objects
+var customDateStringToJSDate = function(dateString) {
+    var year = dateString.substr(0, 4);
+    var month = dateString.substr(4, 2);
+    var day = dateString.substr(6, 2);
+    return new Date(year, month - 1, day);
+}
+
+// take an array of these string dates and return an array of date objects
 var convertStringsToDateArray = function(date_string_array) {
     var date_array = [];
-    for (i = 0; i < date_string_array.length; i++) {
-        var year = date_string_array[i].toString().substr(0, 4);
-        var month = date_string_array[i].toString().substr(4, 2);
-        var day = date_string_array[i].toString().substr(6, 2);
-        var date = new Date(year, month - 1, day);
-        date_array.push(date);
+    for (var i = 0; i < date_string_array.length; i++) {
+        date_array.push(customDateStringToJSDate(date_string_array[i].toString()));
     }
     return date_array;
 }
@@ -84,7 +87,7 @@ function calcLinearRegression(displacements, decimal_dates) {
 }
 
 // takes slope, y-intercept; decimal_dates and chart_data(displacement) must
-// that.start and end around bounds of the sliders
+// this.start and end around bounds of the sliders
 function getRegressionChartData(slope, y, decimal_dates, chart_data) {
     var data = [];
     var first_date = chart_data[0][0];
@@ -109,7 +112,6 @@ function getDisplacementChartData(displacements, dates) {
 }
 
 function Map(loadJSONFunc) {
-    var that = this;
     // my mapbox api key
     mapboxgl.accessToken = "pk.eyJ1Ijoia2pqajExMjIzMzQ0IiwiYSI6ImNpbDJqYXZ6czNjdWd2eW0zMTA2aW1tNXUifQ.cPofQqq5jqm6l4zix7k6vw";
     this.startingZoom = 1.6;
@@ -132,11 +134,13 @@ function Map(loadJSONFunc) {
         data: {}
     };
     this.selector = null;
+    this.areaFilterSelector = null;
     this.zoomOutZoom = 7.0;
-    this.graphsController = new GraphsController();
+    this.graphsController = new GraphsController(this);
     this.areas = null;
     this.areaFeatures = null;
     this.colorScale = new ColorScale(-2.00, 2.00);
+    this.colorOnDisplacement = false;
 
     this.areaMarkerLayer = new AreaMarkerLayer(this);
 
@@ -163,19 +167,19 @@ function Map(loadJSONFunc) {
     this.previousZoom = this.startingZoom;
 
     this.disableInteractivity = function() {
-        that.map.dragPan.disable();
-        that.map.scrollZoom.disable();
-        that.map.doubleClickZoom.disable();
+        this.map.dragPan.disable();
+        this.map.scrollZoom.disable();
+        this.map.doubleClickZoom.disable();
     };
 
     this.enableInteractivity = function() {
-        that.map.dragPan.enable();
-        that.map.scrollZoom.enable();
-        that.map.doubleClickZoom.enable();
+        this.map.dragPan.enable();
+        this.map.scrollZoom.enable();
+        this.map.doubleClickZoom.enable();
     };
 
     this.clickOnAPoint = function(e) {
-        var features = that.map.queryRenderedFeatures(e.point);
+        var features = this.map.queryRenderedFeatures(e.point);
 
         // var layerID = "touchLocation";
 
@@ -187,22 +191,23 @@ function Map(loadJSONFunc) {
 
         if (feature.layer.id == "gpsStations") {
             var coordinates = feature.geometry.coordinates;
-            that.gpsStationPopup.remove();
-            that.gpsStationPopup.setLngLat(coordinates)
+            this.gpsStationPopup.remove();
+            this.gpsStationPopup.setLngLat(coordinates)
                 .setHTML(feature.properties.popupHTML)
-                .addTo(that.map);
+                .addTo(this.map);
 
             return;
         }
 
         // clicked on area marker, reload a new area.
-        if (feature.properties["marker-symbol"] == "marker" && that.anAreaWasPreviouslyLoaded()) {
-            if (that.pointsLoaded()) {
-                that.removePoints();
+        var markerSymbol = feature.properties["marker-symbol"];
+        if ((markerSymbol == "marker" || markerSymbol == "fillPolygon") && this.anAreaWasPreviouslyLoaded()) {
+            if (this.pointsLoaded()) {
+                this.removePoints();
             }
 
-            that.removeTouchLocationMarkers();
-            that.clickOnAnAreaMarker(e);
+            this.removeTouchLocationMarkers();
+            this.clickOnAnAreaMarker(e);
             return;
         }
 
@@ -223,16 +228,16 @@ function Map(loadJSONFunc) {
         };
 
         var chartContainer = "chartContainer";
-        var clickMarker = that.clickLocationMarker;
+        var clickMarker = this.clickLocationMarker;
         var markerSymbol = "cross";
 
-        if (that.graphsController.selectedGraph == "Bottom Graph") {
+        if (this.graphsController.selectedGraph == "Bottom Graph") {
             chartContainer = "chartContainer2";
-            clickMarker = that.clickLocationMarker2;
+            clickMarker = this.clickLocationMarker2;
             markerSymbol += "Red";
         }
 
-        var layerID = that.graphsController.selectedGraph;
+        var layerID = this.graphsController.selectedGraph;
 
         clickMarker.data = {
             "type": "FeatureCollection",
@@ -249,13 +254,13 @@ function Map(loadJSONFunc) {
         };
 
         // show cross on clicked point
-        if (that.map.getLayer(layerID)) {
-            that.map.removeLayer(layerID);
-            that.map.removeSource(layerID);
+        if (this.map.getLayer(layerID)) {
+            this.map.removeLayer(layerID);
+            this.map.removeSource(layerID);
         }
 
-        that.map.addSource(layerID, clickMarker);
-        that.map.addLayer({
+        this.map.addSource(layerID, clickMarker);
+        this.map.addLayer({
             "id": layerID,
             "type": "symbol",
             "source": layerID,
@@ -275,161 +280,8 @@ function Map(loadJSONFunc) {
             }
 
             var json = JSON.parse(response);
+            this.graphsController.JSONToGraph(json, chartContainer, e);
 
-            var date_string_array = json.string_dates;
-            var date_array = convertStringsToDateArray(date_string_array);
-            var decimal_dates = json.decimal_dates;
-            var displacement_array = json.displacements;
-
-            // convert from m to cm
-            displacement_array.forEach(function(element, index, array) {
-                array[index] = 100 * array[index];
-            });
-
-            that.graphsController.graphSettings[chartContainer].date_string_array = date_string_array;
-            that.graphsController.graphSettings[chartContainer].date_array = date_array;
-            that.graphsController.graphSettings[chartContainer].decimal_dates = decimal_dates;
-            that.graphsController.graphSettings[chartContainer].displacement_array = displacement_array;
-
-            // returns array for displacement on chart
-            chart_data = getDisplacementChartData(displacement_array, date_string_array);
-
-            // calculate and render a linear regression of those dates and displacements
-            var result = calcLinearRegression(displacement_array, decimal_dates);
-            var slope = result["equation"][0];
-            var y = result["equation"][1];
-
-            // testing standard deviation calculation - we are using slope of linear reg line
-            // as mean which gives different answer from taking mean of displacements
-            var velocity_std = getStandardDeviation(displacement_array, slope);
-
-            // returns array for linear regression on chart
-            var regression_data = getRegressionChartData(slope, y, decimal_dates, chart_data);
-
-            // now add the new regression line as a second dataset in the chart
-            firstToggle = true;
-
-            var chartOpts = {
-                title: {
-                    text: null
-                },
-                subtitle: {
-                    text: "velocity: " + (slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"
-                },
-                navigator: {
-                    enabled: true
-                },
-                scrollbar: {
-                    liveRedraw: false
-                },
-                xAxis: {
-                    type: 'datetime',
-                    events: { // get dates for slider bounds
-                        afterSetExtremes: function(e) {
-                            // we get called when graph is created
-                            that.graphsController.graphSettings[chartContainer].navigatorEvent = e;
-                            that.graphsController.getValideDatesFromNavigatorExtremes(chartContainer);
-
-                            var graphSettings = that.graphsController.graphSettings[chartContainer];
-                            // update velocity, even if we don't have a linear regression line, needed the extra check as this library calls this function when graph is created... sigh
-                            var displacements = (detrendToggleButton.toggleState == ToggleStates.ON && graphSettings.detrend_displacement_array) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
-                            var regression_data = that.graphsController.getLinearRegressionLine(chartContainer, displacements);
-                            var sub_slope = regression_data.linearRegressionData["equation"][0];
-                            var velocity_std = regression_data.stdDev;
-                            var chart = $("#" + chartContainer).highcharts();
-                            var velocityText = "velocity: " + (sub_slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"
-
-                            that.graphsController.highChartsOpts[chartContainer].subtitle.text = velocityText;
-
-                            chart.setTitle(null, {
-                                text: velocityText
-                            });
-
-                            if (regressionToggleButton.toggleState == ToggleStates.ON) {
-                                var graphSettings = that.graphsController.graphSettings[chartContainer];
-                                var displacements_array = (detrendToggleButton.toggleState == ToggleStates.ON && graphSettings.detrend_displacement_array) ? graphSettings.detrend_displacement_array : graphSettings.displacement_array;
-                                that.graphsController.addRegressionLine(chartContainer, displacements_array);
-                            }
-
-                            if (that.selector.bbox != null && that.selector.minIndex != -1
-                                && that.selector.maxIndex != -1) {
-                                that.selector.recolorDataset();
-                            }
-                        }
-                    },
-                    dateTimeLabelFormats: {
-                        month: '%e. %b',
-                        year: '%Y'
-                    },
-                    title: {
-                        text: 'Date'
-                    }
-                },
-                yAxis: {
-                    title: {
-                        text: 'Ground Displacement (cm)'
-                    },
-                    legend: {
-                        layout: 'vertical',
-                        align: 'left',
-                        verticalAlign: 'top',
-                        x: 100,
-                        y: 70,
-                        floating: true,
-                        backgroundColor: '#FFFFFF',
-                        borderWidth: 1,
-                    },
-                    plotLines: [{
-                        value: 0,
-                        width: 1,
-                        color: '#808080'
-                    }]
-                },
-                tooltip: {
-                    headerFormat: '',
-                    pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} cm'
-                },
-                series: [{
-                    type: 'scatter',
-                    name: 'Displacement',
-                    data: chart_data,
-                    marker: {
-                        enabled: true
-                    },
-                    showInLegend: false
-                }],
-                chart: {
-                    marginRight: 50
-                }
-            };
-
-            that.graphsController.graphSettings[chartContainer].navigatorEvent = e;
-
-            // take out navigator not only if this is the bottom graph, but if the second graph toggle is on, period
-            if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-                chartOpts.navigator.enabled = false;
-            }
-
-            $('#' + chartContainer).highcharts(chartOpts);
-            that.graphsController.highChartsOpts[chartContainer] = chartOpts;
-
-            that.graphsController.setNavigatorHandlers();
-
-            // this calls recreate in the background.
-            // TODO: make detrend data functions not call recreate
-            if (detrendToggleButton.toggleState == ToggleStates.ON) {
-                that.graphsController.detrendDataForGraph(chartContainer);
-            }
-
-            if (dotToggleButton.toggleState == ToggleStates.ON) {
-                that.graphsController.toggleDots();
-            }
-
-            // this is hackish. due to bug which appears when we resize window before moving graph. jquery resizable
-            // size does weird stuff to the graph, so we have to set every new graph to the dimensions of the original graph
-            var width = $("#chartContainer").width();
-            var height = $("#chartContainer").height();
-            $("#" + chartContainer).highcharts().setSize(width, height, doAnimation = true);
             // request elevation of point from google api
             var elevationGetter = new google.maps.ElevationService;
             elevationGetter.getElevationForLocations({
@@ -443,19 +295,19 @@ function Map(loadJSONFunc) {
                     console.log(status);
                 }
             });
-        });
+        }.bind(this));
     };
 
     this.determineZoomOutZoom = function() {
         // memorize the zoom we clicked at, but only if it's more zoomed out than
         // the flyTo zoom when an area is loaded
-        var currentZoom = that.map.getZoom();
+        var currentZoom = this.map.getZoom();
         if (currentZoom <= 7.0) {
             // prevent zoom below 0.5, as floating point inaccuracies can cause bugs at most zoomed out level
             if (currentZoom <= 0.5) {
-                that.zoomOutZoom = 0.5;
+                this.zoomOutZoom = 0.5;
             } else {
-                that.zoomOutZoom = that.map.getZoom();
+                this.zoomOutZoom = this.map.getZoom();
             }
         }
     };
@@ -477,18 +329,28 @@ function Map(loadJSONFunc) {
         return markersAtPoint;
     };
 
+    this.getFirstPolygonFrameAtPoint = function(features) {
+        for (var i = 0; i < features.length; i++) {
+            if (features[i].properties["marker-symbol"] == "fillPolygon") {
+                return features[i];
+            }
+        }
+
+        return null;
+    };
+
     this.leftClickOnAPoint = function(e) {
-        that.clickOnAPoint(e);
+        this.clickOnAPoint(e);
     };
 
     this.rightClickOnAPoint = function(e) {
         if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-            that.clickOnAPoint(e);
+            this.clickOnAPoint(e);
         }
     };
 
     this.clickOnAnAreaMarker = function(e) {
-        var features = that.map.queryRenderedFeatures(e.point);
+        var features = this.map.queryRenderedFeatures(e.point);
 
         if (!features.length) {
             return;
@@ -498,10 +360,10 @@ function Map(loadJSONFunc) {
 
         if (firstFeature.layer.id == "gpsStations") {
             var coordinates = firstFeature.geometry.coordinates;
-            that.gpsStationPopup.remove();
-            that.gpsStationPopup.setLngLat(coordinates)
+            this.gpsStationPopup.remove();
+            this.gpsStationPopup.setLngLat(coordinates)
                 .setHTML(firstFeature.properties.popupHTML)
-                .addTo(that.map);
+                .addTo(this.map);
 
             return;
         }
@@ -509,41 +371,40 @@ function Map(loadJSONFunc) {
         var layerID = "touchLocation";
 
         // remove cluster count check if you remove clustering
-        if (firstFeature.layer.id == "cluster-count" || firstFeature.layer.id == "contours" || firstFeature.layer.id == "contour_label") {
-            return;
+        var frameFeature = this.getFirstPolygonFrameAtPoint(features);
+        if (frameFeature) {
+            this.determineZoomOutZoom();
+
+            var feature = frameFeature;
+
+            var unavco_name = feature.properties.unavco_name;
+            var project_name = feature.properties.project_name;
+            var lat = feature.geometry.coordinates[0];
+            var long = feature.geometry.coordinates[1];
+            var num_chunks = feature.properties.num_chunks;
+            var attributeKeys = feature.properties.attributekeys;
+            var attributeValues = feature.properties.attributevalues;
+
+            var markerID = feature.properties.layerID;
+
+            getGEOJSON(feature);
         }
-
-        that.determineZoomOutZoom();
-
-        var feature = features[0];
-
-        var unavco_name = feature.properties.unavco_name;
-        var project_name = feature.properties.project_name;
-        var lat = feature.geometry.coordinates[0];
-        var long = feature.geometry.coordinates[1];
-        var num_chunks = feature.properties.num_chunks;
-        var attributeKeys = feature.properties.attributekeys;
-        var attributeValues = feature.properties.attributevalues;
-
-        var markerID = feature.properties.layerID;
-
-        getGEOJSON(feature);
     };
 
     this.setBaseMapLayer = function(mapType) {
         var tileset = 'mapbox.' + mapType;
-        that.layers_ = [];
+        this.layers_ = [];
 
-        that.layers_.push({
+        this.layers_.push({
             "id": "simple-tiles",
             "type": "raster",
             "source": "raster-tiles",
             "minzoom": 0,
             "maxzoom": 22
         });
-        that.map.setStyle({
+        this.map.setStyle({
             version: 8,
-            sprite: window.location.href + "maki/makiIcons",
+            sprite: getRootUrl() + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
                 "raster-tiles": {
@@ -556,15 +417,16 @@ function Map(loadJSONFunc) {
                     url: 'mapbox://mapbox.mapbox-terrain-v2'
                 }
             },
-            layers: that.layers_
+            layers: this.layers_
         });
     };
 
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
     this.addDataset = function(data) {
-        var stops = that.colorScale.getMapboxStops();
+        this.colorOnDisplacement = false;
+        var stops = this.colorScale.getMapboxStops();
 
-        that.map.addSource('vector_layer_', {
+        this.map.addSource('vector_layer_', {
             type: 'vector',
             tiles: data['tiles'],
             minzoom: data['minzoom'],
@@ -599,146 +461,224 @@ function Map(loadJSONFunc) {
                     }
                 }
             }
-            that.layers_.push(layer);
-            that.map.addLayer(layer);
-        });
+            this.layers_.push(layer);
+            this.map.addLayer(layer);
+        }.bind(this));
 
         // remove click listener for selecting an area, and add new one for clicking on a point
-        that.map.off("click", that.clickOnAnAreaMarker);
-        that.map.on('click', that.leftClickOnAPoint);
+        this.map.off("click", this.clickOnAnAreaMarker);
+        // also left clicking, only to add it again.
+        // TODO: check how to check what function handlers are registered
+        // while this works, it is ugly to remove and then add immediately
+        this.map.off("click", this.leftClickOnAPoint);
+        this.leftClickOnAPoint = this.leftClickOnAPoint.bind(this);
+        this.map.on('click', this.leftClickOnAPoint);
     };
 
-    this.loadAreaMarkersExcluding = function(toExclude) {
-        loadJSONFunc("", "areas", function(response) {
-            var json = JSON.parse(response);
-            that.areas = json;
+    this.polygonToLineString = function(polygonGeoJSON) {
+        var lineStringGeoJSON = {
+            type: "LineString",
+            coordinates: []
+        };
+        var coordinates = polygonGeoJSON.coordinates[0];
+        for (var i = 0; i < coordinates.length; i++) {
+            lineStringGeoJSON.coordinates.push(coordinates[i]);
+        }
 
-            var areaMarker = {
-                type: "geojson",
-                cluster: false,
-                clusterRadius: 10,
-                data: {}
-            };
-            var features = [];
+        return lineStringGeoJSON;
+    };
 
-            var attributesController = new AreaAttributesController(that, json.areas[0]);
-            var searchFormController = new SearchFile();
+    this.addAreaMarkersFromJSON = function(json, toExclude) {
+        this.areas = json;
 
-            $("#search-form-results-table tbody").empty();
-            for (var i = 0; i < json.areas.length; i++) {
-                var area = json.areas[i];
+        var areaMarker = {
+            type: "geojson",
+            cluster: false,
+            clusterRadius: 10,
+            data: {}
+        };
+        var features = [];
 
-                if (toExclude != null && toExclude.indexOf(area.properties.unavco_name) != -1) {
-                    continue;
+        var attributesController = new AreaAttributesController(this, json.areas[0]);
+        var searchFormController = new SearchFile();
+
+        $("#search-form-results-table tbody").empty();
+        for (var i = 0; i < json.areas.length; i++) {
+            var area = json.areas[i];
+
+            var lat = area.coords.latitude;
+            var long = area.coords.longitude;
+
+            attributesController.setArea(area);
+            var attributes = attributesController.getAllAttributes();
+
+            var scene_footprint = attributes.scene_footprint;
+            var polygonGeoJSON = Terraformer.WKT.parse(scene_footprint);
+            var lineStringGeoJSON = this.polygonToLineString(polygonGeoJSON);
+
+            var id = "areas" + i;
+            var polygonID = "areas" + i + "fill"
+
+            this.areaMarkerLayer.addLayer(id);
+
+            var properties = area.properties;
+
+            var feature = {
+                "type": "Feature",
+                "geometry": polygonGeoJSON,
+                "properties": {
+                    "marker-symbol": "marker",
+                    "layerID": id,
+                    "centerOfDataset": area.coords,
+                    "unavco_name": properties.unavco_name,
+                    "region": properties.region,
+                    "project_name": properties.project_name,
+                    "num_chunks": properties.num_chunks,
+                    "country": properties.country,
+                    "decimal_dates": properties.decimal_dates,
+                    "string_dates": properties.string_dates,
+                    "attributekeys": properties.attributekeys,
+                    "attributevalues": properties.attributevalues,
+                    "extra_attributes": properties.extra_attributes
                 }
-
-                var lat = area.coords.latitude;
-                var long = area.coords.longitude;
-
-                attributesController.setArea(area);
-                var attributes = attributesController.getAllAttributes();
-
-                var scene_footprint = attributes.scene_footprint;
-                var polygonGeojson = Terraformer.WKT.parse(scene_footprint);
-
-                var id = "areas" + i;
-
-                that.areaMarkerLayer.addLayer(id);
-
-                var properties = area.properties;
-
-                var feature = {
-                    "type": "Feature",
-                    "geometry": polygonGeojson,
-                    "properties": {
-                        "marker-symbol": "marker",
-                        "layerID": id,
-                        "centerOfDataset": area.coords,
-                        "unavco_name": properties.unavco_name,
-                        "region": properties.region,
-                        "project_name": properties.project_name,
-                        "num_chunks": properties.num_chunks,
-                        "country": properties.country,
-                        "decimal_dates": properties.decimal_dates,
-                        "attributekeys": properties.attributekeys,
-                        "attributevalues": properties.attributevalues,
-                        "extra_attributes": properties.extra_attributes
-                    }
-                };
-
-                features.push(feature);
-
-                // add the markers representing the available areas
-                areaMarker.data = {
-                    "type": "FeatureCollection",
-                    "features": [feature]
-                };
-
-                if (that.map.getSource(id)) {
-                    that.map.removeSource(id);
-                }
-
-                if (that.map.getLayer(id)) {
-                    that.map.removeLayer(id);
-                }
-
-                that.map.addSource(id, areaMarker);
-
-                // if dataset loaded, insert areas before dataset layer
-                if (that.map.getLayer("chunk_1")) {
-                    that.map.addLayer({
-                        "id": id,
-                        "type": "fill",
-                        "source": id,
-                        "paint": {
-                            "fill-color": "rgba(0, 0, 255, 0.0)",
-                            "fill-outline-color": "rgba(0, 0, 255, 1.0)"
-                        }
-                    }, "chunk_1");
-                } else {
-                    that.map.addLayer({
-                        "id": id,
-                        "type": "fill",
-                        "source": id,
-                        "paint": {
-                            "fill-color": "rgba(0, 0, 255, 0.0)",
-                            "fill-outline-color": "rgba(0, 0, 255, 1.0)"
-                        }
-                    });
-                }
-
-                searchFormController.generateMatchingAreaHTML(attributes, feature);
             };
 
-            // make search form table highlight on hover
-            $("#search-form-results-table tr").hover(function() {
-                $(this).css({ "background-color": "rgba(0, 86, 173, 0.5)" });
-            }, function() {
-                $(this).css({ "background-color": "white" });
-            });
+            // use same properties as the main feature which will be used
+            // for the fill layer. We use the id of the corresponding fill layer...
+            // allows for only highlighting on frame hover
+            var polygonFeature = {
+                "type": "Feature",
+                "geometry": polygonGeoJSON,
+                "properties": feature.properties
+            };
 
-            $("#search-form-results-table").trigger("update");
-            that.areaFeatures = features;
+            features.push(feature);
+            searchFormController.generateMatchingAreaHTML(attributes, feature);
+
+            // exclude this area from showing on the map, but we still want to add it
+            // to our areaFeatures array so we can highlight the current area
+            if (toExclude != null && toExclude.indexOf(area.properties.unavco_name) != -1) {
+                continue;
+            }
 
             // add the markers representing the available areas
             areaMarker.data = {
                 "type": "FeatureCollection",
-                "features": features
+                "features": [feature]
             };
+
+            if (this.map.getSource(id)) {
+                this.map.removeSource(id);
+                this.map.removeSource(polygonID)
+            }
+
+            if (this.map.getLayer(id)) {
+                this.map.removeLayer(id);
+                this.map.removeLayer(polygonID);
+            }
+
+            this.map.addSource(id, areaMarker);
+            polygonFeature.properties["marker-symbol"] = "fillPolygon";
+            areaMarker.data = {
+                "type": "FeatureCollection",
+                "features": [polygonFeature]
+            };
+            this.map.addSource(polygonID, areaMarker);
+
+            // if dataset loaded, insert areas before dataset layer
+            if (this.map.getLayer("chunk_1")) {
+                this.map.addLayer({
+                    "id": id,
+                    "type": "fill",
+                    "source": id,
+                    "paint": {
+                        "fill-color": "rgba(0, 0, 255, 0.0)",
+                        "fill-outline-color": "rgba(0, 0, 255, 1.0)"
+                    }
+                }, "chunk_1");
+                this.map.addLayer({
+                    "id": polygonID,
+                    "type": "line",
+                    "source": polygonID,
+                    "layout": {
+                        "line-join": "round",
+                        "line-cap": "round"
+                    },
+                    "paint": {
+                        "line-color": "rgba(0, 0, 255, 1.0)",
+                        "line-width": 5
+                    }
+                }, "chunk_1");
+            } else {
+                this.map.addLayer({
+                    "id": id,
+                    "type": "fill",
+                    "source": id,
+                    "paint": {
+                        "fill-color": "rgba(0, 0, 255, 0.0)",
+                        "fill-outline-color": "rgba(0, 0, 255, 1.0)"
+                    }
+                });
+                this.map.addLayer({
+                    "id": polygonID,
+                    "type": "line",
+                    "source": polygonID,
+                    "paint": {
+                        "line-color": "rgba(0, 0, 255, 1.0)",
+                        "line-width": 5
+                    }
+                });
+            }
+        };
+
+        // make search form table highlight on hover
+        $("#search-form-results-table tr").hover(function() {
+            searchTableHoverIn(this);
+        }, function() {
+            searchTableHoverOut(this);
         });
+
+        $("#search-form-results-table").trigger("update");
+        this.areaFeatures = features;
+        populateSearchDatalists();
+
+        // add the markers representing the available areas
+        areaMarker.data = {
+            "type": "FeatureCollection",
+            "features": features
+        };
+
+        return features;
     };
 
-    this.loadAreaMarkers = function() {
-        that.loadAreaMarkersExcluding(null);
+    this.loadAreaMarkersExcluding = function(toExclude, after) {
+        loadJSONFunc("", "areas", function(response) {
+            var json = JSON.parse(response);
+            var features = this.addAreaMarkersFromJSON(json, toExclude);
+
+            if (after) {
+                after(features);
+            }
+        }.bind(this));
+    };
+
+    this.loadAreaMarkers = function(after) {
+        this.loadAreaMarkersExcluding(null, after);
     };
 
     this.removeAreaMarkers = function() {
-        for (var i = 0; i < that.areaFeatures.length; i++) {
-            // see why we can't remove source here as well...
-            myMap.map.removeLayer(myMap.areaFeatures[i].properties.layerID);
+        for (var i = 0; i < this.areaFeatures.length; i++) {
+            var id = this.areaFeatures[i].properties.layerID;
+            if (this.map.getLayer(id)) {
+                // see why we can't remove source here as well...
+                this.map.removeLayer(id);
+                // remove fill layer allowing highlighting of our line string hacked
+                // polygons
+                this.map.removeLayer(id + "fill");
+            }
         }
 
-        that.areaFeatures = [];
+        this.areaFeatures = [];
     };
 
     // until mapbox api gives us a way to determine when all points of mbtiles
@@ -746,244 +686,188 @@ function Map(loadJSONFunc) {
     // endless render loop bug is fixed.
     this.onDatasetRendered = function(callback) {
         var renderHandler = function() {
-            if (that.map.loaded()) {
+            if (this.map.loaded()) {
                 callback(renderHandler);
             }
-        };
-        that.map.on("render", renderHandler);
+        }.bind(this);
+        this.map.on("render", renderHandler);
     };
 
     this.addMapToPage = function(containerID) {
-        that.map = new mapboxgl.Map({
+        this.map = new mapboxgl.Map({
             container: containerID, // container id
-            center: that.startingCoords, // that.starting position
-            zoom: that.startingZoom // that.starting zoom
+            center: this.startingCoords, // this.starting position
+            zoom: this.startingZoom // this.starting zoom
         });
 
-        that.map.on("load", function() {
-            that.selector = new SquareSelector(that);
-            that.loadAreaMarkers();
-        });
+        this.map.on("load", function() {
+            this.map.getCanvas().style.cursor = 'auto';
+            this.selector = new RecolorSelector();
+            this.selector.map = this;
+            this.selector.associatedButton = $("#polygon-button");
+            this.selector.prepareEventListeners();
+            this.loadAreaMarkers(function(areaFeatures) {
+                if (viewOptions.startDataset) {
+                    for (var i = 0; i < areaFeatures.length; i++) {
+                        if (areaFeatures[i].properties.unavco_name === viewOptions.startDataset) {
+                            showLoadingScreen("Loading requested dataset...");
+                            getGEOJSON(areaFeatures[i]);
+                            break;
+                        }
+                    }
+                }
+            });
+            this.areaFilterSelector = new AreaFilterSelector();
+            this.areaFilterSelector.map = this;
+        }.bind(this));
 
-        that.setBaseMapLayer("streets");
+        this.setBaseMapLayer("streets");
 
-        that.map.addControl(new mapboxgl.NavigationControl());
+        this.map.addControl(new mapboxgl.NavigationControl());
 
         // disable rotation gesture
-        that.map.dragRotate.disable();
+        this.map.dragRotate.disable();
         // and box zoom
-        that.map.boxZoom.disable();
+        this.map.boxZoom.disable();
 
-        that.map.on('click', that.clickOnAnAreaMarker);
+        this.clickOnAnAreaMarker = this.clickOnAnAreaMarker.bind(this);
+        this.map.on('click', this.clickOnAnAreaMarker);
 
-        //that.map.on("contextmenu", that.rightClickOnAPoint);
+        //this.map.on("contextmenu", this.rightClickOnAPoint);
 
         // Use the same approach as above to indicate that the symbols are clickable
         // by changing the cursor style to 'pointer'.
         // mainly used to show available areas under a marker
-        that.map.on('mousemove', function(e) {
-            var features = that.map.queryRenderedFeatures(e.point);
-            that.map.getCanvas().style.cursor =
-                (features.length && !(features[0].layer.id == "contours") && !(features[0].layer.id == "contour_label")) ? 'pointer' : '';
+        this.map.on('mousemove', function(e) {
+            var features = this.map.queryRenderedFeatures(e.point);
 
             // mouse not under a marker, clear all popups
             if (!features.length) {
-                that.areaPopup.remove();
-                that.gpsStationNamePopup.remove();
-                that.areaMarkerLayer.resetHighlightsOfAllMarkers();
-                that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
+                this.areaPopup.remove();
+                this.gpsStationNamePopup.remove();
+                this.areaMarkerLayer.resetHighlightsOfAllMarkers();
+                this.areaMarkerLayer.resetHighlightsOfAllAreaRows(currentArea);
+                this.map.getCanvas().style.cursor = 'auto';
                 return;
             }
 
+            var layerID = features[0].layer.id;
+            var layerSource = features[0].layer.source;
             var markerSymbol = features[0].properties["marker-symbol"];
+            var itsAnreaPolygon = (markerSymbol === "fillPolygon");
+            var itsAPoint = (layerSource === "vector_layer_" || layerSource === "onTheFlyJSON");
+            var itsAGPSFeature = (layerID === "gpsStations");
+            var frameFeature = this.getFirstPolygonFrameAtPoint(features);
 
-            if (!markerSymbol) {
-                that.areaMarkerLayer.resetHighlightsOfAllMarkers();
-                that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
-                return;
-            }
+            this.map.getCanvas().style.cursor = (itsAPoint || itsAnreaPolygon || itsAGPSFeature || frameFeature) ? 'pointer' : '';
 
             // a better way is to have two mousemove callbacks like we do with select area vs select marker
-            if (features[0].layer.id == "gpsStations") {
-                that.gpsStationNamePopup.remove();
+            if (itsAGPSFeature) {
+                this.gpsStationNamePopup.remove();
                 var coordinates = features[0].geometry.coordinates;
-                that.gpsStationNamePopup.setLngLat(coordinates)
+                this.gpsStationNamePopup.setLngLat(coordinates)
                     .setHTML(features[0].properties.stationName)
-                    .addTo(that.map);
-
-                return;
+                    .addTo(this.map);
+            } else if (frameFeature) {
+                this.areaMarkerLayer.resetHighlightsOfAllMarkers();
+                this.areaMarkerLayer.resetHighlightsOfAllAreaRows(currentArea);
+                this.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.layerID);
+                this.areaMarkerLayer.setPolygonHighlighted(frameFeature.properties.layerID, "rgba(0, 0, 255, 0.3)");
+            } else {
+                this.areaMarkerLayer.resetHighlightsOfAllMarkers();
+                this.areaMarkerLayer.resetHighlightsOfAllAreaRows(currentArea);
             }
+        }.bind(this));
 
-            if (markerSymbol == "marker") {
-                // Populate the areaPopup and set its coordinates
-                // based on the feature found.
-                var html = "<table class='table' id='areas-under-mouse-table'>";
-                // make the html table
-                var previewButtonIDSuffix = "_preview_attribues";
+        this.map.on('zoomend', function() {
+            var currentZoom = this.map.getZoom();
 
-                that.areaMarkerLayer.resetHighlightsOfAllMarkers();
-                that.areaMarkerLayer.resetHighlightsOfAllAreaRows();
-                that.areaMarkerLayer.setAreaRowHighlighted(features[0].properties.unavco_name);
-                that.areaMarkerLayer.setPolygonHighlighted(features[0].properties.layerID, "rgba(0, 0, 255, 0.3)");
-                for (var i = 0; i < features.length; i++) {
-                    var unavco_name = features[i].properties.unavco_name;
-
-                    if (!unavco_name) {
-                        return;
-                    }
-
-                    var markerID = features[i].properties.layerID;
-
-                    var region = features[i].properties.region;
-
-                    var prettyNameAndComponents = that.prettyPrintProjectName(features[i].properties.project_name);
-                    var attributeValues = JSON.parse(features[i].properties.attributevalues);
-                    var first_date_index = JSON.parse(features[i].properties.attributekeys).indexOf("first_date");
-
-                    var first_date = attributeValues[first_date_index];
-                    var last_date = attributeValues[first_date_index + 1];
-
-                    var frameNumbersString = null;
-
-                    if (prettyNameAndComponents.frameNumbers[0] == prettyNameAndComponents.frameNumbers[1]) {
-                        frameNumbersString = prettyNameAndComponents.frameNumbers[0];
-                    } else {
-                        frameNumbersString = prettyNameAndComponents.frameNumbers.join(" ");
-                    }
-
-                    html += "<tr><td value='" + unavco_name + "'><div class='area-name-popup' id='" + unavco_name + "' data-html='true' data-toggle='tooltip'" + " title='" + first_date + " to " + last_date + "<br>" +
-                        prettyNameAndComponents.missionType + " T" + prettyNameAndComponents.trackNumber + " " + frameNumbersString + "' data-placement='left'>" + region + " " + prettyNameAndComponents.missionSatellite +
-                        " " + prettyNameAndComponents.missionType + "</div><div class='preview-attributes-button clickable-button' id=" + unavco_name + previewButtonIDSuffix + "><b>?</div></td></tr>";
-                }
-                html += "</table>";
-
-                // make table respond to clicks
-                for (var i = 0; i < features.length; i++) {
-                    var unavco_name = features[i].properties.unavco_name;
-
-                    if (!unavco_name) {
-                        return;
-                    }
-
-                    var project_name = features[i].properties.project_name;
-                    var lat = features[i].geometry.coordinates[0];
-                    var long = features[i].geometry.coordinates[1];
-
-                    var num_chunks = features[i].properties.num_chunks;
-
-                    var attributeKeys = features[i].properties.attributekeys;
-                    var attributeValues = features[i].properties.attributevalues;
-
-                    // make cursor change when mouse hovers over row
-                    $("#areas-under-mouse-table #" + unavco_name).css("cursor", "pointer");
-                    $(".preview-attributes-button").css({
-                        "cursor": "pointer",
-                        "border-radius": "100%",
-                        "background-color": "rgb(107, 190, 249)"
-                    });
-
-                    $("#" + unavco_name).css({
-                        "width": "90%",
-                        "float": "left",
-                        "padding-right": "10px"
-                    });
-
-                    // ugly click function declaration to JS not using block scope
-                    $("#" + unavco_name).click((function(area) {
-                        return function(e) {
-                            that.determineZoomOutZoom();
-                            clickedArea = area.properties.unavco_name;
-                            that.areaPopup.remove();
-                            getGEOJSON(area);
-                        };
-                    })(features[i]));
-                    $("#" + unavco_name + previewButtonIDSuffix).hover((function(area) {
-                        return function(e) {
-                            if ($('.wrap#area-attributes-div').hasClass('active')) {
-                                areaAttributesPopup.populate(area);
-                            } else {
-                                areaAttributesPopup.show(area);
-                            }
-                        };
-                    })(features[i]), function() {
-                        $('.wrap#area-attributes-div').toggleClass('active');
-                    });
-                }
-
-                $(".preview-attributes-button").css({
-                    "width": "15px",
-                    "float": "left"
-                });
-
-                $(".area-name-popup").tooltip(); // activate tooltips
-                prepareButtonsToHighlightOnHover();
+            if (this.areaSwathsLoaded()) {
+                var bounds = this.map.getBounds();
+                var bbox = [bounds._ne, bounds._sw];
+                this.areaFilterSelector.filterAreas(bbox);
             }
-        });
-
-        that.map.on('zoomend', function() {
-            var currentZoom = that.map.getZoom();
-
             // reshow area markers once we zoom out enough
-            if (currentZoom < that.zoomOutZoom) {
-                if (that.pointsLoaded()) {
-                    that.reset();
+            if (currentZoom < this.zoomOutZoom) {
+                if (this.pointsLoaded()) {
+                    this.reset();
                     // otherwise, points aren't loaded, but area previously was active
-                } else if (that.anAreaWasPreviouslyLoaded()) {
-                    that.removeAreaPopups();
-                    that.loadAreaMarkers();
+                } else if (this.anAreaWasPreviouslyLoaded()) {
+                    this.removeAreaPopups();
+                    this.loadAreaMarkers(null);
                     // remove click listener for selecting an area, and add new one for clicking on a point
-                    that.map.off("click");
-                    that.map.on('click', that.clickOnAnAreaMarker);
+                    this.map.off("click", this.leftClickOnAPoint);
+                    this.map.on('click', this.clickOnAnAreaMarker);
                 }
             }
 
-            if (that.map.getSource("onTheFlyJSON")) {
+            var onTheFlyJSON = this.map.getSource("onTheFlyJSON");
+            if ((onTheFlyJSON || this.colorOnDisplacement) && !this.selector.recoloring()) {
+                var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
+                var startDate = new Date(dates[0]);
+                var endDate = new Date(dates[dates.length - 1]);
+                if (this.selector.minIndex != -1 && this.selector.maxIndex != -1) {
+                    startDate = new Date(dates[this.selector.minIndex]);
+                    endDate = new Date(dates[this.selector.maxIndex]);
+                }
                 // it doesn't fire render events if we zoom out, so we recolor anyways when we zoom
                 // out. but what about the cases when it does refire? then we have incomplete recoloring.
                 // TODO: investigate and fix
-                if (currentZoom < that.previousZoom) {
-                    that.selector.recolorDataset();
+                if (currentZoom < this.previousZoom) {
+                    if (this.colorOnDisplacement) {
+                        this.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress (ESCAPE to interrupt)... for fast zoom, switch to velocity or disable or deselect on the fly coloring");
+                    } else {
+                        this.selector.recolorDataset();
+                    }
                 } else {
-                    that.onDatasetRendered(function(renderCallback) {
-                        console.log("hi");
-                        if (!that.selector.recoloring()) {
-                            that.selector.recolorDataset();
+                    this.onDatasetRendered(function(renderCallback) {
+                        if (this.colorOnDisplacement) {
+                            this.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress (ESCAPE to interrupt)... for fast zoom, switch to velocity or disable or deselect on the fly coloring");
+                        } else {
+                            this.selector.recolorDataset();
                         }
 
-                        that.map.off("render", renderCallback);
-                    });
+                        this.map.off("render", renderCallback);
+                    }.bind(this));
                 }
             }
 
-            that.previousZoom = currentZoom;
-        });
+            this.previousZoom = currentZoom;
+        }.bind(this));
     };
 
     this.pointsLoaded = function() {
-        return that.map.getSource("vector_layer_") != null;
+        return this.map.getSource("vector_layer_") != null;
+    };
+
+    this.areaSwathsLoaded = function() {
+        // we always have areas0 at minimum if areas swaths loaded
+        // how to avoid checking points loaded? remove area sources when
+        // we click on a point
+        return this.map.getSource("areas0") != null && !this.pointsLoaded();
     };
 
     this.anAreaWasPreviouslyLoaded = function() {
-        return that.tileJSON != null;
+        return this.tileJSON != null;
     };
 
     this.removePoints = function() {
-        if (!that.pointsLoaded()) {
+        if (!this.pointsLoaded()) {
             return;
         }
 
-        that.map.removeSource("vector_layer_");
+        this.map.removeSource("vector_layer_");
 
         for (var i = 1; i <= currentArea.properties.num_chunks; i++) {
-            that.map.removeLayer("chunk_" + i);
+            this.map.removeLayer("chunk_" + i);
         }
 
         // remove all layers but the first, base layer
-        that.layers_ = that.layers_.slice(0, 1);
+        this.layers_ = this.layers_.slice(0, 1);
 
-        if (that.map.getSource("onTheFlyJSON")) {
-            that.map.removeSource("onTheFlyJSON");
-            that.map.removeLayer("onTheFlyJSON");
+        if (this.map.getSource("onTheFlyJSON")) {
+            this.map.removeSource("onTheFlyJSON");
+            this.map.removeLayer("onTheFlyJSON");
         }
     }
 
@@ -991,22 +875,22 @@ function Map(loadJSONFunc) {
         // remove selected point marker if it exists, and create a new GeoJSONSource for it
         // prevents crash of "cannot read property 'send' of undefined"
         var layerID = "Top Graph";
-        if (that.map.getLayer(layerID)) {
-            that.map.removeLayer(layerID);
-            that.map.removeSource(layerID);
+        if (this.map.getLayer(layerID)) {
+            this.map.removeLayer(layerID);
+            this.map.removeSource(layerID);
 
-            that.clickLocationMarker = {
+            this.clickLocationMarker = {
                 type: "geojson",
                 data: {}
             };
         }
 
         layerID = "Bottom Graph";
-        if (that.map.getLayer(layerID)) {
-            that.map.removeLayer(layerID);
-            that.map.removeSource(layerID);
+        if (this.map.getLayer(layerID)) {
+            this.map.removeLayer(layerID);
+            this.map.removeSource(layerID);
 
-            that.clickLocationMarker2 = {
+            this.clickLocationMarker2 = {
                 type: "geojson",
                 data: {}
             };
@@ -1030,34 +914,49 @@ function Map(loadJSONFunc) {
     };
 
     this.reset = function() {
-        that.removePoints();
-        that.removeTouchLocationMarkers();
+        this.removePoints();
+        this.removeTouchLocationMarkers();
         // incase they are up
-        that.elevationPopup.remove();
-        that.gpsStationPopup.remove();
-        that.gpsStationNamePopup.remove();
+        this.elevationPopup.remove();
+        this.gpsStationPopup.remove();
+        this.gpsStationNamePopup.remove();
 
-        that.removeGPSStationMarkers();
+        this.removeGPSStationMarkers();
         gpsStationsToggleButton.set("off");
 
-        that.loadAreaMarkers();
+        $("#color-on-dropdown").val("velocity");
+        $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
+
+        this.loadAreaMarkers(null);
 
         // remove old click listeners, and add new one for clicking on an area marker
-        that.map.off("click", that.leftClickOnAPoint);
-        that.map.off("click", that.clickOnAnAreaMarker);
+        this.map.off("click", this.leftClickOnAPoint);
+        this.map.off("click", this.clickOnAnAreaMarker);
 
-        that.map.on('click', that.clickOnAnAreaMarker);
+        this.clickOnAnAreaMarker = this.clickOnAnAreaMarker.bind(this);
+        this.map.on('click', this.clickOnAnAreaMarker);
 
-        that.removeAreaPopups();
+        this.removeAreaPopups();
 
         $("#point-details").empty();
 
         overlayToggleButton.set("off");
-        that.tileJSON = null;
+        this.tileJSON = null;
+        this.colorOnDisplacement = false;
+
+        // change square selector back to filtering areas
+        var button = $("#polygon-button");
+        button.attr("data-original-title", "Filter Areas");
+        this.selector.disableSelectMode(); // in case it is selected
+        this.selector.removeEventListeners(); // remove old event listeners
+        this.selector = new AreaFilterSelector();
+        this.selector.map = this;
+        this.selector.associatedButton = button;
+        this.selector.prepareEventListeners(); // and add new ones
     };
 
     this.addContourLines = function() {
-        that.map.addLayer({
+        this.map.addLayer({
             'id': 'contours',
             'type': 'line',
             'source': 'Mapbox Terrain V2',
@@ -1072,7 +971,7 @@ function Map(loadJSONFunc) {
                 'line-width': 1
             }
         });
-        that.map.addLayer({
+        this.map.addLayer({
             "id": "contour_label",
             "type": "symbol",
             "source": "Mapbox Terrain V2",
@@ -1106,8 +1005,8 @@ function Map(loadJSONFunc) {
     };
 
     this.removeContourLines = function() {
-        that.map.removeLayer("contours");
-        that.map.removeLayer("contour_label");
+        this.map.removeLayer("contours");
+        this.map.removeLayer("contour_label");
     };
 
     this.prettyPrintProjectName = function(projectName) {
@@ -1169,19 +1068,19 @@ function Map(loadJSONFunc) {
     };
 
     this.refreshDataset = function() {
-        var stops = that.colorScale.getMapboxStops();
+        var stops = this.colorScale.getMapboxStops();
 
-        that.layers_.forEach(function(layer) {
-            if (that.map.getPaintProperty(layer.id, "circle-color")) {
-                that.map.setPaintProperty(layer.id, "circle-color", {
+        this.layers_.forEach(function(layer) {
+            if (this.map.getPaintProperty(layer.id, "circle-color")) {
+                this.map.setPaintProperty(layer.id, "circle-color", {
                     property: 'm',
                     stops: stops
                 });
             }
-        });
+        }.bind(this));
 
-        if (that.map.getLayer("onTheFlyJSON")) {
-            that.map.setPaintProperty("onTheFlyJSON", "circle-color", {
+        if (this.map.getLayer("onTheFlyJSON")) {
+            this.map.setPaintProperty("onTheFlyJSON", "circle-color", {
                 property: 'm',
                 stops: stops
             });
@@ -1225,8 +1124,8 @@ function Map(loadJSONFunc) {
         mapboxStationFeatures.data.features = features;
 
         var layerID = "gpsStations";
-        that.map.addSource(layerID, mapboxStationFeatures);
-        that.map.addLayer({
+        this.map.addSource(layerID, mapboxStationFeatures);
+        this.map.addLayer({
             "id": layerID,
             "type": "circle",
             "source": layerID,
@@ -1240,12 +1139,12 @@ function Map(loadJSONFunc) {
     this.removeGPSStationMarkers = function() {
         var layerID = "gpsStations";
 
-        if (that.map.getSource(layerID)) {
-            that.map.removeSource(layerID);
+        if (this.map.getSource(layerID)) {
+            this.map.removeSource(layerID);
         }
 
-        if (that.map.getLayer(layerID)) {
-            that.map.removeLayer(layerID);
+        if (this.map.getLayer(layerID)) {
+            this.map.removeLayer(layerID);
         }
     };
 }

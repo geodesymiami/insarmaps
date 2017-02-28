@@ -74,7 +74,7 @@ class WebServicesController extends Controller
           "xAxis": {
             "type": "datetime",
             "dateTimeLabelFormats": {
-              "month": "%e. %b",
+              "month": "%b %Y",
               "year": "%Y"
             },
             "title": {
@@ -233,8 +233,50 @@ class WebServicesController extends Controller
     }
 
     /**
+    * Given an array of points, return point closest to user specified (longitude, latitude)
+    *
+    * @param float $latitude
+    * @param float $longitude 
+    * @param array $points - list of points around the (longitude, latitude)
+    * @return array - point object array containing displacements, latitude, longitude, and pid
+    */
+    public function getNearestPoint($latitude, $longitude, $points) {
+
+      $numPoints = count($points);
+      $nearest = $points[0];
+
+      if ($numPoints == 1) {
+        return $nearest;
+      }
+      else if (count($points) > 1) {
+        $nearestDistance = $this->haversineGreatCircleDistance($latitude, $longitude, $nearest->st_y, $nearest->st_x);
+
+        for ($j = 1; $j < $numPoints; $j++) {
+          $currentDistance = $this->haversineGreatCircleDistance($latitude, $longitude, $points[$j]->st_y, $points[$j]->st_x);
+
+          if ($currentDistance < $nearestDistance) {
+            $nearest = $points[$j];
+            $nearestDistance = $currentDistance;
+          }
+        }
+      }
+    
+      return $nearest;
+    }
+
+    // convert csv array to csv string
+    public function csvArrayToString($csv_array) {
+      $csv_string = "";
+      foreach ($csv_array as $csv) {
+        $csv_string = $csv_string . implode(",", $csv) . "\n";
+      }
+      return $csv_string;
+    }
+
+    /**
     * Given a request object containing a url, return a json encoded array for data corresponding to point
-    * that best matches request parameters specified by user. Return null if parameters are invalid.
+    * that best matches request parameters specified by user. If more than one dataset contain this point, 
+    * return data for all datasets. If no datasets contain point, return NULL.
     *
     * @param Request $request - url containing parameters specified by user to search for a point in a dataset
     * @return array $json - contains decimaldates, stringdates, and displacement of point
@@ -242,48 +284,99 @@ class WebServicesController extends Controller
     public function processRequest(Request $request) {
       $json = [];
 
-      // Mandatory request parameters: latitude, longitude, dataset
-      // Optional request parameters: startTime, endTime, outPutType
-      $latitude = 0.0;
-      $longitude = 0.0;
-      $dataset = "";
-      $startTime = NULL;  // if dataset is valid, default value will be set to first date in dataset
-      $endTime = NULL;  // if dataset is valid, default value will be set to last date in dataset 
-      $outputType = "plot"; // default value is plot, json is used for debugging and checking values
+      // Required request parameters: latitude, longitude
+      // default value for latitude and longitude is 1000.0 (impossible value)
+      $latitude = 1000.0; 
+      $longitude = 1000.0;
+      $satellite = NULL;
+      $relativeOrbit = NULL;
+      $firstFrame = NULL;
+      $mode = NULL;
+      $flightDirection = NULL;
+      $startTime = NULL;  // if specified, returned datasets must occur during or after this time
+      $endTime = NULL;  // if specified, returned datasets must occur during or before this time
+      $box = "";  // string containing wkt geometry to get datasets bounded in a box
+      $outputType = "json"; // default value is json, other option is dataset
+      $attributeSearch = FALSE; // if user specifies any search parameter except latitude, longitude, or outputType, set to true and adjust SQL
+      $csv_array = []; // final array containing dataset names and attributes
+      $csv_string = "";
 
       // extract parameter values from Request url
       $requests = $request->all();
       foreach ($requests as $key => $value) {
         switch ($key) {
           case 'latitude':
-            $latitude = $value;
+            if (strlen($value) > 0) {
+              $latitude = $value;
+            }
             break;
           case 'longitude':
-            $longitude = $value;
+            if (strlen($value) > 0) {
+              $longitude = $value;
+            }
             break;
-          case 'dataset':
-            $dataset = $value;
+          case 'satellite':
+            if (strlen($value) > 0) {
+              $satellite = $value;
+              $attributeSearch = TRUE;
+            }
+            break;
+          case 'relativeOrbit':
+            if (strlen($value) > 0) {
+              $relativeOrbit = $value;
+              $attributeSearch = TRUE;
+            }
+            break;
+          case 'firstFrame':
+            if (strlen($value) > 0) {
+              $firstFrame = $value;
+              $attributeSearch = TRUE;
+            }
+            break;
+          case 'mode':
+            if (strlen($value) > 0) {
+              $mode = $value;
+              $attributeSearch = TRUE;
+            }
+            break;
+          case 'flightDirection':
+            if (strlen($value) > 0) {
+              $flightDirection = $value;
+              $attributeSearch = TRUE;
+            }
             break;
           case 'startTime':
-            $startTime = $value;
+            if (strlen($value) > 0) {
+              $startTime = $value;
+            }
             break;
           case 'endTime':
-            $endTime = $value;
+            if (strlen($value) > 0) {
+              $endTime = $value;
+            }
+            break;
+          case 'box':
+            if (strlen($value) > 0) {
+              $box = $value;
+            }
             break;
           case 'outputType':
-            $outputType = $value;
+            if (strlen($value) > 0) {
+              $outputType = $value;
+            }
             break;
           default:
             break;
         }
       }
-
-      // check if startTime and endTime inputted by user are in in yyyy-mm-dd or yyyymmdd format
+      
+      // check if startTime inputted by user is in in yyyy-mm-dd or yyyymmdd format
       if ($startTime !== NULL && $this->dateFormatter->verifyDate($startTime) === NULL) {
         $json["errors"] = "please input startTime in format yyyy-mm-dd (ex: 1990-12-19)";
         return json_encode($json);
       }
 
+      // check if inputted by user is in in yyyy-mm-dd or yyyymmdd format
       if ($endTime !== NULL && $this->dateFormatter->verifyDate($endTime) === NULL) {
         $json["errors"] = "please input endTime in format yyyy-mm-dd (ex: 2020-12-19)";
         return json_encode($json);
@@ -301,7 +394,146 @@ class WebServicesController extends Controller
         }
       }
 
-      // perform query to get point objects within +/- delta range of (longitude, latitude)
+      // QUERY 1A: get names of all datasets
+      $query = "SELECT id, unavco_name FROM area;";
+      $unavcoNames = DB::select(DB::raw($query));
+      $datasets_id = [];
+      $datasets = []; // each dataset is identified by area id key
+
+      $data = []; // array of point data from all datasets that match closest to user query 
+      $queryConditions = []; // array of conditions to narrow query result based on webservice parameters
+
+      // format SQL result into a php array where each dataset is mapped to area_id
+      foreach ($unavcoNames as $unavcoName) {
+        $datasets[$unavcoName->id] = $unavcoName->unavco_name;
+        // array_push($datasets_id, $unavcoName->id);
+        // array_push($datasets, $unavcoName->unavco_name);
+      }
+
+      // QUERY 1B: get attributes for with all datasets
+      // for each dataset area id, get all attributes from it
+      $query = "WITH ids(id) AS (VALUES";
+      foreach ($datasets as $key => $value) {
+        $query = $query . "(" . $key . "),";
+      }
+
+      $query = rtrim($query, ",");
+      $query = $query . ")"; // add last )
+      $query = $query . "SELECT * from extra_attributes INNER JOIN ids curID ON (extra_attributes.area_id = curID.id)";
+      $attributes = DB::select(DB::raw($query));
+      $attributesDict = [];
+  
+      // get all attributes from attributes hashmap organized by dataset area_id
+      foreach ($attributes as $attribute) {
+        $key = $attribute->attributekey;
+        $value = $attribute->attributevalue;
+        $keyValue = [$key => $value];
+        
+        $attributesDict[$attribute->area_id][$key] = $value;
+      }
+
+      // sort keys from attributemap in alphabetical order of keys
+      // since not all datasets have all 27 attributes remove the ones lacking attributes
+      // finally add dataset name to beginning of sorted array
+      // TODO: insert all attributes to datasets lacking 27 attributes
+      foreach($datasets as $key => $value) {
+        if (count($attributesDict[$key]) == 27) {
+          ksort($attributesDict[$key]);
+        }
+        else {
+          unset($attributesDict[$key]);
+          unset($datasets[$key]);
+        }
+      }
+
+      // if user only specifies dataset and no other attribute, return all dataset names;
+      if ((strcasecmp($outputType, "dataset") == 0) && !$attributeSearch && $longitude == 1000.0 && $latitude == 1000.0) {
+        foreach ($datasets as $key => $value) {
+          array_unshift($attributesDict[$key], $value);
+          array_push($csv_array, array_values($attributesDict[$key]));
+        }
+        
+        $csv_string = $this->csvArrayToString($csv_array);
+        return json_encode($csv_string);
+      }
+
+      // QUERY 1C: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
+      /*
+      Example url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&mission=Alos&startTime=2009-02-06&endTime=2011-04-03&outputType=json
+
+      Another url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&box=LINESTRING(%20130.9695%2032.2865,%20130.9695%2032.2875,%20130.9705%2032.2875,%20130.9705%2032.2865,%20130.9695%2032.2865)&mission=Alos&mode=SM&startTime=2009-02-06&endTime=2011-04-03&outputType=dataset
+      */
+      if ($attributeSearch) {
+        $query = "SELECT id, unavco_name FROM area INNER JOIN (select t1" . ".area_id FROM ";
+
+        if (isset($satellite) && strlen($satellite) > 0) {
+          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='mission' AND attributevalue='" . $satellite . "')");
+        }
+
+        if (isset($mode) && strlen($mode) > 0) {
+          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='beam_mode' AND attributevalue='" . $mode . "')");
+        }
+
+        if (isset($relativeOrbit) && strlen($relativeOrbit) > 0) {
+          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='relative_orbit' AND attributevalue='" . $relativeOrbit . "')");
+        }
+
+        if (isset($firstFrame) && strlen($firstFrame) > 0) {
+          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='first_frame' AND attributevalue='" . $firstFrame . "')");
+        }
+
+        if (isset($flightDirection) && strlen($flightDirection) > 0) {
+          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='flight_direction' AND attributevalue='" . $flightDirection . "')");
+        }
+
+        if (count($queryConditions) == 1) {
+          $query = $query . $queryConditions[0] . " t1";
+        }
+        else if (count($queryConditions) > 1) {
+          $query = $query . $queryConditions[0] . " t1";
+          $len_queryConditions = count($queryConditions);
+          for ($i = 1; $i < $len_queryConditions; $i++) {
+            $query = $query . " INNER JOIN " . $queryConditions[$i] . " t" . ($i+1) . " ON t" . $i . ".area_id = t" . ($i+1) . ".area_id";
+          }
+        }
+        $query = $query . ") result ON area.id = result.area_id;";
+        $unavcoNames = DB::select(DB::raw($query));
+      }
+
+      $datasets = [];
+      foreach ($unavcoNames as $unavcoName) {
+        $datasets[$unavcoName->id] = $unavcoName->unavco_name;
+      }
+
+      // QUERY 2A: if user inputted bounding box option, check which datasets have points in the bounding box
+      if (strlen($box) > 0) {
+        $datasetsInBox = [];
+        $len = count($datasets);
+        // TODO: get polygon value from extra_attributes table in order to figure out if polygon intersects bounding box - replace the current method of checking all points
+        foreach ($datasets as $key => $value) {
+          $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $value . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('". $box . "', 4326)), wkb_geometry);";
+          $points = DB::select(DB::raw($query));
+
+          // get dataset names paired by area id
+          if (count($points) > 0) {
+            $datasetsInBox[$key] = $value;
+          }
+        }
+        
+        // return datasets that exists in attributeDict and datasets in box
+        foreach ($datasetsInBox as $key => $value) {
+          if (array_key_exists($key, $attributesDict) && array_key_exists($key, $datasetsInBox)) {
+            array_unshift($attributesDict[$key], $datasets[$key]);
+            array_push($csv_array, array_values($attributesDict[$key]));
+          }
+        }
+        // TODO: tell zishi to construct area objects as in GeoJSONController, not just return dataset names
+        // return json_encode($csv_array);
+        $csv_string = $this->csvArrayToString($csv_array);
+        return json_encode($csv_string);
+      }
+
+      // calculate polygon encapsulating longitude and latitude specified by user
       // delta = range of error for latitude and longitude values, can be changed as needed
       $delta = 0.0005;
       $p1_lat = $latitude - $delta;
@@ -315,34 +547,48 @@ class WebServicesController extends Controller
       $p5_lat = $latitude - $delta;
       $p5_long = $longitude - $delta;
 
-      $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $dataset . "
-            WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
-
-      // check if query fails due to dataset name not existing in database
-      try {
+      // QUERY 2B: otherwise for each dataset name, if point exists in dataset then 
+      // return data of first point returned by polygon created by (longitude, latitude) and delta
+      // key = area id, value = dataset name
+      foreach ($datasets as $key => $value) {
+        $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $value . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
         $points = DB::select(DB::raw($query));
-      }
-      catch (Exception $e) {
-        $json["errors"] = "invalid dataset name - please check dataset";
-        return json_encode($json);
-      }
 
-      // check if query fails due to latitude and/or longitude outside area of dataset
-      if (count($points) == 0) {
-        $json["errors"] = "point was not found in dataset - please check latitude and longitude";
-        return json_encode($json);
+        if (count($points) > 0) {
+          $nearest = $this->getNearestPoint($latitude, $longitude, $points);
+          $data[$key] = $nearest;
+        }
       }
 
-      // * Currently we hardcode by picking the first point in the $points array
-      // TODO: Come up with algorithm to get the closest point
-      $json = $this->createJsonArray($dataset, $points[0], $startTime, $endTime);
+      // $key = dataset name, $value = point object data returned by SQL
+      foreach ($data as $key => $value) {
+        $jsonForPoint = $this->createJsonArray($datasets[$key], $value, $startTime, $endTime);
+        $json[$key] = $jsonForPoint;
+      }
 
-      // check if error occured based on startTime and endTime; if so return json
-      // by default we return plot unless outputType = json (used for debugging)
+      // if user specified outputType to be dataset names instead of json, return dataset names
+      // json array contains all the datasets filtered by search
+      // attributesDict contains all attributes with their dict, but removes datasets that do not have all attributes
+      // need to return all datasets in json array that have all attributes
+      if (strcasecmp($outputType, "dataset") == 0) {
+        foreach ($json as $key => $value) {
+          // if dataset exists in attributeDict and json array
+          if (array_key_exists($key, $attributesDict) && array_key_exists($key, $json)) {
+            array_unshift($attributesDict[$key], $datasets[$key]);
+            array_push($csv_array, array_values($attributesDict[$key]));
+          }
+        }
+        $csv_string = $this->csvArrayToString($csv_array);
+        return json_encode($csv_string);
+      }
+
+      // TODO: check if error occured based on startTime and endTime; if so return json 
+      // by default we return json unless outputType = dataset
       if (isset($json["errors"]) || strcasecmp($outputType, "json") == 0) {
         return json_encode($json);
       }
 
+      // TODO: return plot of first dataset in json array - this will a take a backburner
       return $this->createPlotPicture($json["displacements"], $json["string_dates"]);
     }
 
@@ -393,6 +639,32 @@ class WebServicesController extends Controller
  
       // return result
       return array("m"=>$m, "b"=>$b);
+    }
+
+    /**
+    * Calculates the great-circle distance between two points, with
+    * the Haversine formula.
+    * @param float $latitudeFrom Latitude of start point in [deg decimal]
+    * @param float $longitudeFrom Longitude of start point in [deg decimal]
+    * @param float $latitudeTo Latitude of target point in [deg decimal]
+    * @param float $longitudeTo Longitude of target point in [deg decimal]
+    * @param float $earthRadius Mean earth radius in [m]
+    * @return float Distance between points in [m] (same as earthRadius)
+    */
+    function haversineGreatCircleDistance(
+      $latitudeFrom, $longitudeFrom, $latitudeTo, $longitudeTo, $earthRadius = 6371000)
+    {
+      // convert from degrees to radians
+      $latFrom = deg2rad($latitudeFrom);
+      $lonFrom = deg2rad($longitudeFrom);
+      $latTo = deg2rad($latitudeTo);
+      $lonTo = deg2rad($longitudeTo);
+
+      $latDelta = $latTo - $latFrom;
+      $lonDelta = $lonTo - $lonFrom;
+
+      $angle = 2 * asin(sqrt(pow(sin($latDelta / 2), 2) + cos($latFrom) * cos($latTo) * pow(sin($lonDelta / 2), 2)));
+      return $angle * $earthRadius;
     }
 
     /**

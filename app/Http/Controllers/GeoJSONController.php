@@ -150,11 +150,14 @@ private function getExtraAttributesForAreas() {
   return $attributesDict;
 }
 
-public function getAreas() {
+public function getAreas($bbox=NULL) {
   $json = array();
 
   try {
     $query = "SELECT * from area";
+    if ($bbox) {
+      $query = "SELECT * FROM area WHERE st_contains(ST_MakePolygon(ST_GeomFromText(" . $bbox . ", 4326)), ST_SetSRID(ST_MakePoint(area.latitude, area.longitude), 4326));";
+    }
     $areas = DB::select($query);
     $permissionController = new PermissionsController();
     $areasPermissions = $permissionController->getPermissions("area", "area_allowed_permissions", ["area.unavco_name = area_allowed_permissions.area_name"]);
@@ -196,6 +199,7 @@ public function getAreas() {
           $currentArea["properties"]["attributekeys"] = $this->arrayFormatter->postgresToPHPArray($area->attributekeys);
           $currentArea["properties"]["attributevalues"] = $this->arrayFormatter->postgresToPHPArray($area->attributevalues);
           $currentArea["properties"]["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($area->decimaldates);
+          $currentArea["properties"]["string_dates"] = $this->arrayFormatter->postgresToPHPArray($area->stringdates);
           $currentArea["properties"]["region"] = $area->region;
 
           $bindings = [$area->id];

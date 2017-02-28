@@ -30,8 +30,8 @@ function GoogleElevationChunkedQuerier(options) {
     this.allResults = [];
 
     this.clearTimeouts = function() {
-        for (var i = 0; i < that.timeouts.length; i++) {
-            clearTimeout(that.timeouts[i]);
+        for (var i = 0; i < this.timeouts.length; i++) {
+            clearTimeout(this.timeouts[i]);
         }
     };
 
@@ -55,11 +55,11 @@ function GoogleElevationChunkedQuerier(options) {
                 // we check whether all chunks have been fetched, and only then call the done callback
                 // the way we've throttled this, I don't think it's possible for chunks to complete out of order
                 // but I do this just to be extra sure that all the chunks are being received in order
-                if (that.allChunksFetched(allResults)) {
-                    if (that.noErrorsFetchingChunks(allResults)) {
+                if (this.allChunksFetched(allResults)) {
+                    if (this.noErrorsFetchingChunks(allResults)) {
                         var allResultsCopy = allResults.slice(0);
-                        that.allResults = [];
-                        that.timeouts = [];
+                        this.allResults = [];
+                        this.timeouts = [];
                         
                         options.onDone(allResultsCopy);                        
                     } else {
@@ -70,19 +70,19 @@ function GoogleElevationChunkedQuerier(options) {
                 if (data[0].i < (allResults.length - 1)) {
                     var subArray = data.slice(1, data.length);
                     var timeout = setTimeout(function() {
-                        that.getPoints(subArray, allResults);
-                    }, that.sleepTime);
-                    that.timeouts.push(timeout);
+                        this.getPoints(subArray, allResults);
+                    }, this.sleepTime);
+                    this.timeouts.push(timeout);
                 }
             } else if (status === google.maps.ElevationStatus.OVER_QUERY_LIMIT) {
                 console.log(status);
                
-                that.sleepTime += 1000;
+                this.sleepTime += 1000;
 
                 var timeout = setTimeout(function() {
-                    that.getPoints(data, allResults);
-                }, that.sleepTime);
-                that.timeouts.push(timeout);               
+                    this.getPoints(data, allResults);
+                }, this.sleepTime);
+                this.timeouts.push(timeout);
             } else {
                 allResults[data[0].i] = ERROR_GETTING_CHUNK;
                 console.log("unknown error has occurred with this chunk");
@@ -121,7 +121,7 @@ function GoogleElevationChunkedQuerier(options) {
             selectedPointsChunks.push({ i: curChunk, d: selectedPoints });
         }
 
-        that.getPoints(selectedPointsChunks, that.topographyElevations);
+        this.getPoints(selectedPointsChunks, this.topographyElevations);
 
         return elevations;
     };

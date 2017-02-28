@@ -11,40 +11,40 @@ function AreaMarkerLayer(map) {
     };
 
     this.resetSizeOfMarkersExcluding = function(toExclude) {
-        for (var i = 0; i < that.layers.length; i++) {
-            var layerID = that.layers[i];
+        for (var i = 0; i < this.layers.length; i++) {
+            var layerID = this.layers[i];
 
             if (toExclude != null && toExclude.indexOf(layerID) != -1) {
                 continue;
             }
 
-            that.map.map.setLayoutProperty(layerID, "icon-size", 1);
+            this.map.map.setLayoutProperty(layerID, "icon-size", 1);
         }
     };
 
     this.resetSizeOfMarkers = function() {
-        that.resetSizeOfMarkersExcluding(null);
+        this.resetSizeOfMarkersExcluding(null);
     };
 
     this.resetSizeOfModifiedMarkers = function() {
         // if we ever revert to area markers instead of polygons
         // change this code to use setMarkerSize function instead of
         // calling setLayoutProperty
-        for (var i = 0; i < that.modifiedLayers.length; i++) {
-            var layerID = that.modifiedLayers[i];
+        for (var i = 0; i < this.modifiedLayers.length; i++) {
+            var layerID = this.modifiedLayers[i];
 
-            that.map.map.setLayoutProperty(layerID, "icon-size", 1);
+            this.map.map.setLayoutProperty(layerID, "icon-size", 1);
         }
 
-        that.modifiedLayers = [];
+        this.modifiedLayers = [];
     };
 
     this.setMarkerSize = function(marker, size) {
-        that.map.map.setLayoutProperty(marker, "icon-size", size);
+        this.map.map.setLayoutProperty(marker, "icon-size", size);
 
         // if not previously marked as modified, mark as modified
-        if (that.modifiedLayers.indexOf(marker) == -1) {
-            that.modifiedLayers.push(marker);
+        if (this.modifiedLayers.indexOf(marker) == -1) {
+            this.modifiedLayers.push(marker);
         }
     };
 
@@ -52,30 +52,32 @@ function AreaMarkerLayer(map) {
         $("#" + unavcoName + "-search-row").css({ "background-color": "rgba(0, 86, 173, 0.5)" });
     };
 
-    this.resetHighlightsOfAllAreaRows = function() {
+    this.resetHighlightsOfAllAreaRows = function(excluding) {
         $("#search-form-results-table tr").each(function() {
-            $(this).css({ "background-color": "white"});
+            if (!excluding || $(this).attr("id") != excluding.properties.layerID + "-search-row") {
+               $(this).css({ "background-color": "white"});
+            }
         });
     };
 
     this.setPolygonHighlighted = function(marker, highlightColor) {
-        if (that.map.map.getLayer(marker)) {
-            that.map.map.setPaintProperty(marker, "fill-color", highlightColor);
+        if (this.map.map.getLayer(marker)) {
+            this.map.map.setPaintProperty(marker, "fill-color", highlightColor);
 
             // if not previously marked as modified, mark as modified
-            if (that.modifiedLayers.indexOf(marker) == -1) {
-                that.modifiedLayers.push(marker);
+            if (this.modifiedLayers.indexOf(marker) == -1) {
+                this.modifiedLayers.push(marker);
             }
         }
     };
 
     this.resetHighlightsOfAllMarkers = function() {
-        for (var i = 0; i < that.modifiedLayers.length; i++) {
-            var layerID = that.modifiedLayers[i];
+        for (var i = 0; i < this.modifiedLayers.length; i++) {
+            var layerID = this.modifiedLayers[i];
 
-            that.setPolygonHighlighted(layerID, "rgba(0, 0, 255, 0)");
+            this.setPolygonHighlighted(layerID, "rgba(0, 0, 255, 0)");
         }
 
-        that.modifiedLayers = [];
+        this.modifiedLayers = [];
     };
 }

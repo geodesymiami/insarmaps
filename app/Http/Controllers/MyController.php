@@ -25,11 +25,10 @@ class MyController extends Controller
     return view('map', ["fileName" => $fileName]);
   }
 
-  public function returnPage() {
+  public function returnPage(Request $request) {
+    $options = $request->all();
 
-    $fileName = "";
-
-    return view('map', ["fileName" => $fileName]);
+    return view('map', ["viewOptions" => $options]);
   }
 
     // creates a folder to store json and returns string of that folder path

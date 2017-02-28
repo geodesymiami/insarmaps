@@ -18,7 +18,8 @@
 		<br>startTime should be in yyyy-mm-dd format. Ex: 1990-12-20.
 		<br>endTime should be in yyyy-mm-dd format. Ex: 2020-12-20.
 		<br>outputType should be json, plot, or dataset.</br>
-		<br>Example webservice url: http://homestead.app/WebServices?longitude=131.67&latitude=32.53&satellite=Alos&relativeOrbit=73&firstFrame=2950&mode=SM&flightDirection=D& endTime=2020-12-20&outputType=json
+		<br>
+			<span id="example-url">Example webservice url: http://homestead.app/WebServices?longitude=131.67&latitude=32.53&satellite=Alos	&relativeOrbit=73&firstFrame=2950&mode=SM&flightDirection=D& endTime=2020-12-20&outputType=json</span>
 		<br>
 	</div>
 
@@ -63,10 +64,6 @@
 		outputType (optional):
 		<input type="text" class="form-control" placeholder="plot" id="input-outputType">
 	</div>
-
-	<div id="enter-button">
-        <button class="btn btn-primary-outline clickable-button">Enter</button>
-    </div>
 
     <div class="form-group">
 		webservice url:

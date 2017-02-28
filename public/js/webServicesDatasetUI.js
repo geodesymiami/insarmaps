@@ -1,7 +1,3 @@
-function getRootUrl() {
-    return window.location.origin ? window.location.origin + '/' : window.location.protocol + '/' + window.location.host + '/';
-}
-
 $(window).load(function() {
     var outputURL = getRootUrl() + "WebServicesDataset?";
     var placeholderURL = outputURL + "satellite=Alos&relativeOrbit=73&firstFrame=2950&mode=SM&flightDirection=D";
