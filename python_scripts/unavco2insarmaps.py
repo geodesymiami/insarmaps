@@ -299,7 +299,7 @@ def main():
 
 # set number of points per json chunk - then close h5 file
     chunk_size = 20000
-    file.close()    
+    file.close()
 
 # connect to postgresql database
 # also create folder named after h5 file to store json files in mbtiles folder
