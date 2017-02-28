@@ -213,8 +213,6 @@ def make_json_file(chunk_num, points):
 
     print "inserted chunk " + str(chunk_num) + " to db"
 
-def usage():
-    print "Usage: python Converter_unavco.py -f Alos_SM_73_2980_2990_20070107_20110420.h5 -u DB_USERNAME -p DBPASSWORD -h DB_PASSWORD"
 # ---------------------------------------------------------------------------------------
 # START OF EXECUTABLE
 # ---------------------------------------------------------------------------------------
