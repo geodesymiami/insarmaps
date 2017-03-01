@@ -73,7 +73,6 @@ def convert_data(attributes, decimal_dates, timeseries_datasets, dataset_keys, j
     chunk_num = 1
     point_num = 0
     CHUNK_SIZE = 20000
-    return 
 
     # outer loop increments row = longitude, inner loop increments column = latitude
     for (row, col), value in np.ndenumerate(timeseries_datasets[dataset_keys[0]]):
