@@ -216,7 +216,7 @@ def convert_data(attributes, decimal_dates, timeseries_datasets, dataset_keys, j
 # ---------------------------------------------------------------------------------------
 # create a json file out of siu man array
 # then put json file into directory named after the h5 file
-def make_json_file(chunk_num, points, dataset_keys, json_path, folder_name): 
+def make_json_file(chunk_num, points, dataset_keys, json_path, folder_name):
 
     data = {
     "type": "FeatureCollection",
