@@ -263,9 +263,8 @@ function getGEOJSON(area) {
                 zoom: zoom
             });
 
-            myMap.loadAreaMarkersExcluding([area.properties.unavco_name], function() {
-                myMap.areaMarkerLayer.setAreaRowHighlighted(area.properties.layerID);
-            });
+            myMap.addAreaMarkersFromJSON(myMap.areas, [area.properties.unavco_name]);
+            myMap.areaMarkerLayer.setAreaRowHighlighted(area.properties.layerID);
             // in case someone called loading screen
             hideLoadingScreen();
         }, 1000);
@@ -863,7 +862,12 @@ $(window).load(function() {
     // We can also have a class for square selector type square buttons if he wants more
     $("#dataset-frames-toggle-button").on("click", function() {
         if ($(this).hasClass("toggled")) {
-            myMap.loadAreaMarkers(null);
+            if (myMap.areas) {
+                var toExclude = currentArea ? [currentArea.properties.unavco_name] : null;
+                myMap.addAreaMarkersFromJSON(myMap.areas, toExclude);
+            } else {
+               myMap.loadAreaMarkers(null);
+            }
             $(this).attr("data-original-title", "Hide Swaths");
             $(this).removeClass("toggled");
         } else {
