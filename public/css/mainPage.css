@@ -732,9 +732,11 @@ input[type=number] {
     width: 80%;
     float: left;
     height: 100%;
-    padding: 0 !important;
+    padding-left: 10px;
     margin: 0 !important;
     border: 0 !important;
+    font-family: 'Open Sans', 'Calibri';
+    font-size: 14px;
 }
 
 #hidden-search-bars-container input {
@@ -792,6 +794,10 @@ input::-webkit-calendar-picker-indicator {
 #search-form-results-table thead {
     position: fixed;
     width: 34%;
+}
+
+#search-form-results-table td {
+    padding-left: 10px;
 }
 
 #search-form-and-results-maximize-button {

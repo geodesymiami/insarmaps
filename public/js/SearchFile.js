@@ -162,10 +162,12 @@ $(window).load(function() {
 
         if (e.keyCode === ENTER_KEY && !$("#search-input").is(":focus")) {
             searcher.search();
+            $("#search-form-and-results-maximize-button").click();
         }
     });
 
     $("#enter-button-search-attributes").click(function() {
         searcher.search();
+        $("#search-form-and-results-maximize-button").click();
     });
 });

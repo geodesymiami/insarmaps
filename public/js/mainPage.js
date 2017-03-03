@@ -901,6 +901,7 @@ $(window).load(function() {
 
         if (event.keyCode == ENTER_KEY) {
             search();
+            $("#search-form-and-results-maximize-button").click();
         }
     });
 
