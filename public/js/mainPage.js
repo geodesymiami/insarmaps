@@ -111,9 +111,7 @@ function AreaAttributesPopup() {
     }
 
     this.show = function(area) {
-        if (this.isMaximized()) {
-            this.minimize();
-        } else if (this.isMinimized()) {
+        if (this.isMinimized()) {
             this.maximize();
         }
 
