@@ -765,7 +765,7 @@ input::-webkit-calendar-picker-indicator {
     position: absolute;
     z-index: 99;
     bottom: 0;
-    left: 75px; /* don't overlap with colorscale div */
+    left: 90px; /* don't overlap with colorscale div */
     background: white;
 }
 
@@ -814,7 +814,7 @@ input::-webkit-calendar-picker-indicator {
     background-position: 0 -224px;
 }
 
-.clickable-button:hover {
+.clickable-button:active {
     background-color: #dcdee2 !important;
 }
 

@@ -138,7 +138,7 @@
      </div>
      @endif
      <div id="polygon-button-div">
-      <button class="btn btn-primary-outline map-button no-padding clickable-button" data-toggle="tooltip" data-placement="right" title="Filter Areas" id="polygon-button">
+      <button class="btn btn-primary-outline map-button no-padding clickable-button" data-toggle="tooltip" data-placement="right" title="Select Points" id="polygon-button">
         <img src="img/polygon.svg" alt="polygon.svg">
       </button>
     </div>
@@ -227,7 +227,7 @@
   </div>
   <div id="point-details"></div>
   <div>
-    <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Filter Areas"></button>
+    <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Select Points"></button>
   </div>
   <div class="wrap" id="area-attributes-div" title="Attributes">    
     <div class="top-right-buttons">
