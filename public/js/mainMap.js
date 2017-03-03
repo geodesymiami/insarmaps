@@ -273,6 +273,8 @@ function Map(loadJSONFunc) {
 
         $("#point-details").html(pointDetailsHtml);
 
+        $("#search-form-and-results-minimize-button").click();
+
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "point", function(response) {
             $("#graph-div-maximize-button").click();
@@ -584,6 +586,7 @@ function Map(loadJSONFunc) {
             this.map.addSource(polygonID, areaMarker);
 
             // if dataset loaded, insert areas before dataset layer
+            var swathWidth = 3;
             if (this.map.getLayer("chunk_1")) {
                 this.map.addLayer({
                     "id": id,
@@ -604,7 +607,7 @@ function Map(loadJSONFunc) {
                     },
                     "paint": {
                         "line-color": "rgba(0, 0, 255, 1.0)",
-                        "line-width": 5
+                        "line-width": swathWidth
                     }
                 }, "chunk_1");
             } else {
@@ -623,7 +626,7 @@ function Map(loadJSONFunc) {
                     "source": polygonID,
                     "paint": {
                         "line-color": "rgba(0, 0, 255, 1.0)",
-                        "line-width": 5
+                        "line-width": swathWidth
                     }
                 });
             }
@@ -760,7 +763,7 @@ function Map(loadJSONFunc) {
             var itsAGPSFeature = (layerID === "gpsStations");
             var frameFeature = this.getFirstPolygonFrameAtPoint(features);
 
-            this.map.getCanvas().style.cursor = (itsAPoint || itsAnreaPolygon || itsAGPSFeature || frameFeature) ? 'pointer' : '';
+            this.map.getCanvas().style.cursor = (itsAPoint || itsAnreaPolygon || itsAGPSFeature || frameFeature) ? 'pointer' : 'auto';
 
             // a better way is to have two mousemove callbacks like we do with select area vs select marker
             if (itsAGPSFeature) {
