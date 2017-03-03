@@ -186,7 +186,7 @@ html[xmlns] .clearfix {
 .top-right-buttons {
     position: absolute;
     top: 5px;
-    right: 10px;
+    right: 15px;
     z-index: 3;
 }
 
@@ -789,11 +789,19 @@ input::-webkit-calendar-picker-indicator {
     float: left;
 }
 
+#search-form-results-table thead {
+    position: fixed;
+    width: 34%;
+}
+
 #search-form-and-results-maximize-button {
     bottom: 45px;
     left: 0;
     z-index: 99;
-    background-color: rgba(0, 0, 0, 0.0);
+}
+
+#search-form-and-results-minimize-button {
+    position: fixed;
 }
 
 .minimize-button, .maximize-button {
