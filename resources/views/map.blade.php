@@ -74,7 +74,7 @@
   <div id="loading-screen" class="overlay-div">
     <div id="loading-screen-contents">
       <div id="loading-text-div">
-        Recoloring in progress...
+        Recoloring in progress... (ESCAPE to interrupt)
       </div>
       <div class="loading-circle">
       </div>
@@ -316,23 +316,6 @@
         </div>
       </div>
     </div> 
-  </div>
-  <div class='wrap' id="select-area-wrap">
-    <div class="top-right-buttons">
-      <button type="button" class="close close-button" data-dismiss="modal" aria-label="Close" id="close-button"><span aria-hidden="true">&times;</span></button>
-    </div>
-    <div class='content'>                       
-      <!-- table to select dataset from-->
-      <table class='table' id='myTable'>
-        <thead>
-          <tr>
-            <th>Dataset</th>
-            <th>Reference</th>
-          </tr>
-        </thead>
-        <tbody id='tableBody'></tbody>
-      </table>          
-    </div>
   </div>
   <div class="wrap" id="topography-wrap" title="Topography-Wrap">
     <div class="top-right-buttons">

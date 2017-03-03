@@ -102,7 +102,7 @@ function SearchFile(container) {
                 getGEOJSON(area);
             }
         });
-    }
+    };
 
     this.search = function() {
         $("#search-form-results-table tbody").empty();
@@ -165,11 +165,6 @@ $(window).load(function() {
         }
     });
 
-    /**
-     * Return an array containing areas with all attributes matching user inputted attributes
-     * @return {Array} matchingAreas if user inputs at least one search criteria, display alert otherwise
-     */
-    // he said no enter button, but leave this logic just in case
     $("#enter-button-search-attributes").click(function() {
         searcher.search();
     });

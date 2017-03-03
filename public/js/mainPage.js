@@ -638,57 +638,23 @@ function search() {
         });
         var countries = fuse.search(query);
         var attributesController = new AreaAttributesController(myMap, countries[0]);
+        var searcher = new SearchFile("search-form");
 
-        // add our info in a table, first remove any old info
-        $(".wrap#select-area-wrap").find(".content").find("#myTable").find(
-            "#tableBody").empty();
+        // empty old results
+        $("#search-form-results-table tbody").empty();
         for (var i = 0; i < countries.length; i++) {
-            var country = countries[i];
-            attributesController.setArea(country);
-            var properties = country.properties;
-
-            // so we don't have to check whether it's a string or proper object every time
-            // TODO: best solution is to have a function - get js object from mapbox clicked marker
-            // this way we don't have to stringify these js objects, and mapbox clicked feature would
-            // also be objects
-            properties.decimal_dates = JSON.stringify(properties.decimal_dates);
-            properties.extra_attributes = JSON.stringify(properties.extra_attributes);
-            properties.attributekeys = JSON.stringify(properties.attributekeys);
-            properties.attributevalues = JSON.stringify(properties.attributevalues);
-            properties.centerOfDataset = JSON.stringify(properties.centerOfDataset);
-
-            var referenceHTML = "Reference to the papers to be added.";
-            if (attributesController.areaHasAttribute("referencePdfUrl") &&
-                attributesController.areaHasAttribute("referenceText")) {
-                referenceHTML = "<a href='" + attributesController.getAttribute("referencePdfUrl") +
-                    "' target='_blank'>" + attributesController.getAttribute("referenceText") + "</a>";
-            }
-
-            $("#tableBody").append("<tr id=" + properties.unavco_name +
-                "><td value='" + properties.unavco_name + "''>" +
-                properties.unavco_name + " (" + properties.project_name +
-                ")</td><td value='reference'>" + referenceHTML + "</td></tr>"
-            );
-
-            // make cursor change when mouse hovers over row
-            $("#" + properties.unavco_name).css("cursor", "pointer");
-            // set the on click callback function for this row
-
-            // ugly click function declaration to JS not using block scope
-            $("#" + properties.unavco_name).click((function(country) {
-                return function(e) {
-                    // don't load area if reference link is clicked
-                    if (e.target.cellIndex == 0) {
-                        clickedArea = country;
-                        $('.wrap#select-area-wrap').toggleClass(
-                            'active');
-                        getGEOJSON(country);
-                    }
-                };
-            })(country));
+            attributesController.setArea(countries[i]);
+            var fileAttributes = attributesController.getAllAttributes();
+            searcher.generateMatchingAreaHTML(fileAttributes, countries[i]);
         }
-    } else {
-        $("#tableBody").html("No areas found");
+
+        $("#search-form-results-table tr").hover(function() {
+            searchTableHoverIn(this);
+        }, function() {
+            searchTableHoverOut(this);
+        });
+
+        $("#search-form-results-table").trigger("update");
     }
 }
 
