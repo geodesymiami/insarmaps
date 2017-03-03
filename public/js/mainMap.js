@@ -141,6 +141,7 @@ function Map(loadJSONFunc) {
     this.areaFeatures = null;
     this.colorScale = new ColorScale(-2.00, 2.00);
     this.colorOnDisplacement = false;
+    this.lastAreasRequest = null;
 
     this.areaMarkerLayer = new AreaMarkerLayer(this);
 
@@ -653,14 +654,26 @@ function Map(loadJSONFunc) {
     };
 
     this.loadAreaMarkersExcluding = function(toExclude, after) {
-        loadJSONFunc("", "areas", function(response) {
-            var json = JSON.parse(response);
-            var features = this.addAreaMarkersFromJSON(json, toExclude);
+        if (this.lastAreasRequest) {
+            this.lastAreasRequest.abort();
+        }
 
-            if (after) {
-                after(features);
+        this.lastAreasRequest = $.ajax({
+            url:"/areas",
+            success: function(response) {
+                var json = JSON.parse(response);
+                var features = this.addAreaMarkersFromJSON(json, toExclude);
+
+                if (after) {
+                    after(features);
+                }
+                this.lastAreasRequest = null;
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.log("failed " + xhr.responseText);
+                this.lastAjaxRequest = null;
             }
-        }.bind(this));
+        });
     };
 
     this.loadAreaMarkers = function(after) {

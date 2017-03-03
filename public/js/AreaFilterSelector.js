@@ -49,7 +49,10 @@ function setUpAreaFilterSelector() {
 
         // TODO: refactor success function and loadareamarkers handler
         // to not repeat code
-        $.ajax({
+        if (this.lastAjaxRequest) {
+            this.lastAjaxRequest.abort();
+        }
+        this.lastAjaxRequest = $.ajax({
             url: "/WebServicesBox?box=LINESTRING(" + serverBboxCoords + ")",
             success: function(response) {
                 var json = JSON.parse(response);
@@ -61,10 +64,12 @@ function setUpAreaFilterSelector() {
 
                 myMap.removeAreaMarkers();
                 myMap.addAreaMarkersFromJSON(json, null);
-            },
+                this.lastAjaxRequest = null;
+            }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed " + xhr.responseText);
-            }
+                this.lastAjaxRequest = null;
+            }.bind(this)
         })
     };
 
