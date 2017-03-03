@@ -111,10 +111,10 @@ function AreaAttributesPopup() {
     }
 
     this.show = function(area) {
-        if (!$('.wrap#area-attributes-div').hasClass('active')) {
-            $('.wrap#area-attributes-div').toggleClass('active');
+        if (this.isMaximized()) {
+            this.minimize();
         } else if (this.isMinimized()) {
-            $("#area-attributes-div-minimize-button").click();
+            this.maximize();
         }
 
         this.populate(area);

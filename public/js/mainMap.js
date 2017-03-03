@@ -275,9 +275,7 @@ function Map(loadJSONFunc) {
 
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "point", function(response) {
-            if (!$(".wrap#charts").hasClass("active")) {
-                $(".wrap#charts").toggleClass("active");
-            }
+            $("#graph-div-maximize-button").click();
 
             var json = JSON.parse(response);
             this.graphsController.JSONToGraph(json, chartContainer, e);
