@@ -900,13 +900,9 @@ function Map(loadJSONFunc) {
 
     this.removeAreaPopups = function() {
         // remove popup which shows area attributes
-        if ($('.wrap#area-attributes-div').hasClass('active')) {
-            $('.wrap#area-attributes-div').toggleClass('active');
-        }
+        $("#area-attributes-div-minimize-button").click();
         // and the graphs
-        if ($('.wrap#charts').hasClass('active')) {
-            $('.wrap#charts').toggleClass('active');
-        }
+        $("#graph-div-minimize-button").click();
 
         // and color scale
         if ($("#color-scale").hasClass("active")) {
@@ -938,6 +934,7 @@ function Map(loadJSONFunc) {
         this.map.on('click', this.clickOnAnAreaMarker);
 
         this.removeAreaPopups();
+        $("#search-form-and-results-minimize-button").click();
 
         $("#point-details").empty();
 
