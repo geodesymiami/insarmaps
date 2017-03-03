@@ -121,58 +121,28 @@ function AreaAttributesPopup() {
     };
 
     this.isMinimized = function() {
-        return $('#area-attributes-div-minimize-button').hasClass('maximize-button');
+        return $('#area-attributes-div').hasClass('minimized');
+    };
+
+    this.isMaximized = function() {
+        return !this.isMinimized();
     };
 
     this.maximize = function(animated) {
         var areaAttributesWrap = $('.wrap#area-attributes-div');
-        var button = $("#area-attributes-div-minimize-button");
-        var that = this;
-        if (animated) {
-            this.oldDivState.animating = true;
-            areaAttributesWrap.animate({
-                "height": that.oldDivState.height,
-                "width": that.oldDivState.width
-            }, {
-                done: function() {
-                    areaAttributesWrap.tooltip(
-                        "disable");
-                    button.removeClass("maximize-button")
-                        .addClass("minimize-button");
-                    that.oldDivState.animating =
-                        false;
-                }
-            });
-        } else {
-            areaAttributesWrap.width(this.oldDivState.width);
-            areaAttributesWrap.height(this.oldDivState.height);
-        }
+
+        areaAttributesWrap.css("display", "block").removeClass("minimized").addClass("maximized").addClass("active");
+        $("#area-attributes-div-minimize-button").css("display", "block");
+        $("#area-attributes-div-maximize-button").css("display", "none");
     };
 
     this.minimize = function(animated) {
         var that = this;
         var areaAttributesWrap = $('.wrap#area-attributes-div');
-        var button = $("#area-attributes-div-minimize-button");
-        this.oldDivState.width = areaAttributesWrap.width();
-        this.oldDivState.height = areaAttributesWrap.height();
 
-        var topRightButtonsWidth = areaAttributesWrap.find(
-            ".top-right-buttons").width() + 10;
-        areaAttributesWrap.css("overflow-y", "hidden");
-
-        $(".wrap#area-attributes-div").animate({
-            "height": "5%",
-            "width": topRightButtonsWidth
-        }, {
-            done: function() {
-                areaAttributesWrap.tooltip(
-                    "enable");
-                button.removeClass("minimize-button")
-                    .addClass("maximize-button");
-                that.oldDivState.animating =
-                    false;
-            }
-        });
+        areaAttributesWrap.css("display", "none").removeClass("active").removeClass("maximized").addClass("minimized");
+        $("#area-attributes-div-minimize-button").css("display", "none");
+        $("#area-attributes-div-maximize-button").css("display", "block");
     };
 
     this.populateTabs = function(area) {
@@ -753,61 +723,38 @@ $(window).load(function() {
     $(".wrap#charts").tooltip("disable");
     $(".wrap#area-attributes-div").tooltip("disable");
 
-    // below code might be able to be reduced by using AreaAttributesPopup
-    // class functionality. We can use a super class of the two and define
-    // subclasses
-    var oldGraphDiv = new DivState();
+    $("#graph-div-minimize-button").on("click", function() {
+        var container = $(".wrap#charts");
+        if (container.hasClass("maximized")) {
+            $("#graph-div-maximize-button").css("display", "block");
+            container.css("display", "none");
+            container.removeClass("maximized");
+            container.removeClass("active");
+            container.addClass("minimized");
+        }
+    });
 
-    $("#graph-div-minimize-button").on("click", function(event) {
-        if (oldGraphDiv.animating) {
-            return;
+    $("#graph-div-maximize-button").on("click", function() {
+        var container = $(".wrap#charts");
+        if (container.hasClass("minimized")) {
+            $(this).css("display", "none");
+            container.css("display", "block");
+            container.removeClass("minimized");
+            container.addClass("maximized");
+            container.addClass("active")
         }
 
-        var chartWrap = $(".wrap#charts");
-        var button = $("#graph-div-minimize-button");
-        oldGraphDiv.animating = true;
-        if (button.hasClass("maximize-button")) {
-            chartWrap.animate({
-                "height": oldGraphDiv.height,
-                "width": oldGraphDiv.width
-            }, {
-                done: function() {
-                    chartWrap.tooltip("disable");
-                    button.removeClass("maximize-button").addClass("minimize-button");
-                    oldGraphDiv.animating = false;
-                    // doesn't seem to be the proper size when done is called, causing
-                    // recreateGraphs to create graphs so small they can't be seen.
-                    window.setTimeout(function() {
-                        myMap.graphsController.recreateGraphs();
-                    }, 1000);
-                }
-            });
+        $(".wrap#charts").resizable("enable");
+        $(".wrap#charts").draggable("enable");
+    });
 
-            $(".wrap#charts").resizable("enable");
-            $(".wrap#charts").draggable("enable");
-        } else {
-            oldGraphDiv.height = chartWrap.height();
-            oldGraphDiv.width = chartWrap.width();
-            var topRightButtonsWidth = chartWrap.find(
-                ".top-right-buttons").width() + 20;
-            var oldBottom = chartWrap.css("bottom");
-            chartWrap.css("bottom", oldBottom);
-            chartWrap.css("top", "auto");
+    $("#area-attributes-div-maximize-button").on("click", function(
+        event) {
+        var areaAttributesWrap = $(".wrap#area-attributes-div");
+        areaAttributesWrap.css("overflow-y", "auto");
 
-            $(".wrap#charts").resizable("disable");
-            $(".wrap#charts").draggable("disable");
-            chartWrap.animate({
-                "height": "5%",
-                "width": topRightButtonsWidth,
-                "left": "0",
-                "bottom": "5%"
-            }, {
-                done: function() {
-                    chartWrap.tooltip("enable");
-                    button.removeClass("minimize-button").addClass("maximize-button");
-                    oldGraphDiv.animating = false;
-                }
-            });
+        if (areaAttributesPopup.isMinimized()) {
+            areaAttributesPopup.maximize(true);
         }
     });
 
@@ -816,9 +763,7 @@ $(window).load(function() {
         var areaAttributesWrap = $(".wrap#area-attributes-div");
         areaAttributesWrap.css("overflow-y", "auto");
 
-        if (areaAttributesPopup.isMinimized()) {
-            areaAttributesPopup.maximize(true);
-        } else {
+        if (areaAttributesPopup.isMaximized()) {
             areaAttributesPopup.minimize(true);
         }
     });
@@ -827,10 +772,11 @@ $(window).load(function() {
     $("#search-form-and-results-minimize-button").on("click", function() {
         // heights in percent
         var container = $("#search-form-and-results-container");
-        if (!container.hasClass("toggled")) {
+        if (container.hasClass("maximized")) {
             $("#search-form-and-results-maximize-button").css("display", "block");
             container.css("display", "none");
-            container.addClass("toggled");
+            container.removeClass("maximized");
+            container.addClass("minimized");
         }
 
         myMap.map.resize();
@@ -838,11 +784,11 @@ $(window).load(function() {
 
     $("#search-form-and-results-maximize-button").on("click", function() {
         var container = $("#search-form-and-results-container");
-        if (container.hasClass("toggled")) {
+        if (container.hasClass("minimized")) {
             $(this).css("display", "none");
             container.css("display", "block");
-            container.addClass("toggled");
-            container.removeClass("toggled");
+            container.removeClass("minimized");
+            container.addClass("maximized");
         }
     });
 
@@ -900,7 +846,11 @@ $(window).load(function() {
     });
 
     $(function() {
-        $('[data-toggle="tooltip"]').tooltip().click(function() {
+        $('[data-toggle="tooltip"]').tooltip({
+            position: {
+                collision: "flipfit"
+            }
+        }).click(function() {
             $('.tooltip').fadeOut('fast', function() {
                 $('.tooltip').remove();
             });

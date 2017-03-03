@@ -181,7 +181,7 @@
     </div>
   </div>
   <!-- by default, it is toggled, or minimized -->
-  <div id="search-form-and-results-container" class="toggled">
+  <div id="search-form-and-results-container" class="minimized">
     <div id="search-form-results">
       <table class="tablesorter-bootstrap" id="search-form-results-table">
         <thead>
@@ -226,11 +226,19 @@
     </div>
   </div>
   <div id="point-details"></div>
-  <div>
-    <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Select Points"></button>
+  <div id="maximize-buttons-container">
+    <div>
+      <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Filter Areas"></button>
+    </div>
+    <div>
+      <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Select Dataset before maximizing" id="area-attributes-div-maximize-button"></button>
+    </div>
+    <div>
+      <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Select point before showing graph div" id="graph-div-maximize-button"></button>
+    </div>
   </div>
-  <div class="wrap" id="area-attributes-div" title="Attributes">    
-    <div class="top-right-buttons">
+  <div class="wrap minimized" id="area-attributes-div" title="Attributes">
+   <div class="top-right-buttons">
       <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"></button>
     </div>
     <div class="content">
@@ -270,7 +278,7 @@
       </div>
     </div>
   </div>
-  <div class="wrap" id="charts" title="Displacement time-series">
+  <div class="wrap minimized" id="charts" title="Displacement time-series">
     <div class="top-right-buttons">
       <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="graph-div-minimize-button"></button>
     </div>
@@ -321,9 +329,7 @@
     <div class="top-right-buttons">
       <button type="button" class="close close-button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     </div>
-    <div class="content">
-
-    </div>
+    <div class="content"></div>
   </div>
     <script type="text/javascript">
       var viewOptions = {!! json_encode($viewOptions) !!};

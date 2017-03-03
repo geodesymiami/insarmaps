@@ -697,8 +697,11 @@ function Map(loadJSONFunc) {
         this.map = new mapboxgl.Map({
             container: containerID, // container id
             center: this.startingCoords, // this.starting position
-            zoom: this.startingZoom // this.starting zoom
-        });
+            zoom: this.startingZoom, // this.starting zoom
+            attributionControl: false
+        }).addControl(new mapboxgl.AttributionControl({
+            compact: true
+        }));
 
         this.map.on("load", function() {
             this.map.getCanvas().style.cursor = 'auto';

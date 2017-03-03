@@ -790,7 +790,6 @@ input::-webkit-calendar-picker-indicator {
 }
 
 #search-form-and-results-maximize-button {
-    position: absolute;
     bottom: 45px;
     left: 0;
     z-index: 99;
@@ -814,6 +813,20 @@ input::-webkit-calendar-picker-indicator {
     background-position: 0 -224px;
 }
 
+#maximize-buttons-container {
+    position: absolute;
+    bottom: 0px;
+    left: 50%;
+    z-index: 99;
+    width: 100px;
+    height: 50px;
+}
+
+#maximize-buttons-container div {
+    padding-top: 25px;
+    width: 33%;
+    float: left;
+}
 .clickable-button:active {
     background-color: #dcdee2 !important;
 }
