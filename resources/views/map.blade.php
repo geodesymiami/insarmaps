@@ -227,13 +227,13 @@
   </div>
   <div id="point-details"></div>
   <div id="maximize-buttons-container">
-    <div>
+    <div class="maximize-button-container">
       <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Filter Areas"></button>
     </div>
-    <div>
+    <div class="maximize-button-container">
       <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Select point before showing graph div" id="graph-div-maximize-button"></button>
     </div>
-    <div>
+    <div class="maximize-button-container">
       <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Select Dataset before maximizing" id="area-attributes-div-maximize-button"></button>
     </div>
   </div>

@@ -843,11 +843,7 @@ $(window).load(function() {
     });
 
     $(function() {
-        $('[data-toggle="tooltip"]').tooltip({
-            position: {
-                collision: "flipfit"
-            }
-        }).click(function() {
+        $('[data-toggle="tooltip"]').tooltip().click(function() {
             $('.tooltip').fadeOut('fast', function() {
                 $('.tooltip').remove();
             });

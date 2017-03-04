@@ -161,10 +161,6 @@ html[xmlns] .clearfix {
     opacity: 1.0 !important;
 }
 
-.tooltip.left {
-    margin-left: -57px !important;
-}
-
 #topography-wrap {
     position: absolute;
     top: 10%;
@@ -836,7 +832,7 @@ input::-webkit-calendar-picker-indicator {
     height: 50px;
 }
 
-#maximize-buttons-container div {
+#maximize-buttons-container .maximize-button-container {
     padding-top: 25px;
     width: 33%;
     float: left;
@@ -851,18 +847,6 @@ input::-webkit-calendar-picker-indicator {
 
 #areas-under-mouse-table td {
     display: flex;
-}
-
-.area-name-popup + .tooltip > .tooltip-inner {
-    background-color: white !important;
-    color: black !important;
-    height: 55px;
-    margin-left: 65px;
-}
-
-.area-name-popup + .tooltip > .tooltip-arrow {
-    border-color: white !important;
-    background-color: white !important;
 }
 
 .preview-attributes-button {
