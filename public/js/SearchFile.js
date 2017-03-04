@@ -28,6 +28,10 @@ function populateSearchDatalists() {
 }
 
 function searchTableHoverIn(jQueryThis) {
+    if (myMap.pointsLoaded()) {
+        return;
+    }
+
     $(jQueryThis).css({ "background-color": "rgba(0, 86, 173, 0.5)" });
     var id = $(jQueryThis).attr("id");
     if (id) {
@@ -37,7 +41,7 @@ function searchTableHoverIn(jQueryThis) {
 }
 
 function searchTableHoverOut(jQueryThis) {
-    if (currentArea && $(jQueryThis).attr("id") != currentArea.properties.layerID + "-search-row") {
+    if (!currentArea || $(jQueryThis).attr("id") != currentArea.properties.layerID + "-search-row") {
        $(jQueryThis).css({ "background-color": "white" });
     }
     myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();

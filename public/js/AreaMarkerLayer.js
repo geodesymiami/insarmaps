@@ -48,14 +48,24 @@ function AreaMarkerLayer(map) {
         }
     };
 
-    this.setAreaRowHighlighted = function(unavcoName) {
-        $("#" + unavcoName + "-search-row").css({ "background-color": "rgba(0, 86, 173, 0.5)" });
+    this.setAreaRowHighlighted = function(row) {
+        var $row = $("#" + row + "-search-row");
+        var rowColor = "rgba(0, 86, 173, 0.5)"
+        if (!$row.hasClass("highlighted")) {
+            $row.addClass("highlighted");
+            $row.css({ "background-color":  rowColor});
+        }
     };
 
     this.resetHighlightsOfAllAreaRows = function(excluding) {
+        if (excluding) {
+            this.setAreaRowHighlighted(excluding.properties.layerID);
+        }
+
         $("#search-form-results-table tr").each(function() {
             if (!excluding || $(this).attr("id") != excluding.properties.layerID + "-search-row") {
                $(this).css({ "background-color": "white"});
+               $(this).removeClass("highlighted");
             }
         });
     };
