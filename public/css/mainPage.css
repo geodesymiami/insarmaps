@@ -624,7 +624,7 @@ input[type=number] {
 #charts {
     position: absolute;
     left: 0%;
-    bottom: 5%;
+    bottom: 0%;
     margin-top: 70px;
     height: 70%;
     width: 40%;

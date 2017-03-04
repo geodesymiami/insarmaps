@@ -967,6 +967,12 @@ function Map(loadJSONFunc) {
         this.selector.map = this;
         this.selector.associatedButton = button;
         this.selector.prepareEventListeners(); // and add new ones
+
+        var container = $("#hidden-search-bars-container");
+        $("#search-form input").val("");
+        if (container.hasClass("active")) {
+            container.removeClass("active");
+        }
     };
 
     this.addContourLines = function() {

@@ -228,7 +228,7 @@
   <div id="point-details"></div>
   <div id="maximize-buttons-container">
     <div class="maximize-button-container">
-      <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Filter Areas"></button>
+      <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Datasets"></button>
     </div>
     <div class="maximize-button-container">
       <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Select point before showing graph div" id="graph-div-maximize-button"></button>
