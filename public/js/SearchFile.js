@@ -37,7 +37,9 @@ function searchTableHoverIn(jQueryThis) {
 }
 
 function searchTableHoverOut(jQueryThis) {
-    $(jQueryThis).css({ "background-color": "white" });
+    if (currentArea && $(jQueryThis).attr("id") != currentArea.properties.layerID + "-search-row") {
+       $(jQueryThis).css({ "background-color": "white" });
+    }
     myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
 }
 
