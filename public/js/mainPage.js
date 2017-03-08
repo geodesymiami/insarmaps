@@ -129,7 +129,7 @@ function AreaAttributesPopup() {
     this.maximize = function(animated) {
         var areaAttributesWrap = $('.wrap#area-attributes-div');
 
-        areaAttributesWrap.css("display", "block").removeClass("minimized").addClass("maximized").addClass("active");
+        areaAttributesWrap.addClass("active").removeClass("minimized").addClass("maximized");
         $("#area-attributes-div-minimize-button").css("display", "block");
         $("#area-attributes-div-maximize-button").css("display", "none");
     };
@@ -138,7 +138,7 @@ function AreaAttributesPopup() {
         var that = this;
         var areaAttributesWrap = $('.wrap#area-attributes-div');
 
-        areaAttributesWrap.css("display", "none").removeClass("active").removeClass("maximized").addClass("minimized");
+        areaAttributesWrap.removeClass("active").removeClass("maximized").addClass("minimized");
         $("#area-attributes-div-minimize-button").css("display", "none");
         $("#area-attributes-div-maximize-button").css("display", "block");
     };
@@ -724,9 +724,8 @@ $(window).load(function() {
         var container = $(".wrap#charts");
         if (container.hasClass("maximized")) {
             $("#graph-div-maximize-button").css("display", "block");
-            container.css("display", "none");
-            container.removeClass("maximized");
             container.removeClass("active");
+            container.removeClass("maximized");
             container.addClass("minimized");
         }
     });
@@ -736,9 +735,9 @@ $(window).load(function() {
         if (container.hasClass("minimized")) {
             $(this).css("display", "none");
             container.css("display", "block");
+            container.addClass("active");
             container.removeClass("minimized");
             container.addClass("maximized");
-            container.addClass("active")
         }
 
         $(".wrap#charts").resizable("enable");
