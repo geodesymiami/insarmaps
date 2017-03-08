@@ -175,7 +175,8 @@ $(window).load(function() {
     document.addEventListener("keydown", function(e) {
         var ENTER_KEY = 13;
 
-        if (e.keyCode === ENTER_KEY && !$("#search-input").is(":focus")) {
+        if (e.keyCode === ENTER_KEY &&
+            !($("#search-input").is(":focus") || $("#scale-values input").is(":focus"))) {
             searcher.search();
             $("#search-form-and-results-maximize-button").click();
         }
