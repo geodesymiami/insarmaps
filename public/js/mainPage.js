@@ -652,6 +652,7 @@ $(window).load(function() {
     setUpAreaFilterSelector();
     myMap = new Map(loadJSON);
     myMap.addMapToPage("map-container");
+    populateSearchDatalists();
 
     var layerList = document.getElementById('map-type-menu');
     var inputs = layerList.getElementsByTagName('input');

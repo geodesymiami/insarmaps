@@ -4,18 +4,23 @@ function populateSearchDataList(inputID, areas, attribute) {
     var id = "#" + inputID;
     var $input = $(id);
 
-    var attributesController = new AreaAttributesController(myMap, areas[0]);
-
     var attributesSeenAlready = [];
     var attributes = [];
-    for (var i = 0; i < areas.length; i++) {
-        attributesController.setArea(areas[i]);
-        var fileAttributes = attributesController.getAllAttributes();
-        var attributeValue = fileAttributes[attribute];
 
-        if (!attributesSeenAlready[attributeValue]) {
-            attributesSeenAlready[attributeValue] = true;
-            attributes.push(attributeValue);
+    // if no areas, simply populate an empty list. this is to avoid exception
+    // when user initially clicks but autocomplete hasn't been initialize. thus,
+    // we initialize to empty list when areas is null (on initial page load)
+    if (areas) {
+        var attributesController = new AreaAttributesController(myMap, areas[0]);
+        for (var i = 0; i < areas.length; i++) {
+            attributesController.setArea(areas[i]);
+            var fileAttributes = attributesController.getAllAttributes();
+            var attributeValue = fileAttributes[attribute];
+
+            if (!attributesSeenAlready[attributeValue]) {
+                attributesSeenAlready[attributeValue] = true;
+                attributes.push(attributeValue);
+            }
         }
     }
 
@@ -46,7 +51,7 @@ function searchTableHoverIn(jQueryThis) {
 
 function searchTableHoverOut(jQueryThis) {
     if (!currentArea || $(jQueryThis).attr("id") != currentArea.properties.layerID + "-search-row") {
-       $(jQueryThis).css({ "background-color": "white" });
+        $(jQueryThis).css({ "background-color": "white" });
     }
     myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
 }
