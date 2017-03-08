@@ -820,14 +820,20 @@ input::-webkit-calendar-picker-indicator {
     left: 50%;
     z-index: 99;
     width: 100px;
-    height: 50px;
+    background-color: gray;
 }
 
-#maximize-buttons-container .maximize-button-container {
-    padding-top: 25px;
+.maximize-button-container {
     width: 33%;
+    height: 16px;
     float: left;
 }
+
+.maximize-button-container button {
+    margin: 0 auto;
+    display: block;
+}
+
 .clickable-button:active {
     background-color: #dcdee2 !important;
 }
