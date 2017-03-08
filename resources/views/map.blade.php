@@ -183,19 +183,38 @@
   <!-- by default, it is toggled, or minimized -->
   <div id="search-form-and-results-container" class="minimized">
     <div id="search-form-results">
-      <table class="tablesorter-bootstrap" id="search-form-results-table">
-        <thead>
-          <tr>
-            <th>Satellite</th>
-            <th>Rel Orbit</th>
-            <th>First_Frame</th>
-            <th>Mode</th>
-            <th>Flight Dir.</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
+      <section class="fixed-header-table">
+        <div class="fixed-header-table-container">
+          <table class="tablesorter-bootstrap" id="search-form-results-table">
+            <thead>
+              <tr class="header">
+                <th>
+                  Satellite
+                  <div>Satellite</div>
+                </th>
+                <th>
+                  Rel Orbit
+                  <div>Rel Orbit</div>
+                </th>
+                <th>
+                  First_Frame
+                  <div>First Frame</div>
+                </th>
+                <th>
+                  Mode
+                  <div>Mode</div>
+                </th>
+                <th>
+                  Flight Dir.
+                  <div>Flight Dir.</div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
     <div class="top-right-buttons">
       <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-minimize-button"></button>

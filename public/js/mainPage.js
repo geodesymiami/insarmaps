@@ -953,5 +953,5 @@ $(window).load(function() {
         }
     });
 
-    $("#search-form-results-table").tablesorter();
+    // $("#search-form-results-table").tablesorter();
 });
