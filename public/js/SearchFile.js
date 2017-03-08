@@ -1,14 +1,13 @@
 // TODO: if these two functions too slow, keep a hash map when load area
 // of all possible attributes for speed. this is horribly inefficient now...
-function populateSearchDataList(dataListID, areas, attribute) {
-    var id = "#" + dataListID;
-    var datalistObj = $(id);
+function populateSearchDataList(inputID, areas, attribute) {
+    var id = "#" + inputID;
+    var $input = $(id);
 
     var attributesController = new AreaAttributesController(myMap, areas[0]);
 
     var attributesSeenAlready = [];
-    // empty it just in case
-    datalistObj.empty();
+    var attributes = [];
     for (var i = 0; i < areas.length; i++) {
         attributesController.setArea(areas[i]);
         var fileAttributes = attributesController.getAllAttributes();
@@ -16,15 +15,20 @@ function populateSearchDataList(dataListID, areas, attribute) {
 
         if (!attributesSeenAlready[attributeValue]) {
             attributesSeenAlready[attributeValue] = true;
-            datalistObj.append("<option value='" + attributeValue + "'>")
+            attributes.push(attributeValue);
         }
     }
+
+    $input.autocomplete({
+        minLength: 0,
+        source: attributes
+    });
 }
 
 function populateSearchDatalists() {
-    populateSearchDataList("satellites-list", myMap.areaFeatures, "mission");
-    populateSearchDataList("modes-list", myMap.areaFeatures, "beam_mode");
-    populateSearchDataList("flight-direction-list", myMap.areaFeatures, "flight_direction");
+    populateSearchDataList("input-satellite", myMap.areaFeatures, "mission");
+    populateSearchDataList("input-mode", myMap.areaFeatures, "beam_mode");
+    populateSearchDataList("input-flight-direction", myMap.areaFeatures, "flight_direction");
 }
 
 function searchTableHoverIn(jQueryThis) {

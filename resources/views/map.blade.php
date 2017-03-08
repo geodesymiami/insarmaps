@@ -98,7 +98,9 @@
         <div id="hidden-search-bars-container">
           <div class="form-group custom-input">
             <input type="text" placeholder="Satellite" id="input-satellite" list="satellites-list"/>
-            <datalist id="satellites-list"></datalist>
+            <div class="custom-input-dropdown hide-dropdown">
+              <i class="caret"></i>
+            </div>
           </div>
           <div class="form-group custom-input">
             <input type="text" placeholder="Relative Orbit" id="input-relative-orbit"/>
@@ -108,11 +110,16 @@
           </div>
           <div class="form-group custom-input">
             <input type="text" placeholder="Mode" id="input-mode" list="modes-list"/>
-            <datalist id="modes-list"></datalist>
+            <div class="custom-input-dropdown hide-dropdown">
+              <i class="caret"></i>
+            </div>
+            <!-- <datalist id="modes-list"></datalist> -->
           </div>
           <div class="form-group custom-input">
             <input type="text" placeholder="Flight Direction" id="input-flight-direction" list="flight-direction-list"/>
-            <datalist id="flight-direction-list"></datalist>
+            <div class="custom-input-dropdown hide-dropdown">
+              <i class="caret"></i>
+            </div>
           </div>
           <!-- enter button to search for files with attributes matching above input -->
           <!-- <div id="enter-button-search-attributes">

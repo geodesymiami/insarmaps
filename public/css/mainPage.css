@@ -732,10 +732,6 @@ input[type=number] {
     font-size: 14px;
 }
 
-#hidden-search-bars-container input {
-    width: 100%;
-}
-
 .custom-input-dropdown {
     width: 20%;
     float: left;
@@ -747,9 +743,9 @@ input[type=number] {
     cursor: pointer;
 }
 
-/* always show datalist dropdown arrows */
-input::-webkit-calendar-picker-indicator {
-    opacity: 100;
+/* jquery autocomplete */
+.ui-autocomplete {
+    font-family: "Helvetica";
 }
 
 #search-form-and-results-container {

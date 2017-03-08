@@ -912,11 +912,19 @@ $(window).load(function() {
         $(this).parent().parent().toggleClass("active");
     });
 
-    $(".custom-input-dropdown").on("click", function() {
-        var id = $(this).attr("id");
+    $("#toggle-other-bars").on("click", function() {
+        $("#hidden-search-bars-container").toggleClass("active");
+    });
 
-        if (id === "toggle-other-bars") {
-            $("#hidden-search-bars-container").toggleClass("active");
+    $(".custom-input-dropdown").on("click", function() {
+        if ($(this).attr("id") != "toggle-other-bars") {
+            if ($(this).hasClass("hide-dropdown")) {
+                $(this).prev("input").autocomplete("search", "");
+                $(this).removeClass("hide-dropdown").addClass("show-dropdown");
+            } else {
+                $(this).prev("input").autocomplete("close");
+                $(this).removeClass("show-dropdown").addClass("hide-dropdown");
+            }
         }
     });
 
