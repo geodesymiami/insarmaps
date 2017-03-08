@@ -751,7 +751,6 @@ input[type=number] {
 #search-form-and-results-container {
     display: none; /* hide by default */
     width: 35%;
-    height: 30%;
     position: absolute;
     z-index: 99;
     bottom: 0;
@@ -870,6 +869,7 @@ ul.tab {
     background-color: #f1f1f1;
     position: fixed;
     width: 87%;
+    height: 45px;
 }
 
 ul.tab li {
@@ -896,7 +896,7 @@ ul.tab li a:focus,
 
 .tabcontent {
     /*display: none;*/
-    padding: 6px 12px;
+    padding-top: 45px;
     border: 1px solid #ccc;
     border-top: none;
     font-size: 10px !important;
@@ -931,6 +931,7 @@ section.fixed-header-table.positioned {
   overflow-y: auto;
   height: 200px;
   width: 100%;
+  background-color: white;
 }
 .fixed-header-table-container table {
   border-spacing: 0;

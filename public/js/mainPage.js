@@ -577,6 +577,28 @@ function setupToggleButtons() {
     });
 }
 
+function CountryGeocoder(mapboxAccessToken) {
+    this.lastRequest = null;
+    this.geocode = function(country, after) {
+        this.lastRequest = $.ajax({
+            url: "https://api.mapbox.com/geocoding/v5/mapbox.places/" + country + ".json?access_token=" + mapboxAccessToken + "&types=country",
+            success: function(response) {
+                var json = response;
+                var features = json.features;
+
+                if (after) {
+                    after(features);
+                }
+                this.lastRequest = null;
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.log("failed " + xhr.responseText);
+                this.lastRequest = null;
+            }
+        });
+    }
+}
+
 function search() {
     var areas = myMap.areaFeatures;
 
@@ -586,6 +608,16 @@ function search() {
     if (areas != null) {
         // TODO: dummy search for paper, add actual paper later on when we get attribute    
         query = $("#search-input").val();
+        var geocoder = new CountryGeocoder(mapboxgl.accessToken);
+        geocoder.geocode(query, function(features) {
+            if (features.length > 0) {
+                var firstCountry = features[0];
+                var swCorner =[firstCountry.bbox[0], firstCountry.bbox[1]];
+                var neCorner = [firstCountry.bbox[2], firstCountry.bbox[3]];
+                var bbox = [swCorner, neCorner];
+                myMap.map.fitBounds(bbox);
+            }
+        });
 
         // TODO: remove, this is placeholder
         for (var i = 0; i < areas.length; i++) {
@@ -604,6 +636,9 @@ function search() {
             ]
         });
         var countries = fuse.search(query);
+        if (countries.length === 0) {
+            return;
+        }
         var attributesController = new AreaAttributesController(myMap, countries[0]);
         var searcher = new SearchFile("search-form");
 
@@ -862,7 +897,7 @@ $(window).load(function() {
                 var toExclude = currentArea ? [currentArea.properties.unavco_name] : null;
                 myMap.addAreaMarkersFromJSON(myMap.areas, toExclude);
             } else {
-               myMap.loadAreaMarkers(null);
+                myMap.loadAreaMarkers(null);
             }
             $(this).attr("data-original-title", "Hide Swaths");
             $(this).removeClass("toggled");
