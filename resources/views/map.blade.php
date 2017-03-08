@@ -237,47 +237,6 @@
       <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Select Dataset before maximizing" id="area-attributes-div-maximize-button"></button>
     </div>
   </div>
-  <div class="wrap minimized" id="area-attributes-div" title="Attributes">
-   <div class="top-right-buttons">
-      <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"></button>
-    </div>
-    <div class="content">
-        <div id="area-attributes-areaname-div">
-        </div>
-        <ul class="tab">
-          <li><a href="#" id="details-tab-link" class="tablinks" onclick="goToTab(event, 'details-tab')">Details</a></li>
-          <li><a href="#" class="tablinks" onclick="goToTab(event, 'downloads-tab')">Downloads</a></li>
-          <li><a href="#" class="tablinks" onclick="goToTab(event, 'reference-tab')">Reference</a></li>
-          <li><a href="#" class="tablinks" onclick="goToTab(event, 'figures-tab')">Figures</a></li>
-          <!-- <li><a href="#" class="tablinks" onclick="goToTab(event, 'links-tab')">Links</a></li> -->
-        </ul>
-
-        <div id="details-tab" class="tabcontent">
-          <table class="table" id="area-attributes-table">
-            <thead>              
-            </thead>
-            <tbody id="area-attributes-table-body">            
-            </tbody>          
-          </table>
-        </div>
-
-        <div id="downloads-tab" class="tabcontent">
-          <p>Download to Unavco InSAR data products to be implemented.</p>
-        </div>
-
-        <div id="reference-tab" class="tabcontent">
-          <p>Reference to the papers to be added.</p>
-        </div>
-
-        <div id="figures-tab" class="tabcontent">
-          <p>Figures to be added.</p>
-        </div>
-        <!-- <div id="links-tab" class="tabcontent">
-          <p>Extra links to be added.</p>
-        </div> -->
-      </div>
-    </div>
-  </div>
   <div class="wrap minimized" id="charts" title="Displacement time-series">
     <div class="top-right-buttons">
       <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="graph-div-minimize-button"></button>
@@ -324,6 +283,46 @@
         </div>
       </div>
     </div> 
+  </div>
+  <div class="wrap minimized" id="area-attributes-div" title="Attributes">
+   <div class="top-right-buttons">
+      <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"></button>
+    </div>
+    <div class="content">
+        <div id="area-attributes-areaname-div">
+        </div>
+        <ul class="tab">
+          <li><a href="#" id="details-tab-link" class="tablinks" onclick="goToTab(event, 'details-tab')">Details</a></li>
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'downloads-tab')">Downloads</a></li>
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'reference-tab')">Reference</a></li>
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'figures-tab')">Figures</a></li>
+          <!-- <li><a href="#" class="tablinks" onclick="goToTab(event, 'links-tab')">Links</a></li> -->
+        </ul>
+        <div id="details-tab" class="tabcontent">
+          <table class="table" id="area-attributes-table">
+            <thead>
+            </thead>
+            <tbody id="area-attributes-table-body">
+            </tbody>
+          </table>
+        </div>
+
+        <div id="downloads-tab" class="tabcontent">
+          <p>Download to Unavco InSAR data products to be implemented.</p>
+        </div>
+
+        <div id="reference-tab" class="tabcontent">
+          <p>Reference to the papers to be added.</p>
+        </div>
+
+        <div id="figures-tab" class="tabcontent">
+          <p>Figures to be added.</p>
+        </div>
+        <!-- <div id="links-tab" class="tabcontent">
+          <p>Extra links to be added.</p>
+        </div> -->
+      </div>
+    </div>
   </div>
   <div class="wrap" id="topography-wrap" title="Topography-Wrap">
     <div class="top-right-buttons">
