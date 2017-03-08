@@ -308,9 +308,8 @@
       <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"></button>
     </div>
     <div class="content">
-        <div id="area-attributes-areaname-div">
-        </div>
         <ul class="tab">
+          <div id="area-attributes-areaname-div"></div>
           <li><a href="#" id="details-tab-link" class="tablinks" onclick="goToTab(event, 'details-tab')">Details</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'downloads-tab')">Downloads</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'reference-tab')">Reference</a></li>
