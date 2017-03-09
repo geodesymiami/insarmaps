@@ -55,6 +55,9 @@ function AreaMarkerLayer(map) {
             $row.addClass("highlighted");
             $row.css({ "background-color":  rowColor});
         }
+        // now scroll to it
+        var position = $row.position();
+        $(".fixed-header-table-container").scrollTop(position.top);
     };
 
     this.resetHighlightsOfAllAreaRows = function(excluding) {
