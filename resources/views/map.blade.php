@@ -91,7 +91,7 @@
             </span> -->
             <input type="text" placeholder="Search for..." id="search-input"/>
             <div class="custom-input-dropdown" id="toggle-other-bars">
-              <i class="caret"></i>
+              <div class="caret"></div>
             </div>
           </div>
         </div>
@@ -99,7 +99,7 @@
           <div class="form-group custom-input">
             <input type="text" placeholder="Satellite" id="input-satellite" list="satellites-list"/>
             <div class="custom-input-dropdown hide-dropdown">
-              <i class="caret"></i>
+              <div class="caret"></div>
             </div>
           </div>
           <div class="form-group custom-input">
@@ -111,14 +111,14 @@
           <div class="form-group custom-input">
             <input type="text" placeholder="Mode" id="input-mode" list="modes-list"/>
             <div class="custom-input-dropdown hide-dropdown">
-              <i class="caret"></i>
+              <div class="caret"></div>
             </div>
             <!-- <datalist id="modes-list"></datalist> -->
           </div>
           <div class="form-group custom-input">
             <input type="text" placeholder="Flight Direction" id="input-flight-direction" list="flight-direction-list"/>
             <div class="custom-input-dropdown hide-dropdown">
-              <i class="caret"></i>
+              <div class="caret"></div>
             </div>
           </div>
           <!-- enter button to search for files with attributes matching above input -->

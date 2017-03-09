@@ -706,6 +706,17 @@ input[type=number] {
     display: none;
 }
 
+#toggle-other-bars > div {
+    position: absolute;
+    display: block;
+    bottom: 50%;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    transform: translateX(-50%);
+}
+
 .custom-input {
     -moz-appearance: textfield;
     -webkit-appearance: textfield;
@@ -733,10 +744,10 @@ input[type=number] {
 }
 
 .custom-input-dropdown {
+    position: relative;
     width: 20%;
     float: left;
     height: 100%;
-    display: table;
 }
 
 .custom-input-dropdown:hover {
