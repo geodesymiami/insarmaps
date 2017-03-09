@@ -224,8 +224,8 @@ function ColorScale(min, max) {
 
         // we divide by 100 because this class works in cm, but mapbox works in m as
         // those are the units in the original h5 files
-        var colorRange = (Math.abs(min) + Math.abs(max)) / 100;
-        var currentValue = min / 100;
+        var colorRange = (Math.abs(min) + Math.abs(max)) / 100.0;
+        var currentValue = min / 100.0;
 
         var increment = colorRange / colors.length;
 

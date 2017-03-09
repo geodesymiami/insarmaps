@@ -990,7 +990,7 @@ $(window).load(function() {
             var max = $("#max-scale-value").val();
 
             myMap.colorScale.min = min;
-            myMap.colorScale.max = min;
+            myMap.colorScale.max = max;
 
             myMap.refreshDataset();
         }
