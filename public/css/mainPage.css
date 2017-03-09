@@ -472,8 +472,11 @@ div.menu {
 
 
 /*disable compass in nav controls*/
-
 .mapboxgl-ctrl-compass {
+    display: none !important;
+}
+
+.mapboxgl-ctrl-logo {
     display: none !important;
 }
 
