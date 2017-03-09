@@ -958,16 +958,6 @@ function Map(loadJSONFunc) {
         this.tileJSON = null;
         this.colorOnDisplacement = false;
 
-        // change square selector back to filtering areas
-        var button = $("#polygon-button");
-        button.attr("data-original-title", "Filter Areas");
-        this.selector.disableSelectMode(); // in case it is selected
-        this.selector.removeEventListeners(); // remove old event listeners
-        this.selector = new AreaFilterSelector();
-        this.selector.map = this;
-        this.selector.associatedButton = button;
-        this.selector.prepareEventListeners(); // and add new ones
-
         var container = $("#hidden-search-bars-container");
         $("#search-form input").val("");
         if (container.hasClass("active")) {
