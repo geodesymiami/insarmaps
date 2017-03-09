@@ -148,7 +148,7 @@ html[xmlns] .clearfix {
 
 #area-attributes-div {
     position: fixed;
-    bottom: 4%;
+    bottom: 0%;
     right: 0%;
     height: 310px;
     width: 300px;
@@ -779,7 +779,7 @@ input[type=number] {
 }
 
 #search-form-results-table {
-    font-size: 10px;
+    font-size: 12px;
 }
 
 #search-form-and-results-maximize-button {
@@ -887,7 +887,7 @@ ul.tab li a {
     text-align: center;
     text-decoration: none;
     transition: 0.3s;
-    font-size: 10px;
+    font-size: 12px;
 }
 
 ul.tab li a:hover {
@@ -968,7 +968,7 @@ section.fixed-header-table.positioned {
   margin-left: -25px;
   line-height: normal;
   border-left: 1px solid white;
-  font-size: 10px;
+  font-size: 12px;
 }
 .fixed-header-table-container th:first-child div {
   border: none;

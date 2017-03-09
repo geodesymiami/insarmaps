@@ -55,7 +55,7 @@ function AreaMarkerLayer(map) {
             $row.addClass("highlighted");
             $row.css({ "background-color":  rowColor});
         }
-        // now scroll to it
+        // now scroll to it, maybe pass in container div as parameter?
         var position = $row.position();
         $(".fixed-header-table-container").scrollTop(position.top);
     };
