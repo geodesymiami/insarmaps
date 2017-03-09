@@ -685,7 +685,7 @@ $(window).load(function() {
     setUpAreaFilterSelector();
     myMap = new Map(loadJSON);
     myMap.addMapToPage("map-container");
-    populateSearchDatalists();
+    populateSearchAutocomplete();
 
     var layerList = document.getElementById('map-type-menu');
     var inputs = layerList.getElementsByTagName('input');
@@ -948,6 +948,7 @@ $(window).load(function() {
 
     $("#toggle-other-bars").on("click", function() {
         $("#hidden-search-bars-container").toggleClass("active");
+        hideAllAutomcompleteSuggestions();
     });
 
     $(".custom-input-dropdown").on("click", function() {

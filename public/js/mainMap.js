@@ -642,7 +642,7 @@ function Map(loadJSONFunc) {
 
         $("#search-form-results-table").trigger("update");
         this.areaFeatures = features;
-        populateSearchDatalists();
+        populateSearchAutocomplete();
 
         // add the markers representing the available areas
         areaMarker.data = {
@@ -973,6 +973,7 @@ function Map(loadJSONFunc) {
         if (container.hasClass("active")) {
             container.removeClass("active");
         }
+        hideAllAutomcompleteSuggestions();
     };
 
     this.addContourLines = function() {

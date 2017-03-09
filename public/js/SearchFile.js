@@ -30,10 +30,16 @@ function populateSearchDataList(inputID, areas, attribute) {
     });
 }
 
-function populateSearchDatalists() {
+function populateSearchAutocomplete() {
     populateSearchDataList("input-satellite", myMap.areaFeatures, "mission");
     populateSearchDataList("input-mode", myMap.areaFeatures, "beam_mode");
     populateSearchDataList("input-flight-direction", myMap.areaFeatures, "flight_direction");
+}
+
+function hideAllAutomcompleteSuggestions() {
+    $("#input-satellite").autocomplete("close");
+    $("#input-mode").autocomplete("close");
+    $("#input-flight-direction").autocomplete("close");
 }
 
 function searchTableHoverIn(jQueryThis) {
