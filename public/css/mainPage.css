@@ -815,13 +815,18 @@ input[type=number] {
     left: 50%;
     z-index: 99;
     width: 100px;
-    background-color: gray;
 }
 
 .maximize-button-container {
     width: 33%;
     height: 16px;
     float: left;
+}
+
+.maximize-button-container > div {
+    width: 16px;
+    height: 16px;
+    background-color: gray;
 }
 
 .maximize-button-container button {

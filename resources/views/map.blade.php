@@ -254,13 +254,19 @@
   <div id="point-details"></div>
   <div id="maximize-buttons-container">
     <div class="maximize-button-container">
-      <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Datasets"></button>
+      <div>
+        <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Datasets"></button>
+      </div>
     </div>
     <div class="maximize-button-container">
-      <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Select point before showing graph div" id="graph-div-maximize-button"></button>
+      <div>
+        <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Select point before showing graph div" id="graph-div-maximize-button"></button>
+      </div>
     </div>
     <div class="maximize-button-container">
-      <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Select Dataset before maximizing" id="area-attributes-div-maximize-button"></button>
+      <div>
+        <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Select Dataset before maximizing" id="area-attributes-div-maximize-button"></button>
+      </div>
     </div>
   </div>
   <div class="wrap minimized" id="charts" title="Displacement time-series">
