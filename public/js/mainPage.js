@@ -91,11 +91,9 @@ function AreaAttributesPopup() {
             }
         }
 
-        var prettyNameAndComponents = myMap.prettyPrintProjectName(area.properties
-            .project_name);
-        $("#area-attributes-areaname-div").html(area.properties.region +
-            " " + prettyNameAndComponents.missionSatellite + " " +
-            prettyNameAndComponents.missionType);
+        $("#area-attributes-areaname-div").html(areaAttributes.mission + " "
+            + areaAttributes.relative_orbit + " " + areaAttributes.first_frame
+            + " " + areaAttributes.beam_mode + " " + areaAttributes.flight_direction);
 
         $("#area-attributes-table-body").html(tableHTML);
 
