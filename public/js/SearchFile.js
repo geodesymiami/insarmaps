@@ -119,7 +119,8 @@ function SearchFile(container) {
         $("#search-form-results-table tbody").append(html);
         $("#" + rowID).css({ cursor: "pointer" });
         $("#" + rowID).click(function() {
-            if (!currentArea || area.properties.layerID != currentArea.properties.layerID) {
+            if (!currentArea || (area.properties.layerID != currentArea.properties.layerID)
+                && !myMap.pointsLoaded()) {
                 getGEOJSON(area);
             }
         });
