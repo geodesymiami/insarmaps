@@ -928,6 +928,7 @@ function Map(loadJSONFunc) {
 
     this.reset = function() {
         this.removePoints();
+        currentArea = null;
         this.removeTouchLocationMarkers();
         // incase they are up
         this.elevationPopup.remove();

@@ -53,11 +53,11 @@ function AreaMarkerLayer(map) {
         var rowColor = "rgba(0, 86, 173, 0.5)"
         if (!$row.hasClass("highlighted")) {
             $row.addClass("highlighted");
-            $row.css({ "background-color":  rowColor});
+            $row.css({ "background-color": rowColor });
+            // now scroll to it, maybe pass in container div as parameter?
+            var position = $row.position();
+            $(".fixed-header-table-container").scrollTop(position.top);
         }
-        // now scroll to it, maybe pass in container div as parameter?
-        var position = $row.position();
-        $(".fixed-header-table-container").scrollTop(position.top);
     };
 
     this.resetHighlightsOfAllAreaRows = function(excluding) {
@@ -67,8 +67,8 @@ function AreaMarkerLayer(map) {
 
         $("#search-form-results-table tr").each(function() {
             if (!excluding || $(this).attr("id") != excluding.properties.layerID + "-search-row") {
-               $(this).css({ "background-color": "white"});
-               $(this).removeClass("highlighted");
+                $(this).css({ "background-color": "white" });
+                $(this).removeClass("highlighted");
             }
         });
     };
