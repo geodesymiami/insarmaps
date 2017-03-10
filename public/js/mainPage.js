@@ -253,8 +253,8 @@ function getGEOJSON(area) {
 
             // converter accidentally switched lat and long...
             // TODO: fix that and rerun datasets when pysar2unavco is fully finished
-            var lat = centerOfDataset.longitude;
-            var long = centerOfDataset.latitude;
+            var long = centerOfDataset.longitude;
+            var lat = centerOfDataset.latitude;
 
             myMap.map.flyTo({
                 center: [long, lat],
