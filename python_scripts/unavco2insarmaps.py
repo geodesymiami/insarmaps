@@ -76,8 +76,8 @@ def convert_data(attributes, decimal_dates, timeseries_datasets, dataset_keys, j
 
     # outer loop increments row = longitude, inner loop increments column = latitude
     for (row, col), value in np.ndenumerate(timeseries_datasets[dataset_keys[0]]):
-        latitude = x_first + (col * x_step)
-        longitude = y_first + (row * y_step) 
+        longitude = x_first + (col * x_step)
+        latitude = y_first + (row * y_step) 
         displacement = float(value) 
         # if value is not equal to naN, create a new json point object and append to siu_man array
         if not math.isnan(displacement):
@@ -96,7 +96,7 @@ def convert_data(attributes, decimal_dates, timeseries_datasets, dataset_keys, j
 
             data = {
             "type": "Feature",
-            "geometry": {"type": "Point", "coordinates": [latitude, longitude]},    
+            "geometry": {"type": "Point", "coordinates": [longitude, latitude]},    
             "properties": {"d": displacement_values, "m": m, "p": point_num}
             }   
             # allocate memory space for siu_man array in beginning 
@@ -119,11 +119,11 @@ def convert_data(attributes, decimal_dates, timeseries_datasets, dataset_keys, j
     make_json_file(chunk_num, siu_man, dataset_keys, json_path, folder_name)
 
     # calculate mid lat and long of dataset - then use google python lib to get country
-    mid_lat = x_first + ((num_columns/2) * x_step)
-    mid_long = y_first + ((num_rows/2) * y_step)
+    mid_long = x_first + ((num_columns/2) * x_step)
+    mid_lat = y_first + ((num_rows/2) * y_step)
     country = None
     try:
-        g = geocoder.google([mid_long,mid_lat], method='reverse', timeout=60.0)
+        g = geocoder.google([mid_lat,mid_long], method='reverse', timeout=60.0)
         country = str(g.country_long)
     except Exception, e:
         print "timeout reverse geocoding country name"
@@ -162,7 +162,7 @@ def convert_data(attributes, decimal_dates, timeseries_datasets, dataset_keys, j
         con = psycopg2.connect("dbname='pgis' user='" + dbUsername + "' host='" + dbHost + "' password='" + dbPassword + "'")
         cur = con.cursor()
         # create area table if not exist - limit for number of dates is 200, limt for number of attribute keys/values is 100
-        cur.execute("CREATE TABLE IF NOT EXISTS area ( unavco_name varchar, project_name varchar, latitude double precision, longitude double precision, country varchar, region varchar, numchunks integer, attributekeys varchar[100], attributevalues varchar[100], stringdates varchar[200], decimaldates double precision[200] );")
+        cur.execute("CREATE TABLE IF NOT EXISTS area ( unavco_name varchar, project_name varchar, longitude double precision, latitude double precision, country varchar, region varchar, numchunks integer, attributekeys varchar[100], attributevalues varchar[100], stringdates varchar[200], decimaldates double precision[200] );")
         con.commit()
         print 'created area table'
     except Exception, e:
@@ -175,7 +175,7 @@ def convert_data(attributes, decimal_dates, timeseries_datasets, dataset_keys, j
     try:
         con = psycopg2.connect("dbname='pgis' user='" + dbUsername + "' host='" + dbHost + "' password='" + dbPassword + "'")
         cur = con.cursor()
-        query = "INSERT INTO area VALUES (" + "'" + area + "','" + project_name + "','" + str(mid_lat) + "','" + str(mid_long) + "','" + country + "','" + region + "','" + str(chunk_num) + "','" + attribute_keys + "','" + attribute_values + "','" + string_dates_sql + "','" + decimal_dates_sql + "')"
+        query = "INSERT INTO area VALUES (" + "'" + area + "','" + project_name + "','" + str(mid_long) + "','" + str(mid_lat) + "','" + country + "','" + region + "','" + str(chunk_num) + "','" + attribute_keys + "','" + attribute_values + "','" + string_dates_sql + "','" + decimal_dates_sql + "')"
         cur.execute(query)
         con.commit()
         con.close()
