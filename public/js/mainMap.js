@@ -139,6 +139,7 @@ function Map(loadJSONFunc) {
     this.graphsController = new GraphsController(this);
     this.areas = null;
     this.areaFeatures = null;
+    this.allAreaFeatures = null;
     this.colorScale = new ColorScale(-2.00, 2.00);
     this.colorOnDisplacement = false;
     this.lastAreasRequest = null;
@@ -724,6 +725,7 @@ function Map(loadJSONFunc) {
             this.selector.associatedButton = $("#polygon-button");
             this.selector.prepareEventListeners();
             this.loadAreaMarkers(function(areaFeatures) {
+                this.allAreaFeatures = areaFeatures;
                 if (viewOptions.startDataset) {
                     for (var i = 0; i < areaFeatures.length; i++) {
                         if (areaFeatures[i].properties.unavco_name === viewOptions.startDataset) {
@@ -733,7 +735,7 @@ function Map(loadJSONFunc) {
                         }
                     }
                 }
-            });
+            }.bind(this));
             this.areaFilterSelector = new AreaFilterSelector();
             this.areaFilterSelector.map = this;
         }.bind(this));

@@ -598,7 +598,7 @@ function CountryGeocoder(mapboxAccessToken) {
 }
 
 function search() {
-    var areas = myMap.areaFeatures;
+    var areas = myMap.allAreaFeatures;
 
     if (!$('.wrap#select-area-wrap').hasClass('active')) {
         $('.wrap#select-area-wrap').toggleClass('active');
