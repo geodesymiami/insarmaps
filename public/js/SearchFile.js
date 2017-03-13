@@ -110,7 +110,7 @@ function SearchFile(container) {
 
         var satellite = fileAttributes.mission;
         var relative_orbit = fileAttributes.relative_orbit;
-        var first_frame = fileAttributes.first_frame;
+        var first_frame = fileAttributes.first_frame ? fileAttributes.first_frame : fileAttributes.frame;
         first_frame = first_frame.toString() != "0" ? first_frame : "N/A";
         var mode = fileAttributes.beam_mode;
         var flight_direction = fileAttributes.flight_direction;
