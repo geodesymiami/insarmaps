@@ -156,7 +156,7 @@ public function getAreas($bbox=NULL) {
   try {
     $query = "SELECT * from area";
     if ($bbox) {
-      $query = "SELECT * FROM area WHERE st_contains(ST_MakePolygon(ST_GeomFromText(" . $bbox . ", 4326)), ST_SetSRID(ST_MakePoint(area.latitude, area.longitude), 4326));";
+      $query = "SELECT * FROM area WHERE st_contains(ST_MakePolygon(ST_GeomFromText(" . $bbox . ", 4326)), ST_SetSRID(ST_MakePoint(area.longitude, area.latitude), 4326));";
     }
     $areas = DB::select($query);
     $permissionController = new PermissionsController();

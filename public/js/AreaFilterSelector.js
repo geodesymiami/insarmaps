@@ -52,6 +52,7 @@ function setUpAreaFilterSelector() {
         if (this.lastAjaxRequest) {
             this.lastAjaxRequest.abort();
         }
+
         this.lastAjaxRequest = $.ajax({
             url: "/WebServicesBox?box=LINESTRING(" + serverBboxCoords + ")",
             success: function(response) {
