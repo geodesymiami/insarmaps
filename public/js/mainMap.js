@@ -853,6 +853,16 @@ function Map(loadJSONFunc) {
 
             this.previousZoom = currentZoom;
         }.bind(this));
+
+        this.map.on("moveend", function(e) {
+            if (e.source === "recenter") {
+                return;
+            }
+
+            this.map.setCenter(this.map.getCenter().wrap(), {
+                source: "recenter"
+            });
+        }.bind(this));
     };
 
     this.pointsLoaded = function() {
