@@ -48,6 +48,7 @@ function AreaAttributesPopup() {
             "history": true,
             "first_frame": true,
             "last_frame": true,
+            "frame": true, // for new datasets which use frame instead of first_frame
             "flight_direction": true,
             "look_direction": true,
             "atmos_correct_method": true,
@@ -91,8 +92,9 @@ function AreaAttributesPopup() {
             }
         }
 
+        var first_frame = areaAttributes.first_frame ? areaAttributes.first_frame : areaAttributes.frame;
         $("#area-attributes-areaname-div").html(areaAttributes.mission + " "
-            + areaAttributes.relative_orbit + " " + areaAttributes.first_frame
+            + areaAttributes.relative_orbit + " " + first_frame
             + " " + areaAttributes.beam_mode + " " + areaAttributes.flight_direction);
 
         $("#area-attributes-table-body").html(tableHTML);
