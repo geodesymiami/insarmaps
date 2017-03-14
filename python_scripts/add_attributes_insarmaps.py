@@ -89,6 +89,17 @@ class InsarDatabaseController:
         # index exists most probably if exception thrown
         except Exception, e:
             pass
+
+    def remove_dataset(self, unavco_name, project_name):
+        dataset_id = self.get_dataset_id(project_name)
+
+        sql = "DROP TABLE " + unavco_name.lower()
+        self.cursor.execute(sql)
+        sql = "DELETE from extra_attributes WHERE area_id = " + str(dataset_id)
+        self.cursor.execute(sql)
+        sql = "DELETE from area WHERE id = " + str(dataset_id)
+        self.cursor.execute(sql)
+        self.con.commit()
             
 
 def usage():
