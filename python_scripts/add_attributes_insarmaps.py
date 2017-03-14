@@ -91,13 +91,16 @@ class InsarDatabaseController:
             pass
 
     def remove_dataset(self, unavco_name, project_name):
-        dataset_id = self.get_dataset_id(project_name)
-
+        # try to drop table first in case extra_attributes or area table isn't populated
         sql = "DROP TABLE " + unavco_name.lower()
         self.cursor.execute(sql)
-        sql = "DELETE from extra_attributes WHERE area_id = " + str(dataset_id)
-        self.cursor.execute(sql)
+        self.con.commit()
+
+        # then try to delete from area and extra_attributes
+        dataset_id = self.get_dataset_id(project_name)
         sql = "DELETE from area WHERE id = " + str(dataset_id)
+        self.cursor.execute(sql)
+        sql = "DELETE from extra_attributes WHERE area_id = " + str(dataset_id)
         self.cursor.execute(sql)
         self.con.commit()
             
