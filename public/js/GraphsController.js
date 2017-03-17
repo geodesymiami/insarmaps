@@ -141,7 +141,7 @@ function GraphsController(map) {
                                 var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
                                 var startDate = new Date(dates[this.map.selector.minIndex]);
                                 var endDate = new Date(dates[this.map.selector.maxIndex]);
-                                this.map.selector.recolorOnDisplacement(startDate, endDate, "Recoloring...");
+                                this.map.selector.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE to interrupt");
                             } else {
                                 this.map.selector.recolorDataset();
                             }

@@ -412,8 +412,9 @@ div.menu {
     transform: translateX(-50%);
 }
 
-#loading-text-div {
+.loading-text-div {
     max-width: 350px;
+    text-align: center;
 }
 
 .loading-circle {

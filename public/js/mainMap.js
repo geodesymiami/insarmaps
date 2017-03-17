@@ -655,7 +655,7 @@ function Map(loadJSONFunc) {
                 if (viewOptions.startDataset) {
                     for (var i = 0; i < areaFeatures.length; i++) {
                         if (areaFeatures[i].properties.unavco_name === viewOptions.startDataset) {
-                            showLoadingScreen("Loading requested dataset...");
+                            showLoadingScreen("Loading requested dataset...", null);
                             getGEOJSON(areaFeatures[i]);
                             break;
                         }
@@ -760,14 +760,14 @@ function Map(loadJSONFunc) {
                 // TODO: investigate and fix
                 if (currentZoom < this.previousZoom) {
                     if (this.colorOnDisplacement) {
-                        this.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress (ESCAPE to interrupt)... for fast zoom, switch to velocity or disable or deselect on the fly coloring");
+                        this.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress... for fast zoom, switch to velocity or disable or deselect on the fly coloring", "ESCAPE to interrupt");
                     } else {
                         this.selector.recolorDataset();
                     }
                 } else {
                     this.onDatasetRendered(function(renderCallback) {
                         if (this.colorOnDisplacement) {
-                            this.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress (ESCAPE to interrupt)... for fast zoom, switch to velocity or disable or deselect on the fly coloring");
+                            this.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress... for fast zoom, switch to velocity or disable or deselect on the fly coloring", "ESCAPE to interrupt");
                         } else {
                             this.selector.recolorDataset();
                         }

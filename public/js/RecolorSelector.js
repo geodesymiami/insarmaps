@@ -33,20 +33,20 @@ function setupRecolorSelector() {
             var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
             var startDate = new Date(dates[this.minIndex]);
             var endDate = new Date(dates[this.maxIndex]);
-            this.recolorOnDisplacement(startDate, endDate, "Recoloring...");
+            this.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE to interrupt");
         } else {
             this.recolorDataset();
         }
     };
 
-    RecolorSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate, loadingText) {
+    RecolorSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate, loadingTextTop, loadingTextBottom) {
         var millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
         var yearsElapsed = (endDecimalDate - startDecimalDate) / millisecondsPerYear;
 
-        this.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed, loadingText);
+        this.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed, loadingTextTop, loadingTextBottom);
     };
 
-    RecolorSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingText) {
+    RecolorSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingTextTop, loadingTextBottom) {
         // let the caller check if a coloring is in progress. otherwise user has to sometimes
         //  wait if they cancel a recoloring and want to do another one
 
@@ -98,7 +98,7 @@ function setupRecolorSelector() {
             return a.properties.p - b.properties.p;
         });
 
-        showLoadingScreen(loadingText);
+        showLoadingScreen(loadingTextTop, loadingTextBottom);
 
         for (var i = 0; i < features.length; i++) {
             var long = features[i].geometry.coordinates[0];
@@ -215,7 +215,7 @@ function setupRecolorSelector() {
     };
 
     RecolorSelector.prototype.recolorDataset = function() {
-        this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1);
+        this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE to interrupt");
     };
 
     RecolorSelector.prototype.recoloring = function() {
