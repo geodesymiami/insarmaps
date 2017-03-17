@@ -263,7 +263,7 @@ function getGEOJSON(area) {
                 zoom: zoom
             });
 
-            myMap.addAreaMarkersFromJSON(myMap.areas, [area.properties.unavco_name]);
+            myMap.addSwathsFromJSON(myMap.areas, [area.properties.unavco_name]);
             myMap.areaMarkerLayer.setAreaRowHighlighted(area.properties.layerID);
             // in case someone called loading screen
             hideLoadingScreen();
@@ -895,7 +895,7 @@ $(window).load(function() {
         if ($(this).hasClass("toggled")) {
             if (myMap.areas) {
                 var toExclude = currentArea ? [currentArea.properties.unavco_name] : null;
-                myMap.addAreaMarkersFromJSON(myMap.areas, toExclude);
+                myMap.addSwathsFromJSON(myMap.areas, toExclude);
             } else {
                 myMap.loadAreaMarkers(null);
             }

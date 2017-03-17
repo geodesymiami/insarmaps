@@ -490,7 +490,7 @@ function Map(loadJSONFunc) {
         return lineStringGeoJSON;
     };
 
-    this.addAreaMarkersFromJSON = function(json, toExclude) {
+    this.addSwathsFromJSON = function(json, toExclude) {
         this.areas = json;
 
         var areaMarker = {
@@ -545,15 +545,6 @@ function Map(loadJSONFunc) {
                 }
             };
 
-            // use same properties as the main feature which will be used
-            // for the fill layer. We use the id of the corresponding fill layer...
-            // allows for only highlighting on frame hover
-            var polygonFeature = {
-                "type": "Feature",
-                "geometry": polygonGeoJSON,
-                "properties": feature.properties
-            };
-
             features.push(feature);
             searchFormController.generateMatchingAreaHTML(attributes, feature);
 
@@ -563,75 +554,10 @@ function Map(loadJSONFunc) {
                 continue;
             }
 
-            // add the markers representing the available areas
-            areaMarker.data = {
-                "type": "FeatureCollection",
-                "features": [feature]
-            };
-
-            if (this.map.getSource(id)) {
-                this.map.removeSource(id);
-                this.map.removeSource(polygonID)
-            }
-
-            if (this.map.getLayer(id)) {
-                this.map.removeLayer(id);
-                this.map.removeLayer(polygonID);
-            }
-
-            this.map.addSource(id, areaMarker);
-            polygonFeature.properties["marker-symbol"] = "fillPolygon";
-            areaMarker.data = {
-                "type": "FeatureCollection",
-                "features": [polygonFeature]
-            };
-            this.map.addSource(polygonID, areaMarker);
-
             // if dataset loaded, insert areas before dataset layer
             var swathWidth = 3;
-            if (this.map.getLayer("chunk_1")) {
-                this.map.addLayer({
-                    "id": id,
-                    "type": "fill",
-                    "source": id,
-                    "paint": {
-                        "fill-color": "rgba(0, 0, 255, 0.0)",
-                        "fill-outline-color": "rgba(0, 0, 255, 1.0)"
-                    }
-                }, "chunk_1");
-                this.map.addLayer({
-                    "id": polygonID,
-                    "type": "line",
-                    "source": polygonID,
-                    "layout": {
-                        "line-join": "round",
-                        "line-cap": "round"
-                    },
-                    "paint": {
-                        "line-color": "rgba(0, 0, 255, 1.0)",
-                        "line-width": swathWidth
-                    }
-                }, "chunk_1");
-            } else {
-                this.map.addLayer({
-                    "id": id,
-                    "type": "fill",
-                    "source": id,
-                    "paint": {
-                        "fill-color": "rgba(0, 0, 255, 0.0)",
-                        "fill-outline-color": "rgba(0, 0, 255, 1.0)"
-                    }
-                });
-                this.map.addLayer({
-                    "id": polygonID,
-                    "type": "line",
-                    "source": polygonID,
-                    "paint": {
-                        "line-color": "rgba(0, 0, 255, 1.0)",
-                        "line-width": swathWidth
-                    }
-                });
-            }
+            var swath = new Swath(this, attributes.mission, swathWidth, feature, id);
+            swath.display();
         };
 
         // make search form table highlight on hover
@@ -663,7 +589,7 @@ function Map(loadJSONFunc) {
             url:"/areas",
             success: function(response) {
                 var json = JSON.parse(response);
-                var features = this.addAreaMarkersFromJSON(json, toExclude);
+                var features = this.addSwathsFromJSON(json, toExclude);
 
                 if (after) {
                     after(features);

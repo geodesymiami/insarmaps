@@ -1,4 +1,5 @@
 // abstract multiple area marker layers into one master layer object
+// TODO: work with swaths rather than id's
 function AreaMarkerLayer(map) {
     var that = this;
 

@@ -64,7 +64,7 @@ function setUpAreaFilterSelector() {
                 $("#search-form-results-table tbody").empty();
 
                 myMap.removeAreaMarkers();
-                myMap.addAreaMarkersFromJSON(json, null);
+                myMap.addSwathsFromJSON(json, null);
                 this.lastAjaxRequest = null;
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
