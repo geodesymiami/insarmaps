@@ -667,6 +667,19 @@ class WebServicesController extends Controller
       return $angle * $earthRadius;
     }
 
+    public function uploadMbtiles(Request $request) {
+	$file = $request->file("file");
+	$fileName = $file->getClientOriginalName();
+	$filePath = "/var/www/html/tileserver";
+	try {
+		$file->move($filePath, $fileName);
+	} catch (Exception $e) {
+		return response("Error storing file", 500);
+	}
+
+	return response("successfully stored file", 200);
+    }
+
     /**
     * Return Laravel view object for webservice UI for querying points
     *
@@ -677,3 +690,4 @@ class WebServicesController extends Controller
       return view("webServices");
     }
 }
+

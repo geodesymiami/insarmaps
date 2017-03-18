@@ -40,3 +40,6 @@ Route::get("/WebServicesDatasetUI/", "WebServicesDatasetController@renderView");
 
 // web services for querying dataset via bounding box
 Route::get("/WebServicesBox/", "WebServicesBoxController@processRequest");
+
+Route::post("/WebServices/uploadMbtiles", "WebServicesController@uploadMbtiles")->middleware("auth");
+
