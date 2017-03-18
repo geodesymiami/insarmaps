@@ -668,16 +668,16 @@ class WebServicesController extends Controller
     }
 
     public function uploadMbtiles(Request $request) {
-	$file = $request->file("file");
-	$fileName = $file->getClientOriginalName();
-	$filePath = "/var/www/html/tileserver";
-	try {
-		$file->move($filePath, $fileName);
-	} catch (Exception $e) {
-		return response("Error storing file", 500);
-	}
+      $file = $request->file("file");
+      $fileName = $file->getClientOriginalName();
+      $filePath = "/var/www/html/tileserver";
+      try {
+        $file->move($filePath, $fileName);
+      } catch (Exception $e) {
+        return response("Error storing file", 500);
+      }
 
-	return response("successfully stored file", 200);
+      return response("successfully stored file", 200);
     }
 
     /**
