@@ -82,9 +82,8 @@ def convert_data(attributes, decimal_dates, timeseries_datasets, dataset_keys, j
 
     attributesController = InsarDatabaseController(dbUsername, dbPassword, dbHost, 'pgis')
     attributesController.connect()
-    if attributesController.table_exists(folder_name.lower()):
-        print "Dataset already exists... attempting to delete it"
-        attributesController.remove_dataset(folder_name, project_name)
+    print "Clearing old dataset, if it is there"
+    attributesController.remove_dataset_if_there(folder_name)
     attributesController.close()
 
     # iterate through h5 file timeseries
@@ -199,7 +198,7 @@ def convert_data(attributes, decimal_dates, timeseries_datasets, dataset_keys, j
     for k in attributes:
         if k in needed_attributes:
             v = attributes[k]
-            attributesController.add_attribute(project_name, k, v)
+            attributesController.add_attribute(folder_name, k, v)
 
     # create index to speed up queries:
     print "Creating index"
@@ -224,16 +223,8 @@ def make_json_file(chunk_num, points, dataset_keys, json_path, folder_name):
     json_file.write("%s" % string_json)
     json_file.close()
 
-    # insert json file to pgsql using ogr2ogr - folder_name == area unavco_name
-    command = 'ogr2ogr -append -f "PostgreSQL" PG:"dbname=pgis host=' + dbHost + ' user=' + dbUsername + ' password=' + dbPassword + '" --config PG_USE_COPY YES -nln "' + folder_name + '" '
-    chunk_path = './mbtiles/' + folder_name + '/' + chunk
-    res = os.system(command + ' ' + chunk_path)
 
-    if res != 0:
-        print "Error inserting into the database. This is most often due to running out of Memory (RAM), or incorrect database credentials... quitting"
-        sys.exit()
-
-    print "inserted chunk " + str(chunk_num) + " to db"
+    print "converted chunk " + str(chunk_num)
 
 # ---------------------------------------------------------------------------------------
 def build_parser():
@@ -308,16 +299,16 @@ def main():
     cur = None
 
     path_list = path_name.split("/")
-    mbtiles_path = os.getcwd() + "/mbtiles"
+    main_json_path = os.getcwd() + "/json"
     folder_name = path_name.split("/")[len(path_list)-1]
-    json_path = mbtiles_path + "/" + folder_name
+    json_path = main_json_path + "/" + folder_name
 
     try: # create path for folder that stores all mbtiles
-        os.mkdir(mbtiles_path)
+        os.mkdir(main_json_path)
     except:
-        print mbtiles_path + " already exists"
+        print main_json_path + " already exists"
 
-    try: # create path for json
+    try: # create path for this dataset's json
         os.mkdir(json_path)
     except:
         print json_path + " already exists"
@@ -328,11 +319,9 @@ def main():
 # run tippecanoe command to get mbtiles file and then delete the json files to save space
     os.chdir(os.path.abspath(json_path))
     os.system("tippecanoe *.json -x d -pf -pk -Bg -d9 -D12 -g12 -r0 -o " + folder_name + ".mbtiles")
-    os.system("rm -rf *.json")
 
-# move mbtiles file from json folder to mbtiles folder and then delete json folder
-    os.system("mv " + folder_name + ".mbtiles " + os.path.abspath(mbtiles_path))
-    os.system("rm -rf " + os.path.abspath(json_path))
+# move mbtiles file from json folder to main json output folder
+    os.system("mv " + folder_name + ".mbtiles " + os.path.abspath(main_json_path))
 
 # ---------------------------------------------------------------------------------------
 # check how long it took to read h5 file data and create json files
