@@ -73,11 +73,11 @@
   </div>
   <div id="loading-screen" class="overlay-div">
     <div id="loading-screen-contents">
-      <div id="loading-text-div">
-        Recoloring in progress... (ESCAPE to interrupt)
+      <div class="loading-text-div" id="loading-text-div-top">
+        Recoloring in progress...
       </div>
-      <div class="loading-circle">
-      </div>
+      <div class="loading-circle"></div>
+      <div class="loading-text-div" id="loading-text-div-bottom">ESCAPE to interrupt</div>
     </div>
   </div>
   <div id="map-container">

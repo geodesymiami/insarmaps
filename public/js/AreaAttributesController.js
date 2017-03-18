@@ -81,7 +81,7 @@ function AreaAttributesController(map, area) {
                 var possibleDates = this.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, this.datesArray);
                 this.map.selector.minIndex = possibleDates.minIndex;
                 this.map.selector.maxIndex = possibleDates.maxIndex + 1;
-                this.map.selector.recolorOnDisplacement(date1, date2, "Recoloring (ESCAPE to interrupt)...");
+                this.map.selector.recolorOnDisplacement(date1, date2, "Recoloring...", "ESCAPE to interrupt");
                 $("#color-scale-text-div").html("LOS Displacement (cm)");
             } else {
                 this.map.refreshDataset();
