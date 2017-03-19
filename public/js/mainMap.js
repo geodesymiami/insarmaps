@@ -586,7 +586,7 @@ function Map(loadJSONFunc) {
         }
 
         this.lastAreasRequest = $.ajax({
-            url:"/areas",
+            url: "/areas",
             success: function(response) {
                 var json = JSON.parse(response);
                 var features = this.addSwathsFromJSON(json, toExclude);
@@ -789,6 +789,12 @@ function Map(loadJSONFunc) {
             this.map.setCenter(this.map.getCenter().wrap(), {
                 source: "recenter"
             });
+
+            if (this.areaSwathsLoaded()) {
+                var bounds = this.map.getBounds();
+                var bbox = [bounds._ne, bounds._sw];
+                this.areaFilterSelector.filterAreas(bbox);
+            }
         }.bind(this));
     };
 
