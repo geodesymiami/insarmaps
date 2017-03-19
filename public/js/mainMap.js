@@ -748,33 +748,11 @@ function Map(loadJSONFunc) {
             }
 
             var onTheFlyJSON = this.map.getSource("onTheFlyJSON");
-            if ((onTheFlyJSON || this.colorOnDisplacement) && !this.selector.recoloring()) {
-                var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
-                var startDate = new Date(dates[0]);
-                var endDate = new Date(dates[dates.length - 1]);
-                if (this.selector.minIndex != -1 && this.selector.maxIndex != -1) {
-                    startDate = new Date(dates[this.selector.minIndex]);
-                    endDate = new Date(dates[this.selector.maxIndex]);
-                }
-                // it doesn't fire render events if we zoom out, so we recolor anyways when we zoom
-                // out. but what about the cases when it does refire? then we have incomplete recoloring.
-                // TODO: investigate and fix
-                if (currentZoom < this.previousZoom) {
-                    if (this.colorOnDisplacement) {
-                        this.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress... for fast zoom, switch to velocity or disable or deselect on the fly coloring", "ESCAPE to interrupt");
-                    } else {
-                        this.selector.recolorDataset();
-                    }
-                } else {
-                    this.onDatasetRendered(function(renderCallback) {
-                        if (this.colorOnDisplacement) {
-                            this.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress... for fast zoom, switch to velocity or disable or deselect on the fly coloring", "ESCAPE to interrupt");
-                        } else {
-                            this.selector.recolorDataset();
-                        }
-
-                        this.map.off("render", renderCallback);
-                    }.bind(this));
+            if ((this.colorOnDisplacement || this.selector.inSelectMode()) && !this.selector.recoloring()) {
+                this.selector.disableSelectMode();
+                if (onTheFlyJSON) {
+                    this.map.removeSource("onTheFlyJSON");
+                    this.map.removeLayer("onTheFlyJSON");
                 }
             }
 
