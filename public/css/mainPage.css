@@ -828,8 +828,10 @@ input[type=number] {
     position: absolute;
     bottom: 0px;
     left: 50%;
+    bottom: 10px;
     z-index: 99;
     width: 100px;
+    background-color: white;
 }
 
 .maximize-button-container {

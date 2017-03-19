@@ -252,7 +252,7 @@
     </div>
   </div>
   <div id="point-details"></div>
-  <div id="maximize-buttons-container">
+  <div id="maximize-buttons-container" class="btn btn-primary">
     <div class="maximize-button-container">
       <div>
         <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Datasets"></button>
