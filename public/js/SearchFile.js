@@ -42,6 +42,19 @@ function hideAllAutomcompleteSuggestions() {
     $("#input-flight-direction").autocomplete("close");
 }
 
+function hideAllSearchBars() {
+    var container = $("#hidden-search-bars-container");
+    $("#search-form input").val("");
+    if (container.hasClass("active")) {
+        container.removeClass("active");
+    }
+}
+
+function fullyHideSearchBars() {
+    hideAllSearchBars();
+    hideAllAutomcompleteSuggestions();
+}
+
 function searchTableHoverIn(jQueryThis) {
     if (myMap.pointsLoaded()) {
         return;
@@ -119,8 +132,7 @@ function SearchFile(container) {
         $("#search-form-results-table tbody").append(html);
         $("#" + rowID).css({ cursor: "pointer" });
         $("#" + rowID).click(function() {
-            if (!currentArea || (area.properties.layerID != currentArea.properties.layerID)
-                && !myMap.pointsLoaded()) {
+            if (!currentArea || (area.properties.layerID != currentArea.properties.layerID) && !myMap.pointsLoaded()) {
                 getGEOJSON(area);
             }
         });

@@ -677,6 +677,7 @@ function Map(loadJSONFunc) {
 
         this.clickOnAnAreaMarker = this.clickOnAnAreaMarker.bind(this);
         this.map.on('click', this.clickOnAnAreaMarker);
+        this.map.on('click', function() { fullyHideSearchBars(); });
 
         //this.map.on("contextmenu", this.rightClickOnAPoint);
 
@@ -897,12 +898,7 @@ function Map(loadJSONFunc) {
         this.tileJSON = null;
         this.colorOnDisplacement = false;
 
-        var container = $("#hidden-search-bars-container");
-        $("#search-form input").val("");
-        if (container.hasClass("active")) {
-            container.removeClass("active");
-        }
-        hideAllAutomcompleteSuggestions();
+        fullyHideSearchBars();
     };
 
     this.addContourLines = function() {
