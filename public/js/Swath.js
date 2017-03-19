@@ -12,18 +12,18 @@ function Swath(map, satellite, width, feature, id) {
     this.setSwathColor = function(satellite) {
         var swathColors = {
             "TERRASAR-X": "rgba(255, 0, 0, 1.0)",
-            "CSK": "rgba(255, 153, 0, 1.0)",
+            "CSK": "rgba(204, 52, 6, 1.0)",
             "ERS": "rgba(146, 191, 63, 1.0)",
             "ENVISAT": "rgba(110, 200, 54, 1.0)",
             "RADARSAT": "rgba(74, 200, 54, 1.0)",
             "RADARSAT-2": "rgba(12, 201, 44, 1.0)",
             "SENTINEL": "rgba(3, 144, 17, 1.0)",
-            "ALOS2": "rgba(36, 249, 245, 1.0)",
+            "ALOS2": "rgba(0, 93, 255, 1.0)",
             "ALOS": "rgba(15, 24, 193, 1.0)"
         };
 
         var color = swathColors[satellite.toUpperCase()];
-        return color ? color : "rgb(0, 0, 255)";
+        return color ? color : "rgba(0, 0, 255, 1.0)";
     };
 
     this.display = function() {
