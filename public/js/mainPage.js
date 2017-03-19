@@ -786,7 +786,7 @@ $(window).load(function() {
         var areaAttributesWrap = $(".wrap#area-attributes-div");
         areaAttributesWrap.css("overflow-y", "auto");
 
-        if (areaAttributesPopup.isMinimized()) {
+        if (areaAttributesPopup.isMinimized() && currentArea) {
             areaAttributesPopup.maximize(true);
         }
     });
