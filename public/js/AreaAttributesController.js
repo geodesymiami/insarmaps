@@ -68,7 +68,7 @@ function AreaAttributesController(map, area) {
         if (plotAttributes) {
             console.log(plotAttributes);
             if (plotAttributes[0]["plot.colorscale"]) {
-                var colorScaleOpts = plotAttributes[1]["plot.colorscale"].split(",");
+                var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
                 var min = colorScaleOpts[0];
                 var max = colorScaleOpts[1];
                 var units = colorScaleOpts[2]; // we ignore this
