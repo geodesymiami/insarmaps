@@ -49,10 +49,19 @@ class InsarDatabaseController:
 
         return self.cursor.fetchone()[0]
 
+    # TODO refactor below two functions
     def attribute_exists_for_dataset(self, dataset, attributekey):
         dataset_id = self.get_dataset_id(dataset)
 
         sql = "SELECT exists(SELECT attributekey FROM extra_attributes WHERE area_id = " + str(dataset_id) + " AND attributekey = '" + attributekey + "');"
+        self.cursor.execute(sql)
+
+        return self.cursor.fetchone()[0]
+    
+    def plot_attribute_exists_for_dataset(self, dataset, attributekey):
+        dataset_id = self.get_dataset_id(dataset)
+
+        sql = "SELECT exists(SELECT attributekey FROM plot_attributes WHERE area_id = " + str(dataset_id) + " AND attributekey = '" + attributekey + "');"
         self.cursor.execute(sql)
 
         return self.cursor.fetchone()[0]
@@ -85,12 +94,12 @@ class InsarDatabaseController:
         self.cursor.execute(sql)
         self.con.commit()
 
-        if not self.attribute_exists_for_dataset(dataset, attributekey):
+        if not self.plot_attribute_exists_for_dataset(dataset, attributekey):
             sql = "INSERT INTO plot_attributes VALUES (%s, %s, %s);"
             prepared_values = (str(dataset_id), attributekey, plotAttributeJSON)
         else:
             sql = "UPDATE plot_attributes SET attributevalue = %s WHERE area_id = %s AND attributekey = %s"
-            prepared_values = (attributevalue, str(dataset_id), plotAttributeJSON)
+            prepared_values = (plotAttributeJSON, str(dataset_id), attributekey)
 
         self.cursor.execute(sql, prepared_values)
         self.con.commit()
@@ -129,13 +138,6 @@ class InsarDatabaseController:
         except Exception, e:
             pass
             
-def is_plot_attribute(attribute):
-    tokens = attribute.split(".")
-    if tokens is None:
-        return False
-
-    return tokens[0] == "plot" and len(tokens) > 1
-
 def build_parser():
     dbHost = "insarmaps.rsmas.miami.edu"
     parser = argparse.ArgumentParser(description='Edit attributes of an insarmaps dataset')
@@ -172,8 +174,8 @@ def main(argv):
 
     for key in attributes:
         print "Setting attribute " + key + " to " + attributes[key]
-        if is_plot_attribute(key):
-            dbController.add_plot_attribute(unavco_name, key, json.dumps(attributes[key]))
+        if key == "plotAttributes":
+            dbController.add_plot_attribute(unavco_name, key, attributes[key])
         else:
             dbController.add_attribute(unavco_name, key, attributes[key])
 
