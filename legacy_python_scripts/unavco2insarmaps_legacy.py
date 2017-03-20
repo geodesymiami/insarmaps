@@ -11,7 +11,7 @@ import sys
 import psycopg2
 import geocoder
 import getopt
-from pysar.add_attributes_insarmaps import InsarDatabaseController
+from pysar.add_attribute_insarmaps import InsarDatabaseController
 import argparse
 
 # ex: python Converter_unavco.py Alos_SM_73_2980_2990_20070107_20110420.h5
