@@ -135,8 +135,8 @@ public function getPoints() {
 }
 }
 
-private function getExtraAttributesForAreas() {
-  $sql = "SELECT * FROM extra_attributes";
+private function getAttributesForAreas($table) {
+  $sql = "SELECT * FROM " . $table;
   $attributes = DB::select($sql);
   $attributesDict = [];
 
@@ -171,7 +171,8 @@ public function getAreas($bbox=NULL) {
       $userPermissions = $permissionController->getUserPermissions(Auth::id(), "users", "user_permissions", ["users.id = user_permissions.user_id"]);
       array_push($userPermissions, "public"); // every user must have public permissions
     }
-    $extra_attributes = $this->getExtraAttributesForAreas();
+    $extra_attributes = $this->getAttributesForAreas("extra_attributes");
+    $plot_attributes = $this->getAttributesForAreas("plot_attributes");
 
     $json["areas"] = [];
     foreach ($areas as $area) {
@@ -208,6 +209,12 @@ public function getAreas($bbox=NULL) {
             $currentArea["properties"]["extra_attributes"] = $extra_attributes[$area->id];
           } else {
             $currentArea["properties"]["extra_attributes"] = NULL;
+          }
+
+          if (isset($plot_attributes[$area->id])) {
+            $currentArea["properties"]["plot_attributes"] = $plot_attributes[$area->id]["plotAttributes"];
+          } else {
+            $currentArea["properties"]["plot_attributes"] = NULL;
           }
 
           array_push($json["areas"], $currentArea);

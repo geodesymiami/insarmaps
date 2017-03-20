@@ -253,8 +253,6 @@ function getGEOJSON(area) {
                 centerOfDataset = JSON.parse(centerOfDataset);
             }
 
-            // converter accidentally switched lat and long...
-            // TODO: fix that and rerun datasets when pysar2unavco is fully finished
             var long = centerOfDataset.longitude;
             var lat = centerOfDataset.latitude;
 
@@ -262,6 +260,9 @@ function getGEOJSON(area) {
                 center: [long, lat],
                 zoom: zoom
             });
+
+            var attributesController = new AreaAttributesController(myMap, area);
+            attributesController.processAttributes();
 
             myMap.addSwathsFromJSON(myMap.areas, [area.properties.unavco_name]);
             myMap.areaMarkerLayer.setAreaRowHighlighted(area.properties.layerID);

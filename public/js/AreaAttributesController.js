@@ -25,6 +25,7 @@ function AreaAttributesController(map, area) {
         var attributeValues = propertyToJSON(this.area.properties.attributevalues);
 
         var extraAttributes = propertyToJSON(this.area.properties.extra_attributes);
+        var plotAttributes = propertyToJSON(this.area.properties.plot_attributes);
 
         var fullAttributes = [];
         for (var i = 0; i < attributeKeys.length; i++) {
@@ -45,6 +46,10 @@ function AreaAttributesController(map, area) {
             }
         }
 
+        if (plotAttributes) {
+            fullAttributes["plotAttributes"] = plotAttributes;
+        }
+
         return fullAttributes;
     };
 
@@ -59,21 +64,29 @@ function AreaAttributesController(map, area) {
     };
 
     this.processAttributes = function() {
-        if (this.attributes) {
-            this.map.colorScale.setScale(this.attributes.plotAttributePreset_colorBar);
-            var min = this.attributes.plotAttributePreset_displayMin;
-            var max = this.attributes.plotAttributePreset_displayMax;
+        var plotAttributes = this.attributes.plotAttributes;
+        if (plotAttributes) {
+            console.log(plotAttributes);
+            if (plotAttributes[0]["plot.colorscale"]) {
+                var colorScaleOpts = plotAttributes[1]["plot.colorscale"].split(",");
+                var min = colorScaleOpts[0];
+                var max = colorScaleOpts[1];
+                var units = colorScaleOpts[2]; // we ignore this
+                var scaleType = colorScaleOpts[3];
+                this.map.colorScale.setScale(scaleType);
+                this.map.colorScale.setMinMax(min, max);
+            }
+
             this.map.colorOnDisplacement = false;
             var yearsElapsed = 0;
             var date1 = null;
             var date2 = null;
 
-            if (this.attributes.plotAttributePreset_Type == "displacement") {
+            if (plotAttributes.plotAttributePreset_Type == "displacement") {
                 this.map.colorOnDisplacement = true;
                 date1 = new Date(this.attributes.plotAttributePreset_startDate);
                 date2 = new Date(this.attributes.plotAttributePreset_endDate);
             }
-            this.map.colorScale.setMinMax(min, max);
 
             if (this.map.colorOnDisplacement) {
                 var decimalDate1 = dateToDecimal(date1);

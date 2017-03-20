@@ -541,7 +541,8 @@ function Map(loadJSONFunc) {
                     "string_dates": properties.string_dates,
                     "attributekeys": properties.attributekeys,
                     "attributevalues": properties.attributevalues,
-                    "extra_attributes": properties.extra_attributes
+                    "extra_attributes": properties.extra_attributes,
+                    "plot_attributes": properties.plot_attributes
                 }
             };
 
