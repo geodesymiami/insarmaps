@@ -265,7 +265,7 @@
     </div>
     <div class="maximize-button-container">
       <div>
-        <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Select Dataset before maximizing" id="area-attributes-div-maximize-button"></button>
+        <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Datasets Time-series Attributes" id="area-attributes-div-maximize-button"></button>
       </div>
     </div>
   </div>

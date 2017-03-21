@@ -797,12 +797,6 @@ input[type=number] {
     font-size: 12px;
 }
 
-#search-form-and-results-maximize-button {
-    bottom: 45px;
-    left: 0;
-    z-index: 99;
-}
-
 #search-form-and-results-minimize-button {
     position: fixed;
 }
@@ -826,8 +820,7 @@ input[type=number] {
 
 #maximize-buttons-container {
     position: absolute;
-    bottom: 0px;
-    left: 50%;
+    right: 50%;
     bottom: 10px;
     z-index: 99;
     width: 100px;
@@ -841,14 +834,12 @@ input[type=number] {
 }
 
 .maximize-button-container > div {
-    width: 16px;
     height: 16px;
-    background-color: gray;
 }
 
 .maximize-button-container button {
-    margin: 0 auto;
     display: block;
+    margin: 0 auto;
 }
 
 .clickable-button:active {

@@ -198,6 +198,7 @@ $(window).load(function() {
             !($("#search-input").is(":focus") || $("#scale-values input").is(":focus"))) {
             searcher.search();
             $("#search-form-and-results-maximize-button").click();
+            fullyHideSearchBars();
         }
     });
 
