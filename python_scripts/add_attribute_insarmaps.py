@@ -134,6 +134,8 @@ class InsarDatabaseController:
             self.cursor.execute(sql)
             sql = "DELETE from extra_attributes WHERE area_id = " + str(dataset_id)
             self.cursor.execute(sql)
+            sql = "DELETE from plot_attributes WHERE area_id = " + str(dataset_id) 
+            self.cursor.execute(sql)
             self.con.commit()
         except Exception, e:
             pass
