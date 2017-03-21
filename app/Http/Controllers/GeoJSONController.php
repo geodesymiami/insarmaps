@@ -42,7 +42,6 @@ class GeoJSONController extends Controller {
   }
 
   /** @throws Exception */
-  // TODO: Insert try/catch statement in case query fails
   private function jsonDataForPoint($area, $pointNumber) {
       $json = [];
       // hard coded until zishi is back
@@ -62,7 +61,7 @@ class GeoJSONController extends Controller {
 
      $json["string_dates"] = $this->arrayFormatter->postgresToPHPArray($string_dates);
 
-     $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = ?";
+     $query = 'SELECT *, st_astext(wkb_geometry) from "' . $area . '" where p = ?';
 
      $points = DB::select($query, [$pointNumber]);
      foreach ($points as $point) {
@@ -98,7 +97,7 @@ public function getPoints() {
     $pointsArray = array_slice($parameters, 1, $offset);
 
     $pointsArrayLen = count($pointsArray);
-    $query = "SELECT decimaldates, stringdates FROM area WHERE area.unavco_name like ?";
+    $query = 'SELECT decimaldates, stringdates FROM area WHERE area.unavco_name like ?';
     $dateInfos = DB::select($query, [$area]);
 
     foreach ($dateInfos as $dateInfo) {
@@ -118,7 +117,7 @@ public function getPoints() {
 
     // add last ANY values without comma
   $curPointNum = $pointsArray[$i];
-  $query = $query . "(" . $curPointNum . ")) SELECT *, st_astext(wkb_geometry) from " . $area . " INNER JOIN points p ON (" . $area . ".p = p.point) ORDER BY p ASC";
+  $query = $query . '(' . $curPointNum . ')) SELECT *, st_astext(wkb_geometry) from "' . $area . '" INNER JOIN points p ON (' . $area . '.p = p.point) ORDER BY p ASC';
 
     // echo $fullQuery;
   // echo $query;

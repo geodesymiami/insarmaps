@@ -108,9 +108,9 @@ class InsarDatabaseController:
         # can't remove single quotes from table name, so we do it manually
         sql = None
         if index_name:
-            sql = "CREATE INDEX " + index_name + " ON " + table + " (" + on + ");"
+            sql = 'CREATE INDEX ' + index_name + ' ON "' + table + '" (' + on + ');'
         else:
-            sql = "CREATE INDEX ON " + table + " (" + on + ");"
+            sql = 'CREATE INDEX ON "' + table + '" (' + on + ');'
 
         try:
             self.cursor.execute(sql)
@@ -120,7 +120,7 @@ class InsarDatabaseController:
             pass
 
     def remove_point_table_if_there(self, unavco_name): 
-        sql = "DROP TABLE IF EXISTS " + unavco_name.lower()
+        sql = 'DROP TABLE IF EXISTS "' + unavco_name + '"'
         self.cursor.execute(sql)
         self.con.commit()
 
