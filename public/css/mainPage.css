@@ -825,6 +825,7 @@ input[type=number] {
     z-index: 99;
     width: 100px;
     background-color: white;
+    border: none;
 }
 
 .maximize-button-container {
