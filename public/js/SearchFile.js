@@ -96,6 +96,8 @@ function SearchFile(container) {
         attributes["mission"] = $("#input-satellite").val();
         attributes["relative_orbit"] = $("#input-relative-orbit").val();
         attributes["first_frame"] = $("#input-first-frame").val();
+        // twice because it first_frame is sometimes called frame in db
+        attributes["frame"] = $("#input-first-frame").val();
         attributes["beam_mode"] = $("#input-mode").val();
         attributes["flight_direction"] = $("#input-flight-direction").val();
 
@@ -153,7 +155,7 @@ function SearchFile(container) {
         var attributesController = new AreaAttributesController(myMap, myMap.areaFeatures[0]);
         var areas = myMap.areaFeatures;
         var fileAttributes = null;
-        var attributesMatch = null;
+        var attributesMatch = true;
 
         // for each area, get attributes
         for (var i = 0; i < areas.length; i++) {
@@ -164,7 +166,8 @@ function SearchFile(container) {
             // for each attribute inputted by user, compare to attribute of same name in area
             // if attribute values do not match, break
             for (var key in searchAttributes) {
-                if (fileAttributes[key].toLowerCase() != searchAttributes[key].toLowerCase()) {
+                var attribute = fileAttributes[key];
+                if (attribute && attribute.toLowerCase() != searchAttributes[key].toLowerCase()) {
                     attributesMatch = false;
                     break;
                 }
@@ -196,9 +199,11 @@ $(window).load(function() {
 
         if (e.keyCode === ENTER_KEY &&
             !($("#search-input").is(":focus") || $("#scale-values input").is(":focus"))) {
-            searcher.search();
-            $("#search-form-and-results-maximize-button").click();
-            fullyHideSearchBars();
+            if (myMap.areaFeatures) {
+                searcher.search();
+                $("#search-form-and-results-maximize-button").click();
+                fullyHideSearchBars();
+            }
         }
     });
 
