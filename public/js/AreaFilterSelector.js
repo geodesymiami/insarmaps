@@ -64,7 +64,8 @@ function setUpAreaFilterSelector() {
                 $("#search-form-results-table tbody").empty();
 
                 myMap.removeAreaMarkers();
-                myMap.addSwathsFromJSON(json, null);
+                var exclude = currentArea ? [currentArea.properties.unavco_name] : null
+                myMap.addSwathsFromJSON(json, exclude);
                 this.lastAjaxRequest = null;
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
