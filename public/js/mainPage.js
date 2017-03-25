@@ -7,6 +7,7 @@ var topGraphToggleButton = null;
 var bottomGraphToggleButton = null;
 var contourToggleButton = null;
 var gpsStationsToggleButton = null;
+var recentDatasetsToggleButton = null;
 var myMap = null;
 
 function getRootUrl() {
@@ -344,7 +345,9 @@ function ToggleButton(id) {
             // toggle states
             this.toggle();
 
-            clickFunction();
+            if (clickFunction) {
+                clickFunction();
+            }
         }.bind(this));
     };
 }
@@ -577,6 +580,9 @@ function setupToggleButtons() {
             myMap.removeGPSStationMarkers();
         }
     });
+
+    recentDatasetsToggleButton = new ToggleButton("#recent-datasets-toggle-button")
+    recentDatasetsToggleButton.onclick(null);
 }
 
 function CountryGeocoder(mapboxAccessToken) {

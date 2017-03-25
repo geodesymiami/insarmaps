@@ -163,6 +163,16 @@ function SearchFile(container) {
             fileAttributes = attributesController.getAllAttributes();
             attributesMatch = true;
 
+            if (recentDatasetsToggleButton.toggleState == ToggleStates.ON) {
+                var areaDate = new Date(fileAttributes.last_date);
+                var millisecondsInYear = 1000 * 60 * 60 * 24 * 365;
+                var timeDifference = (new Date() - areaDate) / millisecondsInYear;
+                // dataset last_date older than a year, don't include it (i.e., don't even search it)
+                if (timeDifference > 1.0) {
+                    continue;
+                }
+            }
+
             // for each attribute inputted by user, compare to attribute of same name in area
             // if attribute values do not match, break
             for (var key in searchAttributes) {

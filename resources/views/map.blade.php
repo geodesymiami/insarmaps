@@ -46,7 +46,7 @@
     <div id="information-div-contents">
       <p>This website provides InSAR displacement time-series produced by the University of Miami Geodesy Laboratory,   which is supported by NASA and the NSF. To identify data sets from published papers please search for the author's names.<p>
 
-      <p>This website was created by  University of Miami. Computer Science students Alfredo Terrero and Zishi Wu. It started as a class project of CSC 431, taught by  Chris Mader and Julio Perez of the University of Miami’s Center for Computational Sciences (CCS). The data processing is conducted using the University of Miami’s High Performance Computing systems
+      <p>This website was created by  University of Miami. Computer Science students Alfredo Terrero and Zishi Wu. It started as a class project of CSC 431, taught by  Chris Mader and Julio Perez of the University of Miami’s Center for Computational Sciences (CCS). The data processing is conducted using the University of Miami’s High Performance Computing systems.
       </p>
       @if (Auth::guest())
         <p>
@@ -121,6 +121,12 @@
               <div class="caret"></div>
             </div>
           </div>
+          <div class="form-group custom-input">
+            <div class="overlay-toggle">
+              <label>Last year data</label>
+              <input id = "recent-datasets-toggle-button" type="checkbox"/>
+            </div>
+          </div>
           <!-- enter button to search for files with attributes matching above input -->
           <!-- <div id="enter-button-search-attributes">
             <button class="btn btn-primary btn-block">Enter</button>
@@ -165,7 +171,7 @@
           <input id='satellite' type='radio' name='rtoggle' value='satellite'/>
           <label for='satellite'>Satellite</label>
         </div>
-        <div class="overlay_toggle">
+        <div class="overlay-toggle">
           <label>Data overlay</label>
           <input id = "overlay-toggle-button" type="checkbox" name="overlayToggle"/>
         </div>

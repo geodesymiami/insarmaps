@@ -471,7 +471,6 @@ div.menu {
     width: 25%;
 }
 
-
 /*disable compass in nav controls*/
 .mapboxgl-ctrl-compass {
     display: none !important;
@@ -756,6 +755,12 @@ input[type=number] {
 
 .custom-input-dropdown:hover {
     cursor: pointer;
+}
+
+#recent-datasets-toggle-button {
+    width: 13px;
+    height: 13px;
+    margin: 4px 0 0 0 !important;
 }
 
 /* jquery autocomplete */
