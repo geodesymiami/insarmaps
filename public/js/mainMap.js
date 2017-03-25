@@ -748,13 +748,13 @@ function Map(loadJSONFunc) {
                 }
             }
 
-            var onTheFlyJSON = this.map.getSource("onTheFlyJSON");
             if ((this.colorOnDisplacement || this.selector.inSelectMode()) && !this.selector.recoloring()) {
                 this.selector.disableSelectMode();
-                if (onTheFlyJSON) {
-                    this.map.removeSource("onTheFlyJSON");
-                    this.map.removeLayer("onTheFlyJSON");
-                }
+            }
+
+            if (this.map.getSource("onTheFlyJSON")) {
+                this.map.removeSource("onTheFlyJSON");
+                this.map.removeLayer("onTheFlyJSON");
             }
 
             this.previousZoom = currentZoom;

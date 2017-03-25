@@ -153,7 +153,7 @@ function SearchFile(container) {
 
         // get array of all areas on map
         var attributesController = new AreaAttributesController(myMap, myMap.areaFeatures[0]);
-        var areas = myMap.areaFeatures;
+        var areas = myMap.allAreaFeatures;
         var fileAttributes = null;
         var attributesMatch = true;
 
