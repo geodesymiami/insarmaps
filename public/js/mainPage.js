@@ -94,9 +94,14 @@ function AreaAttributesPopup() {
         }
 
         var first_frame = areaAttributes.first_frame ? areaAttributes.first_frame : areaAttributes.frame;
-        $("#area-attributes-areaname-div").html(areaAttributes.mission + " "
-            + areaAttributes.relative_orbit + " " + first_frame
-            + " " + areaAttributes.beam_mode + " " + areaAttributes.flight_direction);
+        var name = areaAttributes.mission + " " + areaAttributes.relative_orbit + " " + first_frame
+            + " " + areaAttributes.beam_mode + " " + areaAttributes.flight_direction;
+
+        if (attributesController.areaHasPlotAttribute("plot.name")) {
+            name = attributesController.getPlotAttribute("plot.name");
+        }
+
+        $("#area-attributes-areaname-div").html(name);
 
         $("#area-attributes-table-body").html(tableHTML);
 

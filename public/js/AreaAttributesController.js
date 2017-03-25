@@ -66,7 +66,6 @@ function AreaAttributesController(map, area) {
     this.processAttributes = function() {
         var plotAttributes = this.attributes.plotAttributes;
         if (plotAttributes) {
-            console.log(plotAttributes);
             if (plotAttributes[0]["plot.colorscale"]) {
                 var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
                 var min = colorScaleOpts[0];
@@ -110,5 +109,21 @@ function AreaAttributesController(map, area) {
 
     this.areaHasAttribute = function(attribute) {
         return this.attributes[attribute] != null;
+    };
+
+    this.areaHasPlotAttribute = function(plotAttribute) {
+        if (!this.attributes.plotAttributes) {
+            return null;
+        }
+
+        return this.attributes.plotAttributes[0][plotAttribute] != null;
+    };
+
+    this.getPlotAttribute = function(plotAttribute) {
+        if (this.areaHasPlotAttribute(plotAttribute)) {
+            return this.attributes.plotAttributes[0][plotAttribute];
+        }
+
+        return null;
     };
 }
