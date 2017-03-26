@@ -66,7 +66,6 @@ function AreaAttributesController(map, area) {
     this.processPresetFigureAttributes = function() {
         var plotAttributes = this.attributes.plotAttributes;
         if (plotAttributes) {
-            var colorOnDisplacement = false;
             if (plotAttributes[0]["plot.colorscale"]) {
                 var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
                 var min = colorScaleOpts[0];
@@ -77,17 +76,16 @@ function AreaAttributesController(map, area) {
                 this.map.colorScale.setMinMax(min, max);
 
                 if (units == "cm") {
-                    colorOnDisplacement == true;
-                    var date1 = new Date(plotAttributes[0]["plot.startDate"]);
-                    var date2 = new Date(plotAttributes[0]["plot.endDate"]);
+                    var startDate = new Date(plotAttributes[0]["plot.startDate"]);
+                    var endDate = new Date(plotAttributes[0]["plot.endDate"]);
 
-                    var decimalDate1 = dateToDecimal(date1);
-                    var decimalDate2 = dateToDecimal(date2);
+                    var decimalDate1 = dateToDecimal(startDate);
+                    var decimalDate2 = dateToDecimal(endDate);
                     var possibleDates = this.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, this.datesArray);
                     this.map.selector.minIndex = possibleDates.minIndex;
                     this.map.selector.maxIndex = possibleDates.maxIndex + 1;
-                    this.map.selector.recolorOnDisplacement(date1, date2, "Recoloring...", "ESCAPE to interrupt");
-                    $("#color-scale-text-div").html("LOS Displacement (cm)");
+
+                    myMap.colorDatasetOnDisplacement(startDate, endDate);
                 }
             }
         }
@@ -96,7 +94,6 @@ function AreaAttributesController(map, area) {
     this.processAttributes = function() {
         var plotAttributes = this.attributes.plotAttributes;
         if (plotAttributes) {
-            console.log(plotAttributes);
             if (plotAttributes[0]["plot.colorscale"]) {
                 var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
                 var min = colorScaleOpts[0];

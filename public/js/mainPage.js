@@ -730,7 +730,6 @@ $(window).load(function() {
                 return;
             }
 
-            myMap.colorOnDisplacement = true;
             var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.decimal_dates));
             var startDate = dates[0];
             var endDate = dates[dates.length - 1];
@@ -739,18 +738,9 @@ $(window).load(function() {
                 endDate = dates[myMap.selector.maxIndex];
             }
 
-            var possibleDates = myMap.graphsController.mapDatesToArrayIndeces(startDate, endDate, dates);
-            myMap.selector.minIndex = possibleDates.minIndex;
-            myMap.selector.maxIndex = possibleDates.maxIndex;
-            myMap.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress... for fast zoom, switch to velocity or disable or deselect on the fly coloring", "ESCAPE to interrupt");
-            $("#color-scale-text-div").html("LOS Displacement (cm)");
+            myMap.colorDatasetOnDisplacement(startDate, endDate);
         } else if (selectedColoring === "velocity") {
-            myMap.colorOnDisplacement = false;
-            if (myMap.map.getSource("onTheFlyJSON")) {
-                myMap.map.removeSource("onTheFlyJSON");
-                myMap.map.removeLayer("onTheFlyJSON");
-            }
-            $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
+            myMap.colorDatasetOnVelocity();
         } else {
             throw "Invalid dropdown selection";
         }

@@ -748,8 +748,14 @@ function Map(loadJSONFunc) {
                 }
             }
 
-            if ((this.colorOnDisplacement || this.selector.inSelectMode()) && !this.selector.recoloring()) {
-                this.selector.disableSelectMode();
+            if (!this.selector.recoloring()) {
+                if (this.selector.inSelectMode()) {
+                    this.selector.disableSelectMode();
+                }
+
+                if (this.colorOnDisplacement) {
+                    this.colorDatasetOnVelocity();
+                }
             }
 
             if (this.map.getSource("onTheFlyJSON")) {
@@ -775,6 +781,21 @@ function Map(loadJSONFunc) {
                 this.areaFilterSelector.filterAreas(bbox);
             }
         }.bind(this));
+    };
+
+    this.colorDatasetOnDisplacement = function(startDate, endDate) {
+        this.colorOnDisplacement = true;
+        this.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress... for fast zoom, switch to velocity or disable or deselect on the fly coloring", "ESCAPE to interrupt");
+        $("#color-scale-text-div").html("LOS Displacement (cm)");
+    };
+
+    this.colorDatasetOnVelocity = function() {
+        this.colorOnDisplacement = false;
+        if (this.map.getSource("onTheFlyJSON")) {
+            this.map.removeSource("onTheFlyJSON");
+            this.map.removeLayer("onTheFlyJSON");
+        }
+        $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
     };
 
     this.pointsLoaded = function() {
@@ -862,8 +883,7 @@ function Map(loadJSONFunc) {
         this.removeGPSStationMarkers();
         gpsStationsToggleButton.set("off");
 
-        $("#color-on-dropdown").val("velocity");
-        $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
+        this.colorDatasetOnVelocity();
 
         this.loadAreaMarkers(null);
 
