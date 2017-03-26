@@ -153,12 +153,12 @@ function AreaAttributesPopup() {
     this.populateTabs = function(area) {
         var attributesController = new AreaAttributesController(myMap, area);
 
-        if (attributesController.areaHasAttribute("plotAttributePreset_Name")) {
+        if (attributesController.areaHasPlotAttribute("plot.title")) {
             var html = "<a href='#' id='preset-dataset-link'>" +
-                attributesController.getAttribute("plotAttributePreset_Name") + "</a>";
+                attributesController.getPlotAttribute("plot.title") + "</a>";
             $("#figures-tab").html(html);
             $("#preset-dataset-link").on("click", function() {
-                attributesController.processAttributes();
+                attributesController.processPresetFigureAttributes();
             });
         }
 

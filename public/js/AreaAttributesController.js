@@ -63,9 +63,40 @@ function AreaAttributesController(map, area) {
         return this.attributes[attributeKey];
     };
 
+    this.processPresetFigureAttributes = function() {
+        var plotAttributes = this.attributes.plotAttributes;
+        if (plotAttributes) {
+            var colorOnDisplacement = false;
+            if (plotAttributes[0]["plot.colorscale"]) {
+                var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
+                var min = colorScaleOpts[0];
+                var max = colorScaleOpts[1];
+                var units = colorScaleOpts[2]; // we ignore this
+                var scaleType = colorScaleOpts[3];
+                this.map.colorScale.setScale(scaleType);
+                this.map.colorScale.setMinMax(min, max);
+
+                if (units == "cm") {
+                    colorOnDisplacement == true;
+                    var date1 = new Date(plotAttributes[0]["plot.startDate"]);
+                    var date2 = new Date(plotAttributes[0]["plot.endDate"]);
+
+                    var decimalDate1 = dateToDecimal(date1);
+                    var decimalDate2 = dateToDecimal(date2);
+                    var possibleDates = this.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, this.datesArray);
+                    this.map.selector.minIndex = possibleDates.minIndex;
+                    this.map.selector.maxIndex = possibleDates.maxIndex + 1;
+                    this.map.selector.recolorOnDisplacement(date1, date2, "Recoloring...", "ESCAPE to interrupt");
+                    $("#color-scale-text-div").html("LOS Displacement (cm)");
+                }
+            }
+        }
+    };
+
     this.processAttributes = function() {
         var plotAttributes = this.attributes.plotAttributes;
         if (plotAttributes) {
+            console.log(plotAttributes);
             if (plotAttributes[0]["plot.colorscale"]) {
                 var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
                 var min = colorScaleOpts[0];
@@ -76,29 +107,8 @@ function AreaAttributesController(map, area) {
                 this.map.colorScale.setMinMax(min, max);
             }
 
-            this.map.colorOnDisplacement = false;
-            var yearsElapsed = 0;
-            var date1 = null;
-            var date2 = null;
-
-            if (plotAttributes.plotAttributePreset_Type == "displacement") {
-                this.map.colorOnDisplacement = true;
-                date1 = new Date(this.attributes.plotAttributePreset_startDate);
-                date2 = new Date(this.attributes.plotAttributePreset_endDate);
-            }
-
-            if (this.map.colorOnDisplacement) {
-                var decimalDate1 = dateToDecimal(date1);
-                var decimalDate2 = dateToDecimal(date2);
-                var possibleDates = this.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, this.datesArray);
-                this.map.selector.minIndex = possibleDates.minIndex;
-                this.map.selector.maxIndex = possibleDates.maxIndex + 1;
-                this.map.selector.recolorOnDisplacement(date1, date2, "Recoloring...", "ESCAPE to interrupt");
-                $("#color-scale-text-div").html("LOS Displacement (cm)");
-            } else {
-                this.map.refreshDataset();
-                $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
-            }
+            this.map.refreshDataset();
+            $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
         }
     };
 
