@@ -7,6 +7,7 @@ var topGraphToggleButton = null;
 var bottomGraphToggleButton = null;
 var contourToggleButton = null;
 var gpsStationsToggleButton = null;
+var midasNA12StationsToggleButton = null;
 var recentDatasetsToggleButton = null;
 var myMap = null;
 
@@ -490,6 +491,8 @@ function switchLayer(layer) {
 
 function setupToggleButtons() {
     /*TOGGLE BUTTON*/
+    // TODO: the onclick callbacks are screaming to have the toggle state
+    // passed into them...
     overlayToggleButton = new ToggleButton("#overlay-toggle-button");
     overlayToggleButton.onclick(function() {
         // on? add layers, otherwise remove them
@@ -583,6 +586,15 @@ function setupToggleButtons() {
             myMap.addGPSStationMarkers(gpsStations);
         } else {
             myMap.removeGPSStationMarkers();
+        }
+    });
+
+    midasNA12StationsToggleButton = new ToggleButton("#midas-na12-stations-toggle-button");
+    midasNA12StationsToggleButton.onclick(function() {
+        if (midasNA12StationsToggleButton.toggleState == ToggleStates.ON) {
+            myMap.loadMidasNA12GpsStationMarkers();
+        } else {
+
         }
     });
 

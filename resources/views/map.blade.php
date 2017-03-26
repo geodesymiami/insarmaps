@@ -183,6 +183,10 @@
           <label>GPS Stations (UNR)</label>
           <input id = "gps-stations-toggle-button" type="checkbox"/>
         </div>
+        <div class="overlay-toggle">
+          <label>MIDAS NA12 (UNR)</label>
+          <input id = "midas-na12-stations-toggle-button" type="checkbox"/>
+        </div>
         <div>
           <label>Color On:</label>
           <select id="color-on-dropdown">

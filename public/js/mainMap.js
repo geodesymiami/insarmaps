@@ -1078,6 +1078,18 @@ function Map(loadJSONFunc) {
             this.map.removeLayer(layerID);
         }
     };
+
+    this.loadMidasNA12GpsStationMarkers = function() {
+        $.ajax({
+            url: "ftp://gneiss.nbmg.unr.edu/NA12/NA12.llh",
+            success: function(response) {
+                console.log(response);
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.log("failed " + xhr.responseText);
+            }
+        });
+    };
 }
 
 
