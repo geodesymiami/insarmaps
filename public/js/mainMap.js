@@ -375,21 +375,36 @@ function Map(loadJSONFunc) {
         // remove cluster count check if you remove clustering
         var frameFeature = this.getFirstPolygonFrameAtPoint(features);
         if (frameFeature) {
-            this.determineZoomOutZoom();
+            var attributesController = new AreaAttributesController(this, frameFeature);
 
-            var feature = frameFeature;
+            // if we have data_footprint, then show all data footprints associated
+            // with this area's scene_footprint
+            if (attributesController.areaHasAttribute("data_footprint")) {
+                this.removeAreaMarkers();
+                var scene_footprint = attributesController.getAttribute("scene_footprint");
+                var childFeatures = this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint];
+                childFeatures = childFeatures.slice(0); // clone it to prevent infinite loop when we add to the hashmap
+                var json = {
+                    "areas": childFeatures
+                };
+                this.addSwathsFromJSON(json);
+            } else {
+                this.determineZoomOutZoom();
 
-            var unavco_name = feature.properties.unavco_name;
-            var project_name = feature.properties.project_name;
-            var lat = feature.geometry.coordinates[0];
-            var long = feature.geometry.coordinates[1];
-            var num_chunks = feature.properties.num_chunks;
-            var attributeKeys = feature.properties.attributekeys;
-            var attributeValues = feature.properties.attributevalues;
+                var feature = frameFeature;
 
-            var markerID = feature.properties.layerID;
+                var unavco_name = feature.properties.unavco_name;
+                var project_name = feature.properties.project_name;
+                var lat = feature.geometry.coordinates[0];
+                var long = feature.geometry.coordinates[1];
+                var num_chunks = feature.properties.num_chunks;
+                var attributeKeys = feature.properties.attributekeys;
+                var attributeValues = feature.properties.attributevalues;
 
-            getGEOJSON(feature);
+                var markerID = feature.properties.layerID;
+
+                getGEOJSON(feature);
+            }
         }
     };
 
@@ -505,6 +520,11 @@ function Map(loadJSONFunc) {
         var searchFormController = new SearchFile();
 
         $("#search-form-results-table tbody").empty();
+
+        // console.log(json.areas[0].properties.plot_attributes);
+        this.areaMarkerLayer.emptyLayers();
+        // clear the map so we can add new keys and values to it
+        this.areaMarkerLayer.mapSceneAndDataFootprints = {};
         for (var i = 0; i < json.areas.length; i++) {
             var area = json.areas[i];
 
@@ -514,9 +534,23 @@ function Map(loadJSONFunc) {
             attributesController.setArea(area);
             var attributes = attributesController.getAllAttributes();
 
-            var scene_footprint = attributes.scene_footprint;
+            var scene_footprint = attributesController.getAttribute("scene_footprint");
             var polygonGeoJSON = Terraformer.WKT.parse(scene_footprint);
             var lineStringGeoJSON = this.polygonToLineString(polygonGeoJSON);
+
+            if (attributesController.areaHasAttribute("data_footprint")) {
+                var data_footprint = attributesController.getAttribute("data_footprint");
+                // make the scene footprint the previous data_footprint and delete the data_footprint
+                var areaClone = JSON.parse(JSON.stringify(area));
+                areaClone.properties.extra_attributes.scene_footprint = data_footprint;
+                areaClone.properties.extra_attributes.data_footprint = null;
+
+                if (!this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint]) {
+                    this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint] = [areaClone];
+                } else {
+                    this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint].push(areaClone);
+                }
+            }
 
             var id = "areas" + i;
             var polygonID = "areas" + i + "fill"
@@ -559,7 +593,7 @@ function Map(loadJSONFunc) {
             var swathWidth = 3;
             var swath = new Swath(this, attributes.mission, swathWidth, feature, id);
             swath.display();
-        };
+        }
 
         // make search form table highlight on hover
         $("#search-form-results-table tr").hover(function() {

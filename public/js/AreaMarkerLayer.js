@@ -7,6 +7,8 @@ function AreaMarkerLayer(map) {
     this.modifiedLayers = [];
     this.map = map;
 
+    this.mapSceneAndDataFootprints = {};
+
     this.addLayer = function(id) {
         this.layers.push(id);
     };
@@ -57,7 +59,12 @@ function AreaMarkerLayer(map) {
             $row.css({ "background-color": rowColor });
             // now scroll to it, maybe pass in container div as parameter?
             var position = $row.position();
-            $(".fixed-header-table-container").scrollTop(position.top);
+
+            // make sure to avoid race condition where table has been cleared but this method is called
+            // (by mousemove event, etc) causing crash and alot of problems
+            if (position) {
+                $(".fixed-header-table-container").scrollTop(position.top);
+            }
         }
     };
 
@@ -92,6 +99,11 @@ function AreaMarkerLayer(map) {
             this.setPolygonHighlighted(layerID, "rgba(0, 0, 255, 0)");
         }
 
+        this.modifiedLayers = [];
+    };
+
+    this.emptyLayers = function() {
+        this.layers = [];
         this.modifiedLayers = [];
     };
 }
