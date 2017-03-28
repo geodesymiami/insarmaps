@@ -15312,3 +15312,11 @@ var gpsStations = [["00NA", -12.466640, -229.156013, "IGS08", 1 ],
 ["ZYWE",  49.688157, -340.802640, "IGS08", 1 ],
 ["ZYWI",  49.686691, -340.794046, "IGS08", 1 ],
 ];
+
+function parseMidasJSON(midasJSON) {
+	console.log(midasJSON);
+	var midasNA12 = midasJSON.midasNA12.split("\n");
+	var latLongs = midasJSON.stationLatLongs.split("\n");
+
+	var map = {};
+}

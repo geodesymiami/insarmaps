@@ -1,4 +1,5 @@
 <?php
+// TODO: change echo json_encodes to proper laravel response objects
 
 namespace App\Http\Controllers;
 
@@ -256,6 +257,16 @@ public function getAreas($bbox=NULL) {
 
       return NULL;
     }
+  }
+
+  public function getMidasNA12() {
+    $json = [];
+    $midasNA12 = file_get_contents("http://geodesy.unr.edu/velocities/midas.NA12.txt");
+    $stationLatLongs = file_get_contents("ftp://gneiss.nbmg.unr.edu/NA12/NA12.llh");
+    $json["midasNA12"] = $midasNA12;
+    $json["stationLatLongs"] = $stationLatLongs;
+
+    echo json_encode($json);
   }
 
   // how to get points in polygon for webservices:

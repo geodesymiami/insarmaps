@@ -1121,28 +1121,42 @@ function Map(loadJSONFunc) {
         });
     };
 
-    this.removeGPSStationMarkers = function() {
-        var layerID = "gpsStations";
-
-        if (this.map.getSource(layerID)) {
-            this.map.removeSource(layerID);
+    this.removeSourceAndLayer = function(name) {
+        if (this.map.getSource(name)) {
+            this.map.removeSource(name);
         }
 
-        if (this.map.getLayer(layerID)) {
-            this.map.removeLayer(layerID);
+        if (this.map.getLayer(name)) {
+            this.map.removeLayer(name);
         }
     };
 
+    this.removeGPSStationMarkers = function() {
+        var name = "gpsStations";
+
+        this.removeSourceAndLayer(name);
+    };
+
     this.loadMidasNA12GpsStationMarkers = function() {
+        showLoadingScreen("Getting Midas GPS Data", "");
         $.ajax({
-            url: "ftp://gneiss.nbmg.unr.edu/NA12/NA12.llh",
+            url: "/midasna12",
             success: function(response) {
-                console.log(response);
+                var json = JSON.parse(response);
+                parseMidasJSON(json);
+                hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
+                hideLoadingScreen();
                 console.log("failed " + xhr.responseText);
             }
         });
+    };
+
+    this.removeGPSStationMarkers = function() {
+        var name = "midasNA12";
+
+        this.removeSourceAndLayer(name);
     };
 }
 

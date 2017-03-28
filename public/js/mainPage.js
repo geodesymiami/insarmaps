@@ -594,7 +594,8 @@ function setupToggleButtons() {
         if (midasNA12StationsToggleButton.toggleState == ToggleStates.ON) {
             myMap.loadMidasNA12GpsStationMarkers();
         } else {
-
+            console.log("bye");
+            myMap.removeMidasNA12GPSStationMarkers();
         }
     });
 
