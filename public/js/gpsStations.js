@@ -1,3 +1,6 @@
+// these same values are given to us from txt file on
+// UNR server. Might consider deleting this depending on speed
+// and ask him if speed drawback is worth having latest stations
 var gpsStations = [["00NA", -12.466640, -229.156013, "IGS08", 1 ],
 ["01NA", -12.478224, -229.017953, "IGS08", 1 ],
 ["02NA", -12.355923, -229.118271, "IGS08", 1 ],
@@ -15313,10 +15316,51 @@ var gpsStations = [["00NA", -12.466640, -229.156013, "IGS08", 1 ],
 ["ZYWI",  49.686691, -340.794046, "IGS08", 1 ],
 ];
 
-function parseMidasJSON(midasJSON) {
-	console.log(midasJSON);
-	var midasNA12 = midasJSON.midasNA12.split("\n");
-	var latLongs = midasJSON.stationLatLongs.split("\n");
 
-	var map = {};
+// latLongs is just the above gps stations...
+// ask him if these are stationary or we should always
+// request from server. either way, in below function
+// we use the one given to us by server
+function parseMidasJSON(midasJSON) {
+    var midasNA12 = midasJSON.midasNA12.split("\n");
+    var latLongs = midasJSON.stationLatLongs.split("\n");
+
+    var latLongMap = {};
+
+    for (var i = 0; i < latLongs.length; i++) {
+        var fields = latLongs[i].split("  ");
+        var station = fields[0];
+        var lat = fields[1];
+        var long = fields[2];
+
+        latLongMap[station] = [long, lat];
+    }
+
+    var features = [];
+    for (var i = 0; i < midasNA12.length; i++) {
+        var fields = midasNA12[i].match(/\S+/g);
+        if (fields) {
+	        var station = fields[0];
+	        // column 11 according to Midas readme
+	        // colors to mapbox stops works assumes cm and converts to meters
+	        // an optimization in the future is to make two functions or pass variable
+	        // whether to convert data or not... for now, just convert velocity to cm/year
+	        // (midas gives it in m/yr). TODO: fix this as it feels wasteful (even if negligible)
+	        var upVelocity = fields[10] * 100; // m/yr to cm/yr
+	        var feature = {
+	            "type": "Feature",
+	            "geometry": {
+	                "type": "Point",
+	                "coordinates": latLongMap[station]
+	            },
+	            "properties": {
+	                "v": upVelocity
+	            }
+	        };
+
+	        features.push(feature);
+	    }
+    }
+
+    return features;
 }

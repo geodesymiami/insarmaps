@@ -738,6 +738,7 @@ function Map(loadJSONFunc) {
             var itsAnreaPolygon = (markerSymbol === "fillPolygon");
             var itsAPoint = (layerSource === "vector_layer_" || layerSource === "onTheFlyJSON");
             var itsAGPSFeature = (layerID === "gpsStations");
+            var itsAMidasGPSFeature = (layerID === "midasNA12");
             var frameFeature = this.getFirstPolygonFrameAtPoint(features);
 
             this.map.getCanvas().style.cursor = (itsAPoint || itsAnreaPolygon || itsAGPSFeature || frameFeature) ? 'pointer' : 'auto';
@@ -748,6 +749,12 @@ function Map(loadJSONFunc) {
                 var coordinates = features[0].geometry.coordinates;
                 this.gpsStationNamePopup.setLngLat(coordinates)
                     .setHTML(features[0].properties.stationName)
+                    .addTo(this.map);
+            } else if (itsAMidasGPSFeature) {
+                this.gpsStationNamePopup.remove();
+                var coordinates = features[0].geometry.coordinates;
+                this.gpsStationNamePopup.setLngLat(coordinates)
+                    .setHTML(features[0].properties.v + " m/yr")
                     .addTo(this.map);
             } else if (frameFeature) {
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
@@ -1143,7 +1150,33 @@ function Map(loadJSONFunc) {
             url: "/midasna12",
             success: function(response) {
                 var json = JSON.parse(response);
-                parseMidasJSON(json);
+                var features = parseMidasJSON(json);
+
+                var mapboxStationFeatures = {
+                    type: "geojson",
+                    cluster: false,
+                    data: {
+                        "type": "FeatureCollection",
+                        "features": features
+                    }
+                };
+
+                var layerID = "midasNA12";
+                var stops = this.colorScale.getMapboxStops();
+                this.map.addSource(layerID, mapboxStationFeatures);
+                this.map.addLayer({
+                    "id": layerID,
+                    "type": "circle",
+                    "source": layerID,
+                    "paint": {
+                        "circle-color": {
+                            "property": 'v',
+                            "stops": stops
+                        },
+                        "circle-radius": 5
+                    }
+                });
+
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -1153,7 +1186,7 @@ function Map(loadJSONFunc) {
         });
     };
 
-    this.removeGPSStationMarkers = function() {
+    this.removeMidasNA12GpsStationMarkers = function() {
         var name = "midasNA12";
 
         this.removeSourceAndLayer(name);
