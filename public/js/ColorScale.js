@@ -225,7 +225,7 @@ function ColorScale(min, max, divID) {
 
         // we divide by 100 because this class works in cm, but mapbox works in m as
         // those are the units in the original h5 files
-        var colorRange = (Math.abs(min) + Math.abs(max)) / 100.0;
+        var colorRange = (max - min) / 100.0;
         var currentValue = min / 100.0;
 
         var increment = colorRange / colors.length;
@@ -270,5 +270,19 @@ function ColorScale(min, max, divID) {
 
     this.setTitle = function(title) {
         $("#" + this.divID + " > #color-scale-text-div").html(title);
+    };
+
+    this.show = function() {
+        var id = "#" + this.divID;
+        if (!$(id).hasClass("active")) {
+            $(id).toggleClass("active");
+        }
+    };
+
+    this.remove = function() {
+        var id = "#" + this.divID;
+        if ($(id).hasClass("active")) {
+            $(id).toggleClass("active");
+        }
     };
 }

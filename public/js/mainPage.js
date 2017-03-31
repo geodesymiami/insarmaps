@@ -201,9 +201,7 @@ function getGEOJSON(area) {
 
     areaAttributesPopup.show(area);
 
-    if (!$("#color-scale").hasClass("active")) {
-        $("#color-scale").toggleClass("active");
-    }
+    myMap.colorScale.show();
 
     // when we click, we don't reset the highlight of modified markers one final time
     myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
@@ -587,6 +585,15 @@ function setupToggleButtons() {
                 midasNA12StationsToggleButton.set("off");
             } else {
                 myMap.loadMidasNA12GpsStationMarkers();
+                // TODO: this is a hack. we aren't going through setMinMax
+                // as that also sets the input boxes to these values. for now
+                // we are simulating meters by setting min and max like this
+                // and by multiplying by 100 if midasna12 is loaded when we are
+                // updating the color scale values. TODO: add proper unit support
+                // in the future.
+                myMap.colorScale.min = -200;
+                myMap.colorScale.max = 200;
+                myMap.colorScale.show();
             }
         } else {
             myMap.removeMidasNA12GpsStationMarkers();
@@ -1001,10 +1008,19 @@ $(window).load(function() {
             var min = $("#min-scale-value").val();
             var max = $("#max-scale-value").val();
 
+            // convert it to cm which color scale expects
+            // if we are changing it for midas
+            if (myMap.midasNA12Loaded()) {
+                min *= 100;
+                max *= 100;
+            }
             myMap.colorScale.min = min;
             myMap.colorScale.max = max;
 
+            // if they are loaded, refresh them. if aren't loaded, nothing
+            // will happen
             myMap.refreshDataset();
+            myMap.refreshMidasNA12GpsStationMarkers();
         }
     });
 

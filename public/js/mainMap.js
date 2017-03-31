@@ -909,9 +909,7 @@ function Map(loadJSONFunc) {
         $("#graph-div-minimize-button").click();
 
         // and color scale
-        if ($("#color-scale").hasClass("active")) {
-            $("#color-scale").toggleClass("active");
-        }
+        this.colorScale.remove();
     };
 
     this.reset = function() {
@@ -1148,6 +1146,16 @@ function Map(loadJSONFunc) {
         this.removeSourceAndLayer(name);
     };
 
+    this.refreshMidasNA12GpsStationMarkers = function() {
+        var stops = this.colorScale.getMapboxStops();
+        if (this.map.getLayer("midasNA12")) {
+            this.map.setPaintProperty("midasNA12", "circle-color", {
+                property: 'v',
+                stops: stops
+            });
+        }
+    };
+
     this.loadMidasNA12GpsStationMarkers = function() {
         showLoadingScreen("Getting Midas GPS Data", "");
         $.ajax({
@@ -1195,6 +1203,10 @@ function Map(loadJSONFunc) {
         var name = "midasNA12";
 
         this.removeSourceAndLayer(name);
+    };
+
+    this.midasNA12Loaded = function() {
+        return this.map.getSource("midasNA12") && this.map.getLayer("midasNA12");
     };
 }
 
