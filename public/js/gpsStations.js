@@ -15347,6 +15347,7 @@ function parseMidasJSON(midasJSON) {
 	        // whether to convert data or not... for now, just convert velocity to cm/year
 	        // (midas gives it in m/yr). TODO: fix this as it feels wasteful (even if negligible)
 	        var upVelocity = fields[10] * 100; // m/yr to cm/yr
+	        var stationName = fields[0];
 	        var feature = {
 	            "type": "Feature",
 	            "geometry": {
@@ -15354,7 +15355,8 @@ function parseMidasJSON(midasJSON) {
 	                "coordinates": latLongMap[station]
 	            },
 	            "properties": {
-	                "v": upVelocity
+	                "v": upVelocity,
+	                "stationName": stationName
 	            }
 	        };
 

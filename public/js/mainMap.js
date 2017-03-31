@@ -754,7 +754,9 @@ function Map(loadJSONFunc) {
                 this.gpsStationNamePopup.remove();
                 var coordinates = features[0].geometry.coordinates;
                 this.gpsStationNamePopup.setLngLat(coordinates)
-                    .setHTML(features[0].properties.v + " m/yr")
+                    .setHTML(
+                        features[0].properties.stationName + "<br>" +
+                        features[0].properties.v / 100 + " m/yr") //we work in cm. convert back to m
                     .addTo(this.map);
             } else if (frameFeature) {
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
