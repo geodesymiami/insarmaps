@@ -1,6 +1,7 @@
-function ColorScale(min, max) {
+function ColorScale(min, max, divID) {
     var that = this;
     this.levels = 256;
+    this.divID = divID;
 
     this.jet = [
         '#000080', '#000084', '#000089', '#00008d', '#000092', '#000096',
@@ -265,5 +266,9 @@ function ColorScale(min, max) {
 
     this.getMapboxStops = function() {
         return this.colorsToMapboxStops(this.min, this.max, this.currentScale);
+    };
+
+    this.setTitle = function(title) {
+        $("#" + this.divID + " > #color-scale-text-div").html(title);
     };
 }

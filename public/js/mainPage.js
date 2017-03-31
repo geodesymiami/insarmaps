@@ -171,18 +171,6 @@ function AreaAttributesPopup() {
 };
 
 function getGEOJSON(area) {
-    // currentPoint = 1;
-
-    // var query = {
-    //   "area": area,
-    //   "fileChunk": currentPoint
-    // }
-
-    // loadJSON(query, "file", myMap.JSONCallback);
-    //var tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/t/{z}/{x}/{y}.pbf"], "vector_layers":[]};
-    //myMap.tileJSON = {"minzoom":0,"maxzoom":14,"center":[130.308838,32.091882,14],"bounds":[130.267778,31.752321,131.191112,32.634544],"tiles":["http://localhost:8888/" + area + "/{z}/{x}/{y}.pbf"], "vector_layers":[]};
-    // myMap.tileJSON = { "minzoom": 0, "maxzoom": 14, "center": [130.308838, 32.091882, 14], "bounds": [130.267778, 31.752321, 131.191112, 32.634544], "tiles": ["http://ec2-52-41-231-16.us-west-2.compute.amazonaws.com:8888/" + area.name + "/{z}/{x}/{y}.pbf"], "vector_layers": [] };
-
     var tileJSON = {
         "minzoom": 0,
         "maxzoom": 14,
@@ -232,7 +220,10 @@ function getGEOJSON(area) {
     myMap.colorScale.defaultValues(); // set default values in case they were modified by another area
     myMap.selector.reset(currentArea);
     $("#color-on-dropdown").val("velocity");
-    $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
+    myMap.colorScale.setTitle("LOS Velocity [cm/yr]");
+
+    myMap.removeMidasNA12GpsStationMarkers();
+    midasNA12StationsToggleButton.set("off");
 
     myMap.addDataset(tileJSON);
     var styleLoadFunc = function(event) {
@@ -592,7 +583,11 @@ function setupToggleButtons() {
     midasNA12StationsToggleButton = new ToggleButton("#midas-na12-stations-toggle-button");
     midasNA12StationsToggleButton.onclick(function() {
         if (midasNA12StationsToggleButton.toggleState == ToggleStates.ON) {
-            myMap.loadMidasNA12GpsStationMarkers();
+            if (myMap.pointsLoaded()) {
+                midasNA12StationsToggleButton.set("off");
+            } else {
+                myMap.loadMidasNA12GpsStationMarkers();
+            }
         } else {
             myMap.removeMidasNA12GpsStationMarkers();
         }
