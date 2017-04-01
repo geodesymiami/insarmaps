@@ -753,10 +753,11 @@ function Map(loadJSONFunc) {
             } else if (itsAMidasGPSFeature) {
                 this.gpsStationNamePopup.remove();
                 var coordinates = features[0].geometry.coordinates;
+                var velocityInCMYR = (features[0].properties.v * 100).toFixed(4);
                 this.gpsStationNamePopup.setLngLat(coordinates)
                     .setHTML(
                         features[0].properties.stationName + "<br>" +
-                        features[0].properties.v / 100 + " m/yr") //we work in cm. convert back to m
+                        velocityInCMYR + " cm/yr") // we work in cm. convert m to cm
                     .addTo(this.map);
             } else if (frameFeature) {
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
@@ -1189,7 +1190,7 @@ function Map(loadJSONFunc) {
                     }
                 });
 
-                this.colorScale.setTitle("Vertical Velocity m/yr");
+                this.colorScale.setTitle("Vertical Velocity cm/yr");
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {

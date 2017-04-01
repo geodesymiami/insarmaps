@@ -15342,11 +15342,7 @@ function parseMidasJSON(midasJSON) {
         if (fields) {
 	        var station = fields[0];
 	        // column 11 according to Midas readme
-	        // colors to mapbox stops works assumes cm and converts to meters
-	        // an optimization in the future is to make two functions or pass variable
-	        // whether to convert data or not... for now, just convert velocity to cm/year
-	        // (midas gives it in m/yr). TODO: fix this as it feels wasteful (even if negligible)
-	        var upVelocity = fields[10] * 100; // m/yr to cm/yr
+	        var upVelocity = parseFloat(fields[10]);
 	        var stationName = fields[0];
 	        var feature = {
 	            "type": "Feature",
