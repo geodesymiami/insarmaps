@@ -15328,12 +15328,15 @@ function parseMidasJSON(midasJSON) {
     var latLongMap = {};
 
     for (var i = 0; i < latLongs.length; i++) {
-        var fields = latLongs[i].split("  ");
-        var station = fields[0];
-        var lat = fields[1];
-        var long = fields[2];
+        var fields = latLongs[i].match(/\S+/g);
 
-        latLongMap[station] = [long, lat];
+        if (fields) {
+	        var station = fields[0];
+	        var lat = fields[1];
+	        var long = fields[2];
+
+	        latLongMap[station] = [long, lat];
+	    }
     }
 
     var features = [];
@@ -15344,19 +15347,23 @@ function parseMidasJSON(midasJSON) {
 	        // column 11 according to Midas readme
 	        var upVelocity = parseFloat(fields[10]);
 	        var stationName = fields[0];
-	        var feature = {
-	            "type": "Feature",
-	            "geometry": {
-	                "type": "Point",
-	                "coordinates": latLongMap[station]
-	            },
-	            "properties": {
-	                "v": upVelocity,
-	                "stationName": stationName
-	            }
-	        };
+	        var coordinates = latLongMap[station];
 
-	        features.push(feature);
+	        if (coordinates) {
+		        var feature = {
+		            "type": "Feature",
+		            "geometry": {
+		                "type": "Point",
+		                "coordinates": coordinates
+		            },
+		            "properties": {
+		                "v": upVelocity,
+		                "stationName": stationName
+		            }
+		        };
+
+		        features.push(feature);
+		    }
 	    }
     }
 
