@@ -81,11 +81,22 @@ function AreaAttributesController(map, area) {
 
                     var decimalDate1 = dateToDecimal(startDate);
                     var decimalDate2 = dateToDecimal(endDate);
-                    var possibleDates = this.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, this.datesArray);
-                    this.map.selector.minIndex = possibleDates.minIndex;
-                    this.map.selector.maxIndex = possibleDates.maxIndex + 1;
 
-                    myMap.colorDatasetOnDisplacement(startDate, endDate);
+                    // this if is taken if plot start date or endate not there
+                    if (!decimalDate1 || !decimalDate2) {
+                        var dates = convertStringsToDateArray(propertyToJSON(this.datesArray));
+                        decimalDate1 = dates[0];
+                        decimalDate2 = dates[dates.length - 1];
+                        this.map.selector.minIndex = 0;
+                        this.map.selector.maxIndex = dates.length - 1;
+                    } else {
+                        var possibleDates = this.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, this.datesArray);
+                        this.map.selector.minIndex = possibleDates.minIndex;
+                        this.map.selector.maxIndex = possibleDates.maxIndex + 1;
+                    }
+                    console.log(decimalDate1);
+                    console.log(decimalDate2);
+                    this.map.colorDatasetOnDisplacement(decimalDate1, decimalDate2);
                 }
             }
         }

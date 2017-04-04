@@ -4,6 +4,7 @@
 // had promise, but it required us using a stockchart, which in turn required us re styling the
 // stock chart to look like a regular graph. To save headaches, we simply re create the graph... performance
 // penalty is not noticeable.
+// TODO: date functions need serious refactoring
 function GraphsController(map) {
     var that = this;
     this.map = map;
