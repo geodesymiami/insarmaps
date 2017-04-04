@@ -85,8 +85,8 @@ function AreaAttributesController(map, area) {
                     // this if is taken if plot start date or endate not there
                     if (!decimalDate1 || !decimalDate2) {
                         var dates = convertStringsToDateArray(propertyToJSON(this.datesArray));
-                        decimalDate1 = dates[0];
-                        decimalDate2 = dates[dates.length - 1];
+                        startDate = dates[0];
+                        endDate = dates[dates.length - 1];
                         this.map.selector.minIndex = 0;
                         this.map.selector.maxIndex = dates.length - 1;
                     } else {
@@ -95,7 +95,7 @@ function AreaAttributesController(map, area) {
                         this.map.selector.maxIndex = possibleDates.maxIndex + 1;
                     }
 
-                    this.map.colorDatasetOnDisplacement(decimalDate1, decimalDate2);
+                    this.map.colorDatasetOnDisplacement(startDate, endDate);
                 }
             }
         }
