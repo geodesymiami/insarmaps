@@ -94,8 +94,7 @@ function AreaAttributesController(map, area) {
                         this.map.selector.minIndex = possibleDates.minIndex;
                         this.map.selector.maxIndex = possibleDates.maxIndex + 1;
                     }
-                    console.log(decimalDate1);
-                    console.log(decimalDate2);
+
                     this.map.colorDatasetOnDisplacement(decimalDate1, decimalDate2);
                 }
             }
