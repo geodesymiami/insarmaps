@@ -9,6 +9,7 @@ var contourToggleButton = null;
 var gpsStationsToggleButton = null;
 var midasNA12StationsToggleButton = null;
 var recentDatasetsToggleButton = null;
+var usgsEarthquakeToggleButton = null;
 var myMap = null;
 
 function getRootUrl() {
@@ -589,6 +590,15 @@ function setupToggleButtons() {
             }
         } else {
             myMap.removeMidasNA12GpsStationMarkers();
+        }
+    });
+
+    usgsEarthquakeToggleButton = new ToggleButton("#usgs-earthquake-toggle-button");
+    usgsEarthquakeToggleButton.onclick(function() {
+        if (usgsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
+            myMap.loadUSGSEarthquakeFeed();
+        } else {
+            myMap.removeUSGSEarthquakeFeed();
         }
     });
 

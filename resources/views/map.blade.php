@@ -187,6 +187,10 @@
           <label>MIDAS NA12 (UNR)</label>
           <input id = "midas-na12-stations-toggle-button" type="checkbox"/>
         </div>
+        <div class="overlay-toggle">
+          <label>USGS 30 Day Earthquake Feed</label>
+          <input id = "usgs-earthquake-toggle-button" type="checkbox"/>
+        </div>
         <div>
           <label>Color On:</label>
           <select id="color-on-dropdown">
