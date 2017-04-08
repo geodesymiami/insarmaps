@@ -171,6 +171,20 @@ function AreaAttributesPopup() {
     };
 };
 
+function pysarSubsetToMapboxBounds(pysarSubset) {
+    var latLongLimits = pysarSubset.split(",");
+    var latLimits = latLongLimits[0].split(":");
+    var longLimits = latLongLimits[1].split(":");
+    var bottom = latLimits[0];
+    var top = latLimits[1];
+    var left = longLimits[0];
+    var right = longLimits[1];
+
+    var bounds = [left, bottom, right, top];
+
+    return bounds;
+}
+
 function getGEOJSON(area) {
     var tileJSON = {
         "minzoom": 0,
@@ -178,7 +192,7 @@ function getGEOJSON(area) {
         "center": [130.308838,
             32.091882, 14
         ],
-        "bounds": [130.267778, 31.752321, 131.191112, 32.634544],
+        "bounds": null,
         "tiles": [
             "http://129.171.60.12:8888/" + area.properties.unavco_name +
             "/{z}/{x}/{y}.pbf"
@@ -192,6 +206,12 @@ function getGEOJSON(area) {
     }
 
     currentArea = area;
+
+    var attributesController = new AreaAttributesController(myMap, area);
+    if (attributesController.areaHasPlotAttribute("plot.subset.lalo")) {
+        var pysarSubset = attributesController.getPlotAttribute("plot.subset.lalo");
+        tileJSON.bounds = pysarSubsetToMapboxBounds(pysarSubset);
+    }
 
     // make streets toggle button be only checked one
     $("#streets").prop("checked", true);
@@ -258,7 +278,6 @@ function getGEOJSON(area) {
                 zoom: zoom
             });
 
-            var attributesController = new AreaAttributesController(myMap, area);
             attributesController.processAttributes();
 
             myMap.addSwathsFromJSON(myMap.areas, [area.properties.unavco_name]);
