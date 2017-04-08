@@ -241,7 +241,7 @@ function getGEOJSON(area) {
     $("#color-on-dropdown").val("velocity");
     myMap.colorScale.setTitle("LOS Velocity [cm/yr]");
 
-    myMap.removeMidasNA12GpsStationMarkers();
+    myMap.thirdPartySourcesController.removeMidasNA12GpsStationMarkers();
     midasNA12StationsToggleButton.set("off");
 
     myMap.addDataset(tileJSON);
@@ -412,7 +412,7 @@ function switchLayer(layer) {
             myMap.addDataset(myMap.tileJSON);
             myMap.loadAreaMarkersExcluding([currentArea.properties.unavco_name], null)
             if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
-                myMap.addGPSStationMarkers(gpsStations);
+                myMap.thirdPartySourcesController.addGPSStationMarkers(gpsStations);
             }
 
             if (mapHadClickLocationMarkerTop) {
@@ -485,7 +485,7 @@ function switchLayer(layer) {
                     myMap.addContourLines();
                 }
                 if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
-                    myMap.addGPSStationMarkers(gpsStations);
+                    myMap.thirdPartySourcesController.addGPSStationMarkers(gpsStations);
                 }
 
                 myMap.loadAreaMarkers(null);
@@ -592,9 +592,9 @@ function setupToggleButtons() {
     gpsStationsToggleButton.onclick(function() {
         if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
             // gpsStations global variable from gpsStations.js
-            myMap.addGPSStationMarkers(gpsStations);
+            myMap.thirdPartySourcesController.addGPSStationMarkers(gpsStations);
         } else {
-            myMap.removeGPSStationMarkers();
+            myMap.thirdPartySourcesController.removeGPSStationMarkers();
         }
     });
 
@@ -604,20 +604,20 @@ function setupToggleButtons() {
             if (myMap.pointsLoaded()) {
                 midasNA12StationsToggleButton.set("off");
             } else {
-                myMap.loadMidasNA12GpsStationMarkers();
+                myMap.thirdPartySourcesController.loadMidasNA12GpsStationMarkers();
                 myMap.colorScale.show();
             }
         } else {
-            myMap.removeMidasNA12GpsStationMarkers();
+            myMap.thirdPartySourcesController.removeMidasNA12GpsStationMarkers();
         }
     });
 
     usgsEarthquakeToggleButton = new ToggleButton("#usgs-earthquake-toggle-button");
     usgsEarthquakeToggleButton.onclick(function() {
         if (usgsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
-            myMap.loadUSGSEarthquakeFeed();
+            myMap.thirdPartySourcesController.loadUSGSEarthquakeFeed();
         } else {
-            myMap.removeUSGSEarthquakeFeed();
+            myMap.thirdPartySourcesController.removeUSGSEarthquakeFeed();
         }
     });
 
@@ -1035,7 +1035,7 @@ $(window).load(function() {
             // if they are loaded, refresh them. if aren't loaded, nothing
             // will happen
             myMap.refreshDataset();
-            myMap.refreshMidasNA12GpsStationMarkers();
+            myMap.thirdPartySourcesController.refreshMidasNA12GpsStationMarkers();
         }
     });
 

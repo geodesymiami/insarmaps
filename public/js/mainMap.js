@@ -148,6 +148,8 @@ function Map(loadJSONFunc) {
 
     this.areaMarkerLayer = new AreaMarkerLayer(this);
 
+    this.thirdPartySourcesController = new ThirdPartySourcesController(this);
+
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,
         closeOnClick: false
@@ -934,11 +936,11 @@ function Map(loadJSONFunc) {
         this.gpsStationPopup.remove();
         this.gpsStationNamePopup.remove();
 
-        this.removeGPSStationMarkers();
+        this.thirdPartySourcesController.removeGPSStationMarkers();
         gpsStationsToggleButton.set("off");
-        this.removeMidasNA12GpsStationMarkers();
+        this.thirdPartySourcesController.removeMidasNA12GpsStationMarkers();
         midasNA12StationsToggleButton.set("off");
-        this.removeUSGSEarthquakeFeed();
+        this.thirdPartySourcesController.removeUSGSEarthquakeFeed();
         usgsEarthquakeToggleButton.set("off");
 
         this.colorDatasetOnVelocity();
@@ -1096,55 +1098,6 @@ function Map(loadJSONFunc) {
         }
     };
 
-    this.addGPSStationMarkers = function(stations) {
-        var features = [];
-        var mapboxStationFeatures = {
-            type: "geojson",
-            cluster: false,
-            data: {
-                "type": "FeatureCollection",
-                "features": []
-            }
-        };
-
-        var imageURLs = ["bluSquare", "redSquare"];
-
-        var features = [];
-        for (var i = 0; i < stations.length; i++) {
-            var popupHTML = '<h3>Station: ' + stations[i][0] + '<br/>' +
-                ' <a target="_blank" href="http://geodesy.unr.edu/NGLStationPages/stations/' + stations[i][0] + '.sta"> ' +
-                ' <img src="http://geodesy.unr.edu/tsplots/' + stations[i][3] + '/TimeSeries/' + stations[i][0] + '.png" align="center" width=400 height=600 alt="' + stations[i][0] + 'Time Series Plot"/> </a>' +
-                ' <p> <h5> Click plot for full station page. Positions in ' + stations[i][3] + ' reference frame. ';
-
-            var feature = {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [stations[i][2], stations[i][1]]
-                },
-                "properties": {
-                    "popupHTML": popupHTML,
-                    "stationName": stations[i][0]
-                }
-            };
-
-            features.push(feature);
-        }
-        mapboxStationFeatures.data.features = features;
-
-        var layerID = "gpsStations";
-        this.map.addSource(layerID, mapboxStationFeatures);
-        this.map.addLayer({
-            "id": layerID,
-            "type": "circle",
-            "source": layerID,
-            "paint": {
-                "circle-color": "blue",
-                "circle-radius": 5
-            }
-        });
-    };
-
     this.removeSourceAndLayer = function(name) {
         if (this.map.getSource(name)) {
             this.map.removeSource(name);
@@ -1153,135 +1106,6 @@ function Map(loadJSONFunc) {
         if (this.map.getLayer(name)) {
             this.map.removeLayer(name);
         }
-    };
-
-    this.removeGPSStationMarkers = function() {
-        var name = "gpsStations";
-
-        this.removeSourceAndLayer(name);
-    };
-
-    this.refreshMidasNA12GpsStationMarkers = function() {
-        var stops = this.colorScale.getMapboxStops();
-        if (this.map.getLayer("midasNA12")) {
-            this.map.setPaintProperty("midasNA12", "circle-color", {
-                property: 'v',
-                stops: stops
-            });
-        }
-    };
-
-    this.loadMidasNA12GpsStationMarkers = function() {
-        showLoadingScreen("Getting Midas GPS Data", "");
-        $.ajax({
-            url: "/midasna12",
-            success: function(response) {
-                var json = JSON.parse(response);
-                var features = parseMidasJSON(json);
-
-                var mapboxStationFeatures = {
-                    type: "geojson",
-                    cluster: false,
-                    data: {
-                        "type": "FeatureCollection",
-                        "features": features
-                    }
-                };
-
-                var layerID = "midasNA12";
-                var stops = this.colorScale.getMapboxStops();
-                this.map.addSource(layerID, mapboxStationFeatures);
-                this.map.addLayer({
-                    "id": layerID,
-                    "type": "circle",
-                    "source": layerID,
-                    "paint": {
-                        "circle-color": {
-                            "property": 'v',
-                            "stops": stops
-                        },
-                        "circle-radius": 5
-                    }
-                });
-
-                this.colorScale.setTitle("Vertical Velocity cm/yr");
-                hideLoadingScreen();
-            }.bind(this),
-            error: function(xhr, ajaxOptions, thrownError) {
-                hideLoadingScreen();
-                console.log("failed " + xhr.responseText);
-            }
-        });
-    };
-
-    this.removeMidasNA12GpsStationMarkers = function() {
-        var name = "midasNA12";
-
-        this.removeSourceAndLayer(name);
-    };
-
-    this.midasNA12Loaded = function() {
-        return this.map.getSource("midasNA12") && this.map.getLayer("midasNA12");
-    };
-
-    this.loadUSGSEarthquakeFeed = function() {
-        showLoadingScreen("Getting USGS Data", "");
-        $.ajax({
-            url: "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&callback=?",
-            dataType: 'jsonp',
-            cache: true,
-            success: function(response) {
-                var json = response;
-                // There is a bug in gl js, which causes queryrenderedfeatures
-                // to crash if features have an id... see:
-                // https://github.com/mapbox/mapbox-gl-js/issues/4494
-                // after this is fixed, we can use the direct url to the json,
-                // avoiding jsonp and avoiding having to go through a server request
-                json.features.forEach(function(feature) {
-                    delete feature.id;
-                });
-                var mapboxStationFeatures = {
-                    type: "geojson",
-                    cluster: false,
-                    data: {
-                        "type": "FeatureCollection",
-                        "features": json.features
-                    }
-                };
-
-                var layerID = "USGSEarthquake";
-                var stops = this.colorScale.getMapboxStops();
-                this.map.addSource(layerID, mapboxStationFeatures);
-                this.map.addLayer({
-                    "id": layerID,
-                    "type": "circle",
-                    "source": layerID,
-                    "paint": {
-                        "circle-opacity": {
-                            "property": 'mag',
-                            "stops": [
-                                [1.0, 0.2],
-                                [4.5, 0.6],
-                                [9.0, 1.0]
-                            ]
-                        },
-                        "circle-color": "red",
-                        "circle-radius": 5
-                    }
-                });
-                hideLoadingScreen();
-            }.bind(this),
-            error: function(xhr, ajaxOptions, thrownError) {
-                hideLoadingScreen();
-                console.log("failed " + xhr.responseText);
-            }
-        });
-    };
-
-    this.removeUSGSEarthquakeFeed = function() {
-        var name = "USGSEarthquake";
-
-        this.removeSourceAndLayer(name);
     };
 }
 
