@@ -15346,6 +15346,8 @@ function parseMidasJSON(midasJSON) {
 	        var station = fields[0];
 	        // column 11 according to Midas readme
 	        var upVelocity = parseFloat(fields[10]);
+	        // column 14 according to Midas readme
+	        var uncertainty = parseFloat(fields[13]);
 	        var stationName = fields[0];
 	        var coordinates = latLongMap[station];
 
@@ -15358,7 +15360,8 @@ function parseMidasJSON(midasJSON) {
 		            },
 		            "properties": {
 		                "v": upVelocity,
-		                "stationName": stationName
+		                "stationName": stationName,
+		                "u": uncertainty
 		            }
 		        };
 

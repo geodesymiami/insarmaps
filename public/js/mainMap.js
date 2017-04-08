@@ -760,10 +760,11 @@ function Map(loadJSONFunc) {
                 this.gpsStationNamePopup.remove();
                 var coordinates = features[0].geometry.coordinates;
                 var velocityInCMYR = (features[0].properties.v * 100).toFixed(4);
+                var uncertainty = (features[0].properties.u * 100).toFixed(4);
                 this.gpsStationNamePopup.setLngLat(coordinates)
                     .setHTML(
                         features[0].properties.stationName + "<br>" +
-                        velocityInCMYR + " cm/yr") // we work in cm. convert m to cm
+                        velocityInCMYR + " +- " + uncertainty + " cm/yr") // we work in cm. convert m to cm
                     .addTo(this.map);
             } else if (frameFeature) {
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
