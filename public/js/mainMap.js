@@ -192,8 +192,12 @@ function Map(loadJSONFunc) {
         }
 
         var feature = features[0];
+        var id = feature.layer.id;
 
-        if (feature.layer.id == "gpsStations") {
+        // this callback active when dataset loaded, which is mutually
+        // exclusive to midasNA12 being loaded, but leave this check for
+        // midasNA12 just in case he changes his mind later
+        if (id === "gpsStations" || id === "midasNA12") {
             var coordinates = feature.geometry.coordinates;
             this.gpsStationPopup.remove();
             this.gpsStationPopup.setLngLat(coordinates)
@@ -361,8 +365,9 @@ function Map(loadJSONFunc) {
         }
 
         var firstFeature = features[0];
+        var id = firstFeature.layer.id;
 
-        if (firstFeature.layer.id == "gpsStations") {
+        if (id === "gpsStations" || id === "midasNA12") {
             var coordinates = firstFeature.geometry.coordinates;
             this.gpsStationPopup.remove();
             this.gpsStationPopup.setLngLat(coordinates)
@@ -933,6 +938,8 @@ function Map(loadJSONFunc) {
         gpsStationsToggleButton.set("off");
         this.removeMidasNA12GpsStationMarkers();
         midasNA12StationsToggleButton.set("off");
+        this.removeUSGSEarthquakeFeed();
+        usgsEarthquakeToggleButton.set("off");
 
         this.colorDatasetOnVelocity();
 

@@ -15323,19 +15323,27 @@ var gpsStations = [["00NA", -12.466640, -229.156013, "IGS08", 1 ],
 // we use the one given to us by server
 function parseMidasJSON(midasJSON) {
     var midasNA12 = midasJSON.midasNA12.split("\n");
-    var latLongs = midasJSON.stationLatLongs.split("\n");
+    // TODO: llh stationLatLongs doesn't have 4th field needed to get
+    // plot picture... ask him what to do
+    // var latLongs = midasJSON.stationLatLongs.split("\n");
+    var latLongs = gpsStations;
 
     var latLongMap = {};
 
     for (var i = 0; i < latLongs.length; i++) {
-        var fields = latLongs[i].match(/\S+/g);
+        // var fields = latLongs[i].match(/\S+/g);
+        var fields = latLongs[i];
 
         if (fields) {
 	        var station = fields[0];
 	        var lat = fields[1];
 	        var long = fields[2];
+	        var type = fields[3];
 
-	        latLongMap[station] = [long, lat];
+	        latLongMap[station] = {
+				"coordinates": [long, lat],
+				"type": type
+	        };
 	    }
     }
 
@@ -15349,9 +15357,16 @@ function parseMidasJSON(midasJSON) {
 	        // column 14 according to Midas readme
 	        var uncertainty = parseFloat(fields[13]);
 	        var stationName = fields[0];
-	        var coordinates = latLongMap[station];
+	        var stationInfo = latLongMap[station];
+	        if (stationInfo) {
+		        var coordinates = stationInfo.coordinates;
+		        var type = stationInfo.type;
+		        var popupHTML = '<h3>Station: ' + station + '<br/>' +
+	                ' <a target="_blank" href="http://geodesy.unr.edu/NGLStationPages/stations/' + station + '.sta"> ' +
+	                ' <img src="http://geodesy.unr.edu/tsplots/' + type + '/TimeSeries/' + station + '.png" align="center" width=400 height=600 alt="' + station + 'Time Series Plot"/> </a>' +
+	                ' <p> <h5> Click plot for full station page. Positions in ' + type + ' reference frame. ';
 
-	        if (coordinates) {
+
 		        var feature = {
 		            "type": "Feature",
 		            "geometry": {
@@ -15360,8 +15375,9 @@ function parseMidasJSON(midasJSON) {
 		            },
 		            "properties": {
 		                "v": upVelocity,
+		                "u": uncertainty,
 		                "stationName": stationName,
-		                "u": uncertainty
+		                "popupHTML": popupHTML
 		            }
 		        };
 
