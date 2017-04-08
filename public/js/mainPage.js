@@ -10,6 +10,7 @@ var gpsStationsToggleButton = null;
 var midasNA12StationsToggleButton = null;
 var recentDatasetsToggleButton = null;
 var usgsEarthquakeToggleButton = null;
+var IGEPNEarthquakeToggleButton = null;
 var myMap = null;
 
 function getRootUrl() {
@@ -618,6 +619,15 @@ function setupToggleButtons() {
             myMap.thirdPartySourcesController.loadUSGSEarthquakeFeed();
         } else {
             myMap.thirdPartySourcesController.removeUSGSEarthquakeFeed();
+        }
+    });
+
+    IGEPNEarthquakeToggleButton = new ToggleButton("#IGEPN-earthquake-toggle-button");
+    IGEPNEarthquakeToggleButton.onclick(function() {
+        if (IGEPNEarthquakeToggleButton.toggleState == ToggleStates.ON) {
+            myMap.thirdPartySourcesController.loadIGEPNEarthquakeFeed();
+        } else {
+            myMap.thirdPartySourcesController.removeIGEPNEarthquakeFeed();
         }
     });
 

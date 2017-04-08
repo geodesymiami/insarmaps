@@ -191,6 +191,10 @@
           <label>USGS 30 Day Earthquake Feed</label>
           <input id = "usgs-earthquake-toggle-button" type="checkbox"/>
         </div>
+        <div class="overlay-toggle">
+          <label>IGEPN Earthquake Feed</label>
+          <input id = "IGEPN-earthquake-toggle-button" type="checkbox"/>
+        </div>
         <div>
           <label>Color On:</label>
           <select id="color-on-dropdown">

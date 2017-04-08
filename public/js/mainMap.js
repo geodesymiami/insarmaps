@@ -749,10 +749,12 @@ function Map(loadJSONFunc) {
             var itsAGPSFeature = (layerID === "gpsStations");
             var itsAMidasGPSFeature = (layerID === "midasNA12");
             var itsAnUSGSFeature = (layerID === "USGSEarthquake");
+            var itsAnIGEPNFeature = (layerID === "IGEPNEarthquake");
             var frameFeature = this.getFirstPolygonFrameAtPoint(features);
             var cursor = (itsAPoint || itsAnreaPolygon ||
                         itsAGPSFeature || frameFeature ||
-                        itsAMidasGPSFeature || itsAnUSGSFeature) ? 'pointer' : 'auto';
+                        itsAMidasGPSFeature || itsAnUSGSFeature
+                        || itsAnIGEPNFeature) ? 'pointer' : 'auto';
 
             this.map.getCanvas().style.cursor = cursor;
 
@@ -772,6 +774,12 @@ function Map(loadJSONFunc) {
                     .setHTML(
                         features[0].properties.stationName + "<br>" +
                         velocityInCMYR + " +- " + uncertainty + " cm/yr") // we work in cm. convert m to cm
+                    .addTo(this.map);
+            } else if (itsAnIGEPNFeature) {
+                this.gpsStationNamePopup.remove();
+                var coordinates = features[0].geometry.coordinates;
+                this.gpsStationNamePopup.setLngLat(coordinates)
+                    .setHTML("Mag: " + features[0].properties.mag) // we work in cm. convert m to cm
                     .addTo(this.map);
             } else if (frameFeature) {
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
@@ -942,6 +950,8 @@ function Map(loadJSONFunc) {
         midasNA12StationsToggleButton.set("off");
         this.thirdPartySourcesController.removeUSGSEarthquakeFeed();
         usgsEarthquakeToggleButton.set("off");
+        this.thirdPartySourcesController.removeIGEPNEarthquakeFeed();
+        IGEPNEarthquakeToggleButton.set("off");
 
         this.colorDatasetOnVelocity();
 

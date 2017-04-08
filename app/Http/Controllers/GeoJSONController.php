@@ -269,6 +269,10 @@ public function getAreas($bbox=NULL) {
     echo json_encode($json);
   }
 
+  public function getIGEPNEarthquakeFeed() {
+    return file_get_contents("http://www.igepn.edu.ec/portal/eventos/www/events.xml");
+  }
+
   // how to get points in polygon for webservices:
   /*
   Assume we have lat, long; delta = 0.0001 but can be refined later

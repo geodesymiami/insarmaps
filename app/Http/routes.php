@@ -22,6 +22,7 @@ Route::get("/textFile/{area}/{point}", "GeoJSONController@pointDataToTextFile")-
 Route::get("/point/{area}/{point}", "GeoJSONController@getDataForPoint")->name("getDataForPoint");
 Route::get("/areas/", "GeoJSONController@getAreas")->name("getAreas");
 Route::get("/midasna12", "GeoJSONController@getMidasNA12")->name("getMidasNA12");
+Route::get("/IGEPNEarthquakeFeed", "GeoJSONController@getIGEPNEarthquakeFeed")->name("getIGEPNEarthquakeFeed");
 Route::post("/points", "GeoJSONController@getPoints");
 Route::controllers([
     'auth' => 'Auth\AuthController',    

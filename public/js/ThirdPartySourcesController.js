@@ -216,7 +216,6 @@ function ThirdPartySourcesController(map) {
                 };
 
                 var layerID = "USGSEarthquake";
-                var stops = this.map.colorScale.getMapboxStops();
                 this.map.map.addSource(layerID, mapboxStationFeatures);
                 this.map.map.addLayer({
                     "id": layerID,
@@ -246,6 +245,74 @@ function ThirdPartySourcesController(map) {
 
     this.removeUSGSEarthquakeFeed = function() {
         var name = "USGSEarthquake";
+
+        this.map.removeSourceAndLayer(name);
+    };
+
+    this.loadIGEPNEarthquakeFeed = function() {
+        showLoadingScreen("Getting IGEPN Data", "");
+        $.ajax({
+            url: "/IGEPNEarthquakeFeed",
+            success: function(response) {
+                var xmlDocument = $.parseXML(response);
+                var $xml = $(xmlDocument);
+                var markers = $xml.find("marker");
+                features = [];
+                markers.each(function() {
+                    var coordinates = [$(this).attr("lng"), $(this).attr("lat")];
+                    var magnitude = parseFloat($(this).attr("mg"));
+                    var feature = {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": coordinates
+                        },
+                        "properties": {
+                            "mag": magnitude
+                        }
+                    };
+
+                    features.push(feature);
+                });
+                var mapboxStationFeatures = {
+                    type: "geojson",
+                    cluster: false,
+                    data: {
+                        "type": "FeatureCollection",
+                        "features": features
+                    }
+                };
+
+                var layerID = "IGEPNEarthquake";
+                this.map.map.addSource(layerID, mapboxStationFeatures);
+                this.map.map.addLayer({
+                    "id": layerID,
+                    "type": "circle",
+                    "source": layerID,
+                    "paint": {
+                        "circle-opacity": {
+                            "property": 'mag',
+                            "stops": [
+                                [1.0, 0.2],
+                                [4.5, 0.6],
+                                [9.0, 1.0]
+                            ]
+                        },
+                        "circle-color": "red",
+                        "circle-radius": 5
+                    }
+                });
+                hideLoadingScreen();
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                hideLoadingScreen();
+                console.log("failed " + xhr.responseText);
+            }
+        });
+    };
+
+    this.removeIGEPNEarthquakeFeed = function() {
+        var name = "IGEPNEarthquake";
 
         this.map.removeSourceAndLayer(name);
     };
