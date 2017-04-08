@@ -416,6 +416,10 @@ function switchLayer(layer) {
                 myMap.thirdPartySourcesController.addGPSStationMarkers(gpsStations);
             }
 
+            midasNA12StationsToggleButton.set("off");
+            usgsEarthquakeToggleButton.set("off");
+            IGEPNEarthquakeToggleButton.set("off");
+
             if (mapHadClickLocationMarkerTop) {
                 myMap.removeTouchLocationMarkers();
 
@@ -488,6 +492,10 @@ function switchLayer(layer) {
                 if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
                     myMap.thirdPartySourcesController.addGPSStationMarkers(gpsStations);
                 }
+
+                midasNA12StationsToggleButton.set("off");
+                usgsEarthquakeToggleButton.set("off");
+                IGEPNEarthquakeToggleButton.set("off");
 
                 myMap.loadAreaMarkers(null);
             };
