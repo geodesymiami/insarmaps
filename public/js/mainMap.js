@@ -1118,10 +1118,16 @@ function Map(loadJSONFunc) {
         }
     };
 
-    this.subsetDataset = function(bbox) {
+    // if after is supplied, it must hide loading screen
+    this.subsetDataset = function(bbox, after) {
+        showLoadingScreen("Subsetting Dataset", "");
         // too many vector layers leads to browser running out of memory
         // when we set filter
         if (this.tileJSON.vector_layers.length > 1) {
+            hideLoadingScreen();
+            if (after) {
+                after();
+            }
             return;
         }
         var sw = {
@@ -1141,7 +1147,23 @@ function Map(loadJSONFunc) {
                 var filter = ["in", "p"].concat(pointIDs);
                 for (var i = 0; i < this.tileJSON.vector_layers.length; i++) {
                     var layerID = this.tileJSON.vector_layers[i].id;
-                    this.map.setFilter(layerID, filter);
+                    if (!this.map.getFilter(layerID)) {
+                        this.map.setFilter(layerID, filter);
+                    }
+                }
+
+                // after must hide loading screen, otherwise we do it
+                if (after) {
+                    if (this.map.loaded()) {
+                        after();
+                    } else {
+                        this.onDatasetRendered(function(callback) {
+                            this.map.off("render", callback);
+                            after();
+                        }.bind(this));
+                    }
+                } else {
+                    hideLoadingScreen();
                 }
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {

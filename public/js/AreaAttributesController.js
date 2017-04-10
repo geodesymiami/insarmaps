@@ -63,10 +63,41 @@ function AreaAttributesController(map, area) {
         return this.attributes[attributeKey];
     };
 
+    this.processDatesAndColoring = function(plotAttributes) {
+        var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
+        var min = colorScaleOpts[0];
+        var max = colorScaleOpts[1];
+        var units = colorScaleOpts[2]; // we ignore this
+        var scaleType = colorScaleOpts[3];
+
+        if (units == "cm") {
+            var startDate = new Date(plotAttributes[0]["plot.startDate"]);
+            var endDate = new Date(plotAttributes[0]["plot.endDate"]);
+
+            var decimalDate1 = dateToDecimal(startDate);
+            var decimalDate2 = dateToDecimal(endDate);
+
+            // this if is taken if plot start date or endate not there
+            if (!decimalDate1 || !decimalDate2) {
+                var dates = convertStringsToDateArray(propertyToJSON(this.datesArray));
+                startDate = dates[0];
+                endDate = dates[dates.length - 1];
+                this.map.selector.minIndex = 0;
+                this.map.selector.maxIndex = dates.length - 1;
+            } else {
+                var possibleDates = this.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, this.datesArray);
+                this.map.selector.minIndex = possibleDates.minIndex;
+                this.map.selector.maxIndex = possibleDates.maxIndex + 1;
+            }
+
+            this.map.colorDatasetOnDisplacement(startDate, endDate);
+        }
+    };
+
     this.processPresetFigureAttributes = function() {
         var plotAttributes = this.attributes.plotAttributes;
         if (plotAttributes) {
-            if (plotAttributes[0]["plot.colorscale"]) {
+            if (this.areaHasPlotAttribute("plot.colorscale")) {
                 var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
                 var min = colorScaleOpts[0];
                 var max = colorScaleOpts[1];
@@ -75,27 +106,14 @@ function AreaAttributesController(map, area) {
                 this.map.colorScale.setScale(scaleType);
                 this.map.colorScale.setMinMax(min, max);
 
-                if (units == "cm") {
-                    var startDate = new Date(plotAttributes[0]["plot.startDate"]);
-                    var endDate = new Date(plotAttributes[0]["plot.endDate"]);
-
-                    var decimalDate1 = dateToDecimal(startDate);
-                    var decimalDate2 = dateToDecimal(endDate);
-
-                    // this if is taken if plot start date or endate not there
-                    if (!decimalDate1 || !decimalDate2) {
-                        var dates = convertStringsToDateArray(propertyToJSON(this.datesArray));
-                        startDate = dates[0];
-                        endDate = dates[dates.length - 1];
-                        this.map.selector.minIndex = 0;
-                        this.map.selector.maxIndex = dates.length - 1;
-                    } else {
-                        var possibleDates = this.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, this.datesArray);
-                        this.map.selector.minIndex = possibleDates.minIndex;
-                        this.map.selector.maxIndex = possibleDates.maxIndex + 1;
-                    }
-
-                    this.map.colorDatasetOnDisplacement(startDate, endDate);
+                if (this.areaHasPlotAttribute("plot.subset.lalo")) {
+                    var pysarSubset = this.getPlotAttribute("plot.subset.lalo");
+                    var bbox = pysarSubsetToMapboxBounds(pysarSubset);
+                    this.map.subsetDataset(bbox, function() {
+                        this.processDatesAndColoring(plotAttributes);
+                    }.bind(this));
+                } else {
+                    this.processDatesAndColoring(plotAttributes);
                 }
             }
         }

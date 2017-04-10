@@ -273,12 +273,6 @@ function getGEOJSON(area) {
             });
 
             var attributesController = new AreaAttributesController(myMap, area);
-            if (attributesController.areaHasPlotAttribute("plot.subset.lalo")) {
-                var pysarSubset = attributesController.getPlotAttribute("plot.subset.lalo");
-                var bbox = pysarSubsetToMapboxBounds(pysarSubset);
-                myMap.subsetDataset(bbox);
-            }
-
             attributesController.processAttributes();
 
             myMap.addSwathsFromJSON(myMap.areas, [area.properties.unavco_name]);
