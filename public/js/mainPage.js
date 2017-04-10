@@ -97,8 +97,7 @@ function AreaAttributesPopup() {
         }
 
         var first_frame = areaAttributes.first_frame ? areaAttributes.first_frame : areaAttributes.frame;
-        var name = areaAttributes.mission + " " + areaAttributes.relative_orbit + " " + first_frame
-            + " " + areaAttributes.beam_mode + " " + areaAttributes.flight_direction;
+        var name = areaAttributes.mission + " " + areaAttributes.relative_orbit + " " + first_frame + " " + areaAttributes.beam_mode + " " + areaAttributes.flight_direction;
 
         if (attributesController.areaHasPlotAttribute("plot.name")) {
             name = attributesController.getPlotAttribute("plot.name");
@@ -208,12 +207,6 @@ function getGEOJSON(area) {
 
     currentArea = area;
 
-    var attributesController = new AreaAttributesController(myMap, area);
-    if (attributesController.areaHasPlotAttribute("plot.subset.lalo")) {
-        var pysarSubset = attributesController.getPlotAttribute("plot.subset.lalo");
-        tileJSON.bounds = pysarSubsetToMapboxBounds(pysarSubset);
-    }
-
     // make streets toggle button be only checked one
     $("#streets").prop("checked", true);
     for (var i = 1; i <= area.properties.num_chunks; i++) {
@@ -278,6 +271,13 @@ function getGEOJSON(area) {
                 center: [long, lat],
                 zoom: zoom
             });
+
+            var attributesController = new AreaAttributesController(myMap, area);
+            if (attributesController.areaHasPlotAttribute("plot.subset.lalo")) {
+                var pysarSubset = attributesController.getPlotAttribute("plot.subset.lalo");
+                var bbox = pysarSubsetToMapboxBounds(pysarSubset);
+                myMap.subsetDataset(bbox);
+            }
 
             attributesController.processAttributes();
 
@@ -678,7 +678,7 @@ function search() {
         geocoder.geocode(query, function(features) {
             if (features.length > 0) {
                 var firstCountry = features[0];
-                var swCorner =[firstCountry.bbox[0], firstCountry.bbox[1]];
+                var swCorner = [firstCountry.bbox[0], firstCountry.bbox[1]];
                 var neCorner = [firstCountry.bbox[2], firstCountry.bbox[3]];
                 var bbox = [swCorner, neCorner];
                 myMap.map.fitBounds(bbox);

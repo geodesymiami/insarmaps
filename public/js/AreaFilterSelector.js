@@ -14,38 +14,7 @@ function setUpAreaFilterSelector() {
         }
 
         var polygonVertices = this.getVerticesOfSquareBbox(bbox);
-        var serverBboxCoords = ""
-        var bboxString = "LINESTRING()";
-        var buffer = 0; // REMOVE POTENTIALLY
-        for (var i = 0; i < polygonVertices.length; i++) {
-            switch (i) {
-                case 0: // nw
-                    polygonVertices[i].lng -= buffer;
-                    polygonVertices[i].lat += buffer;
-                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
-                    break;
-                case 1: // ne
-                    polygonVertices[i].lng += buffer;
-                    polygonVertices[i].lat += buffer;
-                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
-                    break;
-                case 2: // se
-                    polygonVertices[i].lng += buffer;
-                    polygonVertices[i].lat -= buffer;
-                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
-                    break;
-                case 3: // sw
-                    polygonVertices[i].lng -= buffer;
-                    polygonVertices[i].lat -= buffer;
-                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
-                    break;
-                default:
-                    throw "invalid counter";
-                    break;
-            }
-        }
-        // add initial vertext again to close linestring
-        serverBboxCoords += polygonVertices[0].lng + " " + polygonVertices[0].lat;
+        var serverBboxCoords = this.verticesOfBboxToLineString(polygonVertices);
 
         // TODO: refactor success function and loadareamarkers handler
         // to not repeat code
@@ -54,7 +23,7 @@ function setUpAreaFilterSelector() {
         }
 
         this.lastAjaxRequest = $.ajax({
-            url: "/WebServicesBox?box=LINESTRING(" + serverBboxCoords + ")",
+            url: "/WebServicesBox?box=" + serverBboxCoords,
             success: function(response) {
                 var json = JSON.parse(response);
                 if (json.areas.length == 0) {
@@ -72,7 +41,7 @@ function setUpAreaFilterSelector() {
                 console.log("failed " + xhr.responseText);
                 this.lastAjaxRequest = null;
             }.bind(this)
-        })
+        });
     };
 
     AreaFilterSelector.prototype.filterAreas = function(bbox) {

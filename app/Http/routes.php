@@ -42,5 +42,7 @@ Route::get("/WebServicesDatasetUI/", "WebServicesDatasetController@renderView");
 
 // web services for querying dataset via bounding box
 Route::get("/WebServicesBox/", "WebServicesBoxController@processRequest");
+// get point id's in a bounding bos for subsetting
+Route::get("/WebServicesBox/{area}/{lineString}", "WebServicesBoxController@getPointNumbersInBox");
 
 Route::post("/WebServices/uploadMbtiles", "WebServicesController@uploadMbtiles")->middleware("auth");

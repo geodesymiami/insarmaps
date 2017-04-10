@@ -1117,6 +1117,38 @@ function Map(loadJSONFunc) {
             this.map.removeLayer(name);
         }
     };
+
+    this.subsetDataset = function(bbox) {
+        // too many vector layers leads to browser running out of memory
+        // when we set filter
+        if (this.tileJSON.vector_layers.length > 1) {
+            return;
+        }
+        var sw = {
+            lng: bbox[0],
+            lat: bbox[1]
+        };
+        var ne = {
+            lng: bbox[2],
+            lat: bbox[3]
+        };
+        var polygonVertices = this.selector.getVerticesOfSquareBbox([sw, ne]);
+        var serverBboxCoords = this.selector.verticesOfBboxToLineString(polygonVertices);
+        $.ajax({
+            url: "/WebServicesBox/" + currentArea.properties.unavco_name + "/" + serverBboxCoords,
+            success: function(response) {
+                var pointIDs = response;
+                var filter = ["in", "p"].concat(pointIDs);
+                for (var i = 0; i < this.tileJSON.vector_layers.length; i++) {
+                    var layerID = this.tileJSON.vector_layers[i].id;
+                    this.map.setFilter(layerID, filter);
+                }
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.log("failed " + xhr.responseText);
+            }.bind(this)
+        });
+    };
 }
 
 

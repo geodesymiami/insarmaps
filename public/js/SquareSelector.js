@@ -250,6 +250,42 @@ function SquareSelector() {
         return vertices;
     };
 
+    this.verticesOfBboxToLineString = function(polygonVertices) {
+        var serverBboxCoords = ""
+        var buffer = 0; // REMOVE POTENTIALLY
+        for (var i = 0; i < polygonVertices.length; i++) {
+            switch (i) {
+                case 0: // nw
+                    polygonVertices[i].lng -= buffer;
+                    polygonVertices[i].lat += buffer;
+                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
+                    break;
+                case 1: // ne
+                    polygonVertices[i].lng += buffer;
+                    polygonVertices[i].lat += buffer;
+                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
+                    break;
+                case 2: // se
+                    polygonVertices[i].lng += buffer;
+                    polygonVertices[i].lat -= buffer;
+                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
+                    break;
+                case 3: // sw
+                    polygonVertices[i].lng -= buffer;
+                    polygonVertices[i].lat -= buffer;
+                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
+                    break;
+                default:
+                    throw "invalid counter";
+                    break;
+            }
+        }
+        // add initial vertext again to close linestring
+        serverBboxCoords += polygonVertices[0].lng + " " + polygonVertices[0].lat;
+
+        return "LINESTRING(" + serverBboxCoords + ")";
+    };
+
     this.setMinMax = function(min, max) {
         this.minIndex = min;
         this.maxIndex = max;
@@ -259,5 +295,22 @@ function SquareSelector() {
         var dates = propertyToJSON(area.properties.decimal_dates);
         this.minIndex = 0;
         this.maxIndex = dates.length - 1;
+    };
+
+    // mapbox gives us duplicate tiles (see documentation to see how query rendered features works)
+    // yet we only want unique features, not duplicates
+    this.getUniqueFeatures = function(features) {
+        var featuresMap = [];
+        var uniqueFeatures = [];
+
+        for (var i = 0; i < features.length; i++) {
+            var curFeatureKey = features[i].properties.p.toString();
+            if (!featuresMap[curFeatureKey]) {
+                featuresMap[curFeatureKey] = true;
+                uniqueFeatures.push(features[i]);
+            }
+        }
+
+        return uniqueFeatures;
     };
 }
