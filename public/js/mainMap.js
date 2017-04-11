@@ -1148,6 +1148,13 @@ function Map(loadJSONFunc) {
             url: "/WebServicesBox/" + currentArea.properties.unavco_name + "/" + serverBboxCoords,
             success: function(response) {
                 var pointIDs = response;
+                if (pointIDs.length == 0) {
+                    hideLoadingScreen();
+                    if (after) {
+                        after();
+                    }
+                    return;
+                }
                 var filter = ["in", "p"].concat(pointIDs);
                 for (var i = 0; i < this.tileJSON.vector_layers.length; i++) {
                     var layerID = this.tileJSON.vector_layers[i].id;
