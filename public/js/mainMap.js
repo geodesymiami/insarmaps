@@ -599,8 +599,7 @@ function Map(loadJSONFunc) {
             var swathWidth = 3;
             var swath = new Swath(this, attributes.mission, swathWidth, feature, id);
             swath.display();
-            // TODO: only work with swaths later
-            this.areaMarkerLayer.addLayer(id);
+
             this.areaMarkerLayer.addSwath(swath);
         }
 

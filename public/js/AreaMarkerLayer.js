@@ -3,16 +3,11 @@
 function AreaMarkerLayer(map) {
     var that = this;
 
-    this.layers = [];
     this.swaths = [];
     this.modifiedLayers = [];
     this.map = map;
 
     this.mapSceneAndDataFootprints = {};
-
-    this.addLayer = function(id) {
-        this.layers.push(id);
-    };
 
     this.addSwath = function(swath) {
         this.swaths.push(swath);
@@ -20,7 +15,7 @@ function AreaMarkerLayer(map) {
 
     this.resetSizeOfMarkersExcluding = function(toExclude) {
         for (var i = 0; i < this.layers.length; i++) {
-            var layerID = this.layers[i];
+            var layerID = this.swaths[i].id;
 
             if (toExclude != null && toExclude.indexOf(layerID) != -1) {
                 continue;
@@ -111,7 +106,7 @@ function AreaMarkerLayer(map) {
         for (var i = 0; i < this.swaths.length; i++) {
             this.swaths[i].remove();
         }
-        this.layers = [];
+        this.swaths = [];
         this.modifiedLayers = [];
     };
 
