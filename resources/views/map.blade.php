@@ -8,6 +8,7 @@
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script> 
  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.35.0/mapbox-gl.js'></script>
  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.35.0/mapbox-gl.css' rel='stylesheet' />
+ <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
 <script src="https://unpkg.com/terraformer@1.0.7"></script>
 <script src="https://unpkg.com/terraformer-wkt-parser@1.1.2"></script>
  

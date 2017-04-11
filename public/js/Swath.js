@@ -26,6 +26,18 @@ function Swath(map, satellite, width, feature, id) {
         return color ? color : "rgba(0, 0, 255, 1.0)";
     };
 
+    this.remove = function() {
+        if (this.map.map.getSource(this.id)) {
+            this.map.map.removeSource(this.id);
+            this.map.map.removeSource(this.polygonID)
+        }
+
+        if (this.map.map.getLayer(this.id)) {
+            this.map.map.removeLayer(this.id);
+            this.map.map.removeLayer(this.polygonID);
+        }
+    };
+
     this.display = function() {
         var areaMarker = {
             type: "geojson",
@@ -40,15 +52,8 @@ function Swath(map, satellite, width, feature, id) {
             "features": [this.feature]
         };
 
-        if (this.map.map.getSource(this.id)) {
-            this.map.map.removeSource(this.id);
-            this.map.map.removeSource(this.polygonID)
-        }
+        this.remove();
 
-        if (this.map.map.getLayer(this.id)) {
-            this.map.map.removeLayer(this.id);
-            this.map.map.removeLayer(this.polygonID);
-        }
         this.map.map.addSource(this.id, areaMarker);
         var polygonFeature = {
             "type": "Feature",

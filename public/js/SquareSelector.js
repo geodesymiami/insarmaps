@@ -250,6 +250,33 @@ function SquareSelector() {
         return vertices;
     };
 
+    this.squareBboxToMapboxPolygon = function(bbox) {
+        var vertices = this.getVerticesOfSquareBbox(bbox);
+        var nw = vertices[0];
+        var ne = vertices[1];
+        var se = vertices[2];
+        var sw = vertices[3];
+
+        var polygon = {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [nw.lng, nw.lat],
+                        [ne.lng, ne.lat],
+                        [se.lng, se.lat],
+                        [sw.lng, sw.lat],
+                        [nw.lng, nw.lat]
+                    ]
+                ]
+            }
+        };
+
+        return polygon;
+    };
+
     this.verticesOfBboxToLineString = function(polygonVertices) {
         var serverBboxCoords = ""
         var buffer = 0; // REMOVE POTENTIALLY

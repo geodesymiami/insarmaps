@@ -47,4 +47,25 @@ function setUpAreaFilterSelector() {
     AreaFilterSelector.prototype.filterAreas = function(bbox) {
         this.finish(bbox);
     };
+
+    AreaFilterSelector.prototype.filterAreasInBrowser = function(bbox) {
+        var polygon = this.squareBboxToMapboxPolygon(bbox);
+        var searchWithin = {
+            "type": "FeatureCollection",
+            "features": [polygon]
+        };
+        var points = {
+            "type": "FeatureCollection",
+            "features": this.map.areas.areas
+        };
+
+        var ptsWithin = turf.within(points, searchWithin);
+        if (ptsWithin.features.length > 0) {
+            var json = {
+                "areas": ptsWithin.features
+            };
+
+            this.map.addSwathsFromJSON(json);
+        }
+    };
 }

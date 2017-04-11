@@ -264,8 +264,8 @@ function getGEOJSON(area) {
                 centerOfDataset = JSON.parse(centerOfDataset);
             }
 
-            var long = centerOfDataset.longitude;
-            var lat = centerOfDataset.latitude;
+            var long = centerOfDataset[0];
+            var lat = centerOfDataset[1];
 
             myMap.map.flyTo({
                 center: [long, lat],
@@ -274,7 +274,6 @@ function getGEOJSON(area) {
 
             var attributesController = new AreaAttributesController(myMap, area);
             attributesController.processAttributes();
-
             myMap.addSwathsFromJSON(myMap.areas, [area.properties.unavco_name]);
             myMap.areaMarkerLayer.setAreaRowHighlighted(area.properties.layerID);
             // in case someone called loading screen

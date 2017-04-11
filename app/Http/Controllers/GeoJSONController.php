@@ -193,8 +193,10 @@ public function getAreas($bbox=NULL) {
 
       foreach ($curAreaPermissions as $curAreaPermission) {
         if (in_array($curAreaPermission, $userPermissions)) {
-          $currentArea["coords"]["latitude"] = $area->latitude;
-          $currentArea["coords"]["longitude"] = $area->longitude;                
+          $currentArea["type"] = "Feature";
+          $currentArea["geometry"]["type"] = "Point";
+          $currentArea["geometry"]["coordinates"] = [floatval($area->longitude), floatval($area->latitude)];
+
           $currentArea["properties"]["num_chunks"] = $area->numchunks;
           $currentArea["properties"]["country"] = $area->country;
           $currentArea["properties"]["attributekeys"] = $this->arrayFormatter->postgresToPHPArray($area->attributekeys);

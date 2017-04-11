@@ -515,8 +515,6 @@ function Map(loadJSONFunc) {
     };
 
     this.addSwathsFromJSON = function(json, toExclude) {
-        this.areas = json;
-
         var areaMarker = {
             type: "geojson",
             cluster: false,
@@ -534,11 +532,12 @@ function Map(loadJSONFunc) {
         this.areaMarkerLayer.emptyLayers();
         // clear the map so we can add new keys and values to it
         this.areaMarkerLayer.mapSceneAndDataFootprints = {};
+
         for (var i = 0; i < json.areas.length; i++) {
             var area = json.areas[i];
 
-            var lat = area.coords.latitude;
-            var long = area.coords.longitude;
+            var lat = area.geometry.coordinates[1];
+            var long = area.geometry.coordinates[0];
 
             attributesController.setArea(area);
             var attributes = attributesController.getAllAttributes();
@@ -561,12 +560,10 @@ function Map(loadJSONFunc) {
                 }
             }
 
-            var id = "areas" + i;
-            var polygonID = "areas" + i + "fill"
-
-            this.areaMarkerLayer.addLayer(id);
-
             var properties = area.properties;
+
+            var id = "areas" + properties.unavco_name;
+            var polygonID = "areas" + properties.unavco_name + "fill"
 
             var feature = {
                 "type": "Feature",
@@ -574,7 +571,7 @@ function Map(loadJSONFunc) {
                 "properties": {
                     "marker-symbol": "marker",
                     "layerID": id,
-                    "centerOfDataset": area.coords,
+                    "centerOfDataset": area.geometry.coordinates,
                     "unavco_name": properties.unavco_name,
                     "region": properties.region,
                     "project_name": properties.project_name,
@@ -602,6 +599,9 @@ function Map(loadJSONFunc) {
             var swathWidth = 3;
             var swath = new Swath(this, attributes.mission, swathWidth, feature, id);
             swath.display();
+            // TODO: only work with swaths later
+            this.areaMarkerLayer.addLayer(id);
+            this.areaMarkerLayer.addSwath(swath);
         }
 
         // make search form table highlight on hover
@@ -633,6 +633,10 @@ function Map(loadJSONFunc) {
             url: "/areas",
             success: function(response) {
                 var json = JSON.parse(response);
+                if (!this.areas) {
+                    this.areas = json;
+                }
+
                 var features = this.addSwathsFromJSON(json, toExclude);
 
                 if (after) {
@@ -784,7 +788,7 @@ function Map(loadJSONFunc) {
             } else if (frameFeature) {
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
                 this.areaMarkerLayer.resetHighlightsOfAllAreaRows(null);
-                this.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.layerID);
+                this.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.unavco_name);
                 this.areaMarkerLayer.setPolygonHighlighted(frameFeature.properties.layerID, "rgba(0, 0, 255, 0.3)");
             } else {
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
@@ -798,7 +802,7 @@ function Map(loadJSONFunc) {
             if (this.areaSwathsLoaded()) {
                 var bounds = this.map.getBounds();
                 var bbox = [bounds._ne, bounds._sw];
-                this.areaFilterSelector.filterAreas(bbox);
+                this.areaFilterSelector.filterAreasInBrowser(bbox);
             }
             // reshow area markers once we zoom out enough
             if (currentZoom < this.zoomOutZoom) {
@@ -841,10 +845,10 @@ function Map(loadJSONFunc) {
                 source: "recenter"
             });
 
-            if (this.areaSwathsLoaded()) {
+            if (!this.pointsLoaded()) {
                 var bounds = this.map.getBounds();
                 var bbox = [bounds._ne, bounds._sw];
-                this.areaFilterSelector.filterAreas(bbox);
+                this.areaFilterSelector.filterAreasInBrowser(bbox);
             }
         }.bind(this));
     };
@@ -872,7 +876,7 @@ function Map(loadJSONFunc) {
         // we always have areas0 at minimum if areas swaths loaded
         // how to avoid checking points loaded? remove area sources when
         // we click on a point
-        return this.map.getSource("areas0") != null && !this.pointsLoaded();
+        return !this.areaMarkerLayer.empty() && !this.pointsLoaded();
     };
 
     this.anAreaWasPreviouslyLoaded = function() {

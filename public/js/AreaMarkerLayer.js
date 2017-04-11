@@ -4,6 +4,7 @@ function AreaMarkerLayer(map) {
     var that = this;
 
     this.layers = [];
+    this.swaths = [];
     this.modifiedLayers = [];
     this.map = map;
 
@@ -11,6 +12,10 @@ function AreaMarkerLayer(map) {
 
     this.addLayer = function(id) {
         this.layers.push(id);
+    };
+
+    this.addSwath = function(swath) {
+        this.swaths.push(swath);
     };
 
     this.resetSizeOfMarkersExcluding = function(toExclude) {
@@ -70,11 +75,11 @@ function AreaMarkerLayer(map) {
 
     this.resetHighlightsOfAllAreaRows = function(excluding) {
         if (excluding) {
-            this.setAreaRowHighlighted(excluding.properties.layerID);
+            this.setAreaRowHighlighted(excluding.properties.unavco_name);
         }
 
         $("#search-form-results-table tr").each(function() {
-            if (!excluding || $(this).attr("id") != excluding.properties.layerID + "-search-row") {
+            if (!excluding || $(this).attr("id") != excluding.properties.unavco_name + "-search-row") {
                 $(this).css({ "background-color": "white" });
                 $(this).removeClass("highlighted");
             }
@@ -103,7 +108,14 @@ function AreaMarkerLayer(map) {
     };
 
     this.emptyLayers = function() {
+        for (var i = 0; i < this.swaths.length; i++) {
+            this.swaths[i].remove();
+        }
         this.layers = [];
         this.modifiedLayers = [];
+    };
+
+    this.empty = function() {
+        return this.swaths.length == 0;
     };
 }
