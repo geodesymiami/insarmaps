@@ -844,7 +844,7 @@ function Map(loadJSONFunc) {
                 source: "recenter"
             });
 
-            if (!this.pointsLoaded()) {
+            if (this.areaSwathsLoaded()) {
                 var bounds = this.map.getBounds();
                 var bbox = [bounds._ne, bounds._sw];
                 this.areaFilterSelector.filterAreasInBrowser(bbox);
