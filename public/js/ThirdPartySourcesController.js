@@ -302,16 +302,16 @@ function ThirdPartySourcesController(map) {
                     "type": "circle",
                     "source": layerID,
                     "paint": {
-                        "circle-opacity": {
-                            "property": 'mag',
-                            "stops": [
-                                [1.0, 0.2],
-                                [4.5, 0.6],
-                                [9.0, 1.0]
-                            ]
-                        },
                         "circle-color": "red",
-                        "circle-radius": 5
+                        "circle-radius": {
+                            "property": "mag",
+                            "stops": [
+                                [4, 5],
+                                [4.9, 7],
+                                [5.0, 9],
+                                [5.9, 11]
+                            ]
+                        }
                     }
                 });
                 hideLoadingScreen();
