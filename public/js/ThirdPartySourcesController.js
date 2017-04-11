@@ -259,8 +259,14 @@ function ThirdPartySourcesController(map) {
                 var markers = $xml.find("marker");
                 features = [];
                 markers.each(function() {
-                    var coordinates = [$(this).attr("lng"), $(this).attr("lat")];
+                    var lng = $(this).attr("lng");
+                    var lat = $(this).attr("lat");
+                    var coordinates = [lng, lat];
                     var magnitude = parseFloat($(this).attr("mg"));
+                    var depth = parseFloat($(this).attr("z"));
+                    var id = $(this).attr("eventoid");
+                    var date = $(this).attr("fecha");
+                    var location = $(this).attr("localizacion");
                     var feature = {
                         "type": "Feature",
                         "geometry": {
@@ -268,7 +274,13 @@ function ThirdPartySourcesController(map) {
                             "coordinates": coordinates
                         },
                         "properties": {
-                            "mag": magnitude
+                            "mag": magnitude,
+                            "depth": depth,
+                            "lat": lat,
+                            "lng": lng,
+                            "id": id,
+                            "date": date,
+                            "location": location
                         }
                     };
 

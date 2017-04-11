@@ -779,10 +779,15 @@ function Map(loadJSONFunc) {
                         velocityInCMYR + " +- " + uncertainty + " cm/yr") // we work in cm. convert m to cm
                     .addTo(this.map);
             } else if (itsAnIGEPNFeature) {
+                var props = features[0].properties;
+                var html = "ID: " + props.id + "<br>" + "Mag: " + props.mag + "<br>" +
+                "Depth: " + props.depth + "<br>" + "Lat: " + props.lat + "<br>" +
+                "Long:" + props.lng + "<br>" + props.date + " TU<br>" +
+                props.location;
                 this.gpsStationNamePopup.remove();
                 var coordinates = features[0].geometry.coordinates;
                 this.gpsStationNamePopup.setLngLat(coordinates)
-                    .setHTML("Mag: " + features[0].properties.mag) // we work in cm. convert m to cm
+                    .setHTML(html) // we work in cm. convert m to cm
                     .addTo(this.map);
             } else if (frameFeature) {
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
