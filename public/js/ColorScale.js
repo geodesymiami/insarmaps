@@ -220,23 +220,29 @@ function ColorScale(min, max, divID) {
         $("#color-scale-picture-div > img").attr("src", imgSrc);
     };
 
-    this.colorsToMapboxStops = function(min, max, colors) {
+    this.calculateStops = function(min, max, colors, valueIncrement, colorIncrement) {
         var stops = [];
 
         // we divide by 100 because this class works in cm, but mapbox works in m as
         // those are the units in the original h5 files
-        var colorRange = (max - min) / 100.0;
         var currentValue = min / 100.0;
 
-        var increment = colorRange / colors.length;
-
-        for (var i = 0; i < colors.length; i++) {
+        for (var i = 0; i < colors.length; i += colorIncrement) {
             var curStop = [currentValue, colors[i]];
             stops.push(curStop);
-            currentValue += increment;
+            currentValue += valueIncrement;
         }
 
         return stops;
+    };
+
+    this.colorsToMapboxStops = function(min, max, colors) {
+        // we divide by 100 because this class works in cm, but mapbox works in m as
+        // those are the units in the original h5 files
+        var colorRange = (max - min) / 100.0;
+        var increment = colorRange / colors.length;
+
+        return this.calculateStops(min, max, colors, increment, 1);
     };
 
     this.initVisualScale = function() {
@@ -266,6 +272,14 @@ function ColorScale(min, max, divID) {
 
     this.getMapboxStops = function() {
         return this.colorsToMapboxStops(this.min, this.max, this.currentScale);
+    };
+
+    this.getIGEPNMapboxStops = function(min, max) {
+        var valueIncrement = 10;
+        var numCategories = (max - min) / valueIncrement;
+        var colorIncrement = Math.floor(this.currentScale.length / numCategories);
+
+        return this.calculateStops(min, max, this.currentScale, valueIncrement, colorIncrement);
     };
 
     this.setTitle = function(title) {

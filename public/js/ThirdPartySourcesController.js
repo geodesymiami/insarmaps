@@ -295,6 +295,9 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
+                var stops = this.map.colorScale.getIGEPNMapboxStops(0, 50);
+                console.log(stops);
+
                 var layerID = "IGEPNEarthquake";
                 this.map.map.addSource(layerID, mapboxStationFeatures);
                 this.map.map.addLayer({
@@ -302,7 +305,10 @@ function ThirdPartySourcesController(map) {
                     "type": "circle",
                     "source": layerID,
                     "paint": {
-                        "circle-color": "red",
+                        "circle-color": {
+                            "property": "depth",
+                            "stops": stops
+                        },
                         "circle-radius": {
                             "property": "mag",
                             "stops": [
