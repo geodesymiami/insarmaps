@@ -192,55 +192,32 @@ function ThirdPartySourcesController(map) {
 
     this.loadUSGSEarthquakeFeed = function() {
         showLoadingScreen("Getting USGS Data", "");
-        $.ajax({
-            url: "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&callback=?",
-            dataType: 'jsonp',
-            cache: true,
-            success: function(response) {
-                var json = response;
-                // There is a bug in gl js, which causes queryrenderedfeatures
-                // to crash if features have an id... see:
-                // https://github.com/mapbox/mapbox-gl-js/issues/4494
-                // after this is fixed, we can use the direct url to the json,
-                // avoiding jsonp and avoiding having to go through a server request
-                json.features.forEach(function(feature) {
-                    delete feature.id;
-                });
-                var mapboxStationFeatures = {
-                    type: "geojson",
-                    cluster: false,
-                    data: {
-                        "type": "FeatureCollection",
-                        "features": json.features
-                    }
-                };
+        var mapboxStationFeatures = {
+            type: "geojson",
+            cluster: false,
+            data: "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson"
+        };
 
-                var layerID = "USGSEarthquake";
-                this.map.map.addSource(layerID, mapboxStationFeatures);
-                this.map.map.addLayer({
-                    "id": layerID,
-                    "type": "circle",
-                    "source": layerID,
-                    "paint": {
-                        "circle-opacity": {
-                            "property": 'mag',
-                            "stops": [
-                                [1.0, 0.2],
-                                [4.5, 0.6],
-                                [9.0, 1.0]
-                            ]
-                        },
-                        "circle-color": "red",
-                        "circle-radius": 5
-                    }
-                });
-                hideLoadingScreen();
-            }.bind(this),
-            error: function(xhr, ajaxOptions, thrownError) {
-                hideLoadingScreen();
-                console.log("failed " + xhr.responseText);
+        var layerID = "USGSEarthquake";
+        this.map.map.addSource(layerID, mapboxStationFeatures);
+        this.map.map.addLayer({
+            "id": layerID,
+            "type": "circle",
+            "source": layerID,
+            "paint": {
+                "circle-opacity": {
+                    "property": 'mag',
+                    "stops": [
+                        [1.0, 0.2],
+                        [4.5, 0.6],
+                        [9.0, 1.0]
+                    ]
+                },
+                "circle-color": "red",
+                "circle-radius": 5
             }
         });
+        hideLoadingScreen();
     };
 
     this.removeUSGSEarthquakeFeed = function() {
