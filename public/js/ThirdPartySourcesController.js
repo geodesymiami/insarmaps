@@ -55,10 +55,10 @@ function ThirdPartySourcesController(map) {
         this.map.removeSourceAndLayer(name);
     };
 
-    this.refreshMidasNA12GpsStationMarkers = function() {
+    this.refreshmidasGpsStationMarkers = function() {
         var stops = this.map.colorScale.getMapboxStops();
-        if (this.map.map.getLayer("midasNA12")) {
-            this.map.map.setPaintProperty("midasNA12", "circle-color", {
+        if (this.map.map.getLayer("midas")) {
+            this.map.map.setPaintProperty("midas", "circle-color", {
                 property: 'v',
                 stops: stops
             });
@@ -69,7 +69,7 @@ function ThirdPartySourcesController(map) {
     // request from server. either way, in below function
     // we use the one given to us by server
     this.parseMidasJSON = function(midasJSON) {
-        var midasNA12 = midasJSON.midasNA12.split("\n");
+        var midas = midasJSON.midas.split("\n");
         // TODO: llh stationLatLongs doesn't have 4th field needed to get
         // plot picture... ask him what to do
         // var latLongs = midasJSON.stationLatLongs.split("\n");
@@ -95,8 +95,8 @@ function ThirdPartySourcesController(map) {
         }
 
         var features = [];
-        for (var i = 0; i < midasNA12.length; i++) {
-            var fields = midasNA12[i].match(/\S+/g);
+        for (var i = 0; i < midas.length; i++) {
+            var fields = midas[i].match(/\S+/g);
             if (fields) {
                 var station = fields[0];
                 // column 11 according to Midas readme
@@ -137,10 +137,10 @@ function ThirdPartySourcesController(map) {
     };
 
 
-    this.loadMidasNA12GpsStationMarkers = function() {
+    this.loadmidasGpsStationMarkers = function() {
         showLoadingScreen("Getting Midas GPS Data", "");
         $.ajax({
-            url: "/midasna12",
+            url: "/midas",
             success: function(response) {
                 var json = JSON.parse(response);
                 var features = this.parseMidasJSON(json);
@@ -154,7 +154,7 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
-                var layerID = "midasNA12";
+                var layerID = "midas";
                 var stops = this.map.colorScale.getMapboxStops();
                 this.map.map.addSource(layerID, mapboxStationFeatures);
                 this.map.map.addLayer({
@@ -180,14 +180,14 @@ function ThirdPartySourcesController(map) {
         });
     };
 
-    this.removeMidasNA12GpsStationMarkers = function() {
-        var name = "midasNA12";
+    this.removemidasGpsStationMarkers = function() {
+        var name = "midas";
 
         this.map.removeSourceAndLayer(name);
     };
 
-    this.midasNA12Loaded = function() {
-        return this.map.map.getSource("midasNA12") && this.map.getLayer("midasNA12");
+    this.midasLoaded = function() {
+        return this.map.map.getSource("midas") && this.map.getLayer("midas");
     };
 
     this.loadUSGSEarthquakeFeed = function() {

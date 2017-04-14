@@ -261,11 +261,11 @@ public function getAreas($bbox=NULL) {
     }
   }
 
-  public function getMidasNA12() {
+  public function getmidas() {
     $json = [];
-    $midasNA12 = file_get_contents("http://geodesy.unr.edu/velocities/midas.IGS08.txt");
+    $midas = file_get_contents("http://geodesy.unr.edu/velocities/midas.IGS08.txt");
     $stationLatLongs = file_get_contents("ftp://gneiss.nbmg.unr.edu/rapids/llh");
-    $json["midasNA12"] = $midasNA12;
+    $json["midas"] = $midas;
     $json["stationLatLongs"] = $stationLatLongs;
 
     echo json_encode($json);

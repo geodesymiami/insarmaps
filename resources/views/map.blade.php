@@ -185,8 +185,8 @@
           <input id = "gps-stations-toggle-button" type="checkbox"/>
         </div>
         <div class="overlay-toggle">
-          <label>MIDAS NA12 (UNR)</label>
-          <input id = "midas-na12-stations-toggle-button" type="checkbox"/>
+          <label>MIDAS IGS08 (UNR)</label>
+          <input id = "midas-stations-toggle-button" type="checkbox"/>
         </div>
         <div class="overlay-toggle">
           <label>USGS 30 Day Earthquake Feed</label>

@@ -197,9 +197,9 @@ function Map(loadJSONFunc) {
         var id = feature.layer.id;
 
         // this callback active when dataset loaded, which is mutually
-        // exclusive to midasNA12 being loaded, but leave this check for
-        // midasNA12 just in case he changes his mind later
-        if (id === "gpsStations" || id === "midasNA12") {
+        // exclusive to midas being loaded, but leave this check for
+        // midas just in case he changes his mind later
+        if (id === "gpsStations" || id === "midas") {
             var coordinates = feature.geometry.coordinates;
             this.gpsStationPopup.remove();
             this.gpsStationPopup.setLngLat(coordinates)
@@ -369,7 +369,7 @@ function Map(loadJSONFunc) {
         var firstFeature = features[0];
         var id = firstFeature.layer.id;
 
-        if (id === "gpsStations" || id === "midasNA12") {
+        if (id === "gpsStations" || id === "midas") {
             var coordinates = firstFeature.geometry.coordinates;
             this.gpsStationPopup.remove();
             this.gpsStationPopup.setLngLat(coordinates)
@@ -750,7 +750,7 @@ function Map(loadJSONFunc) {
             var itsAnreaPolygon = (markerSymbol === "fillPolygon");
             var itsAPoint = (layerSource === "vector_layer_" || layerSource === "onTheFlyJSON");
             var itsAGPSFeature = (layerID === "gpsStations");
-            var itsAMidasGPSFeature = (layerID === "midasNA12");
+            var itsAMidasGPSFeature = (layerID === "midas");
             var itsAnUSGSFeature = (layerID === "USGSEarthquake");
             var itsAnIGEPNFeature = (layerID === "IGEPNEarthquake");
             var frameFeature = this.getFirstPolygonFrameAtPoint(features);
@@ -954,8 +954,8 @@ function Map(loadJSONFunc) {
 
         this.thirdPartySourcesController.removeGPSStationMarkers();
         gpsStationsToggleButton.set("off");
-        this.thirdPartySourcesController.removeMidasNA12GpsStationMarkers();
-        midasNA12StationsToggleButton.set("off");
+        this.thirdPartySourcesController.removemidasGpsStationMarkers();
+        midasStationsToggleButton.set("off");
         this.thirdPartySourcesController.removeUSGSEarthquakeFeed();
         usgsEarthquakeToggleButton.set("off");
         this.thirdPartySourcesController.removeIGEPNEarthquakeFeed();
