@@ -279,7 +279,7 @@ function ColorScale(min, max, divID) {
         var numCategories = (max - min) / valueIncrement;
         var colorIncrement = Math.floor(this.currentScale.length / numCategories);
 
-        return this.calculateStops(min, max, this.currentScale, valueIncrement, colorIncrement);
+        return this.calculateStops(min, max, this.jet, valueIncrement, colorIncrement);
     };
 
     this.setTitle = function(title) {
