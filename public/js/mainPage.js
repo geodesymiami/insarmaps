@@ -136,6 +136,7 @@ function AreaAttributesPopup() {
 
     this.maximize = function(animated) {
         var areaAttributesWrap = $('.wrap#area-attributes-div');
+        areaAttributesWrap.css("overflow-y", "auto");
 
         areaAttributesWrap.addClass("active").removeClass("minimized").addClass("maximized");
         $("#area-attributes-div-minimize-button").css("display", "block");
@@ -143,8 +144,8 @@ function AreaAttributesPopup() {
     };
 
     this.minimize = function(animated) {
-        var that = this;
         var areaAttributesWrap = $('.wrap#area-attributes-div');
+        areaAttributesWrap.css("overflow-y", "auto");
 
         areaAttributesWrap.removeClass("active").removeClass("maximized").addClass("minimized");
         $("#area-attributes-div-minimize-button").css("display", "none");
@@ -831,9 +832,6 @@ $(window).load(function() {
 
     $("#area-attributes-div-maximize-button").on("click", function(
         event) {
-        var areaAttributesWrap = $(".wrap#area-attributes-div");
-        areaAttributesWrap.css("overflow-y", "auto");
-
         if (areaAttributesPopup.isMinimized() && currentArea) {
             areaAttributesPopup.maximize(true);
         }
@@ -841,9 +839,6 @@ $(window).load(function() {
 
     $("#area-attributes-div-minimize-button").on("click", function(
         event) {
-        var areaAttributesWrap = $(".wrap#area-attributes-div");
-        areaAttributesWrap.css("overflow-y", "auto");
-
         if (areaAttributesPopup.isMaximized()) {
             areaAttributesPopup.minimize(true);
         }

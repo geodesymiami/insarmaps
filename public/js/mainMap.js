@@ -942,8 +942,10 @@ function Map(loadJSONFunc) {
         // and the graphs
         $("#graph-div-minimize-button").click();
 
-        // and color scale
-        this.colorScale.remove();
+        // and color scale, but only if midas is not up
+        if (!this.thirdPartySourcesController.midasLoaded()) {
+            this.colorScale.remove();
+        }
     };
 
     this.reset = function() {

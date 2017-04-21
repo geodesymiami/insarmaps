@@ -187,7 +187,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.midasLoaded = function() {
-        return this.map.map.getSource("midas") && this.map.getLayer("midas");
+        return this.map.map.getSource("midas") && this.map.map.getLayer("midas");
     };
 
     this.loadUSGSEarthquakeFeed = function() {
