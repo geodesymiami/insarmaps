@@ -197,7 +197,7 @@
           <input id = "IGEPN-earthquake-toggle-button" type="checkbox"/>
         </div>
         <div class="overlay-toggle">
-          <label>Hawaii Reloc</label>
+          <label>Hawaii Relocation (UM)</label>
           <input id = "Hawaii-reloc-toggle-button" type="checkbox"/>
         </div>
         <div>
