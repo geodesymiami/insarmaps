@@ -388,10 +388,13 @@ function Map(loadJSONFunc) {
 
             // if we have data_footprint, then show all data footprints associated
             // with this area's scene_footprint
-            if (attributesController.areaHasAttribute("data_footprint")) {
+            var scene_footprint = attributesController.getAttribute("scene_footprint");
+            var childFeatures = this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint];
+
+            // if dataset has child features then it must have more than 1 according to Yunjun, otherwise, the child
+            // isn't really a child
+            if (childFeatures && childFeatures.length > 1) {
                 this.removeAreaMarkers();
-                var scene_footprint = attributesController.getAttribute("scene_footprint");
-                var childFeatures = this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint];
                 childFeatures = childFeatures.slice(0); // clone it to prevent infinite loop when we add to the hashmap
                 var json = {
                     "areas": childFeatures
