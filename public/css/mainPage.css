@@ -846,7 +846,7 @@ input[type=number] {
 .maximize-button-container > div > div {
     width: 16px;
     height: 16px;
-    background-color: gray;
+    background-color: #b8b8b8;
     display: block;
     margin: 0 auto;
 }
