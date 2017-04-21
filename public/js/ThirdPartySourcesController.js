@@ -263,6 +263,7 @@ function ThirdPartySourcesController(map) {
 
                     features.push(feature);
                 });
+
                 var mapboxStationFeatures = {
                     type: "geojson",
                     cluster: false,
@@ -273,7 +274,6 @@ function ThirdPartySourcesController(map) {
                 };
 
                 var stops = this.map.colorScale.getIGEPNMapboxStops(0, 50);
-                console.log(stops);
 
                 var layerID = "IGEPNEarthquake";
                 this.map.map.addSource(layerID, mapboxStationFeatures);
@@ -308,6 +308,90 @@ function ThirdPartySourcesController(map) {
 
     this.removeIGEPNEarthquakeFeed = function() {
         var name = "IGEPNEarthquake";
+
+        this.map.removeSourceAndLayer(name);
+    };
+
+    this.loadHawaiiReloc = function() {
+        showLoadingScreen("Getting Hawaii Reloc Data", "");
+        $.ajax({
+            url: "/HawaiiReloc",
+            success: function(response) {
+                var features = this.parseHawaiiReloc(response);
+                var mapboxStationFeatures = {
+                    type: "geojson",
+                    cluster: false,
+                    data: {
+                        "type": "FeatureCollection",
+                        "features": features
+                    }
+                };
+
+                var stops = this.map.colorScale.getIGEPNMapboxStops(0, 50);
+
+                var layerID = "HawaiiReloc";
+                this.map.map.addSource(layerID, mapboxStationFeatures);
+                this.map.map.addLayer({
+                    "id": layerID,
+                    "type": "circle",
+                    "source": layerID,
+                    "paint": {
+                        "circle-color": {
+                            "property": "depth",
+                            "stops": stops
+                        },
+                        "circle-radius": {
+                            "property": "mag",
+                            "stops": [
+                                [4, 5],
+                                [4.9, 7],
+                                [5.0, 9],
+                                [5.9, 11]
+                            ]
+                        }
+                    }
+                });
+                hideLoadingScreen();
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                hideLoadingScreen();
+                console.log("failed " + xhr.responseText);
+            }
+        });
+    };
+
+    this.parseHawaiiReloc = function(rawData) {
+        var pointLines = rawData.split("\n");
+        var features = [];
+        pointLines.forEach(function(pointLine) {
+            var attributes = pointLine.match(/\S+/g);
+            // in case empty line (usually last line)
+            if (!attributes) {
+                return;
+            }
+            var lng = attributes[8]
+            var lat = attributes[7];
+            var coordinates = [lng, lat];
+
+            var feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": coordinates
+                },
+                "properties": {}
+            };
+
+            features.push(feature);
+        });
+
+        console.log(features);
+
+        return features;
+    };
+
+    this.removeHawaiiReloc = function() {
+        var name = "HawaiiReloc";
 
         this.map.removeSourceAndLayer(name);
     };

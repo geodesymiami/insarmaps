@@ -11,6 +11,7 @@ var midasStationsToggleButton = null;
 var recentDatasetsToggleButton = null;
 var usgsEarthquakeToggleButton = null;
 var IGEPNEarthquakeToggleButton = null;
+var HawaiiRelocToggleButton = null;
 var myMap = null;
 
 function getRootUrl() {
@@ -630,6 +631,15 @@ function setupToggleButtons() {
             myMap.thirdPartySourcesController.loadIGEPNEarthquakeFeed();
         } else {
             myMap.thirdPartySourcesController.removeIGEPNEarthquakeFeed();
+        }
+    });
+
+    HawaiiRelocToggleButton = new ToggleButton("#Hawaii-reloc-toggle-button");
+    HawaiiRelocToggleButton.onclick(function() {
+        if (HawaiiRelocToggleButton.toggleState == ToggleStates.ON) {
+            myMap.thirdPartySourcesController.loadHawaiiReloc();
+        } else {
+            myMap.thirdPartySourcesController.removeHawaiiReloc();
         }
     });
 

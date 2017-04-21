@@ -261,20 +261,6 @@ public function getAreas($bbox=NULL) {
     }
   }
 
-  public function getmidas() {
-    $json = [];
-    $midas = file_get_contents("http://geodesy.unr.edu/velocities/midas.IGS08.txt");
-    $stationLatLongs = file_get_contents("ftp://gneiss.nbmg.unr.edu/rapids/llh");
-    $json["midas"] = $midas;
-    $json["stationLatLongs"] = $stationLatLongs;
-
-    echo json_encode($json);
-  }
-
-  public function getIGEPNEarthquakeFeed() {
-    return file_get_contents("http://www.igepn.edu.ec/portal/eventos/www/events.xml");
-  }
-
   // how to get points in polygon for webservices:
   /*
   Assume we have lat, long; delta = 0.0001 but can be refined later
