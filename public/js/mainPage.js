@@ -361,6 +361,10 @@ function ToggleButton(id) {
             }
         }.bind(this));
     };
+
+    this.click = function() {
+        $(this.id).click();
+    };
 }
 
 function switchLayer(layer) {
@@ -613,6 +617,9 @@ function setupToggleButtons() {
             }
         } else {
             myMap.thirdPartySourcesController.removemidasGpsStationMarkers();
+            if (!myMap.pointsLoaded()) {
+                myMap.colorScale.remove();
+            }
         }
     });
 

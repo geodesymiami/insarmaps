@@ -1,5 +1,6 @@
 function ThirdPartySourcesController(map) {
     this.map = map;
+    this.cancellableAjax = new CancellableAjax();
     this.addGPSStationMarkers = function(stations) {
         var features = [];
         var mapboxStationFeatures = {
@@ -138,8 +139,8 @@ function ThirdPartySourcesController(map) {
 
 
     this.loadmidasGpsStationMarkers = function() {
-        showLoadingScreen("Getting Midas GPS Data", "");
-        $.ajax({
+        showLoadingScreen("Getting Midas GPS Data", "ESCAPE to interrupt");
+        this.cancellableAjax.ajax({
             url: "/midas",
             success: function(response) {
                 var features = this.parseMidasJSON(response);
@@ -176,6 +177,9 @@ function ThirdPartySourcesController(map) {
                 hideLoadingScreen();
                 console.log("failed " + xhr.responseText);
             }
+        }, function() {
+            hideLoadingScreen();
+            midasStationsToggleButton.click();
         });
     };
 
@@ -226,8 +230,8 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadIGEPNEarthquakeFeed = function() {
-        showLoadingScreen("Getting IGEPN Data", "");
-        $.ajax({
+        showLoadingScreen("Getting IGEPN Data", "ESCAPE to interrupt");
+        this.cancellableAjax.ajax({
             url: "/IGEPNEarthquakeFeed",
             success: function(response) {
                 var xmlDocument = $.parseXML(response);
@@ -302,6 +306,9 @@ function ThirdPartySourcesController(map) {
                 hideLoadingScreen();
                 console.log("failed " + xhr.responseText);
             }
+        }, function() {
+            hideLoadingScreen();
+            IGEPNEarthquakeToggleButton.click();
         });
     };
 
@@ -312,8 +319,8 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadHawaiiReloc = function() {
-        showLoadingScreen("Getting Hawaii Reloc Data", "");
-        $.ajax({
+        showLoadingScreen("Getting Hawaii Reloc Data", "ESCAPE to interrupt");
+        this.cancellableAjax.ajax({
             url: "/HawaiiReloc",
             success: function(response) {
                 var features = this.parseHawaiiReloc(response);
@@ -356,6 +363,9 @@ function ThirdPartySourcesController(map) {
                 hideLoadingScreen();
                 console.log("failed " + xhr.responseText);
             }
+        }, function() {
+            hideLoadingScreen();
+            HawaiiRelocToggleButton.click();
         });
     };
 

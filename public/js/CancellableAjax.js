@@ -1,11 +1,14 @@
 function CancellableAjax() {
     this.lastAjax = null;
 
-    this.ajax = function(options) {
+    this.ajax = function(options, onCancel) {
         this.lastAjax = $.ajax(options);
+
+        this.onceKeyDown(onCancel);
     };
 
     this.after = null;
+    this.once = false;
 
     this.keyDown = function(e) {
         // If the ESC key is pressed
@@ -20,11 +23,24 @@ function CancellableAjax() {
             if (this.after) {
                 this.after();
             }
+
+            if (this.once) {
+                this.removeKeyDown();
+            }
         }
     };
 
     this.onKeyDown = function(after) {
         this.after = after;
+        this.once = false;
+
+        this.keyDown = this.keyDown.bind(this);
+        document.addEventListener('keydown', this.keyDown);
+    };
+
+    this.onceKeyDown = function(after) {
+        this.after = after;
+        this.once = true;
 
         this.keyDown = this.keyDown.bind(this);
         document.addEventListener('keydown', this.keyDown);

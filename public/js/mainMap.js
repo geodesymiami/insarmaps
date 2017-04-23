@@ -965,6 +965,8 @@ function Map(loadJSONFunc) {
         usgsEarthquakeToggleButton.set("off");
         this.thirdPartySourcesController.removeIGEPNEarthquakeFeed();
         IGEPNEarthquakeToggleButton.set("off");
+        this.thirdPartySourcesController.removeHawaiiReloc();
+        HawaiiRelocToggleButton.set("off");
 
         this.colorDatasetOnVelocity();
 
