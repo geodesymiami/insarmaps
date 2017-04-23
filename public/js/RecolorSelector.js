@@ -131,7 +131,7 @@ function setupRecolorSelector() {
         //console.log(query);
         this.recoloringInProgress = true;
 
-        this.lastAjaxRequest = $.ajax({
+        this.cancellableAjax.ajax({
             url: "/points",
             type: "post",
             async: true,
@@ -211,6 +211,9 @@ function setupRecolorSelector() {
                 console.log("failed " + xhr.responseText);
                 hideLoadingScreen();
             }
+        }, function() {
+            this.cancelRecoloring = true;
+            hideLoadingScreen();
         });
     };
 

@@ -9,7 +9,7 @@ function SquareSelector() {
     this.lastbbox = null;
     this.associatedButton = null;
     this.cancelRecoloring = false;
-    this.lastAjaxRequest = null;
+    this.cancellableAjax = new CancellableAjax();
 
     this.canvas = null;
     this.polygonButtonSelected = false;
@@ -113,23 +113,6 @@ function SquareSelector() {
         }
     };
 
-    // allow cancelling of recolorings.
-    // TODO: figure out way to avoid race conditions with ajax success functions
-    // idea: attach state to each function and when user presses cancel, set that
-    // state to invalid
-    this.onKeyDown = function(e) {
-        // If the ESC key is pressed
-        var ESCAPE_KEY = 27;
-
-        if (e.keyCode === ESCAPE_KEY) {
-            this.cancelRecoloring = true;
-            if (this.lastAjaxRequest) {
-                this.lastAjaxRequest.abort();
-                this.lastAjaxRequest = null;
-            }
-            hideLoadingScreen();
-        }
-    };
     // Set `true` to dispatch the event before other functions
     // call it. This is necessary for disabling the default map
     // dragging behaviour.
@@ -150,11 +133,9 @@ function SquareSelector() {
         // to our actual object... long story short - makes inheritance work
         this.onMouseMove = this.onMouseMove.bind(this);
         this.onMouseUp = this.onMouseUp.bind(this);
-        this.onKeyDown = this.onKeyDown.bind(this);
         // Call functions for the following events
         document.addEventListener('mousemove', this.onMouseMove);
         document.addEventListener('mouseup', this.onMouseUp);
-        document.addEventListener('keydown', this.onKeyDown);
 
         // Capture the first xy coordinates
         this.start = this.mousePos(e);
@@ -166,10 +147,6 @@ function SquareSelector() {
         }
         this.mouseDown = this.mouseDown.bind(this);
         this.canvas.addEventListener('mousedown', this.mouseDown, true);
-    };
-
-    this.removeKeyListeners = function() {
-        document.removeEventListener('keydown', this.onKeyDown);
     };
 
     this.removeMouseListeners = function() {
