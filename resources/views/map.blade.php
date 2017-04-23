@@ -393,6 +393,7 @@
     <script type="text/javascript">
       var viewOptions = {!! json_encode($viewOptions) !!};
     </script>
+    <script type="text/javascript" src="js/CancellableAjax.js"></script>
     <script type="text/javascript" src="js/gpsStations.js"></script>
     <script type="text/javascript" src="js/ColorScale.js"></script>
     <script type="text/javascript" src="js/AreaMarkerLayer.js"></script>
