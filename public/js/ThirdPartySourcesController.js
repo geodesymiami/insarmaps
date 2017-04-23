@@ -142,8 +142,7 @@ function ThirdPartySourcesController(map) {
         $.ajax({
             url: "/midas",
             success: function(response) {
-                var json = JSON.parse(response);
-                var features = this.parseMidasJSON(json);
+                var features = this.parseMidasJSON(response);
 
                 var mapboxStationFeatures = {
                     type: "geojson",
