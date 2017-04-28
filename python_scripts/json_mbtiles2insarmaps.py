@@ -78,7 +78,7 @@ def upload_json(folder_path):
             res = os.system(command)
 
             if res != 0:
-                print "Error inserting into the database. This is most often due to running out of Memory (RAM), or incorrect database credentials... quitting"
+                sys.stderr.write("Error inserting into the database. This is most often due to running out of Memory (RAM), or incorrect database credentials... quitting")
                 sys.exit()
 
             print "Inserted " + file + " to db"
@@ -115,9 +115,9 @@ def upload_mbtiles(fileName, username, password):
     if responseCode == 200:
         print "Successfully uploaded " + fileName
     elif responseCode == 302:
-        print "Server redirected us... Please check username and password, and try again"
+        sys.stderr.write("Server redirected us... Please check username and password, and try again")
     else:
-        print "The server responded with code: " + str(responseCode)
+        sys.stderr.write("The server responded with code: " + str(responseCode))
 
 def build_parser():
     dbHost = "insarmaps.rsmas.miami.edu"
@@ -153,7 +153,7 @@ def main():
 
     if parseArgs.mbtiles_file or parseArgs.mbtiles_file_positional:
         if not parseArgs.server_user or not parseArgs.server_password:
-            print "Error: credentials for the insarmaps server not provided"
+            sys.stderr.write("Error: credentials for the insarmaps server not provided")
         elif parseArgs.mbtiles_file:
             print "Uploading mbtiles..."
             upload_mbtiles(parseArgs.mbtiles_file, parseArgs.server_user, parseArgs.server_password)

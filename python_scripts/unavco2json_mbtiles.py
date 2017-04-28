@@ -137,7 +137,7 @@ def convert_data(attributes, decimal_dates, timeseries_datasets, dataset_keys, j
         g = geocoder.google([mid_lat,mid_long], method='reverse', timeout=60.0)
         country = str(g.country_long)
     except Exception, e:
-        print "timeout reverse geocoding country name"
+        sys.stderr.write("timeout reverse geocoding country name")
 
     area = folder_name
 
@@ -261,10 +261,6 @@ def main():
 
 # close h5 file
     file.close()
-
-# create folder named after h5 file to store json files in mbtiles folder
-    con = None
-    cur = None
 
     path_list = path_name.split("/")
     folder_name = path_name.split("/")[len(path_list)-1]
