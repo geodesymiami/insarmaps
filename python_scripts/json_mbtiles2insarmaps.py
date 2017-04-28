@@ -146,7 +146,7 @@ def main():
 
     if parseArgs.json_folder:
         print "Uploading json chunks..."
-        upload_json(parseArgs.folder)
+        upload_json(parseArgs.json_folder)
     elif parseArgs.json_folder_positional:
         print "Uploading json chunks...."
         upload_json(parseArgs.json_folder_positional)
