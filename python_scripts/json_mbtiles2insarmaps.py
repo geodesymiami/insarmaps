@@ -68,10 +68,10 @@ def upload_json(folder_path):
     attributesController.close()
 
     area_name = get_file_name(folder_path)
-    for json_chunk in os.listdir(folder_path):
+    for file in os.listdir(folder_path):
         # insert json file to pgsql using ogr2ogr
-        if json_chunk != "metadata.pickle":
-            command = 'ogr2ogr -lco LAUNDER=NO -append -f "PostgreSQL" PG:"dbname=pgis host=' + dbHost + ' user=' + dbUsername + ' password=' + dbPassword + '" --config PG_USE_COPY YES -nln "' + area_name + '" ' + folder_path + '/' + json_chunk
+        if file != "metadata.pickle":
+            command = 'ogr2ogr -lco LAUNDER=NO -append -f "PostgreSQL" PG:"dbname=pgis host=' + dbHost + ' user=' + dbUsername + ' password=' + dbPassword + '" --config PG_USE_COPY YES -nln "' + area_name + '" ' + folder_path + '/' + file
 
             res = os.system(command)
 
@@ -79,7 +79,7 @@ def upload_json(folder_path):
                 print "Error inserting into the database. This is most often due to running out of Memory (RAM), or incorrect database credentials... quitting"
                 sys.exit()
 
-            print "Inserted " + json_chunk + " to db"
+            print "Inserted " + file + " to db"
 
     # uploading metadata for area 
     upload_insarmaps_metadata(folder_path + "/metadata.pickle")
