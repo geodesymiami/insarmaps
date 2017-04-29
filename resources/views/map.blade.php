@@ -286,14 +286,14 @@
     <div class="maximize-button-container">
       <div>
         <div>
-          <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Select point before maximizing" id="graph-div-maximize-button"></button>
+          <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Timeseries" id="graph-div-maximize-button"></button>
         </div>
       </div>
     </div>
     <div class="maximize-button-container">
       <div>
         <div>
-          <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Datasets Time-series Attributes" id="area-attributes-div-maximize-button"></button>
+          <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Attributes" id="area-attributes-div-maximize-button"></button>
         </div>
       </div>
     </div>
