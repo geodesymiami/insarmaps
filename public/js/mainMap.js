@@ -170,6 +170,8 @@ function Map(loadJSONFunc) {
         closeOnClick: false
     });
 
+    this.cancellableAjax = new CancellableAjax();
+
     this.previousZoom = this.startingZoom;
 
     this.disableInteractivity = function() {
@@ -1140,7 +1142,7 @@ function Map(loadJSONFunc) {
 
     // if after is supplied, it must hide loading screen
     this.subsetDataset = function(bbox, after) {
-        showLoadingScreen("Subsetting Dataset", "");
+        showLoadingScreen("Subsetting Dataset", "ESCAPE to interrupt");
         // too many vector layers leads to browser running out of memory
         // when we set filter
         if (this.tileJSON.vector_layers.length > 1) {
@@ -1160,7 +1162,7 @@ function Map(loadJSONFunc) {
         };
         var polygonVertices = this.selector.getVerticesOfSquareBbox([sw, ne]);
         var serverBboxCoords = this.selector.verticesOfBboxToLineString(polygonVertices);
-        $.ajax({
+        this.cancellableAjax.ajax({
             url: "/WebServicesBox/" + currentArea.properties.unavco_name + "/" + serverBboxCoords,
             success: function(response) {
                 var pointIDs = response;
@@ -1196,6 +1198,8 @@ function Map(loadJSONFunc) {
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed " + xhr.responseText);
             }.bind(this)
+        }, function() {
+            hideLoadingScreen();
         });
     };
 }

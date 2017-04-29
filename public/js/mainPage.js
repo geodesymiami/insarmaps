@@ -303,9 +303,10 @@ function goToTab(event, id) {
 function showLoadingScreen(msgTop, msgBottom) {
     if (!$("#loading-screen.overlay-div").hasClass("active")) {
         $("#loading-screen.overlay-div").toggleClass("active");
-        $("#loading-text-div-top").html(msgTop);
-        $("#loading-text-div-bottom").html(msgBottom);
     }
+
+    $("#loading-text-div-top").html(msgTop);
+    $("#loading-text-div-bottom").html(msgBottom);
 }
 
 function hideLoadingScreen() {
