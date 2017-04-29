@@ -783,15 +783,20 @@ function Map(loadJSONFunc) {
                     .addTo(this.map);
             } else if (itsAnIGEPNFeature) {
                 var props = features[0].properties;
-                var html = "ID: " + props.id + "<br>" + "Mag: " + props.mag + "<br>" +
-                "Depth: " + props.depth + "<br>" + "Lat: " + props.lat + "<br>" +
-                "Long:" + props.lng + "<br>" + props.date + " TU<br>" +
-                props.location;
+                var html = "ID: " + props.id + "<br>Mag: " + props.mag + "<br>Depth: " +
+                            props.depth + "<br>" + props.date + " TU<br>" + props.location;
                 this.gpsStationNamePopup.remove();
                 var coordinates = features[0].geometry.coordinates;
                 this.gpsStationNamePopup.setLngLat(coordinates)
                     .setHTML(html) // we work in cm. convert m to cm
                     .addTo(this.map);
+            } else if (itsAnUSGSFeature) {
+                this.gpsStationNamePopup.remove();
+                var props = features[0].properties;
+                var coordinates = features[0].geometry.coordinates;
+                var html = "Mag: " + props.mag + "<br>" + "Depth: " + props.depth + "<br>" + new Date(props.time) +
+                            "<br>" + props.title;
+                this.gpsStationNamePopup.setLngLat(coordinates).setHTML(html).addTo(this.map);
             } else if (frameFeature) {
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
                 this.areaMarkerLayer.resetHighlightsOfAllAreaRows(null);

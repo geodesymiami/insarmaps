@@ -24,6 +24,7 @@ Route::get("/areas/", "GeoJSONController@getAreas")->name("getAreas");
 Route::get("/midas", "ThirdPartyDataNoCorsController@getmidas")->name("getmidas");
 Route::get("/IGEPNEarthquakeFeed", "ThirdPartyDataNoCorsController@getIGEPNEarthquakeFeed")->name("getIGEPNEarthquakeFeed");
 Route::get("/HawaiiReloc", "ThirdPartyDataNoCorsController@getHawaiiReloc")->name("getHawaiiReloc");
+Route::get("/USGSMonthlyFeed", "ThirdPartyDataNoCorsController@getUSGSMonthlyFeed")->name("getUSGSMonthlyFeed");
 
 Route::post("/points", "GeoJSONController@getPoints");
 Route::controllers([

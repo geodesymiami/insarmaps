@@ -25,4 +25,12 @@ class ThirdPartyDataNoCorsController extends Controller {
 	public function getHawaiiReloc() {
 		return file_get_contents("http://www.rsmas.miami.edu/personal/glin/Hawaii_files/out.reloc_release");
 	}
+
+	public function getUSGSMonthlyFeed() {
+		$jsonString = file_get_contents("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson");
+		// can't use response()->json as it calls json_encode again but this is already a valid json encoded string
+		return response()->make($jsonString, 200, [
+					"Content-Type"=> "application/json"
+				]);
+	}
 }

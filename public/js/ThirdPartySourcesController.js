@@ -194,33 +194,56 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadUSGSEarthquakeFeed = function() {
-        showLoadingScreen("Getting USGS Data", "");
-        var mapboxStationFeatures = {
-            type: "geojson",
-            cluster: false,
-            data: "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson"
-        };
+        showLoadingScreen("Getting USGS GPS Data", "ESCAPE to interrupt");
+        this.cancellableAjax.ajax({
+            url: "/USGSMonthlyFeed",
+            success: function(response) {
+                var featureCollection = response;
 
-        var layerID = "USGSEarthquake";
-        this.map.map.addSource(layerID, mapboxStationFeatures);
-        this.map.map.addLayer({
-            "id": layerID,
-            "type": "circle",
-            "source": layerID,
-            "paint": {
-                "circle-opacity": {
-                    "property": 'mag',
-                    "stops": [
-                        [1.0, 0.2],
-                        [4.5, 0.6],
-                        [9.0, 1.0]
-                    ]
-                },
-                "circle-color": "red",
-                "circle-radius": 5
+                // need to extract depth from 3rd coordinate and put into properties
+                // because mapbox ignores 3rd parameter and retunrs only lat and long
+                // in queryRenderedFeatures
+                featureCollection.features.forEach(function(feature) {
+                    var depth = feature.geometry.coordinates[2];
+                    feature.properties["depth"] = depth;
+                });
+
+                var mapboxStationFeatures = {
+                    type: "geojson",
+                    cluster: false,
+                    data: featureCollection
+                };
+
+                var layerID = "USGSEarthquake";
+                this.map.map.addSource(layerID, mapboxStationFeatures);
+                this.map.map.addLayer({
+                    "id": layerID,
+                    "type": "circle",
+                    "source": layerID,
+                    "paint": {
+                        "circle-opacity": {
+                            "property": 'mag',
+                            "stops": [
+                                [1.0, 0.2],
+                                [4.5, 0.6],
+                                [9.0, 1.0]
+                            ]
+                        },
+                        "circle-color": "red",
+                        "circle-radius": 5
+                    }
+                });
+
+                hideLoadingScreen();
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                hideLoadingScreen();
+                console.log("failed " + xhr.responseText);
             }
+        }, function() {
+            hideLoadingScreen();
+            usgsEarthquakeToggleButton.click();
         });
-        hideLoadingScreen();
     };
 
     this.removeUSGSEarthquakeFeed = function() {
