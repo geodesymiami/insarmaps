@@ -4,7 +4,6 @@ import sys
 import os
 import getopt
 import argparse
-from pysar.json_mbtiles2insarmaps import get_file_name
 import glob
 
 # figure out what the name of the h5 file to put on site is in the given path
@@ -39,7 +38,7 @@ def main():
     path = parseArgs.file
     path_absolute = os.path.abspath(path)
 
-    h5FileFullName = get_file_name(path)
+    h5FileFullName = parseArgs.file
 
     curProjName = h5FileFullName.split(".")[0]
 
