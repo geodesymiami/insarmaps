@@ -3,50 +3,40 @@ function ThirdPartySourcesController(map) {
     this.cancellableAjax = new CancellableAjax();
     this.addGPSStationMarkers = function(stations) {
         var features = [];
-        var mapboxStationFeatures = {
-            type: "geojson",
-            cluster: false,
-            data: {
-                "type": "FeatureCollection",
-                "features": []
+        showLoadingScreen("Getting UNR GPS Data", "ESCAPE to interrupt");
+        this.cancellableAjax.ajax({
+            url: "/unr",
+            success: function(response) {
+                var features = this.parseUNR(response);
+                var mapboxStationFeatures = {
+                    type: "geojson",
+                    cluster: false,
+                    data: {
+                        "type": "FeatureCollection",
+                        "features": features
+                    }
+                };
+
+                var layerID = "gpsStations";
+                this.map.map.addSource(layerID, mapboxStationFeatures);
+                this.map.map.addLayer({
+                    "id": layerID,
+                    "type": "circle",
+                    "source": layerID,
+                    "paint": {
+                        "circle-color": "blue",
+                        "circle-radius": 5
+                    }
+                });
+                hideLoadingScreen();
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                hideLoadingScreen();
+                console.log("failed " + xhr.responseText);
             }
-        };
-
-        var imageURLs = ["bluSquare", "redSquare"];
-
-        var features = [];
-        for (var i = 0; i < stations.length; i++) {
-            var popupHTML = '<h3>Station: ' + stations[i][0] + '<br/>' +
-                ' <a target="_blank" href="http://geodesy.unr.edu/NGLStationPages/stations/' + stations[i][0] + '.sta"> ' +
-                ' <img src="http://geodesy.unr.edu/tsplots/' + stations[i][3] + '/TimeSeries/' + stations[i][0] + '.png" align="center" width=400 height=600 alt="' + stations[i][0] + 'Time Series Plot"/> </a>' +
-                ' <p> <h5> Click plot for full station page. Positions in ' + stations[i][3] + ' reference frame. ';
-
-            var feature = {
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [stations[i][2], stations[i][1]]
-                },
-                "properties": {
-                    "popupHTML": popupHTML,
-                    "stationName": stations[i][0]
-                }
-            };
-
-            features.push(feature);
-        }
-        mapboxStationFeatures.data.features = features;
-
-        var layerID = "gpsStations";
-        this.map.map.addSource(layerID, mapboxStationFeatures);
-        this.map.map.addLayer({
-            "id": layerID,
-            "type": "circle",
-            "source": layerID,
-            "paint": {
-                "circle-color": "blue",
-                "circle-radius": 5
-            }
+        }, function() {
+            hideLoadingScreen();
+            gpsStationsToggleButton.click();
         });
     };
 
@@ -65,28 +55,21 @@ function ThirdPartySourcesController(map) {
             });
         }
     };
-    // latLongs is just the above gps stations...
-    // ask him if these are stationary or we should always
-    // request from server. either way, in below function
-    // we use the one given to us by server
-    this.parseMidasJSON = function(midasJSON) {
-        var midas = midasJSON.midas.split("\n");
-        // TODO: llh stationLatLongs doesn't have 4th field needed to get
-        // plot picture... ask him what to do
-        // var latLongs = midasJSON.stationLatLongs.split("\n");
-        var latLongs = gpsStations;
+
+    this.parseIGS08Stations = function(stations) {
+        var latLongs = stations.split("\n");
 
         var latLongMap = {};
 
         for (var i = 0; i < latLongs.length; i++) {
-            // var fields = latLongs[i].match(/\S+/g);
-            var fields = latLongs[i];
+            var fields = latLongs[i].match(/\S+/g);
+            // var fields = latLongs[i];
 
             if (fields) {
                 var station = fields[0];
                 var lat = fields[1];
                 var long = fields[2];
-                var type = fields[3];
+                var type = "IGS08";
 
                 latLongMap[station] = {
                     "coordinates": [long, lat],
@@ -94,6 +77,51 @@ function ThirdPartySourcesController(map) {
                 };
             }
         }
+
+        return latLongMap;
+    };
+
+    this.parseUNR = function(IGS08Stations) {
+        var latLongMap = this.parseIGS08Stations(IGS08Stations);
+        var features = [];
+
+        for (var station in latLongMap) {
+            if (latLongMap.hasOwnProperty(station)) {
+                var stationInfo = latLongMap[station];
+                var coordinates = stationInfo.coordinates;
+                var type = stationInfo.type;
+                var popupHTML = '<h3>Station: ' + station + '<br/>' +
+                    ' <a target="_blank" href="http://geodesy.unr.edu/NGLStationPages/stations/' + station + '.sta"> ' +
+                    ' <img src="http://geodesy.unr.edu/tsplots/' + type + '/TimeSeries/' + station + '.png" align="center" width=400 height=600 alt="' + station + 'Time Series Plot"/> </a>' +
+                    ' <p> <h5> Click plot for full station page. Positions in ' + type + ' reference frame. ';
+
+
+                var feature = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": coordinates
+                    },
+                    "properties": {
+                        "stationName": station,
+                        "popupHTML": popupHTML
+                    }
+                };
+
+                features.push(feature);
+            }
+        }
+
+        return features;
+    };
+
+    // latLongs is just the above gps stations...
+    // ask him if these are stationary or we should always
+    // request from server. either way, in below function
+    // we use the one given to us by server
+    this.parseMidasJSON = function(midasJSON) {
+        var midas = midasJSON.midas.split("\n");
+        var latLongMap = this.parseIGS08Stations(midasJSON.stationLatLongs);
 
         var features = [];
         for (var i = 0; i < midas.length; i++) {
@@ -194,7 +222,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadUSGSEarthquakeFeed = function() {
-        showLoadingScreen("Getting USGS GPS Data", "ESCAPE to interrupt");
+        showLoadingScreen("Getting USGS Earthquake Data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/USGSMonthlyFeed",
             success: function(response) {

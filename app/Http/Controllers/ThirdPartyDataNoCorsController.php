@@ -8,7 +8,11 @@ use App\Http\Requests;
 use Illuminate\Support\Facades\Input;
 
 class ThirdPartyDataNoCorsController extends Controller {
-	public function getmidas() {
+	public function getUNR() {
+		return file_get_contents("ftp://gneiss.nbmg.unr.edu/rapids/llh");
+	}
+
+	public function getMidas() {
 		$json = [];
 		$midas = file_get_contents("http://geodesy.unr.edu/velocities/midas.IGS08.txt");
 		$stationLatLongs = file_get_contents("ftp://gneiss.nbmg.unr.edu/rapids/llh");

@@ -21,7 +21,8 @@ Route::get("/file/{area}/{fileChunkNumber}", "GeoJSONController@getJSONFileChunk
 Route::get("/textFile/{area}/{point}", "GeoJSONController@pointDataToTextFile")->name("pointDataToTextFile");
 Route::get("/point/{area}/{point}", "GeoJSONController@getDataForPoint")->name("getDataForPoint");
 Route::get("/areas/", "GeoJSONController@getAreas")->name("getAreas");
-Route::get("/midas", "ThirdPartyDataNoCorsController@getmidas")->name("getmidas");
+Route::get("/unr", "ThirdPartyDataNoCorsController@getUNR")->name("getUNR");
+Route::get("/midas", "ThirdPartyDataNoCorsController@getMidas")->name("getMidas");
 Route::get("/IGEPNEarthquakeFeed", "ThirdPartyDataNoCorsController@getIGEPNEarthquakeFeed")->name("getIGEPNEarthquakeFeed");
 Route::get("/HawaiiReloc", "ThirdPartyDataNoCorsController@getHawaiiReloc")->name("getHawaiiReloc");
 Route::get("/USGSMonthlyFeed", "ThirdPartyDataNoCorsController@getUSGSMonthlyFeed")->name("getUSGSMonthlyFeed");
