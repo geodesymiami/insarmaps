@@ -682,8 +682,7 @@ class WebServicesController extends Controller
     }
 
     public function deleteMbtiles(Request $request) {
-      $file = $request->file("file");
-      $fileName = $file->getClientOriginalName();
+      $fileName = $request->file("fileName");
       $res = unlink($fileName);
       echo $fileName;
 
