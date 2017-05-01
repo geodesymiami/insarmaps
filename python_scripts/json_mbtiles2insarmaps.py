@@ -2,7 +2,7 @@
 
 import sys
 import argparse
-from pysar.add_attribute_insarmaps import InsarDatabaseController
+from pysar.add_attribute_insarmaps import InsarDatasetController
 import os
 import cPickle
 
@@ -122,24 +122,26 @@ def main():
         upload_json(parseArgs.json_folder_positional)
 
     if parseArgs.mbtiles_file or parseArgs.mbtiles_file_positional:
+        dbContoller = InsarDatasetController(dbUsername, dbPassword, dbHost, 'pgis', parseArgs.server_user, parseArgs.server_password)
         if not parseArgs.server_user or not parseArgs.server_password:
             sys.stderr.write("Error: credentials for the insarmaps server not provided")
         elif parseArgs.mbtiles_file:
             print "Uploading mbtiles..."
-            dbContoller = InsarDatasetController(dbUsername, dbPassword, dbHost, 'pgis')
-            dbContoller.upload_mbtiles(parseArgs.mbtiles_file, parseArgs.server_user, parseArgs.server_password)
+            dbContoller.upload_mbtiles(parseArgs.mbtiles_file)
         else:
             print "Uploading mbtiles...."
-            dbContoller = InsarDatasetController(dbUsername, dbPassword, dbHost, 'pgis')
-            dbContoller.upload_mbtiles(parseArgs.mbtiles_file_positional, parseArgs.server_user, parseArgs.server_password)
+            dbContoller.upload_mbtiles(parseArgs.mbtiles_file_positional)
 
     if parseArgs.dataset_to_remove:
-        print "Removing " + parseArgs.dataset_to_remove
-        dbContoller = InsarDatasetController(dbUsername, dbPassword, dbHost, 'pgis')
-        dbContoller.connect()
-        dbContoller.remove_dataset_if_there(parseArgs.dataset_to_remove)
-        dbContoller.close()
-        dbContoller.remove_mbtiles(parseArgs.dataset_to_remove + ".mbtiles")
+        if not parseArgs.server_user or not parseArgs.server_password:
+            sys.stderr.write("Error: credentials for the insarmaps server not provided")
+        else:
+            print "Removing " + parseArgs.dataset_to_remove
+            dbContoller = InsarDatasetController(dbUsername, dbPassword, dbHost, 'pgis', parseArgs.server_user, parseArgs.server_password)
+            dbContoller.connect()
+            dbContoller.remove_dataset_if_there(parseArgs.dataset_to_remove)
+            dbContoller.close()
+            dbContoller.remove_mbtiles(parseArgs.dataset_to_remove + ".mbtiles")
 
 if __name__ == '__main__':
     main()

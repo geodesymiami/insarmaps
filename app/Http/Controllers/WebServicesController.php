@@ -10,6 +10,7 @@ use DB;
 
 use CpChart\Factory\Factory;
 use Exception;
+use Illuminate\Support\Facades\Input;
 
 // NOTE: We currently use 3 date formats between various dependencies in SQL, Highcharts, etc. 
 // 1) yyyy-mm-dd / string (ex: 2010-12-20)
@@ -23,7 +24,7 @@ use Exception;
 
 class WebServicesController extends Controller
 {
-    const $MBTILES_PATH = "/var/www/html/tileserver";
+    private static $MBTILES_PATH = "/var/www/html/tileserver";
 
     public function __construct() {
       $this->arrayFormatter = new PostgresArrayFormatter();
@@ -673,7 +674,7 @@ class WebServicesController extends Controller
       $file = $request->file("file");
       $fileName = $file->getClientOriginalName();
       try {
-        $file->move($this->MBTILES_PATH, $fileName);
+        $file->move(self::$MBTILES_PATH, $fileName);
       } catch (Exception $e) {
         return response("Error storing file", 500);
       }
@@ -682,9 +683,14 @@ class WebServicesController extends Controller
     }
 
     public function deleteMbtiles(Request $request) {
-      $fileName = $request->file("fileName");
-      $res = unlink($fileName);
-      echo $fileName;
+      $fileName = self::$MBTILES_PATH . "/" . Input::get("fileName");
+      $res = 0;
+
+      try {
+        $res = unlink($fileName);
+      } catch (Exception $e) {
+        return response("Error deleting file", 500);
+      }
 
       if (!$res) {
         return response("Error deleting file", 500);
