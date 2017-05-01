@@ -1,6 +1,7 @@
 function ThirdPartySourcesController(map) {
     this.map = map;
     this.cancellableAjax = new CancellableAjax();
+
     this.addGPSStationMarkers = function(stations) {
         var features = [];
         showLoadingScreen("Getting UNR GPS Data", "ESCAPE to interrupt");
@@ -429,8 +430,13 @@ function ThirdPartySourcesController(map) {
             if (!attributes) {
                 return;
             }
+            // explanation of these indices: http://www.rsmas.miami.edu/personal/glin/Hawaii.html
+            // that link is actually wrong, she sent an email with correct indices
+            // maybe she'll update the link in the future.
             var lng = attributes[8]
             var lat = attributes[7];
+            var mag = parseFloat(attributes[10]);
+            var depth = parseFloat(attributes[9]);
             var coordinates = [lng, lat];
 
             var feature = {
@@ -439,13 +445,14 @@ function ThirdPartySourcesController(map) {
                     "type": "Point",
                     "coordinates": coordinates
                 },
-                "properties": {}
+                "properties": {
+                    "depth": depth,
+                    "mag": mag
+                }
             };
 
             features.push(feature);
         });
-
-        console.log(features);
 
         return features;
     };
@@ -454,5 +461,55 @@ function ThirdPartySourcesController(map) {
         var name = "HawaiiReloc";
 
         this.map.removeSourceAndLayer(name);
+    };
+
+    this.featureToViewOptions = function(feature) {
+        var layerID = feature.layer.id;
+        var layerSource = feature.layer.source;
+        var markerSymbol = feature.properties["marker-symbol"];
+        var itsAnreaPolygon = (markerSymbol === "fillPolygon");
+        var itsAPoint = (layerSource === "vector_layer_" || layerSource === "onTheFlyJSON");
+        var itsAGPSFeature = (layerID === "gpsStations");
+        var itsAMidasGPSFeature = (layerID === "midas");
+        var itsAnUSGSFeature = (layerID === "USGSEarthquake");
+        var itsAnIGEPNFeature = (layerID === "IGEPNEarthquake");
+        var itsAHawaiiRelocFeature = (layerID === "HawaiiReloc");
+        var cursor = (itsAPoint || itsAnreaPolygon ||
+            itsAGPSFeature || itsAMidasGPSFeature ||
+            itsAnUSGSFeature || itsAnIGEPNFeature ||
+            itsAHawaiiRelocFeature) ? 'pointer' : 'auto';
+
+        // a better way is to have two mousemove callbacks like we do with select area vs select marker
+        var html = null;
+        var coordinates = feature.geometry.coordinates;
+        if (itsAGPSFeature) {
+            html = feature.properties.stationName;
+        } else if (itsAMidasGPSFeature) {
+            var velocityInCMYR = (feature.properties.v * 100).toFixed(4);
+            var uncertainty = (feature.properties.u * 100).toFixed(4);
+            var html = feature.properties.stationName + "<br>" +
+                    velocityInCMYR + " +- " + uncertainty + " cm/yr"; // we work in cm. convert m to cm
+        } else if (itsAnIGEPNFeature) {
+            var props = feature.properties;
+            html = "ID: " + props.id + "<br>Mag: " + props.mag + "<br>Depth: " +
+                props.depth + "<br>" + props.date + " TU<br>" + props.location;
+        } else if (itsAnUSGSFeature) {
+            var props = feature.properties;
+            html = "Mag: " + props.mag + "<br>Depth: " + props.depth + "<br>" + new Date(props.time) +
+                "<br>" + props.title;
+        } else if (itsAHawaiiRelocFeature) {
+            var props = feature.properties;
+            html = "Mag: " + props.mag + "<br>Depth: " + props.depth;
+        } else {
+            return null;
+        }
+
+        var featureViewOptions = {
+            "html": html,
+            "cursor": cursor,
+            "coordinates": coordinates
+        };
+
+        return featureViewOptions;
     };
 }

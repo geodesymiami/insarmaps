@@ -660,17 +660,7 @@ function Map(loadJSONFunc) {
     };
 
     this.removeAreaMarkers = function() {
-        for (var i = 0; i < this.areaFeatures.length; i++) {
-            var id = this.areaFeatures[i].properties.layerID;
-            if (this.map.getLayer(id)) {
-                // see why we can't remove source here as well...
-                this.map.removeLayer(id);
-                // remove fill layer allowing highlighting of our line string hacked
-                // polygons
-                this.map.removeLayer(id + "fill");
-            }
-        }
-
+        this.areaMarkerLayer.emptyLayers();
         this.areaFeatures = [];
     };
 
@@ -748,65 +738,26 @@ function Map(loadJSONFunc) {
                 this.map.getCanvas().style.cursor = 'auto';
                 return;
             }
-
-            var layerID = features[0].layer.id;
-            var layerSource = features[0].layer.source;
-            var markerSymbol = features[0].properties["marker-symbol"];
-            var itsAnreaPolygon = (markerSymbol === "fillPolygon");
-            var itsAPoint = (layerSource === "vector_layer_" || layerSource === "onTheFlyJSON");
-            var itsAGPSFeature = (layerID === "gpsStations");
-            var itsAMidasGPSFeature = (layerID === "midas");
-            var itsAnUSGSFeature = (layerID === "USGSEarthquake");
-            var itsAnIGEPNFeature = (layerID === "IGEPNEarthquake");
             var frameFeature = this.getFirstPolygonFrameAtPoint(features);
-            var cursor = (itsAPoint || itsAnreaPolygon ||
-                        itsAGPSFeature || frameFeature ||
-                        itsAMidasGPSFeature || itsAnUSGSFeature
-                        || itsAnIGEPNFeature) ? 'pointer' : 'auto';
-
-            this.map.getCanvas().style.cursor = cursor;
-
-            // a better way is to have two mousemove callbacks like we do with select area vs select marker
-            if (itsAGPSFeature) {
-                this.gpsStationNamePopup.remove();
-                var coordinates = features[0].geometry.coordinates;
-                this.gpsStationNamePopup.setLngLat(coordinates)
-                    .setHTML(features[0].properties.stationName)
-                    .addTo(this.map);
-            } else if (itsAMidasGPSFeature) {
-                this.gpsStationNamePopup.remove();
-                var coordinates = features[0].geometry.coordinates;
-                var velocityInCMYR = (features[0].properties.v * 100).toFixed(4);
-                var uncertainty = (features[0].properties.u * 100).toFixed(4);
-                this.gpsStationNamePopup.setLngLat(coordinates)
-                    .setHTML(
-                        features[0].properties.stationName + "<br>" +
-                        velocityInCMYR + " +- " + uncertainty + " cm/yr") // we work in cm. convert m to cm
-                    .addTo(this.map);
-            } else if (itsAnIGEPNFeature) {
-                var props = features[0].properties;
-                var html = "ID: " + props.id + "<br>Mag: " + props.mag + "<br>Depth: " +
-                            props.depth + "<br>" + props.date + " TU<br>" + props.location;
-                this.gpsStationNamePopup.remove();
-                var coordinates = features[0].geometry.coordinates;
-                this.gpsStationNamePopup.setLngLat(coordinates)
-                    .setHTML(html) // we work in cm. convert m to cm
-                    .addTo(this.map);
-            } else if (itsAnUSGSFeature) {
-                this.gpsStationNamePopup.remove();
-                var props = features[0].properties;
-                var coordinates = features[0].geometry.coordinates;
-                var html = "Mag: " + props.mag + "<br>" + "Depth: " + props.depth + "<br>" + new Date(props.time) +
-                            "<br>" + props.title;
-                this.gpsStationNamePopup.setLngLat(coordinates).setHTML(html).addTo(this.map);
-            } else if (frameFeature) {
+            if (frameFeature) {
                 this.areaMarkerLayer.resetHighlightsOfAllMarkers();
                 this.areaMarkerLayer.resetHighlightsOfAllAreaRows(null);
                 this.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.unavco_name);
                 this.areaMarkerLayer.setPolygonHighlighted(frameFeature.properties.layerID, "rgba(0, 0, 255, 0.3)");
+                this.map.getCanvas().style.cursor = "pointer";
             } else {
-                this.areaMarkerLayer.resetHighlightsOfAllMarkers();
-                this.areaMarkerLayer.resetHighlightsOfAllAreaRows(currentArea);
+                var featureViewOptions = this.thirdPartySourcesController.featureToViewOptions(features[0]);
+                if (featureViewOptions) {
+                    this.gpsStationNamePopup.remove();
+                    this.gpsStationNamePopup.setLngLat(featureViewOptions.coordinates)
+                                            .setHTML(featureViewOptions.html)
+                                            .addTo(this.map);
+                    this.map.getCanvas().style.cursor = featureViewOptions.cursor;
+                } else {
+                    this.areaMarkerLayer.resetHighlightsOfAllMarkers();
+                    this.areaMarkerLayer.resetHighlightsOfAllAreaRows(currentArea);
+                    this.map.getCanvas().style.cursor = "auto";
+                }
             }
         }.bind(this));
 
