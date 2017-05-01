@@ -23,6 +23,8 @@ use Exception;
 
 class WebServicesController extends Controller
 {
+    const $MBTILES_PATH = "/var/www/html/tileserver";
+
     public function __construct() {
       $this->arrayFormatter = new PostgresArrayFormatter();
       $this->dateFormatter = new DateFormatter();
@@ -670,14 +672,26 @@ class WebServicesController extends Controller
     public function uploadMbtiles(Request $request) {
       $file = $request->file("file");
       $fileName = $file->getClientOriginalName();
-      $filePath = "/var/www/html/tileserver";
       try {
-        $file->move($filePath, $fileName);
+        $file->move($this->MBTILES_PATH, $fileName);
       } catch (Exception $e) {
         return response("Error storing file", 500);
       }
 
-      return response("successfully stored file", 200);
+      return response("Successfully stored file", 200);
+    }
+
+    public function deleteMbtiles(Request $request) {
+      $file = $request->file("file");
+      $fileName = $file->getClientOriginalName();
+      $res = unlink($fileName);
+      echo $fileName;
+
+      if (!$res) {
+        return response("Error deleting file", 500);
+      }
+
+      return response("Successfully deleted file", 200);
     }
 
     /**

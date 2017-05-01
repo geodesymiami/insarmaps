@@ -49,3 +49,4 @@ Route::get("/WebServicesBox/", "WebServicesBoxController@processRequest");
 Route::get("/WebServicesBox/{area}/{lineString}", "WebServicesBoxController@getPointNumbersInBox");
 
 Route::post("/WebServices/uploadMbtiles", "WebServicesController@uploadMbtiles")->middleware("auth");
+Route::post("/WebServices/deleteMbtiles", "WebServicesController@deleteMbtiles")->middleware("auth");
