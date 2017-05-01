@@ -2,7 +2,7 @@
 
 import sys
 import argparse
-from pysar.add_attribute_insarmaps import InsarDatasetController, InsarDatasetController
+from pysar.add_attribute_insarmaps import InsarDatabaseController, InsarDatasetController
 import os
 import cPickle
 
