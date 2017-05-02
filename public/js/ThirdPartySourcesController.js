@@ -116,10 +116,10 @@ function ThirdPartySourcesController(map) {
         return features;
     };
 
-    // latLongs is just the above gps stations...
-    // ask him if these are stationary or we should always
-    // request from server. either way, in below function
-    // we use the one given to us by server
+    this.vectorSumVelocities = function(vel1, vel2) {
+
+    };
+
     this.parseMidasJSON = function(midasJSON) {
         var midas = midasJSON.midas.split("\n");
         var latLongMap = this.parseIGS08Stations(midasJSON.stationLatLongs);
@@ -131,6 +131,8 @@ function ThirdPartySourcesController(map) {
                 var station = fields[0];
                 // column 11 according to Midas readme
                 var upVelocity = parseFloat(fields[10]);
+                var northVelocity = parseFloat(fields[9]);
+                var eastVelocity = parseFloat(fields[8]);
                 // column 14 according to Midas readme
                 var uncertainty = parseFloat(fields[13]);
                 var stationName = fields[0];
@@ -167,7 +169,7 @@ function ThirdPartySourcesController(map) {
     };
 
 
-    this.loadmidasGpsStationMarkers = function() {
+    this.loadmidasGpsStationMarkers = function(loadVelocityArrows) {
         showLoadingScreen("Getting Midas GPS Data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/midas",
@@ -198,6 +200,22 @@ function ThirdPartySourcesController(map) {
                         "circle-radius": 5
                     }
                 });
+                loadVelocityArrows = true;
+                if (loadVelocityArrows) {
+                    this.map.map.addLayer({
+                        "id": layerID + "-arrows",
+                        "type": "symbol",
+                        "source": layerID,
+                        "layout": {
+                            "icon-image": "arrow",
+                            "icon-size": {
+                                "property": "v",
+                                "stops": [[0.01, 1], [0.02, 5]]
+                            },
+                            "icon-rotate": 110
+                        }
+                    });
+                }
 
                 this.map.colorScale.setTitle("Vertical Velocity cm/yr");
                 hideLoadingScreen();
