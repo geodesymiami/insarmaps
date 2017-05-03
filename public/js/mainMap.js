@@ -747,17 +747,16 @@ function Map(loadJSONFunc) {
                 this.map.getCanvas().style.cursor = "pointer";
             } else {
                 var featureViewOptions = this.thirdPartySourcesController.featureToViewOptions(features[0]);
-                if (featureViewOptions) {
+                if (featureViewOptions.coordinates) {
                     this.gpsStationNamePopup.remove();
                     this.gpsStationNamePopup.setLngLat(featureViewOptions.coordinates)
                                             .setHTML(featureViewOptions.html)
                                             .addTo(this.map);
-                    this.map.getCanvas().style.cursor = featureViewOptions.cursor;
                 } else {
                     this.areaMarkerLayer.resetHighlightsOfAllMarkers();
                     this.areaMarkerLayer.resetHighlightsOfAllAreaRows(currentArea);
-                    this.map.getCanvas().style.cursor = "auto";
                 }
+		this.map.getCanvas().style.cursor = featureViewOptions.cursor;
             }
         }.bind(this));
 

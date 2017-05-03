@@ -236,8 +236,8 @@ function ThirdPartySourcesController(map) {
                             "icon-size": {
                                 "property": "mag",
                                 "stops": [
-                                    [0.01, 0.5],
-                                    [0.05, 5]
+                                    [0.0, 0.1],
+                                    [0.05, 10]
                                 ]
                             },
                             "icon-rotate": {
@@ -559,7 +559,8 @@ function ThirdPartySourcesController(map) {
             var props = feature.properties;
             html = "Mag: " + props.mag + "<br>Depth: " + props.depth;
         } else {
-            return null;
+            coordinates = null;
+	    html = null;
         }
 
         var featureViewOptions = {
