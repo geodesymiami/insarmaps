@@ -163,7 +163,7 @@ function ThirdPartySourcesController(map) {
                     var resultant = this.vectorSum(northVelocity, eastVelocity);
                     // make sure we only use positive angles as our data driven-styles only handles positive angles
                     if (resultant.angle < 0) {
-                        resultant.angle += 180;
+                        resultant.angle += 360;
                     }
                     // column 14 according to Midas readme
                     var uncertainty = parseFloat(fields[13]);
