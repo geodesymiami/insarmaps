@@ -635,6 +635,7 @@ function Map(loadJSONFunc) {
     this.loadAreaMarkersExcluding = function(toExclude, after) {
         if (this.lastAreasRequest) {
             this.lastAreasRequest.abort();
+            this.lastAreasRequest = null;
         }
 
         this.lastAreasRequest = $.ajax({
@@ -654,7 +655,6 @@ function Map(loadJSONFunc) {
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed " + xhr.responseText);
-                this.lastAjaxRequest = null;
             }
         });
     };
@@ -813,7 +813,7 @@ function Map(loadJSONFunc) {
                 source: "recenter"
             });
 
-            if (this.areaSwathsLoaded()) {
+            if (this.areas) {
                 var bounds = this.map.getBounds();
                 var bbox = [bounds._ne, bounds._sw];
                 this.areaFilterSelector.filterAreasInBrowser(bbox);
