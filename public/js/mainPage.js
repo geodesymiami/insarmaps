@@ -43,6 +43,7 @@ function AreaAttributesPopup() {
 
         // set like object
         var attributesToDisplay = {
+            "unavco_name": true,
             "mission": true,
             "beam_mode": true,
             "beam_swath": true,

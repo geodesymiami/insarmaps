@@ -919,7 +919,7 @@ ul.tab li a:focus,
 .tabcontent {
     /*display: none;*/
     padding-top: 45px;
-    border: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
     border-top: none;
     font-size: 10px !important;
 }

@@ -26,6 +26,7 @@ function AreaAttributesController(map, area) {
 
         var extraAttributes = propertyToJSON(this.area.properties.extra_attributes);
         var plotAttributes = propertyToJSON(this.area.properties.plot_attributes);
+        var unavco_name = this.area.properties.unavco_name;
 
         var fullAttributes = [];
         for (var i = 0; i < attributeKeys.length; i++) {
@@ -49,6 +50,8 @@ function AreaAttributesController(map, area) {
         if (plotAttributes) {
             fullAttributes["plotAttributes"] = plotAttributes;
         }
+
+        fullAttributes["unavco_name"] = unavco_name;
 
         return fullAttributes;
     };
