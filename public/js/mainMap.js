@@ -361,6 +361,10 @@ function Map(loadJSONFunc) {
         }
     };
 
+    this.pointClicked = function() {
+        return this.map.getLayer("Top Graph") || this.map.getLayer("Bottom Graph");
+    };
+
     this.clickOnAnAreaMarker = function(e) {
         var features = this.map.queryRenderedFeatures(e.point);
 
