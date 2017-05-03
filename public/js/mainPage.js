@@ -12,6 +12,7 @@ var recentDatasetsToggleButton = null;
 var usgsEarthquakeToggleButton = null;
 var IGEPNEarthquakeToggleButton = null;
 var HawaiiRelocToggleButton = null;
+var midasEastNorthStationsToggleButton = null;
 var myMap = null;
 
 function getRootUrl() {
@@ -613,11 +614,28 @@ function setupToggleButtons() {
             if (myMap.pointsLoaded()) {
                 midasStationsToggleButton.set("off");
             } else {
-                myMap.thirdPartySourcesController.loadmidasGpsStationMarkers();
+                myMap.thirdPartySourcesController.loadmidasGpsStationMarkers(false);
                 myMap.colorScale.show();
             }
         } else {
-            myMap.thirdPartySourcesController.removemidasGpsStationMarkers();
+            myMap.thirdPartySourcesController.removemidasGpsStationMarkers(false);
+            if (!myMap.pointsLoaded()) {
+                myMap.colorScale.remove();
+            }
+        }
+    });
+
+    midasEastNorthStationsToggleButton = new ToggleButton("#midas-east-north-stations-toggle-button");
+    midasEastNorthStationsToggleButton.onclick(function() {
+        if (midasEastNorthStationsToggleButton.toggleState == ToggleStates.ON) {
+            if (myMap.pointsLoaded()) {
+                midasEastNorthStationsToggleButton.set("off");
+            } else {
+                myMap.thirdPartySourcesController.loadmidasGpsStationMarkers(true);
+                myMap.colorScale.show();
+            }
+        } else {
+            myMap.thirdPartySourcesController.removemidasGpsStationMarkers(true);
             if (!myMap.pointsLoaded()) {
                 myMap.colorScale.remove();
             }

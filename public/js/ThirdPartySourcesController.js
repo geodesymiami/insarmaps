@@ -96,7 +96,6 @@ function ThirdPartySourcesController(map) {
                     ' <img src="http://geodesy.unr.edu/tsplots/' + type + '/TimeSeries/' + station + '.png" align="center" width=400 height=600 alt="' + station + 'Time Series Plot"/> </a>' +
                     ' <p> <h5> Click plot for full station page. Positions in ' + type + ' reference frame. ';
 
-
                 var feature = {
                     "type": "Feature",
                     "geometry": {
@@ -116,8 +115,21 @@ function ThirdPartySourcesController(map) {
         return features;
     };
 
-    this.vectorSumVelocities = function(vel1, vel2) {
+    this.vectorSum = function(vec1, vec2) {
+        var x = vec1.x + vec2.x;
+        var y = vec1.y + vec2.y;
+        var magnitude = Math.sqrt(x * x + y * y);
+        const RAD_TO_ANGLE = 180 / Math.PI;
+        var angle = Math.atan(y / x) * RAD_TO_ANGLE;
 
+        var retVector = {
+            x: x,
+            y: y,
+            mag: magnitude,
+            angle: angle
+        };
+
+        return retVector;
     };
 
     this.parseMidasJSON = function(midasJSON) {
@@ -129,13 +141,6 @@ function ThirdPartySourcesController(map) {
             var fields = midas[i].match(/\S+/g);
             if (fields) {
                 var station = fields[0];
-                // column 11 according to Midas readme
-                var upVelocity = parseFloat(fields[10]);
-                var northVelocity = parseFloat(fields[9]);
-                var eastVelocity = parseFloat(fields[8]);
-                // column 14 according to Midas readme
-                var uncertainty = parseFloat(fields[13]);
-                var stationName = fields[0];
                 var stationInfo = latLongMap[station];
                 if (stationInfo) {
                     var coordinates = stationInfo.coordinates;
@@ -145,6 +150,24 @@ function ThirdPartySourcesController(map) {
                         ' <img src="http://geodesy.unr.edu/tsplots/' + type + '/TimeSeries/' + station + '.png" align="center" width=400 height=600 alt="' + station + 'Time Series Plot"/> </a>' +
                         ' <p> <h5> Click plot for full station page. Positions in ' + type + ' reference frame. ';
 
+                    // these numbers come from unr midas readme
+                    var upVelocity = parseFloat(fields[10]);
+                    var northVelocity = {
+                        x: 0,
+                        y: parseFloat(fields[9])
+                    };
+                    var eastVelocity = {
+                        x: parseFloat(fields[8]),
+                        y: 0
+                    };
+                    var resultant = this.vectorSum(northVelocity, eastVelocity);
+                    // make sure we only use positive angles as our data driven-styles only handles positive angles
+                    if (resultant.angle < 0) {
+                        resultant.angle += 180;
+                    }
+                    // column 14 according to Midas readme
+                    var uncertainty = parseFloat(fields[13]);
+                    var stationName = fields[0];
 
                     var feature = {
                         "type": "Feature",
@@ -155,6 +178,8 @@ function ThirdPartySourcesController(map) {
                         "properties": {
                             "v": upVelocity,
                             "u": uncertainty,
+                            "mag": resultant.mag,
+                            "angle": resultant.angle,
                             "stationName": stationName,
                             "popupHTML": popupHTML
                         }
@@ -200,7 +225,7 @@ function ThirdPartySourcesController(map) {
                         "circle-radius": 5
                     }
                 });
-                loadVelocityArrows = true;
+
                 if (loadVelocityArrows) {
                     this.map.map.addLayer({
                         "id": layerID + "-arrows",
@@ -209,12 +234,18 @@ function ThirdPartySourcesController(map) {
                         "layout": {
                             "icon-image": "arrow",
                             "icon-size": {
-                                "property": "v",
-                                "stops": [[0.01, 1], [0.02, 5]]
+                                "property": "mag",
+                                "stops": [
+                                    [0.01, 0.5],
+                                    [0.05, 5]
+                                ]
                             },
-                            "icon-rotate": 110
+                            "icon-rotate": {
+                                "property": "angle",
+                                "stops": [[0, 0], [360, 360]]
+                            }
                         }
-                    });
+                    }, layerID); // make sure arrow comes under the circle
                 }
 
                 this.map.colorScale.setTitle("Vertical Velocity cm/yr");
@@ -226,7 +257,11 @@ function ThirdPartySourcesController(map) {
             }
         }, function() {
             hideLoadingScreen();
-            midasStationsToggleButton.click();
+            if (loadVelocityArrows) {
+                midasEastNorthStationsToggleButton.click();
+            } else {
+                midasStationsToggleButton.click();
+            }
         });
     };
 
@@ -234,6 +269,10 @@ function ThirdPartySourcesController(map) {
         var name = "midas";
 
         this.map.removeSourceAndLayer(name);
+
+        if (this.map.map.getLayer(name + "-arrows")) {
+            this.map.map.removeLayer(name + "-arrows");
+        }
     };
 
     this.midasLoaded = function() {
@@ -500,13 +539,14 @@ function ThirdPartySourcesController(map) {
         // a better way is to have two mousemove callbacks like we do with select area vs select marker
         var html = null;
         var coordinates = feature.geometry.coordinates;
+
         if (itsAGPSFeature) {
             html = feature.properties.stationName;
         } else if (itsAMidasGPSFeature) {
             var velocityInCMYR = (feature.properties.v * 100).toFixed(4);
             var uncertainty = (feature.properties.u * 100).toFixed(4);
             var html = feature.properties.stationName + "<br>" +
-                    velocityInCMYR + " +- " + uncertainty + " cm/yr"; // we work in cm. convert m to cm
+                velocityInCMYR + " +- " + uncertainty + " cm/yr"; // we work in cm. convert m to cm
         } else if (itsAnIGEPNFeature) {
             var props = feature.properties;
             html = "ID: " + props.id + "<br>Mag: " + props.mag + "<br>Depth: " +

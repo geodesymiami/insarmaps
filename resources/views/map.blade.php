@@ -189,6 +189,10 @@
           <input id = "midas-stations-toggle-button" type="checkbox"/>
         </div>
         <div class="overlay-toggle">
+          <label>MIDAS IGS08 East, North (UNR)</label>
+          <input id = "midas-east-north-stations-toggle-button" type="checkbox"/>
+        </div>
+        <div class="overlay-toggle">
           <label>USGS 30 Day Earthquake Feed</label>
           <input id = "usgs-earthquake-toggle-button" type="checkbox"/>
         </div>
