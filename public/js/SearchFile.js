@@ -129,8 +129,20 @@ function SearchFile(container) {
         first_frame = first_frame.toString() != "0" ? first_frame : "N/A";
         var mode = fileAttributes.beam_mode;
         var flight_direction = fileAttributes.flight_direction;
-        var rowID = area.properties.unavco_name + "-search-row";
-        var html = "<tr id='" + rowID + "'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" + first_frame + "</td><td>" + mode + "</td><td>" + flight_direction + "</td></tr>";
+        var unavco_name = area.properties.unavco_name;
+        var rowID = unavco_name + "-search-row";
+        var html = "<tr id='" + rowID + "'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
+                    first_frame + "</td><td>" + mode + "</td><td>" + flight_direction + "</td></tr>";
+
+
+        var subsetFeatures = myMap.getSubsetFeatures(area);
+        var haveSubsets = subsetFeatures && subsetFeatures.length > 1;
+        if (haveSubsets) {
+            html = "<tr id='" + rowID + "'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
+                    first_frame + "</td><td>" + mode + "</td><td><div class='flight-direction'>" + flight_direction +
+                    "</div><div class='show-children-button' id='" + unavco_name + "'></div></td></tr>";
+        }
+
         $("#search-form-results-table tbody").append(html);
         $("#" + rowID).css({ cursor: "pointer" });
         $("#" + rowID).click(function() {
@@ -138,6 +150,20 @@ function SearchFile(container) {
                 getGEOJSON(area);
             }
         });
+
+        if (haveSubsets) {
+            $(".show-children-button#" + unavco_name).click(function(e) {
+                e.stopPropagation(); // don't execute click handler of whole row
+
+                $("#search-form-and-results-container").toggleClass("subset-swath");
+                $("#search-form-results").toggleClass("subset-swath");
+                $("#subset-swath-popup").toggleClass("subset-swath");
+                $subsetSwathTableBody = $("#subset-swath-table > tbody");
+                subsetFeatures.forEach(function(subsetFeature) {
+                    $subsetSwathTableBody.append("<tr><td>" + subsetFeature.properties.unavco_name + "</td></tr>");
+                });
+            });
+        }
     };
 
     this.search = function() {

@@ -365,6 +365,17 @@ function Map(loadJSONFunc) {
         return this.map.getLayer("Top Graph") || this.map.getLayer("Bottom Graph");
     };
 
+    this.getSubsetFeatures = function(feature) {
+        var attributesController = new AreaAttributesController(this, feature);
+
+        // if we have data_footprint, then show all data footprints associated
+        // with this area's scene_footprint
+        var scene_footprint = attributesController.getAttribute("scene_footprint");
+        var childFeatures = this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint];
+
+        return childFeatures;
+    };
+
     this.clickOnAnAreaMarker = function(e) {
         var features = this.map.queryRenderedFeatures(e.point);
 
@@ -390,16 +401,11 @@ function Map(loadJSONFunc) {
         // remove cluster count check if you remove clustering
         var frameFeature = this.getFirstPolygonFrameAtPoint(features);
         if (frameFeature) {
-            var attributesController = new AreaAttributesController(this, frameFeature);
-
-            // if we have data_footprint, then show all data footprints associated
-            // with this area's scene_footprint
-            var scene_footprint = attributesController.getAttribute("scene_footprint");
-            var childFeatures = this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint];
+            var subsets = this.getSubsetFeatures(frameFeature);
 
             // if dataset has child features then it must have more than 1 according to Yunjun, otherwise, the child
             // isn't really a child
-            if (childFeatures && childFeatures.length > 1) {
+            if (subsets && subsets.length > 1) {
                 this.removeAreaMarkers();
                 childFeatures = childFeatures.slice(0); // clone it to prevent infinite loop when we add to the hashmap
                 var json = {
@@ -754,13 +760,13 @@ function Map(loadJSONFunc) {
                 if (featureViewOptions.coordinates) {
                     this.gpsStationNamePopup.remove();
                     this.gpsStationNamePopup.setLngLat(featureViewOptions.coordinates)
-                                            .setHTML(featureViewOptions.html)
-                                            .addTo(this.map);
+                        .setHTML(featureViewOptions.html)
+                        .addTo(this.map);
                 } else {
                     this.areaMarkerLayer.resetHighlightsOfAllMarkers();
                     this.areaMarkerLayer.resetHighlightsOfAllAreaRows(currentArea);
                 }
-		this.map.getCanvas().style.cursor = featureViewOptions.cursor;
+                this.map.getCanvas().style.cursor = featureViewOptions.cursor;
             }
         }.bind(this));
 

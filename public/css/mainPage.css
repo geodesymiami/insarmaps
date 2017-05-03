@@ -59,7 +59,9 @@ html[xmlns] .clearfix {
     height: 1%;
 }
 
+
 /*TODO: consolidate the .active classes to mainly use/remove redundant code*/
+
 .active {
     display: block !important;
 }
@@ -419,29 +421,43 @@ div.menu {
 
 .loading-circle {
     margin: 0 auto;
-    border: 5px solid #f3f3f3; /* Light grey */
-    border-top: 5px solid #3498db; /* Blue */
+    border: 5px solid #f3f3f3;
+    /* Light grey */
+    border-top: 5px solid #3498db;
+    /* Blue */
     border-radius: 50%;
     width: 40px;
-    height:40px;
+    height: 40px;
     animation: spin 1.5s linear infinite;
     -webkit-animation: spin 1.5s linear infinite;
     -ms-animation: spin 1.5s linear infinite;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 @-webkit-keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 @-ms-keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 #top-map-buttons > div > button {
@@ -471,7 +487,9 @@ div.menu {
     width: 25%;
 }
 
+
 /*disable compass in nav controls*/
+
 .mapboxgl-ctrl-compass {
     display: none !important;
 }
@@ -574,7 +592,8 @@ div.menu {
     height: 256px;
 }
 
-#left-scale-minimum, #right-scale-maximum {
+#left-scale-minimum,
+#right-scale-maximum {
     position: absolute;
 }
 
@@ -590,7 +609,9 @@ div.menu {
     padding: 0;
 }
 
+
 /*remove the up/down spinners on the number input*/
+
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -598,7 +619,7 @@ input[type=number]::-webkit-inner-spin-button {
 }
 
 input[type=number] {
-    -moz-appearance:textfield;
+    -moz-appearance: textfield;
 }
 
 #slideout-button {
@@ -725,8 +746,8 @@ input[type=number] {
     -webkit-appearance: textfield;
     background-color: white;
     background-color: -moz-field;
-    border: 1px solid darkgray;-
-    box-shadow: 1px 1px 1px 0 lightgray inset;
+    border: 1px solid darkgray;
+    - box-shadow: 1px 1px 1px 0 lightgray inset;
     font: -moz-field;
     font: -webkit-small-control;
     font-family: "Helvetica";
@@ -763,19 +784,28 @@ input[type=number] {
     margin: 4px 0 0 0 !important;
 }
 
+
 /* jquery autocomplete */
+
 .ui-autocomplete {
     font-family: "Helvetica";
 }
 
 #search-form-and-results-container {
-    display: none; /* hide by default */
+    display: none;
+    /* hide by default */
     width: 35%;
+    height: 35%;
     position: absolute;
     z-index: 99;
     bottom: 0;
-    left: 90px; /* don't overlap with colorscale div */
+    left: 90px;
+    /* don't overlap with colorscale div */
     background: white;
+}
+
+#search-form-and-results-container.subset-swath {
+    width: 50%;
 }
 
 #search-form {
@@ -794,8 +824,31 @@ input[type=number] {
 }
 
 #search-form-results {
+    position: relative;
     width: 100%;
+    height: 100%;
     float: left;
+}
+
+#search-form-results.subset-swath {
+    width: 80%;
+}
+
+#subset-swath-popup {
+    display: none;
+    height: 100%;
+    width: 20%;
+    float: left;
+    overflow-y: auto;
+}
+
+#subset-swath-table td {
+    word-break: break-all;
+    border-bottom: 1px solid #eee;
+}
+
+#subset-swath-popup.subset-swath {
+    display: block;
 }
 
 #search-form-results-table {
@@ -806,7 +859,20 @@ input[type=number] {
     position: fixed;
 }
 
-.minimize-button, .maximize-button {
+.flight-direction {
+    height: 30px;
+    float: left;
+}
+
+.show-children-button {
+    background-color: blue;
+    height: 30px;
+    width: 50%;
+    float: right;
+}
+
+.minimize-button,
+.maximize-button {
     padding: 0 !important;
     border: 0 !important;
     width: 16px;
@@ -827,7 +893,7 @@ input[type=number] {
     position: absolute;
     right: 50%;
     bottom: 10px;
-    z-index: 99;
+    z-index: 98;
     width: 100px;
     background-color: white;
     border: none;
@@ -874,11 +940,13 @@ input[type=number] {
     /*width: 170px;*/
 }
 
+
 /*take out popup area name table top line*/
 
 .mapboxgl-popup-content tr td {
     border-top: none !important;
 }
+
 
 /*area information popup with tabs*/
 
@@ -935,59 +1003,73 @@ ul.tab li a:focus,
     float: left;
 }
 
+
 /* fixed table headers */
+
 section.fixed-header-table {
-  position: relative;
-  border: 1px solid #000;
-  padding-top: 37px;
-  background: gray;
+    height: 100%;
+    position: relative;
+    border: 1px solid #000;
+    padding-top: 37px;
+    background: gray;
 }
+
 section.fixed-header-table.positioned {
-  position: absolute;
-  top:100px;
-  left:100px;
-  width:100%;
-  box-shadow: 0 0 15px #333;
+    position: absolute;
+    top: 100px;
+    left: 100px;
+    width: 100%;
+    box-shadow: 0 0 15px #333;
 }
+
 .fixed-header-table-container {
-  overflow-y: auto;
-  height: 200px;
-  width: 100%;
-  background-color: white;
+    overflow-y: auto;
+    height: 100%;
+    width: 100%;
+    background-color: white;
 }
+
 .fixed-header-table-container table {
-  border-spacing: 0;
-  width: 100%;
+    border-spacing: 0;
+    width: 100%;
 }
+
 .fixed-header-table-container td + .fixed-header-table-container td {
-  border-left: 1px solid #eee;
+    /*border-left: 1px solid #eee;*/
 }
-.fixed-header-table-container td, .fixed-header-table-container th {
-  border-bottom: 1px solid #eee;
-  color: #000;
-  padding: 10px 25px;
-}
+
+.fixed-header-table-container td,
 .fixed-header-table-container th {
-  height: 0 !important;
-  line-height: 0 !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  color: transparent;
-  border: none;
-  white-space: nowrap;
+    border-bottom: 1px solid #eee;
+    color: #000;
+    border-left: 10px;
 }
+
+.fixed-header-table-container th {
+    height: 0 !important;
+    line-height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    color: transparent;
+    border: none;
+    white-space: nowrap;
+}
+
 .fixed-header-table-container th div {
-  position: absolute;
-  background: transparent;
-  color: #fff;
-  padding: 9px 25px;
-  top: 0;
-  margin-left: -25px;
-  line-height: normal;
-  border-left: 1px solid white;
-  font-size: 12px;
+    position: absolute;
+    background: transparent;
+    color: #fff;
+    padding: 9px 25px;
+    top: 0;
+    margin-left: -25px;
+    line-height: normal;
+    border-left: 1px solid white;
+    font-size: 12px;
 }
+
 .fixed-header-table-container th:first-child div {
-  border: none;
+    border: none;
 }
+
+
 /* -------------------------------------------------- */

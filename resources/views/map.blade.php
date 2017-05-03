@@ -254,9 +254,15 @@
           </table>
         </div>
       </section>
+      <div class="top-right-buttons">
+        <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-minimize-button"></button>
+      </div>
     </div>
-    <div class="top-right-buttons">
-      <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-minimize-button"></button>
+    <div id="subset-swath-popup">
+      <table id="subset-swath-table">
+        <tbody>
+        </tbody>
+      </table>
     </div>
   </div>
   <div id="color-scale">
