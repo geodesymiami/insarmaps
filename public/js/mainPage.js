@@ -768,8 +768,18 @@ function slideFunction(event, ui) {
     }
 }
 
+function showBrowserAlert() {
+    var isChrome = !!window.chrome && !!window.chrome.webstore
+    if (!isChrome && !localStorage.getItem("showedBrowserAlert")) {
+        alert("Warning: This website relies on Mapbox GL JS, which in turn relies on WebGL. As it stands,"
+            + "Google Chrome offers the best compatibility when browsing this site.");
+        localStorage.setItem("showedBrowserAlert", "true");
+    }
+}
 // when site loads, turn toggle on
 $(window).load(function() {
+    showBrowserAlert();
+
     $(window).on('hashchange', function(e) {
         history.replaceState("", document.title, e.originalEvent.oldURL);
     });
