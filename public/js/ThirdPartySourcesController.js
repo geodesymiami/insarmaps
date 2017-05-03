@@ -120,7 +120,7 @@ function ThirdPartySourcesController(map) {
         var y = vec1.y + vec2.y;
         var magnitude = Math.sqrt(x * x + y * y);
         const RAD_TO_ANGLE = 180 / Math.PI;
-        var angle = Math.atan(y / x) * RAD_TO_ANGLE;
+        var angle = ((Math.atan2(y, x)) % (2 * Math.PI)) * RAD_TO_ANGLE;
 
         var retVector = {
             x: x,
@@ -242,7 +242,10 @@ function ThirdPartySourcesController(map) {
                             },
                             "icon-rotate": {
                                 "property": "angle",
-                                "stops": [[0, 0], [360, 360]]
+                                "stops": [
+                                    [0, 0],
+                                    [360, 360]
+                                ]
                             }
                         }
                     }, layerID); // make sure arrow comes under the circle
@@ -560,7 +563,7 @@ function ThirdPartySourcesController(map) {
             html = "Mag: " + props.mag + "<br>Depth: " + props.depth;
         } else {
             coordinates = null;
-	    html = null;
+            html = null;
         }
 
         var featureViewOptions = {
