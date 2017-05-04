@@ -371,9 +371,18 @@ function Map(loadJSONFunc) {
         // if we have data_footprint, then show all data footprints associated
         // with this area's scene_footprint
         var scene_footprint = attributesController.getAttribute("scene_footprint");
-        var childFeatures = this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint];
+        var subsetFeatures = this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint];
 
-        return childFeatures;
+        return subsetFeatures;
+    };
+
+    this.addSubsetSwaths = function(feature) {
+        var subsetFeatures = this.getSubsetFeatures(feature);
+        subsetFeatures = subsetFeatures.slice(0); // clone it to prevent infinite loop when we add to the hashmap
+        var json = {
+            "areas": subsetFeatures
+        };
+        this.addSwathsFromJSON(json);
     };
 
     this.clickOnAnAreaMarker = function(e) {
@@ -401,17 +410,13 @@ function Map(loadJSONFunc) {
         // remove cluster count check if you remove clustering
         var frameFeature = this.getFirstPolygonFrameAtPoint(features);
         if (frameFeature) {
-            var subsets = this.getSubsetFeatures(frameFeature);
+            var subsetFeatures = this.getSubsetFeatures(frameFeature);
 
             // if dataset has child features then it must have more than 1 according to Yunjun, otherwise, the child
             // isn't really a child
             if (subsets && subsets.length > 1) {
                 this.removeAreaMarkers();
-                childFeatures = childFeatures.slice(0); // clone it to prevent infinite loop when we add to the hashmap
-                var json = {
-                    "areas": childFeatures
-                };
-                this.addSwathsFromJSON(json);
+                this.addSubsetFeatures(frameFeature);
             } else {
                 this.determineZoomOutZoom();
 
@@ -561,20 +566,6 @@ function Map(loadJSONFunc) {
             var polygonGeoJSON = Terraformer.WKT.parse(scene_footprint);
             var lineStringGeoJSON = this.polygonToLineString(polygonGeoJSON);
 
-            if (attributesController.areaHasAttribute("data_footprint")) {
-                var data_footprint = attributesController.getAttribute("data_footprint");
-                // make the scene footprint the previous data_footprint and delete the data_footprint
-                var areaClone = JSON.parse(JSON.stringify(area));
-                areaClone.properties.extra_attributes.scene_footprint = data_footprint;
-                areaClone.properties.extra_attributes.data_footprint = null;
-
-                if (!this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint]) {
-                    this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint] = [areaClone];
-                } else {
-                    this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint].push(areaClone);
-                }
-            }
-
             var properties = area.properties;
 
             var id = "areas" + properties.unavco_name;
@@ -602,6 +593,21 @@ function Map(loadJSONFunc) {
             };
 
             features.push(feature);
+
+            if (attributesController.areaHasAttribute("data_footprint")) {
+                var data_footprint = attributesController.getAttribute("data_footprint");
+                // make the scene footprint the previous data_footprint and delete the data_footprint
+                var areaClone = JSON.parse(JSON.stringify(feature));
+                areaClone.properties.extra_attributes.scene_footprint = data_footprint;
+                areaClone.properties.extra_attributes.data_footprint = null;
+
+                if (!this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint]) {
+                    this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint] = [areaClone];
+                } else {
+                    this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint].push(areaClone);
+                }
+            }
+
             searchFormController.generateMatchingAreaHTML(attributes, feature);
 
             // exclude this area from showing on the map, but we still want to add it
