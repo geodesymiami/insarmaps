@@ -165,6 +165,11 @@ function ThirdPartySourcesController(map) {
                     if (resultant.angle < 0) {
                         resultant.angle += 360;
                     }
+
+                    // mapbox only allows clockwise rotations. this math
+                    // gives us the angle to rotate by to achieve same angle as unit
+                    // circle angle that vector math gives us
+                    resultant.angle = 360 + 90 - resultant.angle;
                     // column 14 according to Midas readme
                     var uncertainty = parseFloat(fields[13]);
                     var stationName = fields[0];
@@ -237,7 +242,7 @@ function ThirdPartySourcesController(map) {
                                 "property": "mag",
                                 "stops": [
                                     [0.0, 0.1],
-                                    [0.05, 10]
+                                    [0.05, 5]
                                 ]
                             },
                             "icon-rotate": {
@@ -246,7 +251,8 @@ function ThirdPartySourcesController(map) {
                                     [0, 0],
                                     [360, 360]
                                 ]
-                            }
+                            },
+                            "icon-allow-overlap": true
                         }
                     }, layerID); // make sure arrow comes under the circle
                 }

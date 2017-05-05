@@ -13,6 +13,10 @@ button {
     cursor: pointer;
 }
 
+button:focus {
+    outline: none !important;
+}
+
 h1.title {
     font-size: 32px;
     margin-bottom: 2em;
