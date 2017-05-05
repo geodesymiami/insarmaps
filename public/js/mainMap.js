@@ -542,6 +542,7 @@ function Map(loadJSONFunc) {
             data: {}
         };
         var features = [];
+        var featureAttributes = [];
 
         var attributesController = new AreaAttributesController(this, json.areas[0]);
         var searchFormController = new SearchFile();
@@ -593,6 +594,7 @@ function Map(loadJSONFunc) {
             };
 
             features.push(feature);
+            featureAttributes.push(attributes);
 
             if (attributesController.areaHasAttribute("data_footprint")) {
                 var data_footprint = attributesController.getAttribute("data_footprint");
@@ -608,8 +610,6 @@ function Map(loadJSONFunc) {
                 }
             }
 
-            searchFormController.generateMatchingAreaHTML(attributes, feature);
-
             // exclude this area from showing on the map, but we still want to add it
             // to our areaFeatures array so we can highlight the current area
             if (toExclude != null && toExclude.indexOf(area.properties.unavco_name) != -1) {
@@ -622,6 +622,12 @@ function Map(loadJSONFunc) {
             swath.display();
 
             this.areaMarkerLayer.addSwath(swath);
+        }
+
+        for (var i = 0; i < features.length; i++) {
+            var attributes = featureAttributes[i];
+            var feature = features[i];
+            searchFormController.generateMatchingAreaHTML(attributes, feature);
         }
 
         // make search form table highlight on hover
