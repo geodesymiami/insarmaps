@@ -418,7 +418,7 @@ function Map(loadJSONFunc) {
             // isn't really a child
             if (subsetFeatures && subsetFeatures.length > 1) {
                 this.removeAreaMarkers();
-                this.addSubsetSwaths(frameFeature);
+                this.addSubsetSwaths(frameFeature, false);
             } else {
                 this.determineZoomOutZoom();
 
@@ -595,7 +595,7 @@ function Map(loadJSONFunc) {
             if (attributesController.areaHasAttribute("data_footprint")) {
                 var data_footprint = attributesController.getAttribute("data_footprint");
                 // make the scene footprint the previous data_footprint and delete the data_footprint
-                var areaClone = JSON.parse(JSON.stringify(feature));
+                var areaClone = JSON.parse(JSON.stringify(area));
                 areaClone.properties.extra_attributes.scene_footprint = data_footprint;
                 areaClone.properties.extra_attributes.data_footprint = null;
 
@@ -686,11 +686,11 @@ function Map(loadJSONFunc) {
     };
 
     this.loadSwathsInCurrentViewport = function(populateTable) {
-        if (this.areaSwathsLoaded()) {
-            var bounds = this.map.getBounds();
-            var bbox = [bounds._ne, bounds._sw];
-            this.areaFilterSelector.filterAreasInBrowser(bbox, populateTable);
-        }
+
+        var bounds = this.map.getBounds();
+        var bbox = [bounds._ne, bounds._sw];
+        this.areaFilterSelector.filterAreasInBrowser(bbox, populateTable);
+
     };
 
     this.addMapToPage = function(containerID) {
@@ -762,6 +762,10 @@ function Map(loadJSONFunc) {
                 this.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.unavco_name);
                 this.areaMarkerLayer.setPolygonHighlighted(frameFeature.properties.layerID, "rgba(0, 0, 255, 0.3)");
                 this.map.getCanvas().style.cursor = "pointer";
+                var subsetFeatures = this.getSubsetFeatures(frameFeature);
+                if (subsetFeatures && subsetFeatures.length > 1) {
+                    this.addSubsetSwaths(frameFeature, true);
+                }
             } else {
                 var featureViewOptions = this.thirdPartySourcesController.featureToViewOptions(features[0]);
                 if (featureViewOptions.coordinates) {
@@ -780,7 +784,9 @@ function Map(loadJSONFunc) {
         this.map.on('zoomend', function() {
             var currentZoom = this.map.getZoom();
 
-            this.loadSwathsInCurrentViewport(true);
+            if (this.areaSwathsLoaded()) {
+                this.loadSwathsInCurrentViewport(true);
+            }
             // reshow area markers once we zoom out enough
             if (currentZoom < this.zoomOutZoom) {
                 if (this.pointsLoaded()) {
