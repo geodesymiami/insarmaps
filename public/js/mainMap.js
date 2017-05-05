@@ -607,15 +607,13 @@ function Map(loadJSONFunc) {
                 }
             }
 
-            if (!siblingAlreadyThere) {
-                features.push(feature);
-            }
             // exclude this area from showing on the map, but we still want to add it
             // to our areaFeatures array so we can highlight the current area
-            if (toExclude != null && toExclude.indexOf(area.properties.unavco_name) != -1) {
+            if (toExclude != null && toExclude.indexOf(area.properties.unavco_name) != -1 || siblingAlreadyThere) {
                 continue;
             }
 
+            features.push(feature);
             // if dataset loaded, insert areas before dataset layer
             var swathWidth = 3;
             var swath = new Swath(this, attributes.mission, swathWidth, feature, id);
@@ -685,6 +683,14 @@ function Map(loadJSONFunc) {
             }
         }.bind(this);
         this.map.on("render", renderHandler);
+    };
+
+    this.loadSwathsInCurrentViewport = function(populateTable) {
+        if (this.areaSwathsLoaded()) {
+            var bounds = this.map.getBounds();
+            var bbox = [bounds._ne, bounds._sw];
+            this.areaFilterSelector.filterAreasInBrowser(bbox, populateTable);
+        }
     };
 
     this.addMapToPage = function(containerID) {
@@ -774,11 +780,7 @@ function Map(loadJSONFunc) {
         this.map.on('zoomend', function() {
             var currentZoom = this.map.getZoom();
 
-            if (this.areaSwathsLoaded()) {
-                var bounds = this.map.getBounds();
-                var bbox = [bounds._ne, bounds._sw];
-                this.areaFilterSelector.filterAreasInBrowser(bbox);
-            }
+            this.loadSwathsInCurrentViewport(true);
             // reshow area markers once we zoom out enough
             if (currentZoom < this.zoomOutZoom) {
                 if (this.pointsLoaded()) {
@@ -821,9 +823,7 @@ function Map(loadJSONFunc) {
             });
 
             if (this.areas) {
-                var bounds = this.map.getBounds();
-                var bbox = [bounds._ne, bounds._sw];
-                this.areaFilterSelector.filterAreasInBrowser(bbox);
+                this.loadSwathsInCurrentViewport(true);
             }
         }.bind(this));
     };

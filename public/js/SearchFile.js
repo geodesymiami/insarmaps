@@ -197,6 +197,7 @@ function SearchFile(container) {
     this.makeTableRowsInteractive = function() {
         $("#search-form-results-table tr").hover(function() {
             if ($(this).hasClass("have-subsets")) {
+                loadedSwathsInCurrentViewPort = false;
                 $("#search-form-and-results-container").addClass("subset-swath");
                 $("#search-form-results").addClass("subset-swath");
                 $("#subset-swath-popup").addClass("subset-swath");
@@ -204,6 +205,7 @@ function SearchFile(container) {
                 $("#search-form-and-results-container").removeClass("subset-swath");
                 $("#search-form-results").removeClass("subset-swath");
                 $("#subset-swath-popup").removeClass("subset-swath");
+                myMap.loadSwathsInCurrentViewport(false);
             }
             searchTableHoverIn(this);
         }, function() {

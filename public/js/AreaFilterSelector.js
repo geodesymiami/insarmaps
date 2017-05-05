@@ -48,7 +48,7 @@ function setUpAreaFilterSelector() {
         this.finish(bbox);
     };
 
-    AreaFilterSelector.prototype.filterAreasInBrowser = function(bbox) {
+    AreaFilterSelector.prototype.filterAreasInBrowser = function(bbox, populateTable) {
         var polygon = this.squareBboxToMapboxPolygon(bbox);
         var searchWithin = {
             "type": "FeatureCollection",
@@ -66,7 +66,7 @@ function setUpAreaFilterSelector() {
             };
             var filter = currentArea ? [currentArea.properties.unavco_name] : null;
 
-            this.map.addSwathsFromJSON(json, filter, true);
+            this.map.addSwathsFromJSON(json, filter, populateTable);
         }
     };
 }

@@ -846,6 +846,11 @@ input[type=number] {
     overflow-y: auto;
 }
 
+#subset-swath-table > thead > tr {
+    background-color: gray;
+    color: white;
+}
+
 #subset-swath-table td {
     word-break: break-all;
     border-bottom: 1px solid #eee;
