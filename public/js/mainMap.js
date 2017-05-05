@@ -414,7 +414,7 @@ function Map(loadJSONFunc) {
 
             // if dataset has child features then it must have more than 1 according to Yunjun, otherwise, the child
             // isn't really a child
-            if (subsets && subsets.length > 1) {
+            if (subsetFeatures && subsetFeatures.length > 1) {
                 this.removeAreaMarkers();
                 this.addSubsetFeatures(frameFeature);
             } else {
