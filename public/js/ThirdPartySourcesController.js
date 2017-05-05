@@ -1,6 +1,23 @@
 function ThirdPartySourcesController(map) {
     this.map = map;
     this.cancellableAjax = new CancellableAjax();
+    this.layerOrder = ["gpsStations", "midas", "midasWithArrows", "midasWithArrows", "USGSEarthquake", "IGEPNEarthquake",
+                        "HawaiiReloc"];
+
+    this.getLayerOnTopOf = function(layer) {
+        for (var i = this.layerOrder.length - 1; i >= 0; i--) {
+            if (this.layerOrder[i] === layer) {
+                var j = i - 1;
+                while (!this.map.map.getLayer(this.layerOrder[j]) && j > -1) {
+                    j--;
+                }
+
+                return j == -1 ? null : this.layerOrder[j];
+            }
+        }
+
+        return null;
+    };
 
     this.addGPSStationMarkers = function(stations) {
         var features = [];
@@ -216,7 +233,12 @@ function ThirdPartySourcesController(map) {
                 };
 
                 var layerID = "midas";
+                if (loadVelocityArrows) {
+                    layerID += "withArrows";
+                }
+
                 var stops = this.map.colorScale.getMapboxStops();
+                var before = this.getLayerOnTopOf(layerID);
                 this.map.map.addSource(layerID, mapboxStationFeatures);
                 this.map.map.addLayer({
                     "id": layerID,
@@ -229,7 +251,7 @@ function ThirdPartySourcesController(map) {
                         },
                         "circle-radius": 5
                     }
-                });
+                }, before);
 
                 if (loadVelocityArrows) {
                     this.map.map.addLayer({
@@ -274,13 +296,15 @@ function ThirdPartySourcesController(map) {
         });
     };
 
-    this.removemidasGpsStationMarkers = function() {
+    this.removemidasGpsStationMarkers = function(removeArrows) {
         var name = "midas";
 
-        this.map.removeSourceAndLayer(name);
-
-        if (this.map.map.getLayer(name + "-arrows")) {
+        if (removeArrows) {
+            name += "withArrows";
             this.map.map.removeLayer(name + "-arrows");
+            this.map.removeSourceAndLayer(name);
+        } else {
+            this.map.removeSourceAndLayer(name);
         }
     };
 
@@ -310,6 +334,7 @@ function ThirdPartySourcesController(map) {
                 };
 
                 var layerID = "USGSEarthquake";
+                var before = this.getLayerOnTopOf(layerID);
                 this.map.map.addSource(layerID, mapboxStationFeatures);
                 this.map.map.addLayer({
                     "id": layerID,
@@ -327,7 +352,7 @@ function ThirdPartySourcesController(map) {
                         "circle-color": "red",
                         "circle-radius": 5
                     }
-                });
+                }, before);
 
                 hideLoadingScreen();
             }.bind(this),
@@ -397,6 +422,7 @@ function ThirdPartySourcesController(map) {
                 var stops = this.map.colorScale.getIGEPNMapboxStops(0, 50);
 
                 var layerID = "IGEPNEarthquake";
+                var before = this.getLayerOnTopOf(layerID);
                 this.map.map.addSource(layerID, mapboxStationFeatures);
                 this.map.map.addLayer({
                     "id": layerID,
@@ -417,7 +443,7 @@ function ThirdPartySourcesController(map) {
                             ]
                         }
                     }
-                });
+                }, before);
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -454,6 +480,7 @@ function ThirdPartySourcesController(map) {
                 var stops = this.map.colorScale.getIGEPNMapboxStops(0, 50);
 
                 var layerID = "HawaiiReloc";
+                var before = this.getLayerOnTopOf(layerID);
                 this.map.map.addSource(layerID, mapboxStationFeatures);
                 this.map.map.addLayer({
                     "id": layerID,
@@ -474,7 +501,7 @@ function ThirdPartySourcesController(map) {
                             ]
                         }
                     }
-                });
+                }, before);
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
