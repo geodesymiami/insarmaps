@@ -418,7 +418,7 @@ function Map(loadJSONFunc) {
             // isn't really a child
             if (subsetFeatures && subsetFeatures.length > 1) {
                 this.removeAreaMarkers();
-                this.addSubsetFeatures(frameFeature);
+                this.addSubsetSwaths(frameFeature);
             } else {
                 this.determineZoomOutZoom();
 

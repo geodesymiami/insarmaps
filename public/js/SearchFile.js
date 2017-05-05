@@ -269,7 +269,6 @@ function SearchFile(container) {
 
     this.populateSearchResultsTable = function(features) {
         $("#search-form-results-table tbody").empty();
-        console.log(features);
         for (var i = 0; i < features.length; i++) {
             var feature = features[i];
             this.generateMatchingAreaHTML(feature);

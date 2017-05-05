@@ -1,8 +1,9 @@
 function ThirdPartySourcesController(map) {
     this.map = map;
     this.cancellableAjax = new CancellableAjax();
-    this.layerOrder = ["gpsStations", "midas", "midasWithArrows", "midasWithArrows", "USGSEarthquake", "IGEPNEarthquake",
-                        "HawaiiReloc"];
+    this.layerOrder = ["HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake", "midasWithArrows",
+        "midasWithArrows", "midas", "gpsStations"
+    ];
 
     this.getLayerOnTopOf = function(layer) {
         for (var i = this.layerOrder.length - 1; i >= 0; i--) {
@@ -36,6 +37,7 @@ function ThirdPartySourcesController(map) {
                 };
 
                 var layerID = "gpsStations";
+                var before = this.getLayerOnTopOf(layerID);
                 this.map.map.addSource(layerID, mapboxStationFeatures);
                 this.map.map.addLayer({
                     "id": layerID,
@@ -45,7 +47,7 @@ function ThirdPartySourcesController(map) {
                         "circle-color": "blue",
                         "circle-radius": 5
                     }
-                });
+                }, before);
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -480,7 +482,6 @@ function ThirdPartySourcesController(map) {
                 var stops = this.map.colorScale.getIGEPNMapboxStops(0, 50);
 
                 var layerID = "HawaiiReloc";
-                var before = this.getLayerOnTopOf(layerID);
                 this.map.map.addSource(layerID, mapboxStationFeatures);
                 this.map.map.addLayer({
                     "id": layerID,
@@ -501,7 +502,7 @@ function ThirdPartySourcesController(map) {
                             ]
                         }
                     }
-                }, before);
+                });
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
