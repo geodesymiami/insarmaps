@@ -118,32 +118,31 @@ function SearchFile(container) {
     };
 
     this.populateSubsetPopup = function(mainFeature, subsetFeatures) {
-        $(".show-children-button#" + mainFeature.properties.unavco_name).hover(function(e) {
+        $("#" + mainFeature.properties.unavco_name + "-search-row").hover(function() {
             myMap.addSubsetSwaths(mainFeature, false);
-
-            $subsetSwathPopup = $("#subset-swath-popup");
-            if (!$subsetSwathPopup.hasClass("subset-swath")) {
-                $("#search-form-and-results-container").toggleClass("subset-swath");
-                $("#search-form-results").toggleClass("subset-swath");
-                $subsetSwathPopup.addClass("subset-swath");
-            }
 
             $subsetSwathTableBody = $("#subset-swath-table > tbody").empty();
             var rowID = mainFeature.properties.unavco_name + "-search-subset-row";
             var attributesController = new AreaAttributesController(myMap, mainFeature);
-            var attributes = attributesController.getAllAttributes();
-            var html = "<tr id='" + rowID + "'>";
-            html += "<td>" + attributes.first_date + "</td>";
-            html += "<td>" + attributes.last_date + "</td>";
-            html += "<td>" + attributes.unavco_name + "</td>";
-            html += "</tr>";
-            $subsetSwathTableBody.append(html);
 
-            $("#" + rowID).click(function() {
-                if (!currentArea || (mainFeature.properties.layerID != currentArea.properties.layerID) && !myMap.pointsLoaded()) {
-                    getGEOJSON(mainFeature);
-                }
+            subsetFeatures.forEach(function(subsetFeature) {
+                var rowID = subsetFeature.properties.unavco_name + "-search-subset-row";
+                var attributes = attributesController.getAllAttributes();
+                var html = "<tr id='" + rowID + "'>";
+                html += "<td>" + attributes.first_date + "</td>";
+                html += "<td>" + attributes.last_date + "</td>";
+                html += "<td>" + attributes.unavco_name + "</td>";
+                html += "</tr>";
+                $subsetSwathTableBody.append(html);
+
+                $("#" + rowID).css({ cursor: "pointer" });
+                $("#" + rowID).click(function() {
+                    if (!currentArea || (subsetFeature.properties.layerID != currentArea.properties.layerID) && !myMap.pointsLoaded()) {
+                        getGEOJSON(subsetFeature);
+                    }
+                });
             });
+
             var $tr = $("#subset-swath-table > tbody tr");
             $tr.css({ cursor: "pointer" });
             // make search form table highlight on hover
@@ -159,8 +158,10 @@ function SearchFile(container) {
      * Given dictionary of attributes, generate HTML row displaying dataset with those attributes
      * @param {Array} fileAttributes - if user inputs at least one search criteria, null otherwise
      */
-    this.generateMatchingAreaHTML = function(fileAttributes, area) {
+    this.generateMatchingAreaHTML = function(area) {
 
+        var attributesController = new AreaAttributesController(myMap, area);
+        fileAttributes = attributesController.getAllAttributes();
         var satellite = fileAttributes.mission;
         var relative_orbit = fileAttributes.relative_orbit;
         var first_frame = fileAttributes.first_frame ? fileAttributes.first_frame : fileAttributes.frame;
@@ -175,7 +176,7 @@ function SearchFile(container) {
         var subsetFeatures = myMap.getSubsetFeatures(area);
         var haveSubsets = subsetFeatures && subsetFeatures.length > 1;
         if (haveSubsets) {
-            html = "<tr id='" + rowID + "'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
+            html = "<tr id='" + rowID + "' class='have-subsets'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
                 first_frame + "</td><td>" + mode + "</td><td><div class='flight-direction'>" + flight_direction +
                 "</div><div class='show-children-button caret' id='" + unavco_name + "'></div></td></tr>";
         }
@@ -191,6 +192,25 @@ function SearchFile(container) {
         if (haveSubsets) {
             this.populateSubsetPopup(area, subsetFeatures);
         }
+    };
+
+    this.makeTableRowsInteractive = function() {
+        $("#search-form-results-table tr").hover(function() {
+            if ($(this).hasClass("have-subsets")) {
+                $("#search-form-and-results-container").addClass("subset-swath");
+                $("#search-form-results").addClass("subset-swath");
+                $("#subset-swath-popup").addClass("subset-swath");
+            } else {
+                $("#search-form-and-results-container").removeClass("subset-swath");
+                $("#search-form-results").removeClass("subset-swath");
+                $("#subset-swath-popup").removeClass("subset-swath");
+            }
+            searchTableHoverIn(this);
+        }, function() {
+            searchTableHoverOut(this);
+        });
+
+        $("#search-form-results-table").trigger("update");
     };
 
     this.search = function() {
@@ -242,15 +262,20 @@ function SearchFile(container) {
             }
         }
 
-        $("#search-form-results-table tr").hover(function() {
-            searchTableHoverIn(this);
-        }, function() {
-            searchTableHoverOut(this);
-        });
-
-        $("#search-form-results-table").trigger("update");
+        this.makeTableRowsInteractive();
 
         return matchingAreas;
+    };
+
+    this.populateSearchResultsTable = function(features) {
+        $("#search-form-results-table tbody").empty();
+        console.log(features);
+        for (var i = 0; i < features.length; i++) {
+            var feature = features[i];
+            this.generateMatchingAreaHTML(feature);
+        }
+
+        this.makeTableRowsInteractive();
     };
 }
 

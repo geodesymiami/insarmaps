@@ -736,24 +736,9 @@ function search() {
         if (countries.length === 0) {
             return;
         }
-        var attributesController = new AreaAttributesController(myMap, countries[0]);
+
         var searcher = new SearchFile("search-form");
-
-        // empty old results
-        $("#search-form-results-table tbody").empty();
-        for (var i = 0; i < countries.length; i++) {
-            attributesController.setArea(countries[i]);
-            var fileAttributes = attributesController.getAllAttributes();
-            searcher.generateMatchingAreaHTML(fileAttributes, countries[i]);
-        }
-
-        $("#search-form-results-table tr").hover(function() {
-            searchTableHoverIn(this);
-        }, function() {
-            searchTableHoverOut(this);
-        });
-
-        $("#search-form-results-table").trigger("update");
+        searcher.populateSearchResultsTable(countries);
     }
 }
 
