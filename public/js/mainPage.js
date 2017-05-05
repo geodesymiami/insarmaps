@@ -278,7 +278,7 @@ function getGEOJSON(area) {
 
             var attributesController = new AreaAttributesController(myMap, area);
             attributesController.processAttributes();
-            myMap.addSwathsFromJSON(myMap.areas, [area.properties.unavco_name]);
+            myMap.addSwathsFromJSON(myMap.areas, [area.properties.unavco_name], true);
             myMap.areaMarkerLayer.setAreaRowHighlighted(area.properties.layerID);
             // in case someone called loading screen
             hideLoadingScreen();
@@ -998,7 +998,7 @@ $(window).load(function() {
         if ($(this).hasClass("toggled")) {
             if (myMap.areas) {
                 var toExclude = currentArea ? [currentArea.properties.unavco_name] : null;
-                myMap.addSwathsFromJSON(myMap.areas, toExclude);
+                myMap.addSwathsFromJSON(myMap.areas, toExclude, true);
             } else {
                 myMap.loadAreaMarkers(null);
             }

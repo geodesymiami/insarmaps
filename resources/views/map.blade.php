@@ -259,7 +259,20 @@
       </div>
     </div>
     <div id="subset-swath-popup">
-      <table id="subset-swath-table">
+      <table class="table" id="subset-swath-table">
+        <thead>
+          <tr>
+            <th>
+              Start Date
+            </th>
+            <th>
+              End Date
+            </th>
+            <th>
+              Unavco Name
+            </th>
+          </tr>
+        </thead>
         <tbody>
         </tbody>
       </table>

@@ -118,10 +118,8 @@ function SearchFile(container) {
     };
 
     this.populateSubsetPopup = function(mainFeature, subsetFeatures) {
-        $(".show-children-button#" + mainFeature.properties.unavco_name).click(function(e) {
-            e.stopPropagation(); // don't execute click handler of whole row
-
-            myMap.addSubsetSwaths(mainFeature);
+        $(".show-children-button#" + mainFeature.properties.unavco_name).hover(function(e) {
+            myMap.addSubsetSwaths(mainFeature, false);
 
             $subsetSwathPopup = $("#subset-swath-popup");
             if (!$subsetSwathPopup.hasClass("subset-swath")) {
@@ -131,19 +129,25 @@ function SearchFile(container) {
             }
 
             $subsetSwathTableBody = $("#subset-swath-table > tbody").empty();
-            subsetFeatures.forEach(function(subsetFeature) {
-                var rowID = subsetFeature.properties.unavco_name + "-search-subset-row";
-                $subsetSwathTableBody.append("<tr id='" + rowID + "'><td>" + subsetFeature.properties.unavco_name + "</td></tr>");
-                $("#" + rowID).css({ cursor: "pointer" });
-                $("#" + rowID).click(function() {
-                    if (!currentArea || (subsetFeature.properties.layerID != currentArea.properties.layerID) && !myMap.pointsLoaded()) {
-                        getGEOJSON(subsetFeature);
-                    }
-                });
-            });
+            var rowID = mainFeature.properties.unavco_name + "-search-subset-row";
+            var attributesController = new AreaAttributesController(myMap, mainFeature);
+            var attributes = attributesController.getAllAttributes();
+            var html = "<tr id='" + rowID + "'>";
+            html += "<td>" + attributes.first_date + "</td>";
+            html += "<td>" + attributes.last_date + "</td>";
+            html += "<td>" + attributes.unavco_name + "</td>";
+            html += "</tr>";
+            $subsetSwathTableBody.append(html);
 
+            $("#" + rowID).click(function() {
+                if (!currentArea || (mainFeature.properties.layerID != currentArea.properties.layerID) && !myMap.pointsLoaded()) {
+                    getGEOJSON(mainFeature);
+                }
+            });
+            var $tr = $("#subset-swath-table > tbody tr");
+            $tr.css({ cursor: "pointer" });
             // make search form table highlight on hover
-            $("#subset-swath-table tr").hover(function() {
+            $tr.hover(function() {
                 searchTableHoverIn(this);
             }, function() {
                 searchTableHoverOut(this);
@@ -173,7 +177,7 @@ function SearchFile(container) {
         if (haveSubsets) {
             html = "<tr id='" + rowID + "'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
                 first_frame + "</td><td>" + mode + "</td><td><div class='flight-direction'>" + flight_direction +
-                "</div><button class='show-children-button' id='" + unavco_name + "'></button></td></tr>";
+                "</div><div class='show-children-button caret' id='" + unavco_name + "'></div></td></tr>";
         }
 
         $("#search-form-results-table tbody").append(html);

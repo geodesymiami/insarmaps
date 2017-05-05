@@ -376,13 +376,15 @@ function Map(loadJSONFunc) {
         return subsetFeatures;
     };
 
-    this.addSubsetSwaths = function(feature) {
+    this.addSubsetSwaths = function(feature, populateSearchTable) {
         var subsetFeatures = this.getSubsetFeatures(feature);
-        subsetFeatures = subsetFeatures.slice(0); // clone it to prevent infinite loop when we add to the hashmap
-        var json = {
-            "areas": subsetFeatures
-        };
-        this.addSwathsFromJSON(json);
+        if (subsetFeatures) {
+            subsetFeatures = subsetFeatures.slice(0); // clone it to prevent infinite loop when we add to the hashmap
+            var json = {
+                "areas": subsetFeatures
+            };
+            this.addSwathsFromJSON(json, null, populateSearchTable);
+        }
     };
 
     this.clickOnAnAreaMarker = function(e) {
@@ -534,7 +536,7 @@ function Map(loadJSONFunc) {
         return lineStringGeoJSON;
     };
 
-    this.addSwathsFromJSON = function(json, toExclude) {
+    this.addSwathsFromJSON = function(json, toExclude, populateSearchTable) {
         var areaMarker = {
             type: "geojson",
             cluster: false,
@@ -547,9 +549,6 @@ function Map(loadJSONFunc) {
         var attributesController = new AreaAttributesController(this, json.areas[0]);
         var searchFormController = new SearchFile();
 
-        $("#search-form-results-table tbody").empty();
-
-        // console.log(json.areas[0].properties.plot_attributes);
         this.areaMarkerLayer.emptyLayers();
         // clear the map so we can add new keys and values to it
         this.areaMarkerLayer.mapSceneAndDataFootprints = {};
@@ -624,20 +623,23 @@ function Map(loadJSONFunc) {
             this.areaMarkerLayer.addSwath(swath);
         }
 
-        for (var i = 0; i < features.length; i++) {
-            var attributes = featureAttributes[i];
-            var feature = features[i];
-            searchFormController.generateMatchingAreaHTML(attributes, feature);
+        if (populateSearchTable) {
+            $("#search-form-results-table tbody").empty();
+            for (var i = 0; i < features.length; i++) {
+                var attributes = featureAttributes[i];
+                var feature = features[i];
+                searchFormController.generateMatchingAreaHTML(attributes, feature);
+            }
+
+            // make search form table highlight on hover
+            $("#search-form-results-table tr").hover(function() {
+                searchTableHoverIn(this);
+            }, function() {
+                searchTableHoverOut(this);
+            });
+
+            $("#search-form-results-table").trigger("update");
         }
-
-        // make search form table highlight on hover
-        $("#search-form-results-table tr").hover(function() {
-            searchTableHoverIn(this);
-        }, function() {
-            searchTableHoverOut(this);
-        });
-
-        $("#search-form-results-table").trigger("update");
         this.areaFeatures = features;
         populateSearchAutocomplete();
 
@@ -664,7 +666,7 @@ function Map(loadJSONFunc) {
                     this.areas = json;
                 }
 
-                var features = this.addSwathsFromJSON(json, toExclude);
+                var features = this.addSwathsFromJSON(json, toExclude, true);
 
                 if (after) {
                     after(features);
