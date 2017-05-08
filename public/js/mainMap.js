@@ -607,19 +607,18 @@ function Map(loadJSONFunc) {
                 }
             }
 
-            // exclude this area from showing on the map, but we still want to add it
-            // to our areaFeatures array so we can highlight the current area
-            if (toExclude != null && toExclude.indexOf(area.properties.unavco_name) != -1 || siblingAlreadyThere) {
-                continue;
+            if (!siblingAlreadyThere) {
+                features.push(feature);
+
+                var swathWidth = 3;
+                var swath = new Swath(this, attributes.mission, swathWidth, feature, id);
+                this.areaMarkerLayer.addSwath(swath);
+                // exclude this area from showing on the map, but we still want to add it
+                // to our areaFeatures array so we can highlight the current area
+                if (!toExclude  || toExclude.indexOf(area.properties.unavco_name) == -1) {
+                    swath.display();
+                }
             }
-
-            features.push(feature);
-            // if dataset loaded, insert areas before dataset layer
-            var swathWidth = 3;
-            var swath = new Swath(this, attributes.mission, swathWidth, feature, id);
-            swath.display();
-
-            this.areaMarkerLayer.addSwath(swath);
         }
 
         if (populateSearchTable) {
