@@ -2,7 +2,7 @@ function ThirdPartySourcesController(map) {
     this.map = map;
     this.cancellableAjax = new CancellableAjax();
     this.layerOrder = ["HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake", "midas",
-                        "midas-arrows", "gpsStations"
+        "midas-arrows", "gpsStations"
     ];
 
     this.getLayerOnTopOf = function(layer) {
@@ -87,8 +87,8 @@ function ThirdPartySourcesController(map) {
 
             if (fields) {
                 var station = fields[0];
-                var lat = fields[1];
-                var long = fields[2];
+                var lat = parseFloat(fields[1]);
+                var long = parseFloat(fields[2]);
                 var type = "IGS08";
 
                 latLongMap[station] = {
@@ -151,11 +151,56 @@ function ThirdPartySourcesController(map) {
         return retVector;
     };
 
+    this.getArrowGeoJSON = function(startCoordinate, orientation, length) {
+        const DEG_TO_RAD = Math.PI / 180.0;
+        orientation *= DEG_TO_RAD
+        var head = {
+            lng: startCoordinate[0] + (length * Math.cos(orientation)),
+            lat: startCoordinate[1] + (length * Math.sin(orientation))
+        };
+
+        const TIP_LENGTH = length * 0.4;
+        const TIP_ANGLE_OFFSET = 160 * DEG_TO_RAD;
+        const LEFT_TIP_ANGLE = orientation - TIP_ANGLE_OFFSET;
+        const RIGHT_TIP_ANGLE = orientation + TIP_ANGLE_OFFSET;
+
+        var leftTip = {
+            lng: head.lng + (TIP_LENGTH * Math.cos(LEFT_TIP_ANGLE)),
+            lat: head.lat + (TIP_LENGTH * Math.sin(LEFT_TIP_ANGLE))
+        };
+
+        var rightTip = {
+            lng: head.lng + (TIP_LENGTH * Math.cos(RIGHT_TIP_ANGLE)),
+            lat: head.lat + (TIP_LENGTH * Math.sin(RIGHT_TIP_ANGLE))
+        };
+
+        // head is included twice since we need to back track
+        // an alternative is to use multi line string but not sure
+        // if gl js supports this
+        var arrowCoordinates = [
+            startCoordinate, [head.lng, head.lat],
+            [leftTip.lng, leftTip.lat],
+            [head.lng, head.lat],
+            [rightTip.lng, rightTip.lat]
+        ];
+
+        var arrowFeature = {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": arrowCoordinates
+            },
+            "properties": {}
+        };
+
+        return arrowFeature;
+    };
+
     this.parseMidasJSON = function(midasJSON) {
         var midas = midasJSON.midas.split("\n");
         var latLongMap = this.parseIGS08Stations(midasJSON.stationLatLongs);
 
-        var features = [];
+        var features = { "points": [], "arrows": [] };
         for (var i = 0; i < midas.length; i++) {
             var fields = midas[i].match(/\S+/g);
             if (fields) {
@@ -188,7 +233,7 @@ function ThirdPartySourcesController(map) {
                     // mapbox only allows clockwise rotations. this math
                     // gives us the angle to rotate by to achieve same angle as unit
                     // circle angle that vector math gives us
-                    resultant.angle = 360 + 90 - resultant.angle;
+                    var mapboxRotateBy = 360 + 90 - resultant.angle;
                     // column 14 according to Midas readme
                     var uncertainty = parseFloat(fields[13]);
                     var stationName = fields[0];
@@ -203,13 +248,15 @@ function ThirdPartySourcesController(map) {
                             "v": upVelocity,
                             "u": uncertainty,
                             "mag": resultant.mag,
-                            "angle": resultant.angle,
+                            "angle": mapboxRotateBy,
                             "stationName": stationName,
                             "popupHTML": popupHTML
                         }
                     };
 
-                    features.push(feature);
+                    features.points.push(feature);
+                    var arrowLength = resultant.mag * 4;
+                    features.arrows.push(this.getArrowGeoJSON(coordinates, resultant.angle, arrowLength));
                 }
             }
         }
@@ -230,39 +277,32 @@ function ThirdPartySourcesController(map) {
                     cluster: false,
                     data: {
                         "type": "FeatureCollection",
-                        "features": features
+                        "features": []
                     }
                 };
 
                 if (loadVelocityArrows) {
                     var layerID = "midas-arrows";
+                    mapboxStationFeatures.data.features = features.arrows;
                     this.map.map.addSource(layerID, mapboxStationFeatures);
                     var before = this.getLayerOnTopOf(layerID);
                     this.map.map.addLayer({
                         "id": layerID,
-                        "type": "symbol",
+                        "type": "line",
                         "source": layerID,
                         "layout": {
-                            "icon-image": "arrow",
-                            "icon-size": {
-                                "property": "mag",
-                                "stops": [
-                                    [0.0, 0.1],
-                                    [0.05, 5]
-                                ]
-                            },
-                            "icon-rotate": {
-                                "property": "angle",
-                                "stops": [
-                                    [0, 0],
-                                    [360, 360]
-                                ]
-                            },
-                            "icon-allow-overlap": true
-                        }
+                            "line-join": "round",
+                            "line-cap": "round"
+                        },
+                        "paint": {
+                            "line-color": "#000",
+                            "line-width": 2
+                        },
+                        "icon-allow-overlap": true
                     }, before); // make sure arrow comes under the circle
                 } else {
                     var layerID = "midas";
+                    mapboxStationFeatures.data.features = features.points;
                     this.map.map.addSource(layerID, mapboxStationFeatures);
                     var stops = this.map.colorScale.getMapboxStops();
                     var before = this.getLayerOnTopOf(layerID);
