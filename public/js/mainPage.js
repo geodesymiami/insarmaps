@@ -893,10 +893,8 @@ $(window).load(function() {
 
         // minimize subset swath if it is up
         $subsetSwathPopup = $("#subset-swath-popup");
-        if ($subsetSwathPopup.hasClass("subset-swath")) {
-            container.removeClass("subset-swath");
-            $subsetSwathPopup.removeClass("subset-swath");
-            $("#search-form-results").removeClass("subset-swath");
+        if ($subsetSwathPopup.hasClass("active")) {
+            $subsetSwathPopup.removeClass("active");
         }
 
         myMap.map.resize();
