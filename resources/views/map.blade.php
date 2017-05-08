@@ -190,12 +190,12 @@
           <input id = "gps-stations-toggle-button" type="checkbox"/>
         </div>
         <div class="overlay-toggle">
-          <label>MIDAS IGS08 Vertical (UNR)</label>
-          <input id = "midas-stations-toggle-button" type="checkbox"/>
-        </div>
-        <div class="overlay-toggle">
           <label>MIDAS IGS08 Horizontal (UNR)</label>
           <input id = "midas-east-north-stations-toggle-button" type="checkbox"/>
+        </div>
+        <div class="overlay-toggle">
+          <label>MIDAS IGS08 Vertical (UNR)</label>
+          <input id = "midas-stations-toggle-button" type="checkbox"/>
         </div>
         <div class="overlay-toggle">
           <label>USGS 30 Day Earthquake Feed</label>

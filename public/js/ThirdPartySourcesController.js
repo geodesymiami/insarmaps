@@ -1,8 +1,8 @@
 function ThirdPartySourcesController(map) {
     this.map = map;
     this.cancellableAjax = new CancellableAjax();
-    this.layerOrder = ["HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake", "midasWithArrows",
-        "midasWithArrows", "midas", "gpsStations"
+    this.layerOrder = ["HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake", "midas",
+                        "midas-arrows", "gpsStations"
     ];
 
     this.getLayerOnTopOf = function(layer) {
@@ -234,30 +234,12 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
-                var layerID = "midas";
                 if (loadVelocityArrows) {
-                    layerID += "withArrows";
-                }
-
-                var stops = this.map.colorScale.getMapboxStops();
-                var before = this.getLayerOnTopOf(layerID);
-                this.map.map.addSource(layerID, mapboxStationFeatures);
-                this.map.map.addLayer({
-                    "id": layerID,
-                    "type": "circle",
-                    "source": layerID,
-                    "paint": {
-                        "circle-color": {
-                            "property": 'v',
-                            "stops": stops
-                        },
-                        "circle-radius": 5
-                    }
-                }, before);
-
-                if (loadVelocityArrows) {
+                    var layerID = "midas-arrows";
+                    this.map.map.addSource(layerID, mapboxStationFeatures);
+                    var before = this.getLayerOnTopOf(layerID);
                     this.map.map.addLayer({
-                        "id": layerID + "-arrows",
+                        "id": layerID,
                         "type": "symbol",
                         "source": layerID,
                         "layout": {
@@ -278,7 +260,24 @@ function ThirdPartySourcesController(map) {
                             },
                             "icon-allow-overlap": true
                         }
-                    }, layerID); // make sure arrow comes under the circle
+                    }, before); // make sure arrow comes under the circle
+                } else {
+                    var layerID = "midas";
+                    this.map.map.addSource(layerID, mapboxStationFeatures);
+                    var stops = this.map.colorScale.getMapboxStops();
+                    var before = this.getLayerOnTopOf(layerID);
+                    this.map.map.addLayer({
+                        "id": layerID,
+                        "type": "circle",
+                        "source": layerID,
+                        "paint": {
+                            "circle-color": {
+                                "property": 'v',
+                                "stops": stops
+                            },
+                            "circle-radius": 5
+                        }
+                    }, before);
                 }
 
                 this.map.colorScale.setTitle("Vertical Velocity cm/yr");
@@ -302,12 +301,9 @@ function ThirdPartySourcesController(map) {
         var name = "midas";
 
         if (removeArrows) {
-            name += "withArrows";
-            this.map.map.removeLayer(name + "-arrows");
-            this.map.removeSourceAndLayer(name);
-        } else {
-            this.map.removeSourceAndLayer(name);
+            name += "-arrows";
         }
+        this.map.removeSourceAndLayer(name);
     };
 
     this.midasLoaded = function() {
