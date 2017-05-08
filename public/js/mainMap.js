@@ -764,7 +764,11 @@ function Map(loadJSONFunc) {
                 this.map.getCanvas().style.cursor = "pointer";
                 var subsetFeatures = this.getSubsetFeatures(frameFeature);
                 if (subsetFeatures && subsetFeatures.length > 1) {
-                    this.addSubsetSwaths(frameFeature, true);
+                    this.addSubsetSwaths(frameFeature, false);
+                    var searchFormController = new SearchFile();
+                    var rowID = frameFeature.properties.unavco_name + "-search-row";
+                    $("#search-form-results-table #" + rowID).mouseover();
+                    this.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.unavco_name);
                 }
             } else {
                 var featureViewOptions = this.thirdPartySourcesController.featureToViewOptions(features[0]);
