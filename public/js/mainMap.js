@@ -595,7 +595,7 @@ function Map(loadJSONFunc) {
             if (attributesController.areaHasAttribute("data_footprint")) {
                 var data_footprint = attributesController.getAttribute("data_footprint");
                 // make the scene footprint the previous data_footprint and delete the data_footprint
-                var areaClone = JSON.parse(JSON.stringify(area));
+                var areaClone = JSON.parse(JSON.stringify(feature));
                 areaClone.properties.extra_attributes.scene_footprint = data_footprint;
                 areaClone.properties.extra_attributes.data_footprint = null;
 

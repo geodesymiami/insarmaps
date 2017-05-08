@@ -260,7 +260,7 @@ function SearchFile(container) {
             // if all attributes match, add area to array matchingAreas and generate HTML row displaying that area's attributes
             if (attributesMatch) {
                 matchingAreas.push(areas[i]);
-                this.generateMatchingAreaHTML(fileAttributes, areas[i]);
+                this.generateMatchingAreaHTML(areas[i]);
             }
         }
 
