@@ -796,8 +796,8 @@ input[type=number] {
 }
 
 #search-form-and-results-container {
-    display: none;
     /* hide by default */
+    display: none;
     width: 35%;
     height: 35%;
     position: absolute;
@@ -806,10 +806,6 @@ input[type=number] {
     left: 90px;
     /* don't overlap with colorscale div */
     background: white;
-}
-
-#search-form-and-results-container.subset-swath {
-    width: 70%;
 }
 
 #search-form {
@@ -834,16 +830,15 @@ input[type=number] {
     float: left;
 }
 
-#search-form-results.subset-swath {
-    width: 50%;
-}
-
 #subset-swath-popup {
+    position: fixed;
     display: none;
-    height: 100%;
+    height: 30%;
     width: 50%;
     float: left;
     overflow-y: auto;
+    z-index: 99;
+    background-color: white;
 }
 
 #subset-swath-table > thead > tr {
@@ -854,10 +849,6 @@ input[type=number] {
 #subset-swath-table td {
     word-break: break-all;
     border-bottom: 1px solid #eee;
-}
-
-#subset-swath-popup.subset-swath {
-    display: block;
 }
 
 #search-form-results-table {

@@ -43,6 +43,25 @@
 <script type="text/javascript" src="js/GraphsController.js"></script>
 </head>
 <body>
+  <div id="subset-swath-popup">
+    <table class="table" id="subset-swath-table">
+      <thead>
+        <tr>
+          <th>
+            Start Date
+          </th>
+          <th>
+            End Date
+          </th>
+          <th>
+            Unavco Name
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
   <div id="information-div" class="overlay-div">
     <div id="information-div-contents">
       <p>
@@ -257,25 +276,6 @@
       <div class="top-right-buttons">
         <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-minimize-button"></button>
       </div>
-    </div>
-    <div id="subset-swath-popup">
-      <table class="table" id="subset-swath-table">
-        <thead>
-          <tr>
-            <th>
-              Start Date
-            </th>
-            <th>
-              End Date
-            </th>
-            <th>
-              Unavco Name
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
     </div>
   </div>
   <div id="color-scale">

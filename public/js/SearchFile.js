@@ -178,7 +178,7 @@ function SearchFile(container) {
         if (haveSubsets) {
             html = "<tr id='" + rowID + "' class='have-subsets'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
                 first_frame + "</td><td>" + mode + "</td><td><div class='flight-direction'>" + flight_direction +
-                "</div><div class='show-children-button caret' id='" + unavco_name + "'></div></td></tr>";
+                "</div></td></tr>";
         }
 
         $("#search-form-results-table tbody").append(html);
@@ -195,16 +195,23 @@ function SearchFile(container) {
     };
 
     this.makeTableRowsInteractive = function() {
-        $("#search-form-results-table tr").hover(function() {
+        $("#search-form-results-table tr").hover(function(e) {
             if ($(this).hasClass("have-subsets")) {
                 loadedSwathsInCurrentViewPort = false;
-                $("#search-form-and-results-container").addClass("subset-swath");
-                $("#search-form-results").addClass("subset-swath");
-                $("#subset-swath-popup").addClass("subset-swath");
+                $subsetSwathPopup = $("#subset-swath-popup").addClass("active");
+                var rowCoords = $(this).offset();
+                var subsetLeft = rowCoords.left + $(this).width();
+                var $map = $("#map-container");
+                var mapBottom = $map.offset().top + $map.height();
+                var extra = (rowCoords.top + $subsetSwathPopup.height()) % mapBottom;
+                var subsetTop = rowCoords.top;
+
+                if ((subsetTop + $subsetSwathPopup.height()) > mapBottom) {
+                    subsetTop = subsetTop - $subsetSwathPopup.height() + $(this).height();
+                }
+                $subsetSwathPopup.css({ top: subsetTop, left: subsetLeft });
             } else {
-                $("#search-form-and-results-container").removeClass("subset-swath");
-                $("#search-form-results").removeClass("subset-swath");
-                $("#subset-swath-popup").removeClass("subset-swath");
+                $("#subset-swath-popup").removeClass("active");
                 myMap.loadSwathsInCurrentViewport(false);
             }
             searchTableHoverIn(this);
