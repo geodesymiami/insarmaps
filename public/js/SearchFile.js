@@ -117,13 +117,27 @@ function SearchFile(container) {
         return searchAttributes;
     };
 
+    this.loadedSubsets = false;
     this.populateSubsetPopup = function(mainFeature, subsetFeatures) {
-        $("#" + mainFeature.properties.unavco_name + "-search-row").hover(function() {
-            myMap.addSubsetSwaths(mainFeature, false);
-
+        var that = this;
+        $(".show-children-button#" + mainFeature.properties.unavco_name).hover(function() {
             $subsetSwathTableBody = $("#subset-swath-table > tbody").empty();
             var rowID = mainFeature.properties.unavco_name + "-search-subset-row";
             var attributesController = new AreaAttributesController(myMap, mainFeature);
+            var $subsetSwathPopup = $("#subset-swath-popup");
+            if (!$subsetSwathPopup.hasClass("active")) {
+                $subsetSwathPopup.addClass("active");
+                var rowCoords = $(this).offset();
+                var subsetLeft = rowCoords.left + $(this).width();
+                var $map = $("#map-container");
+                var mapBottom = $map.offset().top + $map.height();
+                var subsetTop = rowCoords.top - $(this).position().top;
+
+                if ((subsetTop + $subsetSwathPopup.height()) > mapBottom) {
+                    subsetTop = subsetTop - $subsetSwathPopup.height() + $(this).height();
+                }
+                $subsetSwathPopup.css({ top: subsetTop, left: subsetLeft });
+            }
 
             subsetFeatures.forEach(function(subsetFeature) {
                 var rowID = subsetFeature.properties.unavco_name + "-search-subset-row";
@@ -147,6 +161,11 @@ function SearchFile(container) {
             $tr.css({ cursor: "pointer" });
             // make search form table highlight on hover
             $tr.hover(function() {
+                if (!that.loadedSubsets) {
+                    myMap.addSubsetSwaths(mainFeature, false);
+                    that.loadedSubsets = true;
+                }
+
                 searchTableHoverIn(this);
             }, function() {
                 searchTableHoverOut(this);
@@ -178,7 +197,7 @@ function SearchFile(container) {
         if (haveSubsets) {
             html = "<tr id='" + rowID + "' class='have-subsets'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
                 first_frame + "</td><td>" + mode + "</td><td><div class='flight-direction'>" + flight_direction +
-                "</div></td></tr>";
+                "</div><div class='show-children-button caret' id='" + unavco_name + "'></div></td></tr>";
         }
 
         $("#search-form-results-table tbody").append(html);
@@ -195,24 +214,16 @@ function SearchFile(container) {
     };
 
     this.makeTableRowsInteractive = function() {
+        var that = this;
         $("#search-form-results-table tr").hover(function(e) {
-            if ($(this).hasClass("have-subsets")) {
-                loadedSwathsInCurrentViewPort = false;
-                $subsetSwathPopup = $("#subset-swath-popup").addClass("active");
-                var rowCoords = $(this).offset();
-                var subsetLeft = rowCoords.left + $(this).width();
-                var $map = $("#map-container");
-                var mapBottom = $map.offset().top + $map.height();
-                var extra = (rowCoords.top + $subsetSwathPopup.height()) % mapBottom;
-                var subsetTop = rowCoords.top;
+            var $subsetSwathPopup = $("#subset-swath-popup");
+            if ($subsetSwathPopup.hasClass("active")) {
+                $subsetSwathPopup.removeClass("active");
+            }
 
-                if ((subsetTop + $subsetSwathPopup.height()) > mapBottom) {
-                    subsetTop = subsetTop - $subsetSwathPopup.height() + $(this).height();
-                }
-                $subsetSwathPopup.css({ top: subsetTop, left: subsetLeft });
-            } else {
-                $("#subset-swath-popup").removeClass("active");
+            if (that.loadedSubsets) {
                 myMap.loadSwathsInCurrentViewport(false);
+                that.loadedSubsets = false;
             }
             searchTableHoverIn(this);
         }, function() {
