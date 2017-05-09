@@ -159,7 +159,7 @@ function ThirdPartySourcesController(map) {
             lat: startCoordinate[1] + (length * Math.sin(orientation))
         };
 
-        const TIP_LENGTH = length * 0.4;
+        const TIP_LENGTH = 0.04;
         const TIP_ANGLE_OFFSET = 160 * DEG_TO_RAD;
         const LEFT_TIP_ANGLE = orientation - TIP_ANGLE_OFFSET;
         const RIGHT_TIP_ANGLE = orientation + TIP_ANGLE_OFFSET;
