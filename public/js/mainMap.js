@@ -546,7 +546,7 @@ function Map(loadJSONFunc) {
         var features = [];
 
         var attributesController = new AreaAttributesController(this, json.areas[0]);
-        var searchFormController = new SearchFile();
+        var searchFormController = new SearchFormController();
 
         this.areaMarkerLayer.emptyLayers();
         // clear the map so we can add new keys and values to it
@@ -764,7 +764,7 @@ function Map(loadJSONFunc) {
                 var subsetFeatures = this.getSubsetFeatures(frameFeature);
                 if (subsetFeatures && subsetFeatures.length > 1) {
                     this.addSubsetSwaths(frameFeature, false);
-                    var searchFormController = new SearchFile();
+                    var searchFormController = new SearchFormController();
                     var rowID = frameFeature.properties.unavco_name + "-search-row";
                     $("#search-form-results-table #" + rowID).mouseover();
                     this.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.unavco_name);

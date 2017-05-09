@@ -737,7 +737,7 @@ function search() {
             return;
         }
 
-        var searcher = new SearchFile("search-form");
+        var searcher = new SearchFormController("search-form");
         searcher.populateSearchResultsTable(countries);
     }
 }

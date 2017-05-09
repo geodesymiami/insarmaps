@@ -75,7 +75,7 @@ function searchTableHoverOut(jQueryThis) {
     myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
 }
 
-function SearchFile(container) {
+function SearchFormController(container) {
     this.container = container;
 
     /**
@@ -299,7 +299,7 @@ function SearchFile(container) {
 }
 
 $(window).load(function() {
-    var searcher = new SearchFile("search-form");
+    var searcher = new SearchFormController("search-form");
 
     document.addEventListener("keydown", function(e) {
         var ENTER_KEY = 13;
