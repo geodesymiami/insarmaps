@@ -37,4 +37,17 @@ class ThirdPartyDataNoCorsController extends Controller {
 					"Content-Type"=> "application/json"
 				]);
 	}
+
+	public function getIRISEarthquake($startDate, $endDate) {
+		$url = 'http://service.iris.edu/fdsnws/event/1/query?starttime=' . $startDate . '&endtime=' . $endDate . '&orderby=time&format=text&nodata=404&maxdepth=30&minmag=5';
+
+		$curlSession = curl_init();
+	    curl_setopt($curlSession, CURLOPT_URL, $url);
+	    curl_setopt($curlSession, CURLOPT_BINARYTRANSFER, true);
+	    curl_setopt($curlSession, CURLOPT_RETURNTRANSFER, true);
+	    $data = curl_exec($curlSession);
+	    curl_close($curlSession);
+
+		return $data;
+	}
 }

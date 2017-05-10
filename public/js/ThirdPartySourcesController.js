@@ -1,7 +1,7 @@
 function ThirdPartySourcesController(map) {
     this.map = map;
     this.cancellableAjax = new CancellableAjax();
-    this.layerOrder = ["HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake", "midas",
+    this.layerOrder = ["IRISEarthquake", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake", "midas",
         "midas-arrows", "gpsStations"
     ];
 
@@ -593,7 +593,104 @@ function ThirdPartySourcesController(map) {
         this.map.removeSourceAndLayer(name);
     };
 
+    this.parseIRISEarthquake = function(rawData) {
+        var lines = rawData.split("\n");
+        var features = [];
+
+        // skip first line which name of columns
+        for (var i = 1; i < lines.length; i++) {
+            var attributes = lines[i].split("|");
+            if (attributes && attributes.length > 0 && attributes[0] != "") {
+                var lat = attributes[2];
+                var long = attributes[3];
+                var depth = parseFloat(attributes[4]);
+                var mag = parseFloat(attributes[10]);
+                var coordinates = [long, lat];
+
+                var feature = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": coordinates
+                    },
+                    "properties": {
+                        "depth": depth,
+                        "mag": mag
+                    }
+                };
+
+                features.push(feature);
+            }
+        }
+
+        return features;
+    };
+
+    this.loadIRISEarthquake = function() {
+        var now = new Date();
+        var startDate = new Date();
+        startDate.setFullYear(now.getFullYear() - 2);
+        var nowString = now.toISOString().split('T')[0];
+        var startDateString = startDate.toISOString().split('T')[0];
+
+        showLoadingScreen("Getting IRIS Earthquake Data", "ESCAPE to interrupt");
+        this.cancellableAjax.ajax({
+            url: "/IRISEarthquake/" + startDateString + "/" + nowString,
+            success: function(response) {
+                var features = this.parseIRISEarthquake(response);
+                var mapboxStationFeatures = {
+                    type: "geojson",
+                    cluster: false,
+                    data: {
+                        "type": "FeatureCollection",
+                        "features": features
+                    }
+                };
+
+                var stops = this.map.colorScale.getIGEPNMapboxStops(0, 50);
+
+                var layerID = "IRISEarthquake";
+                this.map.map.addSource(layerID, mapboxStationFeatures);
+                this.map.map.addLayer({
+                    "id": layerID,
+                    "type": "circle",
+                    "source": layerID,
+                    "paint": {
+                        "circle-color": {
+                            "property": "depth",
+                            "stops": stops
+                        },
+                        "circle-radius": {
+                            "property": "mag",
+                            "stops": [
+                                [4, 5],
+                                [4.9, 7],
+                                [5.0, 9],
+                                [5.9, 11]
+                            ]
+                        }
+                    }
+                });
+                hideLoadingScreen();
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                hideLoadingScreen();
+                console.log("failed " + xhr.responseText);
+            }
+        }, function() {
+            hideLoadingScreen();
+            irisEarthquakeToggleButton.click();
+        });
+    };
+
+    this.removeIRISEarthquake = function() {
+        var name = "IRISEarthquake";
+
+        this.map.removeSourceAndLayer(name);
+    };
+
     this.featureToViewOptions = function(feature) {
+        // this is begging to be refactored. maybe a hash map with callbacks?
         var layerID = feature.layer.id;
         var layerSource = feature.layer.source;
         var markerSymbol = feature.properties["marker-symbol"];
@@ -604,10 +701,11 @@ function ThirdPartySourcesController(map) {
         var itsAnUSGSFeature = (layerID === "USGSEarthquake");
         var itsAnIGEPNFeature = (layerID === "IGEPNEarthquake");
         var itsAHawaiiRelocFeature = (layerID === "HawaiiReloc");
+        var itsAnIRISFeature = (layerID === "IRISEarthquake");
         var cursor = (itsAPoint || itsAnreaPolygon ||
             itsAGPSFeature || itsAMidasGPSFeature ||
             itsAnUSGSFeature || itsAnIGEPNFeature ||
-            itsAHawaiiRelocFeature) ? 'pointer' : 'auto';
+            itsAHawaiiRelocFeature || itsAnIRISFeature) ? 'pointer' : 'auto';
 
         // a better way is to have two mousemove callbacks like we do with select area vs select marker
         var html = null;
@@ -628,9 +726,10 @@ function ThirdPartySourcesController(map) {
             var props = feature.properties;
             html = "Mag: " + props.mag + "<br>Depth: " + props.depth + "<br>" + new Date(props.time) +
                 "<br>" + props.title;
-        } else if (itsAHawaiiRelocFeature) {
+        } else if (itsAHawaiiRelocFeature || itsAnIRISFeature) {
             var props = feature.properties;
             html = "Mag: " + props.mag + "<br>Depth: " + props.depth;
+            html += "<br><br>lng: " + feature.geometry.coordinates[0] + "<br>lat: " + feature.geometry.coordinates[1];
         } else {
             coordinates = null;
             html = null;

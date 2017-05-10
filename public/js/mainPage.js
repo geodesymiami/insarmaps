@@ -364,7 +364,8 @@ function ToggleButton(id, container, label) {
         } else {
             throw "invalid toggle option";
         }
-    }
+    };
+
     this.onclick = function(clickFunction) {
         $("#" + this.id).on("click", function() {
             // toggle states
@@ -686,8 +687,14 @@ function setupToggleButtons() {
         }
     });
 
-    irisEarthquakeToggleButton = new ToggleButton();
-
+    irisEarthquakeToggleButton = new ToggleButton("IRIS-earthquake-toggle-button", "overlay-options-toggles", "IRIS Earthquake");
+    irisEarthquakeToggleButton.onclick(function() {
+        if (irisEarthquakeToggleButton.toggleState == ToggleStates.ON) {
+            myMap.thirdPartySourcesController.loadIRISEarthquake();
+        } else {
+            myMap.thirdPartySourcesController.removeIRISEarthquake();
+        }
+    });
 
     recentDatasetsToggleButton = new ToggleButton("recent-datasets-toggle-button")
     recentDatasetsToggleButton.onclick(null);
