@@ -569,6 +569,8 @@ function Map(loadJSONFunc) {
 
             var id = "areas" + properties.unavco_name;
             var polygonID = "areas" + properties.unavco_name + "fill"
+            var center = area.properties.centerOfDataset ?
+                        area.properties.centerOfDataset : area.geometry.coordinates;
 
             var feature = {
                 "type": "Feature",
@@ -576,7 +578,7 @@ function Map(loadJSONFunc) {
                 "properties": {
                     "marker-symbol": "marker",
                     "layerID": id,
-                    "centerOfDataset": area.geometry.coordinates,
+                    "centerOfDataset": center,
                     "unavco_name": properties.unavco_name,
                     "region": properties.region,
                     "project_name": properties.project_name,
@@ -595,15 +597,15 @@ function Map(loadJSONFunc) {
             if (attributesController.areaHasAttribute("data_footprint")) {
                 var data_footprint = attributesController.getAttribute("data_footprint");
                 // make the scene footprint the previous data_footprint and delete the data_footprint
-                var areaClone = JSON.parse(JSON.stringify(feature));
-                areaClone.properties.extra_attributes.scene_footprint = data_footprint;
-                areaClone.properties.extra_attributes.data_footprint = null;
+                var featureClone = JSON.parse(JSON.stringify(feature));
+                featureClone.properties.extra_attributes.scene_footprint = data_footprint;
+                featureClone.properties.extra_attributes.data_footprint = null;
 
                 if (!this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint]) {
-                    this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint] = [areaClone];
+                    this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint] = [featureClone];
                 } else {
                     siblingAlreadyThere = true;
-                    this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint].push(areaClone);
+                    this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint].push(featureClone);
                 }
             }
 
@@ -615,7 +617,7 @@ function Map(loadJSONFunc) {
                 this.areaMarkerLayer.addSwath(swath);
                 // exclude this area from showing on the map, but we still want to add it
                 // to our areaFeatures array so we can highlight the current area
-                if (!toExclude  || toExclude.indexOf(area.properties.unavco_name) == -1) {
+                if (!toExclude || toExclude.indexOf(area.properties.unavco_name) == -1) {
                     swath.display();
                 }
             }
@@ -645,7 +647,7 @@ function Map(loadJSONFunc) {
         this.lastAreasRequest = $.ajax({
             url: "/areas",
             success: function(response) {
-                var json = JSON.parse(response);
+                var json = response;
                 if (!this.areas) {
                     this.areas = json;
                 }
@@ -761,13 +763,14 @@ function Map(loadJSONFunc) {
                 this.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.unavco_name);
                 this.areaMarkerLayer.setPolygonHighlighted(frameFeature.properties.layerID, "rgba(0, 0, 255, 0.3)");
                 this.map.getCanvas().style.cursor = "pointer";
+                var rowID = frameFeature.properties.unavco_name;
+                this.areaMarkerLayer.setAreaRowHighlighted(rowID);
                 var subsetFeatures = this.getSubsetFeatures(frameFeature);
-                if (subsetFeatures && subsetFeatures.length > 1) {
-                    this.addSubsetSwaths(frameFeature, false);
+                if (subsetFeatures && subsetFeatures.length > 1 &&
+                    $("#search-form-and-results-container").hasClass("maximized")) {
                     var searchFormController = new SearchFormController();
-                    var rowID = frameFeature.properties.unavco_name + "-search-row";
-                    $("#search-form-results-table #" + rowID).mouseover();
-                    this.areaMarkerLayer.setAreaRowHighlighted(frameFeature.properties.unavco_name);
+                    $(".show-children-button#" + rowID).mouseover();
+                    searchFormController.populateSubsetPopup(frameFeature, subsetFeatures);
                 }
             } else {
                 var featureViewOptions = this.thirdPartySourcesController.featureToViewOptions(features[0]);

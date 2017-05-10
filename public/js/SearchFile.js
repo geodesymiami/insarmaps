@@ -61,9 +61,9 @@ function searchTableHoverIn(jQueryThis) {
     }
 
     $(jQueryThis).css({ "background-color": "rgba(0, 86, 173, 0.5)" });
-    var id = $(jQueryThis).attr("id");
-    if (id) {
-        var layerID = "areas" + id.split("-search")[0];
+    var className = $(jQueryThis).attr("class");
+    if (className) {
+        var layerID = "areas" + className.split("-search")[0];
         myMap.areaMarkerLayer.setPolygonHighlighted(layerID, "rgba(0, 0, 255, 0.3)");
     }
 }
@@ -117,12 +117,11 @@ function SearchFormController(container) {
         return searchAttributes;
     };
 
-    this.loadedSubsets = false;
     this.populateSubsetPopup = function(mainFeature, subsetFeatures) {
-        var that = this;
-        $(".show-children-button#" + mainFeature.properties.unavco_name).hover(function() {
+        $(".show-children-button#" + mainFeature.properties.unavco_name).hover(function(e) {
+            e.stopPropagation(); // don't trigger hover event of parent
+
             $subsetSwathTableBody = $("#subset-swath-table > tbody").empty();
-            var rowID = mainFeature.properties.unavco_name + "-search-subset-row";
             var attributesController = new AreaAttributesController(myMap, mainFeature);
             var $subsetSwathPopup = $("#subset-swath-popup");
             if (!$subsetSwathPopup.hasClass("active")) {
@@ -140,17 +139,17 @@ function SearchFormController(container) {
             }
 
             subsetFeatures.forEach(function(subsetFeature) {
-                var rowID = subsetFeature.properties.unavco_name + "-search-subset-row";
+                var rowClass = subsetFeature.properties.unavco_name + "-search-row";
                 var attributes = attributesController.getAllAttributes();
-                var html = "<tr id='" + rowID + "'>";
+                var html = "<tr class='" + rowClass + "'>";
                 html += "<td>" + attributes.first_date + "</td>";
                 html += "<td>" + attributes.last_date + "</td>";
                 html += "<td>" + attributes.unavco_name + "</td>";
                 html += "</tr>";
                 $subsetSwathTableBody.append(html);
 
-                $("#" + rowID).css({ cursor: "pointer" });
-                $("#" + rowID).click(function() {
+                $("." + rowClass).css({ cursor: "pointer" });
+                $("." + rowClass).click(function() {
                     if (!currentArea || (subsetFeature.properties.layerID != currentArea.properties.layerID) && !myMap.pointsLoaded()) {
                         getGEOJSON(subsetFeature);
                     }
@@ -161,9 +160,9 @@ function SearchFormController(container) {
             $tr.css({ cursor: "pointer" });
             // make search form table highlight on hover
             $tr.hover(function() {
-                if (!that.loadedSubsets) {
+                if (!SearchFormController.loadedSubsets) {
                     myMap.addSubsetSwaths(mainFeature, false);
-                    that.loadedSubsets = true;
+                    SearchFormController.loadedSubsets = true;
                 }
 
                 searchTableHoverIn(this);
@@ -188,21 +187,21 @@ function SearchFormController(container) {
         var mode = fileAttributes.beam_mode;
         var flight_direction = fileAttributes.flight_direction;
         var unavco_name = area.properties.unavco_name;
-        var rowID = unavco_name + "-search-row";
-        var html = "<tr id='" + rowID + "'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
+        var rowClass = unavco_name + "-search-row";
+        var html = "<tr class='" + rowClass + "'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
             first_frame + "</td><td>" + mode + "</td><td>" + flight_direction + "</td></tr>";
 
         var subsetFeatures = myMap.getSubsetFeatures(area);
         var haveSubsets = subsetFeatures && subsetFeatures.length > 1;
         if (haveSubsets) {
-            html = "<tr id='" + rowID + "' class='have-subsets'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
+            html = "<tr class='" + rowClass + "' class='have-subsets'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
                 first_frame + "</td><td>" + mode + "</td><td><div class='flight-direction'>" + flight_direction +
                 "</div><div class='show-children-button caret' id='" + unavco_name + "'></div></td></tr>";
         }
 
         $("#search-form-results-table tbody").append(html);
-        $("#" + rowID).css({ cursor: "pointer" });
-        $("#" + rowID).click(function() {
+        $("." + rowClass).css({ cursor: "pointer" });
+        $("." + rowClass).click(function() {
             if (!currentArea || (area.properties.layerID != currentArea.properties.layerID) && !myMap.pointsLoaded()) {
                 getGEOJSON(area);
             }
@@ -214,16 +213,15 @@ function SearchFormController(container) {
     };
 
     this.makeTableRowsInteractive = function() {
-        var that = this;
         $("#search-form-results-table tr").hover(function(e) {
             var $subsetSwathPopup = $("#subset-swath-popup");
             if ($subsetSwathPopup.hasClass("active")) {
                 $subsetSwathPopup.removeClass("active");
             }
 
-            if (that.loadedSubsets) {
+            if (SearchFormController.loadedSubsets) {
                 myMap.loadSwathsInCurrentViewport(false);
-                that.loadedSubsets = false;
+                SearchFormController.loadedSubsets = false;
             }
             searchTableHoverIn(this);
         }, function() {
@@ -297,6 +295,9 @@ function SearchFormController(container) {
         this.makeTableRowsInteractive();
     };
 }
+
+// static variable
+SearchFormController.loadedSubsets = false;
 
 $(window).load(function() {
     var searcher = new SearchFormController("search-form");

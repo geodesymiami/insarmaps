@@ -52,7 +52,7 @@ function AreaMarkerLayer(map) {
     };
 
     this.setAreaRowHighlighted = function(row) {
-        var $row = $("#" + row + "-search-row");
+        var $row = $("." + row + "-search-row");
         var rowColor = "rgba(0, 86, 173, 0.5)"
         if (!$row.hasClass("highlighted")) {
             $row.addClass("highlighted");
@@ -73,8 +73,8 @@ function AreaMarkerLayer(map) {
             this.setAreaRowHighlighted(excluding.properties.unavco_name);
         }
 
-        $("#search-form-results-table tr").each(function() {
-            if (!excluding || $(this).attr("id") != excluding.properties.unavco_name + "-search-row") {
+        $("#search-form-results-table > tbody > tr, #subset-swath-table > tbody > tr").each(function() {
+            if (!excluding || $(this).attr("class") != excluding.properties.unavco_name + "-search-row") {
                 $(this).css({ "background-color": "white" });
                 $(this).removeClass("highlighted");
             }

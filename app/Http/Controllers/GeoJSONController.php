@@ -225,7 +225,7 @@ public function getAreas($bbox=NULL) {
       }
     }
 
-    echo json_encode($json);
+    return response()->json($json);
   } catch (\Illuminate\Database\QueryException $e) {
     echo "error getting areas";
   }
