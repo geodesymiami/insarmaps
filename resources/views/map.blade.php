@@ -196,38 +196,6 @@
           <input id='satellite' type='radio' name='rtoggle' value='satellite'/>
           <label for='satellite'>Satellite</label>
         </div>
-        <div class="overlay-toggle">
-          <label>Data overlay</label>
-          <input id = "overlay-toggle-button" type="checkbox" name="overlayToggle"/>
-        </div>
-        <div class="overlay-toggle">
-          <label>Contour lines</label>
-          <input id = "contour-toggle-button" type="checkbox"/>
-        </div>
-        <div class="overlay-toggle">
-          <label>GPS Stations (UNR)</label>
-          <input id = "gps-stations-toggle-button" type="checkbox"/>
-        </div>
-        <div class="overlay-toggle">
-          <label>MIDAS IGS08 Horizontal (UNR)</label>
-          <input id = "midas-east-north-stations-toggle-button" type="checkbox"/>
-        </div>
-        <div class="overlay-toggle">
-          <label>MIDAS IGS08 Vertical (UNR)</label>
-          <input id = "midas-stations-toggle-button" type="checkbox"/>
-        </div>
-        <div class="overlay-toggle">
-          <label>USGS 30 Day Earthquake Feed</label>
-          <input id = "usgs-earthquake-toggle-button" type="checkbox"/>
-        </div>
-        <div class="overlay-toggle">
-          <label>IGEPN Earthquake Feed</label>
-          <input id = "IGEPN-earthquake-toggle-button" type="checkbox"/>
-        </div>
-        <div class="overlay-toggle">
-          <label>Hawaii Relocation (UM)</label>
-          <input id = "Hawaii-reloc-toggle-button" type="checkbox"/>
-        </div>
         <div>
           <label>Color On:</label>
           <select id="color-on-dropdown">
