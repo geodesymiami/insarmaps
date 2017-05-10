@@ -409,14 +409,14 @@ function Map(loadJSONFunc) {
 
         var layerID = "touchLocation";
 
-        // remove cluster count check if you remove clustering
         var frameFeature = this.getFirstPolygonFrameAtPoint(features);
         if (frameFeature) {
             var subsetFeatures = this.getSubsetFeatures(frameFeature);
 
             // if dataset has child features then it must have more than 1 according to Yunjun, otherwise, the child
             // isn't really a child
-            if (subsetFeatures && subsetFeatures.length > 1) {
+            var haveSubsets = subsetFeatures && subsetFeatures.length > 1;
+            if (haveSubsets) {
                 this.removeAreaMarkers();
                 this.addSubsetSwaths(frameFeature, false);
             } else {
@@ -766,8 +766,8 @@ function Map(loadJSONFunc) {
                 var rowID = frameFeature.properties.unavco_name;
                 this.areaMarkerLayer.setAreaRowHighlighted(rowID);
                 var subsetFeatures = this.getSubsetFeatures(frameFeature);
-                if (subsetFeatures && subsetFeatures.length > 1 &&
-                    $("#search-form-and-results-container").hasClass("maximized")) {
+                var haveSubsets = subsetFeatures && subsetFeatures.length > 1;
+                if (haveSubsets && $("#search-form-and-results-container").hasClass("maximized")) {
                     var searchFormController = new SearchFormController();
                     $(".show-children-button#" + rowID).mouseover();
                     searchFormController.populateSubsetPopup(frameFeature, subsetFeatures);
