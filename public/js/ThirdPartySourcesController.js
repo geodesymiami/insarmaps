@@ -5,6 +5,8 @@ function ThirdPartySourcesController(map) {
         "midas-arrows", "gpsStations"
     ];
 
+    this.stopsCalculator = new MapboxStopsCalculator();
+
     this.getLayerOnTopOf = function(layer) {
         for (var i = this.layerOrder.length - 1; i >= 0; i--) {
             if (this.layerOrder[i] === layer) {
@@ -371,6 +373,10 @@ function ThirdPartySourcesController(map) {
                     data: featureCollection
                 };
 
+                var colors = this.map.colorScale.jet;
+                var opacities = [0.2, 0.6, 1,0];
+                var opacityStops = this.stopsCalculator.calculateStops(1, 9, opacities, 4.5, 1);
+
                 var layerID = "USGSEarthquake";
                 var before = this.getLayerOnTopOf(layerID);
                 this.map.map.addSource(layerID, mapboxStationFeatures);
@@ -381,11 +387,7 @@ function ThirdPartySourcesController(map) {
                     "paint": {
                         "circle-opacity": {
                             "property": 'mag',
-                            "stops": [
-                                [1.0, 0.2],
-                                [4.5, 0.6],
-                                [9.0, 1.0]
-                            ]
+                            "stops": opacityStops
                         },
                         "circle-color": "red",
                         "circle-radius": 5
@@ -457,7 +459,10 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
-                var stops = this.map.colorScale.getIGEPNMapboxStops(0, 50);
+                var colors = this.map.colorScale.jet;
+                var depthStops = this.stopsCalculator.getDepthStops(0, 50, colors);
+                var magCircleSizes = [5, 7, 9, 11];
+                var magStops = this.stopsCalculator.getMagnitudeStops(4, 6, magCircleSizes);
 
                 var layerID = "IGEPNEarthquake";
                 var before = this.getLayerOnTopOf(layerID);
@@ -469,16 +474,13 @@ function ThirdPartySourcesController(map) {
                     "paint": {
                         "circle-color": {
                             "property": "depth",
-                            "stops": stops
+                            "stops": depthStops,
+                            "type": "interval"
                         },
                         "circle-radius": {
                             "property": "mag",
-                            "stops": [
-                                [4, 5],
-                                [4.9, 7],
-                                [5.0, 9],
-                                [5.9, 11]
-                            ]
+                            "stops": magStops,
+                            "type": "interval"
                         }
                     }
                 }, before);
@@ -515,7 +517,10 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
-                var stops = this.map.colorScale.getIGEPNMapboxStops(0, 50);
+                var colors = this.map.colorScale.jet;
+                var depthStops = this.stopsCalculator.getDepthStops(0, 50, colors);
+                var magCircleSizes = [5, 8, 11, 14, 17, 20];
+                var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
 
                 var layerID = "HawaiiReloc";
                 this.map.map.addSource(layerID, mapboxStationFeatures);
@@ -526,16 +531,13 @@ function ThirdPartySourcesController(map) {
                     "paint": {
                         "circle-color": {
                             "property": "depth",
-                            "stops": stops
+                            "stops": depthStops,
+                            "type": "interval"
                         },
                         "circle-radius": {
                             "property": "mag",
-                            "stops": [
-                                [4, 5],
-                                [4.9, 7],
-                                [5.0, 9],
-                                [5.9, 11]
-                            ]
+                            "stops": magStops,
+                            "type": "interval"
                         }
                     }
                 });
@@ -647,7 +649,10 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
-                var stops = this.map.colorScale.getIGEPNMapboxStops(0, 50);
+                var colors = this.map.colorScale.jet;
+                var depthStops = this.stopsCalculator.getDepthStops(0, 50, colors);
+                var magCircleSizes = [5, 8, 11, 14, 17, 20];
+                var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
 
                 var layerID = "IRISEarthquake";
                 this.map.map.addSource(layerID, mapboxStationFeatures);
@@ -658,16 +663,13 @@ function ThirdPartySourcesController(map) {
                     "paint": {
                         "circle-color": {
                             "property": "depth",
-                            "stops": stops
+                            "stops": depthStops,
+                            "type": "interval"
                         },
                         "circle-radius": {
                             "property": "mag",
-                            "stops": [
-                                [4, 5],
-                                [4.9, 7],
-                                [5.0, 9],
-                                [5.9, 11]
-                            ]
+                            "stops": magStops,
+                            "type": "interval"
                         }
                     }
                 });
