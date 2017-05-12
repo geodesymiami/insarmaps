@@ -96,12 +96,14 @@
       </div>
     </div>
   </div>
-  <div id="loading-screen" class="overlay-div">
+  <div id="loading-screen" class="overlay-div active">
     <div id="loading-screen-contents">
       <div class="loading-text-div" id="loading-text-div-top">
         Recoloring in progress...
       </div>
-      <div class="loading-circle"></div>
+      <div id="loading-circle-container">
+        <div class="loading-circle"></div>
+      </div>
       <div class="loading-text-div" id="loading-text-div-bottom">ESCAPE to interrupt</div>
     </div>
   </div>

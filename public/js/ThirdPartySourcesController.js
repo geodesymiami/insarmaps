@@ -428,7 +428,7 @@ function ThirdPartySourcesController(map) {
                     var magnitude = parseFloat($(this).attr("mg"));
                     var depth = parseFloat($(this).attr("z"));
                     var id = $(this).attr("eventoid");
-                    var date = $(this).attr("fecha");
+                    var milliseconds = new Date($(this).attr("fecha")).getTime();
                     var location = $(this).attr("localizacion");
                     var feature = {
                         "type": "Feature",
@@ -442,7 +442,7 @@ function ThirdPartySourcesController(map) {
                             "lat": lat,
                             "lng": lng,
                             "id": id,
-                            "date": date,
+                            "time": milliseconds,
                             "location": location
                         }
                     };
@@ -570,6 +570,13 @@ function ThirdPartySourcesController(map) {
             var mag = parseFloat(attributes[10]);
             var depth = parseFloat(attributes[9]);
             var coordinates = [lng, lat];
+            var year = attributes[1];
+            var month = attributes[2];
+            var day = attributes[3];
+            var hour = attributes[4];
+            var minute = attributes[5];
+            var second = attributes[6];
+            var milliseconds = new Date(year, month, day, hour, minute, second).getTime();
 
             var feature = {
                 "type": "Feature",
@@ -579,7 +586,8 @@ function ThirdPartySourcesController(map) {
                 },
                 "properties": {
                     "depth": depth,
-                    "mag": mag
+                    "mag": mag,
+                    "time": milliseconds
                 }
             };
 
@@ -608,6 +616,7 @@ function ThirdPartySourcesController(map) {
                 var depth = parseFloat(attributes[4]);
                 var mag = parseFloat(attributes[10]);
                 var coordinates = [long, lat];
+                var milliseconds = new Date(attributes[1]);
 
                 var feature = {
                     "type": "Feature",
@@ -617,7 +626,8 @@ function ThirdPartySourcesController(map) {
                     },
                     "properties": {
                         "depth": depth,
-                        "mag": mag
+                        "mag": mag,
+                        "time": milliseconds
                     }
                 };
 
@@ -722,8 +732,10 @@ function ThirdPartySourcesController(map) {
                 velocityInCMYR + " +- " + uncertainty + " cm/yr"; // we work in cm. convert m to cm
         } else if (itsAnIGEPNFeature) {
             var props = feature.properties;
+            var date = new Date(props.time);
+            var dateString = date.toDateString() + " " + date.toLocaleTimeString();
             html = "ID: " + props.id + "<br>Mag: " + props.mag + "<br>Depth: " +
-                props.depth + "<br>" + props.date + " TU<br>" + props.location;
+                props.depth + "<br>" + dateString + " TU<br>" + props.location;
         } else if (itsAnUSGSFeature) {
             var props = feature.properties;
             html = "Mag: " + props.mag + "<br>Depth: " + props.depth + "<br>" + new Date(props.time) +
