@@ -5,6 +5,7 @@ function MapboxStopsCalculator() {
             return;
         }
 
+        outputIncrement = Math.ceil(outputIncrement);
         var stops = [];
 
         var currentValue = min;
@@ -14,6 +15,13 @@ function MapboxStopsCalculator() {
             stops.push(curStop);
             currentValue += valueIncrement;
         }
+
+        // for large output incremnets not a multiple of output array length, we can get
+        // blue shift, especially for categorical scales. thus, always add the last value to
+        // make sure even on these types of scales we get the full gamut of colors. if output
+        // increment == 1 for example, it doesn't matter as we full red color at
+        // max - outputIncrement / outputArray.length, so adding the last max value doesn't affect it
+        stops.push([max, outputArray[outputArray.length - 1]]);
 
         return stops;
     };
@@ -30,7 +38,7 @@ function MapboxStopsCalculator() {
     this.getDepthStops = function(min, max, outputArray) {
         var valueIncrement = 10;
         var numCategories = (max - min) / valueIncrement;
-        var outputIncrement = Math.floor(outputArray.length / numCategories);
+        var outputIncrement = Math.ceil(outputArray.length / numCategories);
 
         return this.calculateStops(min, max, outputArray, valueIncrement, outputIncrement);
     };
@@ -38,7 +46,16 @@ function MapboxStopsCalculator() {
     this.getMagnitudeStops = function(min, max, outputArray) {
         var valueIncrement = 1;
         var numCategories = (max - min) / valueIncrement;
-        var outputIncrement = Math.floor(outputArray.length / numCategories);
+        var outputIncrement = Math.ceil(outputArray.length / numCategories);
+
+        return this.calculateStops(min, max, outputArray, valueIncrement, outputIncrement);
+    };
+
+    this.getTimeStops = function(min, max, outputArray) {
+        const MILLISECONDS_PER_YEAR = 365 * 24 * 60 * 60 * 1000;
+        var valueIncrement = 1 * MILLISECONDS_PER_YEAR;
+        var numCategories = (max - min) / valueIncrement;
+        var outputIncrement = Math.ceil(outputArray.length / numCategories);
 
         return this.calculateStops(min, max, outputArray, valueIncrement, outputIncrement);
     };

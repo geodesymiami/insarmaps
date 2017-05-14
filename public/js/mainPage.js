@@ -663,8 +663,11 @@ function setupToggleButtons() {
     usgsEarthquakeToggleButton = new ToggleButton("usgs-earthquake-toggle-button", "overlay-options-toggles", "USGS 30 Day Earthquake Feed");
     usgsEarthquakeToggleButton.onclick(function() {
         if (usgsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
+            myMap.colorScale.show();
+            myMap.colorScale.setTitle("Depth");
             myMap.thirdPartySourcesController.loadUSGSEarthquakeFeed();
         } else {
+            myMap.colorScale.remove();
             myMap.thirdPartySourcesController.removeUSGSEarthquakeFeed();
         }
     });
@@ -672,8 +675,11 @@ function setupToggleButtons() {
     IGEPNEarthquakeToggleButton = new ToggleButton("IGEPN-earthquake-toggle-button", "overlay-options-toggles", "IGEPN Earthquake Feed");
     IGEPNEarthquakeToggleButton.onclick(function() {
         if (IGEPNEarthquakeToggleButton.toggleState == ToggleStates.ON) {
+            myMap.colorScale.show();
+            myMap.colorScale.setTitle("Depth");
             myMap.thirdPartySourcesController.loadIGEPNEarthquakeFeed();
         } else {
+            myMap.colorScale.remove();
             myMap.thirdPartySourcesController.removeIGEPNEarthquakeFeed();
         }
     });
@@ -681,8 +687,11 @@ function setupToggleButtons() {
     HawaiiRelocToggleButton = new ToggleButton("Hawaii-reloc-toggle-button", "overlay-options-toggles", "Hawaii Relocation (UM)");
     HawaiiRelocToggleButton.onclick(function() {
         if (HawaiiRelocToggleButton.toggleState == ToggleStates.ON) {
+            myMap.colorScale.show();
+            myMap.colorScale.setTitle("Depth");
             myMap.thirdPartySourcesController.loadHawaiiReloc();
         } else {
+            myMap.colorScale.remove();
             myMap.thirdPartySourcesController.removeHawaiiReloc();
         }
     });
@@ -690,6 +699,8 @@ function setupToggleButtons() {
     irisEarthquakeToggleButton = new ToggleButton("IRIS-earthquake-toggle-button", "overlay-options-toggles", "IRIS Earthquake");
     irisEarthquakeToggleButton.onclick(function() {
         if (irisEarthquakeToggleButton.toggleState == ToggleStates.ON) {
+            myMap.colorScale.show();
+            myMap.colorScale.setTitle("Depth");
             myMap.thirdPartySourcesController.loadIRISEarthquake();
         } else {
             myMap.thirdPartySourcesController.removeIRISEarthquake();
@@ -835,8 +846,13 @@ $(window).load(function() {
         } else if (selectedColoring === "velocity") {
             myMap.colorDatasetOnVelocity();
         } else {
-            throw "Invalid dropdown selection";
+            throw new Error("Invalid dropdown selection");
         }
+    });
+
+    $("#seismicity-color-on-dropdown").change(function() {
+        var selectedColoring = $(this).val();
+        myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {
@@ -1097,11 +1113,11 @@ $(window).load(function() {
     myMap.colorScale.initVisualScale();
 
     $("#scale-values .form-group > input").keypress(function(e) {
-        var ENTER = 13;
+        var ENTER_KEY = 13;
 
-        if (e.which == ENTER) {
-            var min = $("#min-scale-value").val();
-            var max = $("#max-scale-value").val();
+        if (e.which == ENTER_KEY) {
+            var min = parseFloat($("#min-scale-value").val());
+            var max = parseFloat($("#max-scale-value").val());
 
             myMap.colorScale.min = min;
             myMap.colorScale.max = max;
@@ -1110,6 +1126,8 @@ $(window).load(function() {
             // will happen
             myMap.refreshDataset();
             myMap.thirdPartySourcesController.refreshmidasGpsStationMarkers();
+            var selectedColoring = $("#seismicity-color-on-dropdown").val();
+            myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
         }
     });
 

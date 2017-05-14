@@ -1089,16 +1089,16 @@ function Map(loadJSONFunc) {
         this.layers_.forEach(function(layer) {
             if (this.map.getPaintProperty(layer.id, "circle-color")) {
                 this.map.setPaintProperty(layer.id, "circle-color", {
-                    property: 'm',
-                    stops: stops
+                    "property": 'm',
+                    "stops": stops
                 });
             }
         }.bind(this));
 
         if (this.map.getLayer("onTheFlyJSON")) {
             this.map.setPaintProperty("onTheFlyJSON", "circle-color", {
-                property: 'm',
-                stops: stops
+                "property": 'm',
+                "stops": stops
             });
         }
     };

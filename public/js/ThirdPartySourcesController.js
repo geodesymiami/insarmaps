@@ -5,6 +5,8 @@ function ThirdPartySourcesController(map) {
         "midas-arrows", "gpsStations"
     ];
 
+    this.seismicities = ["IRISEarthquake", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake"];
+
     this.stopsCalculator = new MapboxStopsCalculator();
 
     this.getLayerOnTopOf = function(layer) {
@@ -72,8 +74,8 @@ function ThirdPartySourcesController(map) {
         var stops = this.map.colorScale.getMapboxStops();
         if (this.map.map.getLayer("midas")) {
             this.map.map.setPaintProperty("midas", "circle-color", {
-                property: 'v',
-                stops: stops
+                "property": 'v',
+                "stops": stops
             });
         }
     };
@@ -374,8 +376,8 @@ function ThirdPartySourcesController(map) {
                 };
 
                 var colors = this.map.colorScale.jet;
-                var opacities = [0.2, 0.6, 1,0];
-                var opacityStops = this.stopsCalculator.calculateStops(1, 9, opacities, 4.5, 1);
+                var opacities = [0.2, 0.6, 1.0];
+                var opacityStops = this.stopsCalculator.calculateStops(1, 10, opacities, 4.5, 1);
 
                 var layerID = "USGSEarthquake";
                 var before = this.getLayerOnTopOf(layerID);
@@ -616,7 +618,7 @@ function ThirdPartySourcesController(map) {
                 var depth = parseFloat(attributes[4]);
                 var mag = parseFloat(attributes[10]);
                 var coordinates = [long, lat];
-                var milliseconds = new Date(attributes[1]);
+                var milliseconds = new Date(attributes[1]).getTime();
 
                 var feature = {
                     "type": "Feature",
@@ -744,6 +746,7 @@ function ThirdPartySourcesController(map) {
             var props = feature.properties;
             html = "Mag: " + props.mag + "<br>Depth: " + props.depth;
             html += "<br><br>lng: " + feature.geometry.coordinates[0] + "<br>lat: " + feature.geometry.coordinates[1];
+            html += "<br><br>Time: " + new Date(props.time);
         } else {
             coordinates = null;
             html = null;
@@ -756,5 +759,46 @@ function ThirdPartySourcesController(map) {
         };
 
         return featureViewOptions;
+    };
+
+    this.recolorSeismicitiesOn = function(property, stops, type) {
+        this.seismicities.forEach(function(layerID) {
+            if (this.map.map.getLayer(layerID)) {
+                this.map.map.setPaintProperty(layerID, "circle-color", {
+                    "property": property,
+                    "stops": stops,
+                    "type": type
+                });
+            }
+        }.bind(this));
+    };
+
+    this.recolorSeismicities = function(selectedColoring) {
+        var stops = null;
+        var colors = this.map.colorScale.jet;
+        var min = parseFloat(this.map.colorScale.min);
+        var max = parseFloat(this.map.colorScale.max);
+        var type = "exponential";
+        if (selectedColoring === "time") {
+            this.map.colorScale.setTitle("Time (years)")
+            var now = new Date();
+            var maxDate = new Date();
+            var minDate = new Date();
+            minDate.setFullYear(now.getFullYear() + min);
+            maxDate.setFullYear(now.getFullYear() + max);
+            var minMilliSecond = minDate.getTime();
+            var maxMilliSecond = maxDate.getTime();
+            stops = this.stopsCalculator.getTimeStops(minMilliSecond, maxMilliSecond, colors);
+            type = "interval"
+        } else if (selectedColoring === "depth") {
+            this.map.colorScale.setTitle("Depth (K)");
+            stops = this.stopsCalculator.getDepthStops(min, max, colors);
+            type = "interval";
+        } else {
+            throw new Error("Invalid dropdown selection");
+        }
+
+        console.log(JSON.stringify(stops));
+        this.map.thirdPartySourcesController.recolorSeismicitiesOn(selectedColoring, stops, type);
     };
 }

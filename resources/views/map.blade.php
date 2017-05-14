@@ -96,7 +96,7 @@
       </div>
     </div>
   </div>
-  <div id="loading-screen" class="overlay-div active">
+  <div id="loading-screen" class="overlay-div">
     <div id="loading-screen-contents">
       <div class="loading-text-div" id="loading-text-div-top">
         Recoloring in progress...
@@ -203,6 +203,13 @@
           <select id="color-on-dropdown">
             <option value="velocity">Velocity</option>
             <option value="displacement">Displacement</option>
+          </select>
+        </div>
+        <div>
+          <label>Color Seismicity On:</label>
+          <select id="seismicity-color-on-dropdown">
+            <option value="depth">Depth</option>
+            <option value="time">Time</option>
           </select>
         </div>
       </div>
