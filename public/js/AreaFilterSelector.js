@@ -67,6 +67,9 @@ function setUpAreaFilterSelector() {
             var filter = currentArea ? [currentArea.properties.unavco_name] : null;
 
             this.map.addSwathsFromJSON(json, filter, populateTable);
+            if (currentArea) {
+                this.map.areaMarkerLayer.setAreaRowHighlighted(currentArea.properties.unavco_name);
+            }
         }
     };
 }

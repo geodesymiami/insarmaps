@@ -279,8 +279,7 @@ function getGEOJSON(area) {
 
             var attributesController = new AreaAttributesController(myMap, area);
             attributesController.processAttributes();
-            myMap.addSwathsFromJSON(myMap.areas, [area.properties.unavco_name], true);
-            myMap.areaMarkerLayer.setAreaRowHighlighted(area.properties.layerID);
+            myMap.areaMarkerLayer.setAreaRowHighlighted(area.properties.unavco_name);
             // in case someone called loading screen
             hideLoadingScreen();
         }, 1000);
