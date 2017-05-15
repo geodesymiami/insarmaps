@@ -1,3 +1,107 @@
+function AbstractGraphsController() {
+    this.map = null;
+    this.highChartsOpts = [];
+
+    this.mapDatesToArrayIndeces = function(minDate, maxDate, arrayOfDates) {
+        // lower limit index of subarray bounded by slider dates
+        // must be >= minDate; upper limit <= maxDate
+        var minIndex = 0;
+        var maxIndex = 0;
+
+        for (var i = 0; i < arrayOfDates.length; i++) {
+            var currentDate = arrayOfDates[i];
+
+            if (currentDate >= minDate) {
+                minIndex = i;
+                break;
+            }
+        }
+        for (var i = 0; i < arrayOfDates.length; i++) {
+            var currentDate = arrayOfDates[i];
+
+            if (currentDate < maxDate) {
+                maxIndex = i + 1;
+            }
+        }
+
+        return {
+            minIndex: minIndex,
+            maxIndex: maxIndex
+        };
+    };
+
+    // do as name says, return struct with min and max dates to be optionally used
+    this.getValideDatesFromNavigatorExtremes = function(chartContainer) {
+        var graphSettings = this.graphSettings[chartContainer];
+
+        var minDate = graphSettings.navigatorEvent.min;
+        var maxDate = graphSettings.navigatorEvent.max;
+        var minMax = this.mapDatesToArrayIndeces(minDate, maxDate, graphSettings.date_array);
+
+        return minMax;
+    };
+
+    this.setNavigatorHandlers = function() {
+        $(".highcharts-navigator").mouseenter(function() {
+            $(".wrap#charts").draggable("disable");
+        }).mouseleave(function() {
+            $(".wrap#charts").draggable("enable");
+        });;
+        $(".highcharts-navigator-handle-left").mouseenter(function() {
+            $(".wrap#charts").draggable("disable");
+        }).mouseleave(function() {
+            $(".wrap#charts").draggable("enable");
+        });;
+        $(".highcharts-navigator-handle-right").mouseenter(function() {
+            $(".wrap#charts").draggable("disable");
+        }).mouseleave(function() {
+            $(".wrap#charts").draggable("enable");
+        });;
+    };
+
+    this.setNavigatorMin = function(chartContainer, min) {
+        var chart = $("#" + chartContainer).highcharts();
+        var curExtremes = chart.xAxis[0].getExtremes();
+
+        if (!chart) {
+            return;
+        }
+        chart.xAxis[0].setExtremes(min, curExtremes.max);
+    };
+
+    this.setNavigatorMax = function(chartContainer, max) {
+        var chart = $("#" + chartContainer).highcharts();
+        var curExtremes = chart.xAxis[0].getExtremes();
+
+        if (!chart) {
+            return;
+        }
+        chart.xAxis[0].setExtremes(curExtremes.min, max);
+    };
+
+    this.recreateGraph = function(chartContainer) {
+        var graphSettings = this.graphSettings[chartContainer];
+        var graphOpts = this.highChartsOpts[chartContainer];
+        $("#" + chartContainer).highcharts(graphOpts);
+        var chart = $("#" + chartContainer).highcharts();
+
+        if (!chart) {
+            return;
+        }
+        chart.xAxis[0].setExtremes(graphSettings.navigatorEvent.min,
+            graphSettings.navigatorEvent.max);
+        chart.setTitle(null, {
+            text: graphOpts.subtitle.text
+        });
+
+        if (regressionToggleButton.toggleState == ToggleStates.ON) {
+            this.addRegressionLines();
+        }
+    };
+}
+
+
+
 // for every graph operation, we simply re create the graph.
 // set size was playing weird games when the div was resized, and chart.series[0].update
 // was playing even weirder games when chart type was being changed. this: http://jsfiddle.net/4r4g327g/4/
@@ -5,12 +109,11 @@
 // stock chart to look like a regular graph. To save headaches, we simply re create the graph... performance
 // penalty is not noticeable.
 // TODO: date functions need serious refactoring
-function GraphsController(map) {
-    var that = this;
-    this.map = map;
-    this.highChartsOpts = [];
-    this.selectedGraph = "Top Graph";
-    this.graphSettings = {
+function GraphsController() {}
+
+function setupGraphsController() {
+    GraphsController.prototype.selectedGraph = "Top Graph";
+    GraphsController.prototype.graphSettings = {
         "chartContainer": {
             regressionOn: false,
             date_string_array: null,
@@ -31,7 +134,7 @@ function GraphsController(map) {
         }
     };
 
-    this.JSONToGraph = function(json, chartContainer, clickEvent) {
+    GraphsController.prototype.JSONToGraph = function(json, chartContainer, clickEvent) {
         var date_string_array = json.string_dates;
         var date_array = convertStringsToDateArray(date_string_array);
         var decimal_dates = json.decimal_dates;
@@ -264,46 +367,8 @@ function GraphsController(map) {
         $("#" + chartContainer).highcharts().setSize(width, height, doAnimation = true);
     };
 
-    this.mapDatesToArrayIndeces = function(minDate, maxDate, arrayOfDates) {
-        // lower limit index of subarray bounded by slider dates
-        // must be >= minDate; upper limit <= maxDate                              
-        var minIndex = 0;
-        var maxIndex = 0;
 
-        for (var i = 0; i < arrayOfDates.length; i++) {
-            var currentDate = arrayOfDates[i];
-
-            if (currentDate >= minDate) {
-                minIndex = i;
-                break;
-            }
-        }
-        for (var i = 0; i < arrayOfDates.length; i++) {
-            var currentDate = arrayOfDates[i];
-
-            if (currentDate < maxDate) {
-                maxIndex = i + 1;
-            }
-        }
-
-        return {
-            minIndex: minIndex,
-            maxIndex: maxIndex
-        };
-    };
-
-    // do as name says, return struct with min and max dates to be optionally used
-    this.getValideDatesFromNavigatorExtremes = function(chartContainer) {
-        var graphSettings = this.graphSettings[chartContainer];
-
-        var minDate = graphSettings.navigatorEvent.min;
-        var maxDate = graphSettings.navigatorEvent.max;
-        var minMax = this.mapDatesToArrayIndeces(minDate, maxDate, graphSettings.date_array);
-
-        return minMax;
-    };
-
-    this.getLinearRegressionLine = function(chartContainer, displacement_array) {
+    GraphsController.prototype.getLinearRegressionLine = function(chartContainer, displacement_array) {
         var graphSettings = this.graphSettings[chartContainer];
         var validDates = this.getValideDatesFromNavigatorExtremes(
             chartContainer);
@@ -338,7 +403,7 @@ function GraphsController(map) {
         return lineData;
     };
 
-    this.addRegressionLine = function(chartContainer, displacement_array) {
+    GraphsController.prototype.addRegressionLine = function(chartContainer, displacement_array) {
         var graphSettings = this.graphSettings[chartContainer];
         var chart = $("#" + chartContainer).highcharts();
 
@@ -387,7 +452,7 @@ function GraphsController(map) {
         chart.addSeries(regressionSeries);
     };
 
-    this.removeRegressionLine = function(chartContainer) {
+    GraphsController.prototype.removeRegressionLine = function(chartContainer) {
         var chart = $('#' + chartContainer).highcharts();
         var seriesLength = chart.series.length;
 
@@ -399,25 +464,7 @@ function GraphsController(map) {
         }
     };
 
-    this.setNavigatorHandlers = function() {
-        $(".highcharts-navigator").mouseenter(function() {
-            $(".wrap#charts").draggable("disable");
-        }).mouseleave(function() {
-            $(".wrap#charts").draggable("enable");
-        });;
-        $(".highcharts-navigator-handle-left").mouseenter(function() {
-            $(".wrap#charts").draggable("disable");
-        }).mouseleave(function() {
-            $(".wrap#charts").draggable("enable");
-        });;
-        $(".highcharts-navigator-handle-right").mouseenter(function() {
-            $(".wrap#charts").draggable("disable");
-        }).mouseleave(function() {
-            $(".wrap#charts").draggable("enable");
-        });;
-    };
-
-    this.connectDots = function() {
+    GraphsController.prototype.connectDots = function() {
         var graphOpts = this.highChartsOpts["chartContainer"];
         graphOpts.series[0].type = "line";
         this.recreateGraph("chartContainer");
@@ -471,7 +518,7 @@ function GraphsController(map) {
         }
     };
 
-    this.disconnectDots = function() {
+    GraphsController.prototype.disconnectDots = function() {
         var graphOpts = this.highChartsOpts["chartContainer"];
         graphOpts.series[0].type = "scatter";
         this.recreateGraph("chartContainer");
@@ -534,7 +581,7 @@ function GraphsController(map) {
             graphSettings.navigatorEvent.max);
     };
 
-    this.toggleDots = function() {
+    GraphsController.prototype.toggleDots = function() {
         var chart = $("#chartContainer").highcharts();
 
         if (dotToggleButton.toggleState == ToggleStates.ON) {
@@ -544,7 +591,7 @@ function GraphsController(map) {
         }
     };
 
-    this.addRegressionLines = function() {
+    GraphsController.prototype.addRegressionLines = function() {
         var graphSettings = this.graphSettings["chartContainer"];
         var displacements_array = (detrendToggleButton.toggleState ==
             ToggleStates.ON && graphSettings.detrend_displacement_array
@@ -561,7 +608,7 @@ function GraphsController(map) {
         }
     };
 
-    this.removeRegressionLines = function() {
+    GraphsController.prototype.removeRegressionLines = function() {
         this.removeRegressionLine("chartContainer");
         var chart2 = $("#chartContainer2").highcharts();
         if (chart2 !== undefined) {
@@ -569,7 +616,7 @@ function GraphsController(map) {
         }
     };
 
-    this.toggleRegressionLines = function() {
+    GraphsController.prototype.toggleRegressionLines = function() {
         if (regressionToggleButton.toggleState == ToggleStates.ON) {
             this.addRegressionLines();
         } else {
@@ -577,7 +624,7 @@ function GraphsController(map) {
         }
     };
 
-    this.prepareForSecondGraph = function() {
+    GraphsController.prototype.prepareForSecondGraph = function() {
         //$("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
         $("#chart-containers").width("95%");
         $("#graph-select-div").css("display", "block");
@@ -604,7 +651,7 @@ function GraphsController(map) {
         bottomGraphToggleButton.set("on");
     };
 
-    this.removeSecondGraph = function() {
+    GraphsController.prototype.removeSecondGraph = function() {
         var layerID = "touchLocation2";
         if (myMap.map.getLayer(layerID)) {
             myMap.map.removeLayer(layerID);
@@ -627,7 +674,7 @@ function GraphsController(map) {
         this.selectedGraph = "Top Graph";
     };
 
-    this.toggleSecondGraph = function() {
+    GraphsController.prototype.toggleSecondGraph = function() {
         if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
             this.prepareForSecondGraph();
         } else {
@@ -636,7 +683,7 @@ function GraphsController(map) {
     };
 
     // TODO: make detrend data functions not call recreate
-    this.detrendDataForGraph = function(chartContainer) {
+    GraphsController.prototype.detrendDataForGraph = function(chartContainer) {
         var graphSettings = this.graphSettings[chartContainer];
         // returns array for displacement on chart
         var chart_data = getDisplacementChartData(graphSettings.displacement_array,
@@ -665,7 +712,7 @@ function GraphsController(map) {
         this.recreateGraphs();
     };
 
-    this.removeDetrendForGraph = function(chartContainer) {
+    GraphsController.prototype.removeDetrendForGraph = function(chartContainer) {
         var graphSettings = this.graphSettings[chartContainer];
         // returns array for displacement on chart
         var chart_data = getDisplacementChartData(graphSettings.displacement_array,
@@ -684,7 +731,7 @@ function GraphsController(map) {
         this.recreateGraphs();
     };
 
-    this.detrendData = function() {
+    GraphsController.prototype.detrendData = function() {
         this.detrendDataForGraph("chartContainer");
         var chart2 = $("#chartContainer2").highcharts();
         if (chart2 !== undefined) {
@@ -692,7 +739,7 @@ function GraphsController(map) {
         }
     };
 
-    this.removeDetrend = function() {
+    GraphsController.prototype.removeDetrend = function() {
         this.removeDetrendForGraph("chartContainer");
         var chart2 = $("#chartContainer2").highcharts();
         if (chart2 !== undefined) {
@@ -700,7 +747,7 @@ function GraphsController(map) {
         }
     };
 
-    this.resizeChartContainers = function() {
+    GraphsController.prototype.resizeChartContainers = function() {
         var chartContainersNewHeight = $(".wrap").find(".content").find(
             "#chart-containers").height();
         if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
@@ -713,48 +760,8 @@ function GraphsController(map) {
         $("#chartContainer").height(chartContainersNewHeight);
     };
 
-    this.setNavigatorMin = function(chartContainer, min) {
-        var chart = $("#" + chartContainer).highcharts();
-        var curExtremes = chart.xAxis[0].getExtremes();
-
-        if (!chart) {
-            return;
-        }
-        chart.xAxis[0].setExtremes(min, curExtremes.max);
-    };
-
-    this.setNavigatorMax = function(chartContainer, max) {
-        var chart = $("#" + chartContainer).highcharts();
-        var curExtremes = chart.xAxis[0].getExtremes();
-
-        if (!chart) {
-            return;
-        }
-        chart.xAxis[0].setExtremes(curExtremes.min, max);
-    };
-
-    this.recreateGraph = function(chartContainer) {
-        var graphSettings = this.graphSettings[chartContainer];
-        var graphOpts = this.highChartsOpts[chartContainer];
-        $("#" + chartContainer).highcharts(graphOpts);
-        var chart = $("#" + chartContainer).highcharts();
-
-        if (!chart) {
-            return;
-        }
-        chart.xAxis[0].setExtremes(graphSettings.navigatorEvent.min,
-            graphSettings.navigatorEvent.max);
-        chart.setTitle(null, {
-            text: graphOpts.subtitle.text
-        });
-
-        if (regressionToggleButton.toggleState == ToggleStates.ON) {
-            this.addRegressionLines();
-        }
-    };
-
     // recreates graphs, preserving the selected ranges on the high charts navigator
-    this.recreateGraphs = function() {
+    GraphsController.prototype.recreateGraphs = function() {
         this.recreateGraph("chartContainer");
         this.recreateGraph("chartContainer2");
 

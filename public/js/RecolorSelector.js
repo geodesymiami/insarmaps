@@ -2,6 +2,10 @@ function RecolorSelector() {}
 
 function setupRecolorSelector() {
     RecolorSelector.prototype.recoloringInProgress = false;
+    RecolorSelector.prototype.createSeismicityPlots = function(features) {
+        
+    };
+
     RecolorSelector.prototype.finish = function(bbox) {
         // re enable dragpan only if polygon button isn't selected
         if (!this.map.selector.polygonButtonSelected) {
@@ -14,7 +18,21 @@ function setupRecolorSelector() {
         }
 
         this.lastbbox = this.bbox;
-        if (this.bbox == null || this.minIndex == -1 || this.maxIndex == -1) {
+        if (this.bbox == null) {
+            return;
+        }
+
+        // these next two lines not elegant. ideally, finish calls this method and other functions operate on the features
+        // TODO: refactor this once the details are worked out
+        var features = this.map.map.queryRenderedFeatures();
+        var feature = features[0];
+        var featureID = feature.layer.id;
+
+        if (this.map.thirdPartySourcesController.seismicities.includes(featureID)) {
+            this.createSeismicityPlots(features);
+            return;
+        }
+        if (this.minIndex == -1 || this.maxIndex == -1) {
             return;
         }
 

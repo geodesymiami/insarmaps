@@ -813,8 +813,12 @@ $(window).load(function() {
     LineSelector.prototype = new SquareSelector();
     setupRecolorSelector();
     setUpAreaFilterSelector();
+    // and of graphs controllers
+    GraphsController.prototype = new AbstractGraphsController();
     myMap = new Map(loadJSON);
     myMap.addMapToPage("map-container");
+    GraphsController.prototype.map = myMap;
+    setupGraphsController();
     populateSearchAutocomplete();
 
     var layerList = document.getElementById('map-type-menu');

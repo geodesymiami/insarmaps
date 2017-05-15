@@ -617,7 +617,7 @@ function Map(loadJSONFunc) {
                 this.areaMarkerLayer.addSwath(swath);
                 // exclude this area from showing on the map, but we still want to add it
                 // to our areaFeatures array so we can highlight the current area
-                if (!toExclude || toExclude.indexOf(area.properties.unavco_name) == -1) {
+                if (!toExclude || !toExclude.includes(area.properties.unavco_name)) {
                     swath.display();
                 }
             }
