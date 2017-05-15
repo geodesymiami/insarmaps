@@ -59,6 +59,30 @@ function MapboxStopsCalculator() {
 
         return this.calculateStops(min, max, outputArray, valueIncrement, outputIncrement);
     };
+
+    // assume order so use binary search
+    this.getOutputIndexFromInputStop = function(stops, input) {
+        var first = 0, last = stops.length - 1;
+
+        while (!(first > last)) {
+            // floor due to js's strange integer/float casting
+            var middle = Math.floor((first + last) / 2);
+
+            var cmp = input - stops[middle][0];
+
+            if (cmp == 0) {
+                return middle;
+            }
+            if (cmp < 0) {
+                last = middle - 1;
+            } else {
+                first = middle + 1;
+            }
+        }
+
+        // if we don't find it, return value of stops just before our input
+        return middle - 1;
+    };
 }
 
 function ColorScale(min, max, divID) {

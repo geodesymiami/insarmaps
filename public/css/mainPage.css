@@ -667,6 +667,18 @@ input[type=number] {
     width: 40%;
 }
 
+#seismicity-charts {
+    position: absolute;
+    right: 0%;
+    height: 100%;
+    width: 50%;
+}
+
+.seismicity-chart {
+    height: 33%;
+    width: 100%;
+}
+
 #graph-div-minimize-button {
     margin-right: 10px;
     margin-top: 6px;

@@ -350,6 +350,14 @@
       </div>
     </div> 
   </div>
+  <div class="wrap" id="seismicity-charts">
+    <div class="content">
+      <div class="chart-containers">
+        <div class="seismicity-chart" id="depth-vs-long-graph">
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="wrap minimized" id="area-attributes-div" title="Attributes">
    <div class="top-right-buttons">
       <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"></button>

@@ -815,10 +815,13 @@ $(window).load(function() {
     setUpAreaFilterSelector();
     // and of graphs controllers
     GraphsController.prototype = new AbstractGraphsController();
+    SeismicityGraphsController.prototype = new AbstractGraphsController();
     myMap = new Map(loadJSON);
     myMap.addMapToPage("map-container");
     GraphsController.prototype.map = myMap;
+    SeismicityGraphsController.prototype.map = myMap;
     setupGraphsController();
+    setupSeismicityGraphsController();
     populateSearchAutocomplete();
 
     var layerList = document.getElementById('map-type-menu');

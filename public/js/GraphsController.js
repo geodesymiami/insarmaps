@@ -772,3 +772,126 @@ function setupGraphsController() {
         this.setNavigatorHandlers();
     };
 }
+
+function SeismicityGraphsController() {}
+
+function setupSeismicityGraphsController() {
+    SeismicityGraphsController.prototype.getSeriesData = function(xValues, yValues, colorOnInputs) {
+        var seriesData = [];
+
+        if (xValues.length != yValues.length) {
+            throw new Error("Number of values for the x axis (" + xValues.length +
+                ") and number of values for the y axis (" + yValues.length + ") differ");
+        }
+
+        if (colorOnInputs && colorOnInputs.length != xValues.length) {
+            throw new Error("Number of values for the x and y axes (" + xValues.length +
+                ") and number of values for the colorOnInputs (" + colorOnInputs.length + ") differ");
+        }
+
+        // we do x, y values if no stops provided to avoid highcharts turbothreshold
+        if (colorOnInputs) {
+            var curStops = this.map.thirdPartySourcesController.currentSeismicityStops;
+            var stopsCalculator = new MapboxStopsCalculator();
+
+            for (var i = 0; i < xValues.length; i++) {
+                var index = stopsCalculator.getOutputIndexFromInputStop(curStops, colorOnInputs[i]);
+                var color = curStops[index][1];
+                seriesData.push({
+                    x: xValues[i],
+                    y: yValues[i],
+                    name: "Point2",
+                    color: color
+                })
+            }
+        } else {
+            for (var i = 0; i < xValues.length; i++) {
+                seriesData.push([xValues[i], yValues[i]]);
+            }
+        }
+
+        return seriesData;
+    };
+
+    // TODO: make this a method of AbstractGraphsController and edit GraphsController as appropriate
+    SeismicityGraphsController.prototype.getBasicChartJSON = function() {
+        var chartOpts = {
+            title: {
+                text: null
+            },
+            subtitle: null,
+            scrollbar: {
+                liveRedraw: false
+            },
+            xAxis: {
+                title: null
+            },
+            yAxis: {
+                title: null,
+                legend: {
+                    layout: 'vertical',
+                    align: 'left',
+                    verticalAlign: 'top',
+                    x: 100,
+                    y: 70,
+                    floating: true,
+                    backgroundColor: '#FFFFFF',
+                    borderWidth: 1,
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                headerFormat: '',
+                pointFormat: '{point.y:.6f} Km'
+            },
+            series: [],
+            chart: {
+                marginRight: 50
+            },
+            exporting: {
+                enabled: false
+            }
+        };
+
+        return chartOpts;
+    };
+
+    SeismicityGraphsController.prototype.createDepthVLongGraph = function(features, chartContainer) {
+        var depthValues = features.map(function(feature) {
+            return -feature.properties.depth;
+        });
+        var longValues = features.map(function(feature) {
+            return feature.geometry.coordinates[0];
+        });
+        var colorOnInputs = null;
+        var currentColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
+        colorOnInputs = features.map(function(feature) {
+            if (currentColoring === "depth") {
+                return feature.properties.depth;
+            }
+
+            return feature.properties.time;
+        });
+
+        var depthVLongValues = this.getSeriesData(longValues, depthValues, colorOnInputs);
+        var chartOpts = this.getBasicChartJSON();
+        chartOpts.subtitle = { text: "Depth" };
+        chartOpts.xAxis.title = { text: "Longitude" };
+        chartOpts.yAxis.title = { text: "Depth (Km)" };
+        chartOpts.series.push({
+            type: 'scatter',
+            name: 'Depth',
+            data: depthVLongValues,
+            marker: {
+                enabled: true
+            },
+            showInLegend: false,
+        });
+
+        $("#" + chartContainer).highcharts(chartOpts);
+    };
+}

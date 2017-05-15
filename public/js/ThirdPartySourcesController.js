@@ -8,6 +8,8 @@ function ThirdPartySourcesController(map) {
     this.seismicities = ["IRISEarthquake", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake"];
 
     this.stopsCalculator = new MapboxStopsCalculator();
+    this.currentSeismicityStops = this.stopsCalculator.getDepthStops(0, 50, this.map.colorScale.jet);;
+    this.currentSeismicityColoring = "depth";
 
     this.getLayerOnTopOf = function(layer) {
         for (var i = this.layerOrder.length - 1; i >= 0; i--) {
@@ -798,6 +800,8 @@ function ThirdPartySourcesController(map) {
             throw new Error("Invalid dropdown selection");
         }
 
+        this.currentSeismicityStops = stops;
+        this.currentSeismicityColoring = selectedColoring;
         console.log(JSON.stringify(stops));
         this.map.thirdPartySourcesController.recolorSeismicitiesOn(selectedColoring, stops, type);
     };

@@ -3,7 +3,13 @@ function RecolorSelector() {}
 function setupRecolorSelector() {
     RecolorSelector.prototype.recoloringInProgress = false;
     RecolorSelector.prototype.createSeismicityPlots = function(features) {
-        
+        var $chartContainer = $("#seismicity-charts");
+        if (!$chartContainer.hasClass("active")) {
+            $chartContainer.addClass("active");
+        }
+
+        var graphsController = new SeismicityGraphsController();
+        graphsController.createDepthVLongGraph(features, "depth-vs-long-graph");
     };
 
     RecolorSelector.prototype.finish = function(bbox) {
@@ -24,13 +30,16 @@ function setupRecolorSelector() {
 
         // these next two lines not elegant. ideally, finish calls this method and other functions operate on the features
         // TODO: refactor this once the details are worked out
-        var features = this.map.map.queryRenderedFeatures();
-        var feature = features[0];
-        var featureID = feature.layer.id;
+        var pixelBoundingBox = [this.map.map.project(this.bbox[0]), this.map.map.project(this.bbox[1])];
+        var features = this.map.map.queryRenderedFeatures(pixelBoundingBox);
+        if (features.length > 0) {
+            var feature = features[0];
+            var featureID = feature.layer.id;
 
-        if (this.map.thirdPartySourcesController.seismicities.includes(featureID)) {
-            this.createSeismicityPlots(features);
-            return;
+            if (this.map.thirdPartySourcesController.seismicities.includes(featureID)) {
+                this.createSeismicityPlots(features);
+                return;
+            }
         }
         if (this.minIndex == -1 || this.maxIndex == -1) {
             return;
