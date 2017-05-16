@@ -26,6 +26,9 @@ function DivState() {
     this.animating = false;
 }
 
+// TODO: make a popup super class and consolidate all popups in here
+// also, stick to either active class or minimized/maximized class to denote whether
+// popup is shown or not. right now, using one of the two has led to inconsistent code
 function AreaAttributesPopup() {
     var that = this;
 
@@ -792,8 +795,7 @@ function slideFunction(event, ui) {
 function showBrowserAlert() {
     var isChrome = !!window.chrome && !!window.chrome.webstore
     if (!isChrome && !localStorage.getItem("showedBrowserAlert")) {
-        alert("Warning: This website relies on Mapbox GL JS, which in turn relies on WebGL. As it stands,"
-            + " Google Chrome offers the best compatibility when browsing this site.");
+        alert("Warning: This website relies on Mapbox GL JS, which in turn relies on WebGL. As it stands," + " Google Chrome offers the best compatibility when browsing this site.");
         localStorage.setItem("showedBrowserAlert", "true");
     }
 }
@@ -859,6 +861,9 @@ $(window).load(function() {
     $("#seismicity-color-on-dropdown").change(function() {
         var selectedColoring = $(this).val();
         myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
+        var seismicityGraphsController = new SeismicityGraphsController();
+        var graphsToUpdate = ["depth-vs-long-graph", "lat-vs-depth-graph", "cumulative-events-vs-date-graph"];
+        seismicityGraphsController.updateChartSeriesColors(graphsToUpdate, selectedColoring);
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {
@@ -955,6 +960,14 @@ $(window).load(function() {
             container.css("display", "block");
             container.removeClass("minimized");
             container.addClass("maximized");
+        }
+    });
+
+
+    $("#seismicity-charts-minimize-button").on("click", function() {
+        var container = $("#seismicity-charts");
+        if (container.hasClass("active")) {
+            container.removeClass("active");
         }
     });
 
@@ -1134,6 +1147,9 @@ $(window).load(function() {
             myMap.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             var selectedColoring = $("#seismicity-color-on-dropdown").val();
             myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
+            var seismicityGraphsController = new SeismicityGraphsController();
+            var graphsToUpdate = ["depth-vs-long-graph", "lat-vs-depth-graph", "cumulative-events-vs-date-graph"];
+            seismicityGraphsController.updateChartSeriesColors(graphsToUpdate, selectedColoring);
         }
     });
 

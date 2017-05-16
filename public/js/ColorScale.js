@@ -63,12 +63,13 @@ function MapboxStopsCalculator() {
     // assume order so use binary search
     this.getOutputIndexFromInputStop = function(stops, input) {
         var first = 0, last = stops.length - 1;
+        var middle, cmp = 0;
 
         while (!(first > last)) {
             // floor due to js's strange integer/float casting
-            var middle = Math.floor((first + last) / 2);
+            middle = Math.floor((first + last) / 2);
 
-            var cmp = input - stops[middle][0];
+            cmp = input - stops[middle][0];
 
             if (cmp == 0) {
                 return middle;
@@ -81,7 +82,18 @@ function MapboxStopsCalculator() {
         }
 
         // if we don't find it, return value of stops just before our input
-        return middle - 1;
+        cmp = input - stops[middle][0];
+        if (cmp < 0) {
+            return middle - 1;
+        }
+
+        // can't go past array length
+        if (middle >= stops.length) {
+            return stops.length - 1;
+        }
+
+        // cmp > 0 and within the array still
+        return middle;
     };
 }
 

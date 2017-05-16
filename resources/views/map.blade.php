@@ -351,10 +351,14 @@
     </div> 
   </div>
   <div class="wrap" id="seismicity-charts">
+    <div class="top-right-buttons">
+      <button type="button" class="minimize-button" data-dismiss="modal" id="seismicity-charts-minimize-button"></button>
+    </div>
     <div class="content">
       <div class="chart-containers">
-        <div class="seismicity-chart" id="depth-vs-long-graph">
-        </div>
+        <div class="seismicity-chart" id="depth-vs-long-graph"></div>
+        <div class="seismicity-chart" id="lat-vs-depth-graph"></div>
+        <div class="seismicity-chart" id="cumulative-events-vs-date-graph"></div>
       </div>
     </div>
   </div>

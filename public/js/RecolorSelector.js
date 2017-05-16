@@ -10,6 +10,8 @@ function setupRecolorSelector() {
 
         var graphsController = new SeismicityGraphsController();
         graphsController.createDepthVLongGraph(features, "depth-vs-long-graph");
+        graphsController.createLatVDepthGraph(features, "lat-vs-depth-graph");
+        graphsController.createCumulativeEventsVDay(features, "cumulative-events-vs-date-graph");
     };
 
     RecolorSelector.prototype.finish = function(bbox) {
