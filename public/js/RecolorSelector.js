@@ -9,9 +9,10 @@ function setupRecolorSelector() {
         }
 
         var graphsController = new SeismicityGraphsController();
-        graphsController.createDepthVLongGraph(features, "depth-vs-long-graph");
-        graphsController.createLatVDepthGraph(features, "lat-vs-depth-graph");
-        graphsController.createCumulativeEventsVDay(features, "cumulative-events-vs-date-graph");
+        var selectedColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
+        graphsController.createDepthVLongGraph(features, "depth-vs-long-graph", selectedColoring);
+        graphsController.createLatVDepthGraph(features, "lat-vs-depth-graph", selectedColoring);
+        graphsController.createCumulativeEventsVDay(features, "cumulative-events-vs-date-graph", selectedColoring);
     };
 
     RecolorSelector.prototype.finish = function(bbox) {

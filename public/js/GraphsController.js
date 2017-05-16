@@ -866,14 +866,14 @@ function setupSeismicityGraphsController() {
         return chartOpts;
     };
 
-    SeismicityGraphsController.prototype.createDepthVLongGraph = function(features, chartContainer) {
+    SeismicityGraphsController.prototype.createDepthVLongGraph = function(features, chartContainer, selectedColoring) {
         var depthValues = features.map(function(feature) {
             return feature.properties.depth;
         });
         var longValues = features.map(function(feature) {
             return feature.geometry.coordinates[0];
         });
-        var currentColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
+
         var depths = features.map(function(feature) {
             return feature.properties.depth;
         });
@@ -881,13 +881,11 @@ function setupSeismicityGraphsController() {
             return feature.properties.time;
         });
         var colorOnInputs = null;
-        if (currentColoring === "depth") {
+        if (selectedColoring === "depth") {
             colorOnInputs = depths;
         } else {
             colorOnInputs = times;
         }
-
-        this.graphSettings[chartContainer] = { x: longValues, y: depthValues, times: times, depths: depths };
 
         var depthVLongValues = this.getSeriesData(longValues, depthValues, colorOnInputs);
         var chartOpts = this.getBasicChartJSON();
@@ -895,6 +893,9 @@ function setupSeismicityGraphsController() {
         chartOpts.xAxis.title = { text: "Longitude" };
         chartOpts.yAxis.title = { text: "Depth (Km)" };
         chartOpts.yAxis.reversed = true;
+
+        // save it before we save the data to series
+        this.graphSettings[chartContainer] = { x: longValues, y: depthValues, times: times, depths: depths, opts: chartOpts };
         chartOpts.series.push({
             type: 'scatter',
             name: 'Depth',
@@ -908,33 +909,34 @@ function setupSeismicityGraphsController() {
         $("#" + chartContainer).highcharts(chartOpts);
     };
 
-    SeismicityGraphsController.prototype.createLatVDepthGraph = function(features, chartContainer) {
+    SeismicityGraphsController.prototype.createLatVDepthGraph = function(features, chartContainer, selectedColoring) {
         var depthValues = features.map(function(feature) {
             return feature.properties.depth;
         });
         var latValues = features.map(function(feature) {
             return feature.geometry.coordinates[1];
         });
-        var currentColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
 
         var times = features.map(function(feature) {
             return feature.properties.time;
         });
         var colorOnInputs = null;
-        if (currentColoring === "depth") {
+        if (selectedColoring === "depth") {
             colorOnInputs = depthValues;
         } else {
             colorOnInputs = times;
         }
 
         var latVdepthValues = this.getSeriesData(depthValues, latValues, colorOnInputs);
-        this.graphSettings[chartContainer] = { x: depthValues, y: latValues, times: times, depths: depthValues };
         var chartOpts = this.getBasicChartJSON();
         chartOpts.subtitle = { text: "Depth" };
         chartOpts.tooltip.pointFormat = "{point.y:.1f} °";
         chartOpts.xAxis.title = { text: "Depth (Km)" };
         chartOpts.yAxis.title = { text: "Latitude" };
         chartOpts.yAxis.labels = { format: "{value:.1f}" };
+
+        // save it before we push the data to series
+        this.graphSettings[chartContainer] = { x: depthValues, y: latValues, times: times, depths: depthValues, opts: chartOpts };
         chartOpts.series.push({
             type: 'scatter',
             name: 'Depth',
@@ -948,7 +950,7 @@ function setupSeismicityGraphsController() {
         $("#" + chartContainer).highcharts(chartOpts);
     };
 
-    SeismicityGraphsController.prototype.createCumulativeEventsVDay = function(features, chartContainer) {
+    SeismicityGraphsController.prototype.createCumulativeEventsVDay = function(features, chartContainer, selectedColoring) {
         var millisecondValues = features.map(function(feature) {
             return feature.properties.time;
         });
@@ -962,7 +964,6 @@ function setupSeismicityGraphsController() {
             return index + 1;
         });
 
-        var currentColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
         var depths = features.map(function(feature) {
             return feature.properties.depth;
         });
@@ -970,7 +971,7 @@ function setupSeismicityGraphsController() {
             return feature.properties.time;
         });
         var colorOnInputs = null;
-        if (currentColoring === "depth") {
+        if (selectedColoring === "depth") {
             colorOnInputs = depths;
         } else {
             colorOnInputs = times;
@@ -979,13 +980,14 @@ function setupSeismicityGraphsController() {
         var minDate = new Date(millisecondValues[0]).toLocaleDateString();
         var maxDate = new Date(millisecondValues[millisecondValues.length - 1]).toLocaleDateString();
         var eventsPerDate = this.getSeriesData(millisecondValues, cumulativeValues, colorOnInputs);
-        this.graphSettings[chartContainer] = { x: millisecondValues, y: cumulativeValues, times: times, depths: depths };
         var chartOpts = this.getBasicChartJSON();
         chartOpts.subtitle = { text: "Cumulative Number of Events " + minDate + " - " + maxDate };
         chartOpts.tooltip.pointFormat = "{point.y} Events";
         chartOpts.xAxis.type = "datetime";
         chartOpts.xAxis.dateTimeLabelFormats = { month: '%b %Y', year: '%Y' };
         chartOpts.yAxis.title = { text: "Cumulative Number" };
+        // save it before we push the data to series
+        this.graphSettings[chartContainer] = { x: millisecondValues, y: cumulativeValues, times: times, depths: depths, opts: chartOpts };
 
         chartOpts.series.push({
             type: 'scatter',
@@ -1011,7 +1013,22 @@ function setupSeismicityGraphsController() {
                 colorOnInputs = graphSettings.times;
             }
             var chartData = that.getSeriesData(graphSettings.x, graphSettings.y, colorOnInputs);
-            $("#" + chartContainer).highcharts().series[0].setData(chartData);
+            var chart = $("#" + chartContainer).highcharts();
+            if (chart) {
+                chart.destroy();
+            }
+
+            var chartOpts = graphSettings.opts;
+            chartOpts.series.push({
+                type: 'scatter',
+                name: 'Depth',
+                data: chartData,
+                marker: {
+                    enabled: true
+                },
+                showInLegend: false,
+            });
+            $("#" + chartContainer).highcharts(chartOpts);
         });
     };
 }
