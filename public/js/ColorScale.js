@@ -83,17 +83,21 @@ function MapboxStopsCalculator() {
 
         // if we don't find it, return value of stops just before our input
         cmp = input - stops[middle][0];
+        var toReturn = -1;
         if (cmp < 0) {
-            return middle - 1;
+            toReturn = middle - 1;
+        } else {
+            toReturn = middle;
         }
 
-        // can't go past array length
-        if (middle >= stops.length) {
-            return stops.length - 1;
+        // make sure we are in bounds of array
+        if (toReturn < 0) {
+            toReturn = 0;
+        } else if (toReturn >= stops.length) {
+            toReturn = stops.length - 1;
         }
 
-        // cmp > 0 and within the array still
-        return middle;
+        return toReturn;
     };
 }
 
