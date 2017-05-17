@@ -3,6 +3,8 @@ function AbstractGraphsController() {
     this.highChartsOpts = {};
     this.graphSettings = {};
 
+    // takes any object which can be compared. whether that be js objects
+    // or milliseconds
     this.mapDatesToArrayIndeces = function(minDate, maxDate, arrayOfDates) {
         // lower limit index of subarray bounded by slider dates
         // must be >= minDate; upper limit <= maxDate
@@ -889,7 +891,7 @@ function setupSeismicityGraphsController() {
 
         var depthVLongValues = this.getSeriesData(longValues, depthValues, colorOnInputs);
         var chartOpts = this.getBasicChartJSON();
-        chartOpts.subtitle = { text: "Depth" };
+        chartOpts.subtitle = { text: "Longitude vs Depth Cross Section" };
         chartOpts.xAxis.title = { text: "Longitude" };
         chartOpts.yAxis.title = { text: "Depth (Km)" };
         chartOpts.yAxis.reversed = true;
@@ -929,7 +931,7 @@ function setupSeismicityGraphsController() {
 
         var latVdepthValues = this.getSeriesData(depthValues, latValues, colorOnInputs);
         var chartOpts = this.getBasicChartJSON();
-        chartOpts.subtitle = { text: "Depth" };
+        chartOpts.subtitle = { text: "Depth vs. Latitude Cross Section" };
         chartOpts.tooltip.pointFormat = "{point.y:.1f} °";
         chartOpts.xAxis.title = { text: "Depth (Km)" };
         chartOpts.yAxis.title = { text: "Latitude" };
@@ -977,15 +979,31 @@ function setupSeismicityGraphsController() {
             colorOnInputs = times;
         }
 
-        var minDate = new Date(millisecondValues[0]).toLocaleDateString();
-        var maxDate = new Date(millisecondValues[millisecondValues.length - 1]).toLocaleDateString();
+        var minDate = new Date(millisecondValues[0]);
+        var maxDate = new Date(millisecondValues[millisecondValues.length - 1]);
+        var minDateString = minDate.toLocaleDateString();
+        var maxDateString = maxDate.toLocaleDateString();
         var eventsPerDate = this.getSeriesData(millisecondValues, cumulativeValues, colorOnInputs);
         var chartOpts = this.getBasicChartJSON();
-        chartOpts.subtitle = { text: "Cumulative Number of Events " + minDate + " - " + maxDate };
+        chartOpts.subtitle = { text: "Cumulative Number of Events " + minDateString + " - " + maxDateString };
         chartOpts.tooltip.pointFormat = "{point.y} Events";
         chartOpts.xAxis.type = "datetime";
         chartOpts.xAxis.dateTimeLabelFormats = { month: '%b %Y', year: '%Y' };
         chartOpts.yAxis.title = { text: "Cumulative Number" };
+        chartOpts.navigator = { enabled: true };
+        chartOpts.xAxis.events = {
+            // get dates for slider bounds
+            afterSetExtremes: function(e) {
+                var minMax = this.mapDatesToArrayIndeces(e.min, e.max, millisecondValues);
+                var minDateString = new Date(millisecondValues[minMax.minIndex]).toLocaleDateString();
+                var maxDateString = new Date(millisecondValues[minMax.maxIndex]).toLocaleDateString();
+                var title = "Cumulative Number of Events " + minDateString + " - " + maxDateString
+                $("#" + chartContainer).highcharts().setTitle(null, {
+                    text: title
+                });
+
+            }.bind(this)
+        };
         // save it before we push the data to series
         this.graphSettings[chartContainer] = { x: millisecondValues, y: cumulativeValues, times: times, depths: depths, opts: chartOpts };
 

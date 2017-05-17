@@ -967,7 +967,7 @@ $(window).load(function() {
     $("#seismicity-charts-minimize-button").on("click", function() {
         var container = $("#seismicity-charts");
         if (container.hasClass("active")) {
-            $(".seismicity-chart").each(function(chartContainer) {
+            $(".seismicity-chart").each(function() {
                 $(this).highcharts().destroy();
             });
             container.removeClass("active");
