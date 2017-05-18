@@ -472,6 +472,7 @@ function Map(loadJSONFunc) {
 
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
     this.addDataset = function(data) {
+        this.colorScale.setTopAsMax(true);
         this.colorOnDisplacement = false;
         var stops = this.colorScale.getMapboxStops();
 

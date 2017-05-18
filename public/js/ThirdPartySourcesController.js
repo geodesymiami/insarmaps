@@ -777,6 +777,8 @@ function ThirdPartySourcesController(map) {
     };
 
     this.recolorSeismicitiesOn = function(property, stops, type) {
+        var min = stops[0][0];
+        var max = stops[stops.length - 1][0];
         this.seismicities.forEach(function(layerID) {
             if (this.map.map.getLayer(layerID)) {
                 this.map.map.setPaintProperty(layerID, "circle-color", {
@@ -784,6 +786,9 @@ function ThirdPartySourcesController(map) {
                     "stops": stops,
                     "type": type
                 });
+
+                var filter = ["all", [">=", property, min], ["<=", property, max]];
+                this.map.map.setFilter(layerID, filter);
             }
         }.bind(this));
     };
