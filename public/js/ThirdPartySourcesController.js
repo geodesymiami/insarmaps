@@ -472,7 +472,7 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
-                var colors = this.map.colorScale.jet;
+                var colors = this.map.colorScale.jet_r;
                 var depthStops = this.stopsCalculator.getDepthStops(0, 50, colors);
                 var magCircleSizes = [5, 7, 9, 11];
                 var magStops = this.stopsCalculator.getMagnitudeStops(4, 6, magCircleSizes);
@@ -532,7 +532,7 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
-                var colors = this.map.colorScale.jet;
+                var colors = this.map.colorScale.jet_r;
                 var depthStops = this.stopsCalculator.getDepthStops(0, 50, colors);
                 var magCircleSizes = [5, 8, 11, 14, 17, 20];
                 var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
@@ -676,7 +676,7 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
-                var colors = this.map.colorScale.jet;
+                var colors = this.map.colorScale.jet_r;
                 var depthStops = this.stopsCalculator.getDepthStops(0, 50, colors);
                 var magCircleSizes = [5, 8, 11, 14, 17, 20];
                 var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
@@ -811,6 +811,7 @@ function ThirdPartySourcesController(map) {
             stops = this.stopsCalculator.getTimeStops(minMilliSecond, maxMilliSecond, colors);
             type = "interval"
         } else if (selectedColoring === "depth") {
+            colors = this.map.colorScale.jet_r;
             this.map.colorScale.setTitle("Depth (Km)");
             stops = this.stopsCalculator.getDepthStops(min, max, colors);
             type = "interval";
