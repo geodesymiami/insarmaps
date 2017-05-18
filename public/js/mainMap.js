@@ -791,7 +791,7 @@ function Map(loadJSONFunc) {
         this.map.on('zoomend', function() {
             var currentZoom = this.map.getZoom();
 
-            if (this.areaSwathsLoaded()) {
+            if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
                 this.loadSwathsInCurrentViewport(true);
             }
             // reshow area markers once we zoom out enough
@@ -835,7 +835,7 @@ function Map(loadJSONFunc) {
                 source: "recenter"
             });
 
-            if (this.areas) {
+            if (this.areas && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
                 this.loadSwathsInCurrentViewport(true);
             }
         }.bind(this));
