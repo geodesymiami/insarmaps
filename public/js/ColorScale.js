@@ -36,11 +36,9 @@ function MapboxStopsCalculator() {
     };
 
     this.getDepthStops = function(min, max, outputArray) {
-        var valueIncrement = 10;
-        var numCategories = (max - min) / valueIncrement;
-        var outputIncrement = Math.ceil(outputArray.length / numCategories);
+        var valueIncrement = (max - min) / outputArray.length;
 
-        return this.calculateStops(min, max, outputArray, valueIncrement, outputIncrement);
+        return this.calculateStops(min, max, outputArray, valueIncrement, 1);
     };
 
     this.getMagnitudeStops = function(min, max, outputArray) {
@@ -52,17 +50,15 @@ function MapboxStopsCalculator() {
     };
 
     this.getTimeStops = function(min, max, outputArray) {
-        const MILLISECONDS_PER_YEAR = 365 * 24 * 60 * 60 * 1000;
-        var valueIncrement = 1 * MILLISECONDS_PER_YEAR;
-        var numCategories = (max - min) / valueIncrement;
-        var outputIncrement = Math.ceil(outputArray.length / numCategories);
+        var valueIncrement = (max - min) / outputArray.length;
 
-        return this.calculateStops(min, max, outputArray, valueIncrement, outputIncrement);
+        return this.calculateStops(min, max, outputArray, valueIncrement, 1);
     };
 
     // assume order so use binary search
     this.getOutputIndexFromInputStop = function(stops, input) {
-        var first = 0, last = stops.length - 1;
+        var first = 0,
+            last = stops.length - 1;
         var middle, cmp = 0;
 
         while (!(first > last)) {

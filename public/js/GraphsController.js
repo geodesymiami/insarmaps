@@ -1060,7 +1060,7 @@ function setupSeismicityGraphsController() {
         if (!features) {
             features = this.features;
             if (!features) {
-                throw new Error("No features found for recreating graphs");
+                return;
             }
         }
 

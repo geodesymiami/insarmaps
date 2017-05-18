@@ -665,8 +665,6 @@ function setupToggleButtons() {
     usgsEarthquakeToggleButton = new ToggleButton("usgs-earthquake-toggle-button", "overlay-options-toggles", "USGS 30 Day Earthquake Feed");
     usgsEarthquakeToggleButton.onclick(function() {
         if (usgsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
-            myMap.colorScale.show();
-            myMap.colorScale.setTitle("Depth");
             myMap.thirdPartySourcesController.loadUSGSEarthquakeFeed();
         } else {
             myMap.colorScale.remove();
@@ -677,8 +675,6 @@ function setupToggleButtons() {
     IGEPNEarthquakeToggleButton = new ToggleButton("IGEPN-earthquake-toggle-button", "overlay-options-toggles", "IGEPN Earthquake Feed");
     IGEPNEarthquakeToggleButton.onclick(function() {
         if (IGEPNEarthquakeToggleButton.toggleState == ToggleStates.ON) {
-            myMap.colorScale.show();
-            myMap.colorScale.setTitle("Depth");
             myMap.thirdPartySourcesController.loadIGEPNEarthquakeFeed();
         } else {
             myMap.colorScale.remove();
@@ -689,8 +685,6 @@ function setupToggleButtons() {
     HawaiiRelocToggleButton = new ToggleButton("Hawaii-reloc-toggle-button", "overlay-options-toggles", "Hawaii Relocation (UM)");
     HawaiiRelocToggleButton.onclick(function() {
         if (HawaiiRelocToggleButton.toggleState == ToggleStates.ON) {
-            myMap.colorScale.show();
-            myMap.colorScale.setTitle("Depth");
             myMap.thirdPartySourcesController.loadHawaiiReloc();
         } else {
             myMap.colorScale.remove();
@@ -701,8 +695,6 @@ function setupToggleButtons() {
     irisEarthquakeToggleButton = new ToggleButton("IRIS-earthquake-toggle-button", "overlay-options-toggles", "IRIS Earthquake");
     irisEarthquakeToggleButton.onclick(function() {
         if (irisEarthquakeToggleButton.toggleState == ToggleStates.ON) {
-            myMap.colorScale.show();
-            myMap.colorScale.setTitle("Depth");
             myMap.thirdPartySourcesController.loadIRISEarthquake();
         } else {
             myMap.thirdPartySourcesController.removeIRISEarthquake();
@@ -861,9 +853,7 @@ $(window).load(function() {
     $("#seismicity-color-on-dropdown").change(function() {
         var selectedColoring = $(this).val();
         myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
-        var seismicityGraphsController = new SeismicityGraphsController();
-        var graphsToUpdate = ["depth-vs-long-graph", "lat-vs-depth-graph", "cumulative-events-vs-date-graph"];
-        seismicityGraphsController.updateChartSeriesColors(graphsToUpdate, selectedColoring);
+        myMap.seismicityGraphsController.recreateAllCharts(selectedColoring);
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {

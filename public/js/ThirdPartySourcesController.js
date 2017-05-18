@@ -356,7 +356,14 @@ function ThirdPartySourcesController(map) {
         return this.map.map.getSource("midas") && this.map.map.getLayer("midas");
     };
 
+    this.setupColorScaleForSeimicities = function() {
+        this.map.colorScale.show();
+        this.map.colorScale.setTitle("Depth (Km)");
+        this.map.colorScale.setMinMax(0, 50);
+    };
+
     this.loadUSGSEarthquakeFeed = function() {
+        this.setupColorScaleForSeimicities();
         showLoadingScreen("Getting USGS Earthquake Data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/USGSMonthlyFeed",
@@ -417,6 +424,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadIGEPNEarthquakeFeed = function() {
+        this.setupColorScaleForSeimicities();
         showLoadingScreen("Getting IGEPN Data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/IGEPNEarthquakeFeed",
@@ -507,6 +515,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadHawaiiReloc = function() {
+        this.setupColorScaleForSeimicities();
         showLoadingScreen("Getting Hawaii Reloc Data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/HawaiiReloc",
@@ -643,6 +652,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadIRISEarthquake = function() {
+        this.setupColorScaleForSeimicities();
         var now = new Date();
         var startDate = new Date();
         startDate.setFullYear(now.getFullYear() - 2);
@@ -793,7 +803,7 @@ function ThirdPartySourcesController(map) {
             stops = this.stopsCalculator.getTimeStops(minMilliSecond, maxMilliSecond, colors);
             type = "interval"
         } else if (selectedColoring === "depth") {
-            this.map.colorScale.setTitle("Depth (K)");
+            this.map.colorScale.setTitle("Depth (Km)");
             stops = this.stopsCalculator.getDepthStops(min, max, colors);
             type = "interval";
         } else {
