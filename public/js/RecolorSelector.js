@@ -12,7 +12,7 @@ function setupRecolorSelector() {
         var selectedColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
         var features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
         this.map.seismicityGraphsController.setFeatures(this.getUniqueFeatures(features));
-        this.map.seismicityGraphsController.createAllCharts(selectedColoring, features);
+        this.map.seismicityGraphsController.createAllCharts(selectedColoring, null);
     };
 
     RecolorSelector.prototype.finish = function(bbox) {

@@ -790,6 +790,12 @@ function setupSeismicityGraphsController() {
         this.features = features.sort(function(feature1, feature2) {
             return feature1.properties.time - feature2.properties.time;
         });
+
+        for (var i = 1; i < this.features.length; i++) {
+            if (this.features[i] < this.features[i - 1]) {
+                console.log("NOT SORTED");
+            }
+        }
     };
 
     SeismicityGraphsController.prototype.getSeriesData = function(xValues, yValues, colorOnInputs) {
@@ -980,6 +986,7 @@ function setupSeismicityGraphsController() {
         var times = features.map(function(feature) {
             return feature.properties.time;
         });
+
         var colorOnInputs = null;
         if (selectedColoring === "depth") {
             colorOnInputs = depths;
@@ -1041,7 +1048,15 @@ function setupSeismicityGraphsController() {
         $("#" + chartContainer).highcharts(chartOpts);
     };
 
-    SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, features) {
+    SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, optionalFeatures) {
+        var features = optionalFeatures;
+
+        if (!features) {
+            features = this.features;
+            if (!features) {
+                return;
+            }
+        }
         this.createDepthVLongGraph(features, "depth-vs-long-graph", selectedColoring);
         this.createLatVDepthGraph(features, "lat-vs-depth-graph", selectedColoring);
         this.createCumulativeEventsVDay(features, "cumulative-events-vs-date-graph", selectedColoring);
