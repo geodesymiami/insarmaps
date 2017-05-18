@@ -826,7 +826,7 @@ function Map(loadJSONFunc) {
             this.previousZoom = currentZoom;
         }.bind(this));
 
-        this.map.on("moveend", function(e) {
+        this.map.on("dragend", function(e) {
             if (e.source === "recenter") {
                 return;
             }
