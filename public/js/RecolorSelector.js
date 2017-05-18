@@ -1,18 +1,18 @@
-function RecolorSelector() {}
+function RecolorSelector() {
+    this.recoloringInProgress = false;
+}
 
 function setupRecolorSelector() {
-    RecolorSelector.prototype.recoloringInProgress = false;
     RecolorSelector.prototype.createSeismicityPlots = function(features) {
         var $chartContainer = $("#seismicity-charts");
         if (!$chartContainer.hasClass("active")) {
             $chartContainer.addClass("active");
-        }
+        }        
 
-        var graphsController = new SeismicityGraphsController();
         var selectedColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
-        graphsController.createDepthVLongGraph(features, "depth-vs-long-graph", selectedColoring);
-        graphsController.createLatVDepthGraph(features, "lat-vs-depth-graph", selectedColoring);
-        graphsController.createCumulativeEventsVDay(features, "cumulative-events-vs-date-graph", selectedColoring);
+        var features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
+        this.map.seismicityGraphsController.setFeatures(this.getUniqueFeatures(features));
+        this.map.seismicityGraphsController.createAllCharts(selectedColoring, features);
     };
 
     RecolorSelector.prototype.finish = function(bbox) {

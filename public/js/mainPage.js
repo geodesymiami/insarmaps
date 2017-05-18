@@ -1150,9 +1150,7 @@ $(window).load(function() {
             myMap.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             var selectedColoring = $("#seismicity-color-on-dropdown").val();
             myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
-            var seismicityGraphsController = new SeismicityGraphsController();
-            var graphsToUpdate = ["depth-vs-long-graph", "lat-vs-depth-graph", "cumulative-events-vs-date-graph"];
-            seismicityGraphsController.updateChartSeriesColors(graphsToUpdate, selectedColoring);
+            myMap.seismicityGraphsController.recreateAllCharts(selectedColoring);
         }
     });
 

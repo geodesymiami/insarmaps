@@ -149,6 +149,7 @@ function Map(loadJSONFunc) {
     this.areaMarkerLayer = new AreaMarkerLayer(this);
 
     this.thirdPartySourcesController = new ThirdPartySourcesController(this);
+    this.seismicityGraphsController = new SeismicityGraphsController();
 
     this.areaPopup = new mapboxgl.Popup({
         closeButton: false,

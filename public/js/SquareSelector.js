@@ -308,7 +308,7 @@ function SquareSelector() {
         var uniqueFeatures = [];
 
         for (var i = 0; i < features.length; i++) {
-            var curFeatureKey = features[i].properties.p.toString();
+            var curFeatureKey = JSON.stringify(features[i].geometry.coordinates);
             if (!featuresMap[curFeatureKey]) {
                 featuresMap[curFeatureKey] = true;
                 uniqueFeatures.push(features[i]);

@@ -1,7 +1,6 @@
 function AbstractGraphsController() {
     this.map = null;
     this.highChartsOpts = {};
-    this.graphSettings = {};
 
     // takes any object which can be compared. whether that be js objects
     // or milliseconds
@@ -112,11 +111,8 @@ function AbstractGraphsController() {
 // stock chart to look like a regular graph. To save headaches, we simply re create the graph... performance
 // penalty is not noticeable.
 // TODO: date functions need serious refactoring
-function GraphsController() {}
-
-function setupGraphsController() {
-    GraphsController.prototype.selectedGraph = "Top Graph";
-    GraphsController.prototype.graphSettings = {
+function GraphsController() {
+    this.graphSettings = {
         "chartContainer": {
             regressionOn: false,
             date_string_array: null,
@@ -136,6 +132,10 @@ function setupGraphsController() {
             navigatorEvent: null
         }
     };
+}
+
+function setupGraphsController() {
+    GraphsController.prototype.selectedGraph = "Top Graph";
 
     GraphsController.prototype.JSONToGraph = function(json, chartContainer, clickEvent) {
         var date_string_array = json.string_dates;
@@ -776,9 +776,22 @@ function setupGraphsController() {
     };
 }
 
-function SeismicityGraphsController() {}
+
+// we save features in the graphsettings hash map. this is a bit wasteful instead of just saving arrays of x and y values
+// of each graph, but it will allow us flexiblity in case sliders for the other graphs are required in the future.
+function SeismicityGraphsController() {
+    this.graphSettings = {};
+    this.features = null;
+}
 
 function setupSeismicityGraphsController() {
+    SeismicityGraphsController.prototype.setFeatures = function(features) {
+        // make sure they are sorted since datetimes have to be sorted for highcharts
+        this.features = features.sort(function(feature1, feature2) {
+            return feature1.properties.time - feature2.properties.time;
+        });
+    };
+
     SeismicityGraphsController.prototype.getSeriesData = function(xValues, yValues, colorOnInputs) {
         var seriesData = [];
 
@@ -805,7 +818,7 @@ function setupSeismicityGraphsController() {
                     y: yValues[i],
                     name: "Point2",
                     color: color
-                })
+                });
             }
         } else {
             for (var i = 0; i < xValues.length; i++) {
@@ -897,7 +910,7 @@ function setupSeismicityGraphsController() {
         chartOpts.yAxis.reversed = true;
 
         // save it before we save the data to series
-        this.graphSettings[chartContainer] = { x: longValues, y: depthValues, times: times, depths: depths, opts: chartOpts };
+        this.graphSettings[chartContainer] = { opts: chartOpts };
         chartOpts.series.push({
             type: 'scatter',
             name: 'Depth',
@@ -938,7 +951,7 @@ function setupSeismicityGraphsController() {
         chartOpts.yAxis.labels = { format: "{value:.1f}" };
 
         // save it before we push the data to series
-        this.graphSettings[chartContainer] = { x: depthValues, y: latValues, times: times, depths: depthValues, opts: chartOpts };
+        this.graphSettings[chartContainer] = { opts: chartOpts };
         chartOpts.series.push({
             type: 'scatter',
             name: 'Depth',
@@ -955,11 +968,6 @@ function setupSeismicityGraphsController() {
     SeismicityGraphsController.prototype.createCumulativeEventsVDay = function(features, chartContainer, selectedColoring) {
         var millisecondValues = features.map(function(feature) {
             return feature.properties.time;
-        });
-
-        // sort it
-        millisecondValues.sort(function(milli1, milli2) {
-            return milli1 - milli2;
         });
 
         var cumulativeValues = features.map(function(feature, index, array) {
@@ -995,17 +1003,30 @@ function setupSeismicityGraphsController() {
             // get dates for slider bounds
             afterSetExtremes: function(e) {
                 var minMax = this.mapDatesToArrayIndeces(e.min, e.max, millisecondValues);
-                var minDateString = new Date(millisecondValues[minMax.minIndex]).toLocaleDateString();
-                var maxDateString = new Date(millisecondValues[minMax.maxIndex]).toLocaleDateString();
-                var title = "Cumulative Number of Events " + minDateString + " - " + maxDateString
+                var minMilliseconds = millisecondValues[minMax.minIndex];
+                var maxMilliseconds = millisecondValues[minMax.maxIndex];
+                var minDateString = new Date(minMilliseconds).toLocaleDateString();
+                var maxDateString = new Date(maxMilliseconds).toLocaleDateString();
+                var title = "Cumulative Number of Events " + minDateString + " - " + maxDateString;
                 $("#" + chartContainer).highcharts().setTitle(null, {
                     text: title
                 });
 
+                // they all share the same features
+                var features = this.features;
+                var featuresInTimeRange = features.filter(function(feature) {
+                    return feature.properties.time >= minMilliseconds && feature.properties.time <= maxMilliseconds;
+                });
+
+                $("#depth-vs-long-graph").highcharts().destroy();
+                $("#lat-vs-depth-graph").highcharts().destroy();
+                // only create other two graphs, not recreate this one again
+                this.createDepthVLongGraph(featuresInTimeRange, "depth-vs-long-graph", selectedColoring);
+                this.createLatVDepthGraph(featuresInTimeRange, "lat-vs-depth-graph", selectedColoring);
             }.bind(this)
         };
         // save it before we push the data to series
-        this.graphSettings[chartContainer] = { x: millisecondValues, y: cumulativeValues, times: times, depths: depths, opts: chartOpts };
+        this.graphSettings[chartContainer] = { opts: chartOpts };
 
         chartOpts.series.push({
             type: 'scatter',
@@ -1020,33 +1041,30 @@ function setupSeismicityGraphsController() {
         $("#" + chartContainer).highcharts(chartOpts);
     };
 
-    SeismicityGraphsController.prototype.updateChartSeriesColors = function(charts, selectedColoring) {
-        var that = this;
-        charts.forEach(function(chartContainer) {
-            var graphSettings = that.graphSettings[chartContainer];
-            var colorOnInputs = null;
-            if (selectedColoring === "depth") {
-                colorOnInputs = graphSettings.depths;
-            } else {
-                colorOnInputs = graphSettings.times;
-            }
-            var chartData = that.getSeriesData(graphSettings.x, graphSettings.y, colorOnInputs);
-            var chart = $("#" + chartContainer).highcharts();
-            if (chart) {
-                chart.destroy();
-            }
+    SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, features) {
+        this.createDepthVLongGraph(features, "depth-vs-long-graph", selectedColoring);
+        this.createLatVDepthGraph(features, "lat-vs-depth-graph", selectedColoring);
+        this.createCumulativeEventsVDay(features, "cumulative-events-vs-date-graph", selectedColoring);
+    };
 
-            var chartOpts = graphSettings.opts;
-            chartOpts.series.push({
-                type: 'scatter',
-                name: 'Depth',
-                data: chartData,
-                marker: {
-                    enabled: true
-                },
-                showInLegend: false,
-            });
-            $("#" + chartContainer).highcharts(chartOpts);
-        });
+    SeismicityGraphsController.prototype.destroyAllCharts = function() {
+        $("#depth-vs-long-graph").highcharts().destroy();
+        $("#lat-vs-depth-graph").highcharts().destroy();
+        $("#cumulative-events-vs-date-graph").highcharts().destroy();
+    };
+
+    SeismicityGraphsController.prototype.recreateAllCharts = function(selectedColoring, optionalFeatures) {
+        // all graphs share same features
+        var features = optionalFeatures;
+
+        if (!features) {
+            features = this.features;
+            if (!features) {
+                throw new Error("No features found for recreating graphs");
+            }
+        }
+
+        this.destroyAllCharts();
+        this.createAllCharts(selectedColoring, features);
     };
 }
