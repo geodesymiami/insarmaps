@@ -267,12 +267,12 @@
         <div id="scale-values">
           <div id="left-scale-minimum">
             <div class="form-group">
-              <input type="number" class="form-control" id="min-scale-value"/>
+              <input type="number" class="form-control" id="bottom-scale-value"/>
             </div>
           </div>
           <div id="right-scale-maximum">
             <div class="form-group">
-              <input type="number" class="form-control" id="max-scale-value"/>
+              <input type="number" class="form-control" id="top-scale-value"/>
             </div>
           </div>
         </div>

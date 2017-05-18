@@ -320,24 +320,44 @@ function ColorScale(min, max, divID) {
         $("#color-scale-picture-div > img").attr("src", imgSrc);
     };
 
+    this.topIsMax = true;
+    this.setTopAsMax = function(setAsMax) {
+        this.topIsMax = setAsMax;
+        this.setMinMax(this.min, this.max);
+    };
+
     this.initVisualScale = function() {
-        $("#min-scale-value").val(this.min);
-        $("#max-scale-value").val(this.max);
+        $("#bottom-scale-value").val(this.min);
+        $("#top-scale-value").val(this.max);
     };
 
     this.setMin = function(min) {
         this.min = min;
-        $("#min-scale-value").val(this.min);
+        if (this.topIsMax) {
+            $("#bottom-scale-value").val(this.min);
+        } else {
+            $("#top-scale-value").val(this.min);
+        }
     };
 
     this.setMax = function(max) {
         this.max = max;
-        $("#max-scale-value").val(this.max);
+
+        if (this.topIsMax) {
+            $("#top-scale-value").val(this.max);
+        } else {
+            $("#bottom-scale-value").val(this.max);
+        }
     };
 
-    this.setMinMax = function(min, max) {
-        this.setMin(min);
-        this.setMax(max);
+    this.setMinMax = function(val1, val2) {
+        if (val1 >= val2) {
+            this.setMin(val2);
+            this.setMax(val1);
+        } else {
+            this.setMin(val1);
+            this.setMax(val2);
+        }
     };
 
     this.defaultValues = function() {

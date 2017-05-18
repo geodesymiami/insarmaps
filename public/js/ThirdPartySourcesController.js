@@ -424,6 +424,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadIGEPNEarthquakeFeed = function() {
+        this.map.colorScale.setTopAsMax(false);
         this.setupColorScaleForSeimicities();
         showLoadingScreen("Getting IGEPN Data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
@@ -515,6 +516,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadHawaiiReloc = function() {
+        this.map.colorScale.setTopAsMax(false);
         this.setupColorScaleForSeimicities();
         showLoadingScreen("Getting Hawaii Reloc Data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
@@ -652,6 +654,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadIRISEarthquake = function() {
+        this.map.colorScale.setTopAsMax(false);
         this.setupColorScaleForSeimicities();
         var now = new Date();
         var startDate = new Date();

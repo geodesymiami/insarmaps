@@ -852,6 +852,11 @@ $(window).load(function() {
 
     $("#seismicity-color-on-dropdown").change(function() {
         var selectedColoring = $(this).val();
+        if (selectedColoring === "time") {
+            myMap.colorScale.setTopAsMax(true);
+        } else {
+            myMap.colorScale.setTopAsMax(false);
+        }
         myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
         myMap.seismicityGraphsController.recreateAllCharts(selectedColoring);
     });
@@ -1128,11 +1133,10 @@ $(window).load(function() {
         var ENTER_KEY = 13;
 
         if (e.which == ENTER_KEY) {
-            var min = parseFloat($("#min-scale-value").val());
-            var max = parseFloat($("#max-scale-value").val());
+            var min = parseFloat($("#bottom-scale-value").val());
+            var max = parseFloat($("#top-scale-value").val());
 
-            myMap.colorScale.min = min;
-            myMap.colorScale.max = max;
+            myMap.colorScale.setMinMax(min, max);
 
             // if they are loaded, refresh them. if aren't loaded, nothing
             // will happen
