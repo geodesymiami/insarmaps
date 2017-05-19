@@ -813,7 +813,7 @@ function setupSeismicityGraphsController() {
 
         // we do x, y values if no stops provided to avoid highcharts turbothreshold
         if (colorOnInputs) {
-            var curStops = this.map.thirdPartySourcesController.currentSeismicityStops;
+            var curStops = this.map.thirdPartySourcesController.currentSeismicityColorStops;
             var stopsCalculator = new MapboxStopsCalculator();
 
             for (var i = 0; i < xValues.length; i++) {

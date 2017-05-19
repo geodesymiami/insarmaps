@@ -8,7 +8,8 @@ function ThirdPartySourcesController(map) {
     this.seismicities = ["IRISEarthquake", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake"];
 
     this.stopsCalculator = new MapboxStopsCalculator();
-    this.currentSeismicityStops = this.stopsCalculator.getDepthStops(0, 50, this.map.colorScale.jet);;
+    // the default
+    this.currentSeismicityColorStops = this.stopsCalculator.getDepthStops(0, 50, this.map.colorScale.jet_r);
     this.currentSeismicityColoring = "depth";
 
     this.getLayerOnTopOf = function(layer) {
@@ -473,7 +474,7 @@ function ThirdPartySourcesController(map) {
                 };
 
                 var colors = this.map.colorScale.jet_r;
-                var depthStops = this.stopsCalculator.getDepthStops(0, 50, colors);
+                var depthStops = this.currentSeismicityColorStops;
                 var magCircleSizes = [5, 7, 9, 11];
                 var magStops = this.stopsCalculator.getMagnitudeStops(4, 6, magCircleSizes);
 
@@ -533,7 +534,7 @@ function ThirdPartySourcesController(map) {
                 };
 
                 var colors = this.map.colorScale.jet_r;
-                var depthStops = this.stopsCalculator.getDepthStops(0, 50, colors);
+                var depthStops = this.currentSeismicityColorStops;
                 var magCircleSizes = [5, 8, 11, 14, 17, 20];
                 var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
 
@@ -677,7 +678,7 @@ function ThirdPartySourcesController(map) {
                 };
 
                 var colors = this.map.colorScale.jet_r;
-                var depthStops = this.stopsCalculator.getDepthStops(0, 50, colors);
+                var depthStops = this.currentSeismicityColorStops;
                 var magCircleSizes = [5, 8, 11, 14, 17, 20];
                 var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
 
@@ -880,7 +881,7 @@ function ThirdPartySourcesController(map) {
             throw new Error("Invalid dropdown selection");
         }
 
-        this.currentSeismicityStops = stops;
+        this.currentSeismicityColorStops = stops;
         this.currentSeismicityColoring = selectedColoring;
         this.map.thirdPartySourcesController.recolorSeismicitiesOn(selectedColoring, stops, type);
     };
