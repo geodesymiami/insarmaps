@@ -779,6 +779,7 @@ function ThirdPartySourcesController(map) {
     this.recolorSeismicitiesOn = function(property, stops, type) {
         var min = stops[0][0];
         var max = stops[stops.length - 1][0];
+
         this.seismicities.forEach(function(layerID) {
             if (this.map.map.getLayer(layerID)) {
                 this.map.map.setPaintProperty(layerID, "circle-color", {
@@ -786,9 +787,69 @@ function ThirdPartySourcesController(map) {
                     "stops": stops,
                     "type": type
                 });
+            }
+        }.bind(this));
+    };
 
-                var filter = ["all", [">=", property, min], ["<=", property, max]];
-                this.map.map.setFilter(layerID, filter);
+    // updates conditions in filter with conditions in withFilter.
+    // for all those new conditions in withFilter not in filter, we append them
+    // to filter.
+    this.updateFilter = function(filter, withFilter) {
+        // remove all if there
+        if (withFilter[0] === "all") {
+            withFilter = withFilter.slice(1);
+        }
+
+        var notUpdated = [];
+        for (var i = 0; i < withFilter.length; i++) {
+            var condition = withFilter[i][0];
+            var property = withFilter[i][1];
+            var updated = false;
+            for (var j = 0; j < filter.length; j++) {
+                if (filter[j].includes(condition) && filter[j].includes(property)) {
+                    filter[j] = withFilter[i];
+                    updated = true;
+                    break;
+                }
+            }
+
+            if (!updated) {
+                notUpdated.push(i);
+            }
+        }
+
+        // now, go through all non updated and append them to filter
+        notUpdated.forEach(function(indexInWithFilter) {
+            filter.push(withFilter[indexInWithFilter]);
+        });
+    };
+
+    this.filterSeismicities = function(minsAndMaxes, property) {
+        var filter = ["all"];
+        for (var i = 0; i < minsAndMaxes.length; i++) {
+            var min = minsAndMaxes[i].min;
+            var max = minsAndMaxes[i].max;
+
+            // can't do if min or if max cause they can be 0 which is evaluated to false
+            if (min != null) {
+                filter.push([">=", property, min]);
+            }
+
+            if (max != null) {
+                filter.push(["<=", property, max]);
+            }
+        }
+
+        this.seismicities.forEach(function(layerID) {
+            if (this.map.map.getLayer(layerID)) {
+                var curFilter = this.map.map.getFilter(layerID);
+                // we update so filter doesn't continually grow when we keep on setting
+                if (curFilter) {
+                    this.updateFilter(curFilter, filter);
+                    this.map.map.setFilter(layerID, curFilter);
+                } else {
+                    this.map.map.setFilter(layerID, filter);
+                }
             }
         }.bind(this));
     };

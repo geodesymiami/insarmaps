@@ -1133,10 +1133,14 @@ $(window).load(function() {
         var ENTER_KEY = 13;
 
         if (e.which == ENTER_KEY) {
-            var min = parseFloat($("#bottom-scale-value").val());
-            var max = parseFloat($("#top-scale-value").val());
+            var bottomValue = parseFloat($("#bottom-scale-value").val());
+            var topValue = parseFloat($("#top-scale-value").val());
 
-            myMap.colorScale.setMinMax(min, max);
+            myMap.colorScale.setMinMax(bottomValue, topValue);
+
+            // now the color scale has decided min and max, let's get them
+            var min = myMap.colorScale.min;
+            var max = myMap.colorScale.max;
 
             // if they are loaded, refresh them. if aren't loaded, nothing
             // will happen
@@ -1145,6 +1149,7 @@ $(window).load(function() {
             var selectedColoring = $("#seismicity-color-on-dropdown").val();
             myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
             myMap.seismicityGraphsController.recreateAllCharts(selectedColoring);
+            myMap.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], selectedColoring);
         }
     });
 

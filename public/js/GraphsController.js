@@ -1030,6 +1030,7 @@ function setupSeismicityGraphsController() {
                 // only create other two graphs, not recreate this one again
                 this.createDepthVLongGraph(featuresInTimeRange, "depth-vs-long-graph", selectedColoring);
                 this.createLatVDepthGraph(featuresInTimeRange, "lat-vs-depth-graph", selectedColoring);
+                this.map.thirdPartySourcesController.filterSeismicities([{ min: minMilliseconds, max: maxMilliseconds }], "time");
             }.bind(this)
         };
         // save it before we push the data to series
