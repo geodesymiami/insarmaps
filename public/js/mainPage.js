@@ -1038,12 +1038,7 @@ $(window).load(function() {
     // We can also have a class for square selector type square buttons if he wants more
     $("#dataset-frames-toggle-button").on("click", function() {
         if ($(this).hasClass("toggled")) {
-            if (myMap.areas) {
-                var toExclude = currentArea ? [currentArea.properties.unavco_name] : null;
-                myMap.addSwathsFromJSON(myMap.areas, toExclude, true);
-            } else {
-                myMap.loadAreaMarkers(null);
-            }
+            myMap.loadSwathsInCurrentViewport(true);
             $(this).attr("data-original-title", "Hide Swaths");
             $(this).removeClass("toggled");
         } else {

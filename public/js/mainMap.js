@@ -689,7 +689,6 @@ function Map(loadJSONFunc) {
     };
 
     this.loadSwathsInCurrentViewport = function(populateTable) {
-
         var bounds = this.map.getBounds();
         var bbox = [bounds._ne, bounds._sw];
         this.areaFilterSelector.filterAreasInBrowser(bbox, populateTable);
