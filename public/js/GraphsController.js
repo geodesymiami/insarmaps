@@ -80,26 +80,6 @@ function AbstractGraphsController() {
         }
         chart.xAxis[0].setExtremes(curExtremes.min, max);
     };
-
-    this.recreateGraph = function(chartContainer) {
-        var graphSettings = this.graphSettings[chartContainer];
-        var graphOpts = this.highChartsOpts[chartContainer];
-        $("#" + chartContainer).highcharts(graphOpts);
-        var chart = $("#" + chartContainer).highcharts();
-
-        if (!chart) {
-            return;
-        }
-        chart.xAxis[0].setExtremes(graphSettings.navigatorEvent.min,
-            graphSettings.navigatorEvent.max);
-        chart.setTitle(null, {
-            text: graphOpts.subtitle.text
-        });
-
-        if (regressionToggleButton.toggleState == ToggleStates.ON) {
-            this.addRegressionLines();
-        }
-    };
 }
 
 
@@ -136,6 +116,26 @@ function GraphsController() {
 
 function setupGraphsController() {
     GraphsController.prototype.selectedGraph = "Top Graph";
+
+    GraphsController.prototype.recreateGraph = function(chartContainer) {
+        var graphSettings = this.graphSettings[chartContainer];
+        var graphOpts = this.highChartsOpts[chartContainer];
+        $("#" + chartContainer).highcharts(graphOpts);
+        var chart = $("#" + chartContainer).highcharts();
+
+        if (!chart) {
+            return;
+        }
+        chart.xAxis[0].setExtremes(graphSettings.navigatorEvent.min,
+            graphSettings.navigatorEvent.max);
+        chart.setTitle(null, {
+            text: graphOpts.subtitle.text
+        });
+
+        if (regressionToggleButton.toggleState == ToggleStates.ON) {
+            this.addRegressionLines();
+        }
+    };
 
     GraphsController.prototype.JSONToGraph = function(json, chartContainer, clickEvent) {
         var date_string_array = json.string_dates;
@@ -798,7 +798,7 @@ function setupSeismicityGraphsController() {
         }
     };
 
-    SeismicityGraphsController.prototype.getSeriesData = function(xValues, yValues, colorOnInputs) {
+    SeismicityGraphsController.prototype.getSeriesData = function(xValues, yValues, colorOnInputs, colorStops) {
         var seriesData = [];
 
         if (xValues.length != yValues.length) {
@@ -813,12 +813,11 @@ function setupSeismicityGraphsController() {
 
         // we do x, y values if no stops provided to avoid highcharts turbothreshold
         if (colorOnInputs) {
-            var curStops = this.map.thirdPartySourcesController.currentSeismicityColorStops;
             var stopsCalculator = new MapboxStopsCalculator();
 
             for (var i = 0; i < xValues.length; i++) {
-                var index = stopsCalculator.getOutputIndexFromInputStop(curStops, colorOnInputs[i]);
-                var color = curStops[index][1];
+                var index = stopsCalculator.getOutputIndexFromInputStop(colorStops, colorOnInputs[i]);
+                var color = colorStops[index][1];
                 seriesData.push({
                     x: xValues[i],
                     y: yValues[i],
@@ -901,14 +900,14 @@ function setupSeismicityGraphsController() {
         var times = features.map(function(feature) {
             return feature.properties.time;
         });
-        var colorOnInputs = null;
-        if (selectedColoring === "depth") {
-            colorOnInputs = depths;
-        } else {
-            colorOnInputs = times;
-        }
+        var colorOnInputs = depths;
+        var colorOnInputs = depthValues;
+        var min = this.map.colorScale.min;
+        var max = this.map.colorScale.max;
+        var stopsCalculator = new MapboxStopsCalculator();
+        var colorStops = stopsCalculator.getDepthStops(min, max, this.map.colorScale.jet_r);
 
-        var depthVLongValues = this.getSeriesData(longValues, depthValues, colorOnInputs);
+        var depthVLongValues = this.getSeriesData(longValues, depthValues, colorOnInputs, colorStops);
         var chartOpts = this.getBasicChartJSON();
         chartOpts.subtitle = { text: "Longitude vs Depth Cross Section" };
         chartOpts.xAxis.title = { text: "Longitude" };
@@ -927,6 +926,11 @@ function setupSeismicityGraphsController() {
             showInLegend: false,
         });
 
+        var chart = $("#" + chartContainer).highcharts();
+        if (chart) {
+            chart.destroy();
+        }
+
         $("#" + chartContainer).highcharts(chartOpts);
     };
 
@@ -941,14 +945,13 @@ function setupSeismicityGraphsController() {
         var times = features.map(function(feature) {
             return feature.properties.time;
         });
-        var colorOnInputs = null;
-        if (selectedColoring === "depth") {
-            colorOnInputs = depthValues;
-        } else {
-            colorOnInputs = times;
-        }
+        var colorOnInputs = depthValues;
+        var min = this.map.colorScale.min;
+        var max = this.map.colorScale.max;
+        var stopsCalculator = new MapboxStopsCalculator();
+        var colorStops = stopsCalculator.getDepthStops(min, max, this.map.colorScale.jet_r);
 
-        var latVdepthValues = this.getSeriesData(depthValues, latValues, colorOnInputs);
+        var latVdepthValues = this.getSeriesData(depthValues, latValues, colorOnInputs, colorStops);
         var chartOpts = this.getBasicChartJSON();
         chartOpts.subtitle = { text: "Depth vs. Latitude Cross Section" };
         chartOpts.tooltip.pointFormat = "{point.y:.1f} °";
@@ -983,22 +986,25 @@ function setupSeismicityGraphsController() {
         var depths = features.map(function(feature) {
             return feature.properties.depth;
         });
-        var times = features.map(function(feature) {
-            return feature.properties.time;
-        });
 
-        var colorOnInputs = null;
-        if (selectedColoring === "depth") {
-            colorOnInputs = depths;
-        } else {
-            colorOnInputs = times;
-        }
+        var colorOnInputs = depths;
 
         var minDate = new Date(millisecondValues[0]);
         var maxDate = new Date(millisecondValues[millisecondValues.length - 1]);
         var minDateString = minDate.toLocaleDateString();
         var maxDateString = maxDate.toLocaleDateString();
-        var eventsPerDate = this.getSeriesData(millisecondValues, cumulativeValues, colorOnInputs);
+
+        var colorOnInputs = millisecondValues;
+        var stopsCalculator = new MapboxStopsCalculator();
+        var now = new Date();
+        const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
+        var min = this.map.colorScale.min;
+        var max = this.map.colorScale.max;
+        min = (min * millisecondsPerYear) + now.getTime();
+        max = (max * millisecondsPerYear) + now.getTime();
+        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
+
+        var eventsPerDate = this.getSeriesData(millisecondValues, cumulativeValues, colorOnInputs, colorStops);
         var chartOpts = this.getBasicChartJSON();
         chartOpts.subtitle = { text: "Cumulative Number of Events " + minDateString + " - " + maxDateString };
         chartOpts.tooltip.pointFormat = "{point.y} Events";
@@ -1058,9 +1064,31 @@ function setupSeismicityGraphsController() {
                 return;
             }
         }
-        this.createDepthVLongGraph(features, "depth-vs-long-graph", selectedColoring);
-        this.createLatVDepthGraph(features, "lat-vs-depth-graph", selectedColoring);
-        this.createCumulativeEventsVDay(features, "cumulative-events-vs-date-graph", selectedColoring);
+        this.createChart(selectedColoring, "depth-vs-long-graph", features);
+        this.createChart(selectedColoring, "lat-vs-depth-graph", features);
+        this.createChart(selectedColoring, "cumulative-events-vs-date-graph", features);
+    };
+
+    SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, optionalFeatures) {
+        // all graphs share same features
+        var features = optionalFeatures;
+
+        if (!features) {
+            features = this.features;
+            if (!features) {
+                return;
+            }
+        }
+
+        if (chartType === "depth-vs-long-graph") {
+            this.createDepthVLongGraph(features, "depth-vs-long-graph", selectedColoring);
+        } else if (chartType === "lat-vs-depth-graph") {
+            this.createLatVDepthGraph(features, "lat-vs-depth-graph", selectedColoring);
+        } else if (chartType === "cumulative-events-vs-date-graph") {
+            this.createCumulativeEventsVDay(features, "cumulative-events-vs-date-graph", selectedColoring);
+        } else {
+            throw new Error("Unrecognized chart type " + chartType);
+        }
     };
 
     SeismicityGraphsController.prototype.destroyAllCharts = function() {
@@ -1070,7 +1098,6 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.recreateAllCharts = function(selectedColoring, optionalFeatures) {
-        // all graphs share same features
         var features = optionalFeatures;
 
         if (!features) {

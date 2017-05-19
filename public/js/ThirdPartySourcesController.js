@@ -883,6 +883,6 @@ function ThirdPartySourcesController(map) {
 
         this.currentSeismicityColorStops = stops;
         this.currentSeismicityColoring = selectedColoring;
-        this.map.thirdPartySourcesController.recolorSeismicitiesOn(selectedColoring, stops, type);
+        this.recolorSeismicitiesOn(selectedColoring, stops, type);
     };
 }

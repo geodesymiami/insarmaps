@@ -70,7 +70,7 @@ function setupRecolorSelector() {
     };
 
     RecolorSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate, loadingTextTop, loadingTextBottom) {
-        var millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
+        const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
         var yearsElapsed = (endDecimalDate - startDecimalDate) / millisecondsPerYear;
 
         this.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed, loadingTextTop, loadingTextBottom);

@@ -1149,6 +1149,14 @@ $(window).load(function() {
             var selectedColoring = $("#seismicity-color-on-dropdown").val();
             myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
             myMap.seismicityGraphsController.recreateAllCharts(selectedColoring);
+
+            // if time is selected, convert to milliseconds
+            if (selectedColoring == "time") {
+                var now = new Date();
+                const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
+                min = (min * millisecondsPerYear) + now.getTime();
+                max = (max * millisecondsPerYear) + now.getTime();
+            }
             myMap.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], selectedColoring);
         }
     });
