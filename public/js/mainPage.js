@@ -1148,7 +1148,6 @@ $(window).load(function() {
             myMap.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             var selectedColoring = $("#seismicity-color-on-dropdown").val();
             myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
-            myMap.seismicityGraphsController.recreateAllCharts(selectedColoring);
 
             // if time is selected, convert to milliseconds
             if (selectedColoring == "time") {
@@ -1156,6 +1155,10 @@ $(window).load(function() {
                 const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
                 min = (min * millisecondsPerYear) + now.getTime();
                 max = (max * millisecondsPerYear) + now.getTime();
+                myMap.seismicityGraphsController.createChart(selectedColoring, "cumulative-events-vs-date-graph");
+            } else {
+                myMap.seismicityGraphsController.createChart(selectedColoring, "depth-vs-long-graph");
+                myMap.seismicityGraphsController.createChart(selectedColoring, "lat-vs-depth-graph");
             }
             myMap.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], selectedColoring);
         }

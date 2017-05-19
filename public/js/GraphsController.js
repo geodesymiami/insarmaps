@@ -886,6 +886,15 @@ function setupSeismicityGraphsController() {
         return chartOpts;
     };
 
+    SeismicityGraphsController.prototype.createChartIfNotThere = function(chartContainer, chartOpts) {
+        var chart = $("#" + chartContainer).highcharts();
+        if (chart) {
+            chart.destroy();
+        }
+
+        $("#" + chartContainer).highcharts(chartOpts);
+    };
+
     SeismicityGraphsController.prototype.createDepthVLongGraph = function(features, chartContainer, selectedColoring) {
         var depthValues = features.map(function(feature) {
             return feature.properties.depth;
@@ -926,12 +935,7 @@ function setupSeismicityGraphsController() {
             showInLegend: false,
         });
 
-        var chart = $("#" + chartContainer).highcharts();
-        if (chart) {
-            chart.destroy();
-        }
-
-        $("#" + chartContainer).highcharts(chartOpts);
+        this.createChartIfNotThere(chartContainer, chartOpts);
     };
 
     SeismicityGraphsController.prototype.createLatVDepthGraph = function(features, chartContainer, selectedColoring) {
@@ -971,7 +975,7 @@ function setupSeismicityGraphsController() {
             showInLegend: false,
         });
 
-        $("#" + chartContainer).highcharts(chartOpts);
+        this.createChartIfNotThere(chartContainer, chartOpts);
     };
 
     SeismicityGraphsController.prototype.createCumulativeEventsVDay = function(features, chartContainer, selectedColoring) {
@@ -1052,7 +1056,7 @@ function setupSeismicityGraphsController() {
             showInLegend: false,
         });
 
-        $("#" + chartContainer).highcharts(chartOpts);
+        this.createChartIfNotThere(chartContainer, chartOpts);
     };
 
     SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, optionalFeatures) {
