@@ -377,6 +377,7 @@ function ThirdPartySourcesController(map) {
                 featureCollection.features.forEach(function(feature) {
                     var depth = feature.geometry.coordinates[2];
                     feature.properties["depth"] = depth;
+                    feature.properties["location"] = feature.properties.title;
                 });
 
                 var mapboxStationFeatures = {
@@ -722,20 +723,11 @@ function ThirdPartySourcesController(map) {
     this.featureToViewOptions = function(feature) {
         // this is begging to be refactored. maybe a hash map with callbacks?
         var layerID = feature.layer.id;
-        var layerSource = feature.layer.source;
-        var markerSymbol = feature.properties["marker-symbol"];
-        var itsAnreaPolygon = (markerSymbol === "fillPolygon");
-        var itsAPoint = (layerSource === "vector_layer_" || layerSource === "onTheFlyJSON");
         var itsAGPSFeature = (layerID === "gpsStations");
         var itsAMidasGPSFeature = (layerID === "midas");
-        var itsAnUSGSFeature = (layerID === "USGSEarthquake");
-        var itsAnIGEPNFeature = (layerID === "IGEPNEarthquake");
-        var itsAHawaiiRelocFeature = (layerID === "HawaiiReloc");
-        var itsAnIRISFeature = (layerID === "IRISEarthquake");
-        var cursor = (itsAPoint || itsAnreaPolygon ||
-            itsAGPSFeature || itsAMidasGPSFeature ||
-            itsAnUSGSFeature || itsAnIGEPNFeature ||
-            itsAHawaiiRelocFeature || itsAnIRISFeature) ? 'pointer' : 'auto';
+        var itsASeismicityFeature = this.seismicities.includes(layerID);
+
+        var cursor = (itsAGPSFeature || itsAMidasGPSFeature || itsASeismicityFeature) ? 'pointer' : 'auto';
 
         // a better way is to have two mousemove callbacks like we do with select area vs select marker
         var html = null;
@@ -748,21 +740,21 @@ function ThirdPartySourcesController(map) {
             var uncertainty = (feature.properties.u * 100).toFixed(4);
             var html = feature.properties.stationName + "<br>" +
                 velocityInCMYR + " +- " + uncertainty + " cm/yr"; // we work in cm. convert m to cm
-        } else if (itsAnIGEPNFeature) {
+        } else if (itsASeismicityFeature) {
+            html = "";
             var props = feature.properties;
-            var date = new Date(props.time);
-            var dateString = date.toDateString() + " " + date.toLocaleTimeString();
-            html = "ID: " + props.id + "<br>Mag: " + props.mag + "<br>Depth: " +
-                props.depth + "<br>" + dateString + " TU<br>" + props.location;
-        } else if (itsAnUSGSFeature) {
-            var props = feature.properties;
-            html = "Mag: " + props.mag + "<br>Depth: " + props.depth + "<br>" + new Date(props.time) +
-                "<br>" + props.title;
-        } else if (itsAHawaiiRelocFeature || itsAnIRISFeature) {
-            var props = feature.properties;
-            html = "Mag: " + props.mag + "<br>Depth: " + props.depth;
-            html += "<br><br>lng: " + feature.geometry.coordinates[0] + "<br>lat: " + feature.geometry.coordinates[1];
-            html += "<br><br>Time: " + new Date(props.time);
+            if (props.depth) {
+                html += "Depth: " + props.depth + "Km<br>";
+            }
+            if (props.mag) {
+                html += "Mag: " + props.mag + "<br>";
+            }
+            if (props.time) {
+                html += new Date(props.time) + "<br>";
+            }
+            if (props.location) {
+                html += props.location;
+            }
         } else {
             coordinates = null;
             html = null;

@@ -15,7 +15,7 @@ class ThirdPartyDataNoCorsController extends Controller {
 	public function getMidas() {
 		$json = [];
 		$midas = file_get_contents("http://geodesy.unr.edu/velocities/midas.IGS08.txt");
-		$stationLatLongs = file_get_contents("ftp://gneiss.nbmg.unr.edu/rapids/llh");
+		$stationLatLongs = $this->getUNR();
 		$json["midas"] = $midas;
 		$json["stationLatLongs"] = $stationLatLongs;
 
