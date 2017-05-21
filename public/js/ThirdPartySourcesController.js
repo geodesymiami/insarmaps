@@ -728,11 +728,14 @@ function ThirdPartySourcesController(map) {
     this.featureToViewOptions = function(feature) {
         // this is begging to be refactored. maybe a hash map with callbacks?
         var layerID = feature.layer.id;
+        var layerSource = feature.layer.source;
+        var itsAPoint = (layerSource === "vector_layer_" || layerSource === "onTheFlyJSON");
         var itsAGPSFeature = (layerID === "gpsStations");
         var itsAMidasGPSFeature = (layerID === "midas");
         var itsASeismicityFeature = this.seismicities.includes(layerID);
 
-        var cursor = (itsAGPSFeature || itsAMidasGPSFeature || itsASeismicityFeature) ? 'pointer' : 'auto';
+        var cursor = (itsAPoint || itsAGPSFeature || itsAMidasGPSFeature
+                        || itsASeismicityFeature) ? 'pointer' : 'auto';
 
         // a better way is to have two mousemove callbacks like we do with select area vs select marker
         var html = null;
