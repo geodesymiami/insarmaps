@@ -1,5 +1,17 @@
 function MapboxStopsCalculator() {
-    this.calculateStops = function(min, max, outputArray, valueIncrement, outputIncrement) {
+    this.inputsFromMinAndMax = function(min, max, increment) {
+        var currentValue = min;
+        var output = [];
+
+        while (currentValue <= max) {
+            output.push(currentValue);
+            currentValue += increment;
+        }
+
+        return output;
+    };
+
+    this.calculateStops = function(inputArray, outputArray, valueIncrement, outputIncrement) {
         if (outputIncrement < 1) {
             throw new Error("outputIncrement can't be less than 1");
             return;
@@ -8,12 +20,9 @@ function MapboxStopsCalculator() {
         outputIncrement = Math.ceil(outputIncrement);
         var stops = [];
 
-        var currentValue = min;
-
         for (var i = 0; i < outputArray.length; i += outputIncrement) {
-            var curStop = [currentValue, outputArray[i]];
+            var curStop = [inputArray[i], outputArray[i]];
             stops.push(curStop);
-            currentValue += valueIncrement;
         }
 
         // for large output incremnets not a multiple of output array length, we can get
@@ -21,7 +30,7 @@ function MapboxStopsCalculator() {
         // make sure even on these types of scales we get the full gamut of colors. if output
         // increment == 1 for example, it doesn't matter as we full red color at
         // max - outputIncrement / outputArray.length, so adding the last max value doesn't affect it
-        stops.push([max, outputArray[outputArray.length - 1]]);
+        stops.push([inputArray[inputArray.length - 1], outputArray[outputArray.length - 1]]);
 
         return stops;
     };
@@ -29,28 +38,34 @@ function MapboxStopsCalculator() {
     this.colorsToMapboxStops = function(min, max, colors) {
         // we divide by 100 because this class works in cm, but mapbox works in m as
         // those are the units in the original h5 files
-        var colorRange = (max - min) / 100.0;
+        min /= 100.0;
+        max /= 100.0;
+        var colorRange = max - min;
         var increment = colorRange / colors.length;
+        var inputs = this.inputsFromMinAndMax(min, max, increment);
 
-        return this.calculateStops(min / 100.0, max / 100.0, colors, increment, 1);
+        return this.calculateStops(inputs, colors, increment, 1);
     };
 
     this.getDepthStops = function(min, max, outputArray) {
         var valueIncrement = (max - min) / outputArray.length;
+        var inputs = this.inputsFromMinAndMax(min, max, valueIncrement);
 
-        return this.calculateStops(min, max, outputArray, valueIncrement, 1);
+        return this.calculateStops(inputs, outputArray, valueIncrement, 1);
     };
 
     this.getMagnitudeStops = function(min, max, outputArray) {
         var valueIncrement = (max - min) / outputArray.length;
+        var inputs = this.inputsFromMinAndMax(min, max, valueIncrement);
 
-        return this.calculateStops(min, max, outputArray, valueIncrement, 1);
+        return this.calculateStops(inputs, outputArray, valueIncrement, 1);
     };
 
     this.getTimeStops = function(min, max, outputArray) {
         var valueIncrement = (max - min) / outputArray.length;
+        var inputs = this.inputsFromMinAndMax(min, max, valueIncrement);
 
-        return this.calculateStops(min, max, outputArray, valueIncrement, 1);
+        return this.calculateStops(inputs, outputArray, valueIncrement, 1);
     };
 
     // assume order so use binary search
