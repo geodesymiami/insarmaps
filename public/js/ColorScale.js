@@ -42,11 +42,9 @@ function MapboxStopsCalculator() {
     };
 
     this.getMagnitudeStops = function(min, max, outputArray) {
-        var valueIncrement = 1;
-        var numCategories = (max - min) / valueIncrement;
-        var outputIncrement = Math.ceil(outputArray.length / numCategories);
+        var valueIncrement = (max - min) / outputArray.length;
 
-        return this.calculateStops(min, max, outputArray, valueIncrement, outputIncrement);
+        return this.calculateStops(min, max, outputArray, valueIncrement, 1);
     };
 
     this.getTimeStops = function(min, max, outputArray) {
