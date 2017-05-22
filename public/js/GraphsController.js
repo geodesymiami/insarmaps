@@ -131,6 +131,15 @@ function AbstractGraphsController() {
 
         return chartOpts;
     };
+
+    this.createChartIfNotThere = function(chartContainer, chartOpts) {
+        var chart = $("#" + chartContainer).highcharts();
+        if (chart) {
+            chart.destroy();
+        }
+
+        $("#" + chartContainer).highcharts(chartOpts);
+    };
 }
 
 
@@ -832,7 +841,6 @@ function setupGraphsController() {
 // we save features in the graphsettings hash map. this is a bit wasteful instead of just saving arrays of x and y values
 // of each graph, but it will allow us flexiblity in case sliders for the other graphs are required in the future.
 function SeismicityGraphsController() {
-    this.graphSettings = {};
     this.features = null;
 }
 
@@ -880,15 +888,6 @@ function setupSeismicityGraphsController() {
         return seriesData;
     };
 
-    SeismicityGraphsController.prototype.createChartIfNotThere = function(chartContainer, chartOpts) {
-        var chart = $("#" + chartContainer).highcharts();
-        if (chart) {
-            chart.destroy();
-        }
-
-        $("#" + chartContainer).highcharts(chartOpts);
-    };
-
     SeismicityGraphsController.prototype.createDepthVLongGraph = function(features, chartContainer, selectedColoring) {
         var depthValues = features.map(function(feature) {
             return feature.properties.depth;
@@ -926,7 +925,7 @@ function setupSeismicityGraphsController() {
         chartOpts.yAxis.reversed = true;
 
         // save it before we save the data to series
-        this.graphSettings[chartContainer] = { opts: chartOpts };
+        this.highChartsOpts[chartContainer] = chartOpts;
         chartOpts.series.push({
             type: 'scatter',
             name: 'Depth',
@@ -938,6 +937,8 @@ function setupSeismicityGraphsController() {
         });
 
         this.createChartIfNotThere(chartContainer, chartOpts);
+
+        return depthVLongValues;
     };
 
     SeismicityGraphsController.prototype.createLatVDepthGraph = function(features, chartContainer, selectedColoring) {
@@ -975,10 +976,10 @@ function setupSeismicityGraphsController() {
         chartOpts.yAxis.labels = { format: "{value:.1f}" };
 
         // save it before we push the data to series
-        this.graphSettings[chartContainer] = { opts: chartOpts };
+        this.highChartsOpts[chartContainer] = chartOpts;
         chartOpts.series.push({
             type: 'scatter',
-            name: 'Depth',
+            name: 'Lat',
             data: latVdepthValues,
             marker: {
                 enabled: true
@@ -987,6 +988,8 @@ function setupSeismicityGraphsController() {
         });
 
         this.createChartIfNotThere(chartContainer, chartOpts);
+
+        return latVdepthValues;
     };
 
     SeismicityGraphsController.prototype.createCumulativeEventsVDay = function(features, chartContainer, selectedColoring) {
@@ -1049,11 +1052,11 @@ function setupSeismicityGraphsController() {
             }.bind(this)
         };
         // save it before we push the data to series
-        this.graphSettings[chartContainer] = { opts: chartOpts };
+        this.highChartsOpts[chartContainer] = chartOpts;
 
         chartOpts.series.push({
             type: 'scatter',
-            name: 'Depth',
+            name: 'Cumulative',
             data: eventsPerDate,
             marker: {
                 enabled: true
@@ -1062,6 +1065,8 @@ function setupSeismicityGraphsController() {
         });
 
         this.createChartIfNotThere(chartContainer, chartOpts);
+
+        return eventsPerDate;
     };
 
     SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, optionalFeatures) {
@@ -1089,15 +1094,18 @@ function setupSeismicityGraphsController() {
             }
         }
 
+        var chartData = null;
         if (chartType === "depth-vs-long-graph") {
-            this.createDepthVLongGraph(features, "depth-vs-long-graph", selectedColoring);
+            chartData = this.createDepthVLongGraph(features, "depth-vs-long-graph", selectedColoring);
         } else if (chartType === "lat-vs-depth-graph") {
-            this.createLatVDepthGraph(features, "lat-vs-depth-graph", selectedColoring);
+            chartData = this.createLatVDepthGraph(features, "lat-vs-depth-graph", selectedColoring);
         } else if (chartType === "cumulative-events-vs-date-graph") {
-            this.createCumulativeEventsVDay(features, "cumulative-events-vs-date-graph", selectedColoring);
+            chartData = this.createCumulativeEventsVDay(features, "cumulative-events-vs-date-graph", selectedColoring);
         } else {
             throw new Error("Unrecognized chart type " + chartType);
         }
+
+        return chartData;
     };
 
     SeismicityGraphsController.prototype.destroyAllCharts = function() {
@@ -1124,7 +1132,135 @@ function setupSeismicityGraphsController() {
 function CustomHighchartsSlider() {}
 
 function setupCustomHighchartsSlider() {
-    CustomHighchartsSlider.prototype.init = function(container) {
+    CustomHighchartsSlider.prototype.init = function(height, afterSetExtremes) {
+        var chartOpts = this.getBasicChartJSON();
+        chartOpts.credits = false;
+        chartOpts.chart = {
+            margin: 0,
+            spacing: 0
+        };
+        chartOpts.navigator = {
+            enabled: true,
+            top: 1
+        };
 
+        if (height) {
+            chartOpts.chart.height = height;
+            chartOpts.navigator.height = height;
+        }
+
+        chartOpts.xAxis = {
+            lineWidth: 0,
+            tickLength: 0,
+            labels: {
+                enabled: false
+            }
+        };
+        chartOpts.xAxis.events = {
+            // get dates for slider bounds
+            afterSetExtremes: afterSetExtremes
+        };
+        chartOpts.yAxis = {
+            labels: {
+                enabled: false
+            },
+            title: null
+        };
+        chartOpts.rangeSelector = {
+            enabled: false
+        };
+        chartOpts.tooltip = {
+            enabled: false
+        };
+        chartOpts.title = {
+            text: null
+        };
+
+        this.highChartsOpts = chartOpts;
+    };
+
+    CustomHighchartsSlider.prototype.display = function(chartContainer, data, dataType) {
+        var chartOpts = this.highChartsOpts;
+        if (dataType) {
+            chartOpts.chart.type = dataType;
+            // if linear linear (i.e. when we use depth) it was showing strange formatting
+            if (dataType === "linear") {
+                chartOpts.navigator.xAxis = {
+                    labels: {
+                        format: "{value}"
+                    }
+                }
+            }
+        }
+
+        chartOpts.series.push({
+            type: 'scatter',
+            name: 'Depth',
+            data: data,
+            marker: {
+                enabled: false,
+                states: {
+                    hover: {
+                        enabled: false
+                    }
+                }
+            },
+            showInLegend: false,
+        });
+
+        $("#" + chartContainer).css("height", chartOpts.chart.height + "px");
+        $("#" + chartContainer).highcharts(chartOpts);
+    };
+}
+
+function CustomSliderSeismicityController() {}
+
+function setupCustomSliderSeismicityController() {
+    CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalFeatures) {
+        var features = optionalFeatures;
+
+        if (!features) {
+            features = this.features;
+            if (!features) {
+                return;
+            }
+        }
+        this.createChart(selectedColoring, "depth-vs-long-graph", features);
+        var depthData = this.createChart(selectedColoring, "lat-vs-depth-graph", features);
+        var millisecondData = this.createChart(selectedColoring, "cumulative-events-vs-date-graph", features);
+        // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
+        // no need to sort milliseconds as the features are already sorted by this
+        depthData.sort(function(data1, data2) {
+            return data1.x - data2.x;
+        });
+        var depthValues = [];
+        var millisecondValues = [];
+        // now get millisecond and depth values by themselves, as mapDatesToArrayIndeces needs an array of comparables...
+        for (var i = 0; i < depthData.length; i++) {
+            var depth = depthData[i].x;
+            var millisecond = millisecondData[i].x;
+            depthValues.push(depth);
+            millisecondValues.push(millisecond);
+        }
+
+        this.createSlider("depth-slider", depthData, "linear", function(e) {
+            var minMax = this.mapDatesToArrayIndeces(e.min, e.max, depthValues);
+            var min = depthValues[minMax.minIndex];
+            var max = depthValues[minMax.maxIndex];
+
+            this.map.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], "depth");
+        }.bind(this));
+        this.createSlider("time-slider", millisecondData, "datetime", function(e) {
+            var minMax = this.mapDatesToArrayIndeces(e.min, e.max, millisecondValues);
+            var min = millisecondValues[minMax.minIndex];
+            var max = millisecondValues[minMax.maxIndex];
+
+            this.map.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], "time");
+        }.bind(this));
+    };
+    CustomSliderSeismicityController.prototype.createSlider = function(sliderContainer, data, dataType, afterSetExtremes) {
+        var slider = new CustomHighchartsSlider();
+        slider.init(null, afterSetExtremes);
+        slider.display(sliderContainer, data, dataType);
     };
 }

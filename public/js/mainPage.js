@@ -801,7 +801,7 @@ $(window).load(function() {
 
     var NUM_CHUNKS = 300;
 
-    // inheritance of LineSelector class
+    // inheritance of LineSelector class (TODO: put all these inheritance setups in own function)
     RecolorSelector.prototype = new SquareSelector();
     AreaFilterSelector.prototype = new SquareSelector();
     LineSelector.prototype = new SquareSelector();
@@ -810,12 +810,16 @@ $(window).load(function() {
     // and of graphs controllers
     GraphsController.prototype = new AbstractGraphsController();
     SeismicityGraphsController.prototype = new AbstractGraphsController();
+    CustomHighchartsSlider.prototype = new AbstractGraphsController();
+    CustomSliderSeismicityController.prototype = new SeismicityGraphsController();
     myMap = new Map(loadJSON);
     myMap.addMapToPage("map-container");
     GraphsController.prototype.map = myMap;
     SeismicityGraphsController.prototype.map = myMap;
     setupGraphsController();
     setupSeismicityGraphsController();
+    setupCustomHighchartsSlider();
+    setupCustomSliderSeismicityController()
     populateSearchAutocomplete();
 
     var layerList = document.getElementById('map-type-menu');
@@ -958,14 +962,25 @@ $(window).load(function() {
         }
     });
 
-
+    // TODO: again, these minimize buttons are dying to be abstracted into a class along with
+    // other toggable, 2 state items
     $("#seismicity-charts-minimize-button").on("click", function() {
-        var container = $("#seismicity-charts");
-        if (container.hasClass("active")) {
+        var $container = $("#seismicity-charts");
+        if ($container.hasClass("active")) {
             $(".seismicity-chart").each(function() {
                 $(this).highcharts().destroy();
             });
-            container.removeClass("active");
+            $container.removeClass("active");
+        }
+    });
+
+    $("#seismicity-chart-sliders-minimize-button").on("click", function() {
+        var $container = $("#seismicity-chart-sliders");
+        if ($container.hasClass("active")) {
+            $(".seismicity-chart").each(function() {
+                $(this).highcharts().destroy();
+            });
+            $container.removeClass("active");
         }
     });
 
@@ -1150,10 +1165,10 @@ $(window).load(function() {
                 const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
                 min = (min * millisecondsPerYear) + now.getTime();
                 max = (max * millisecondsPerYear) + now.getTime();
-                myMap.seismicityGraphsController.createChart(selectedColoring, "cumulative-events-vs-date-graph");
+                myMap.seismicityGraphsController.createChart(selectedColoring, "cumulative-events-vs-date-graph", null);
             } else {
-                myMap.seismicityGraphsController.createChart(selectedColoring, "depth-vs-long-graph");
-                myMap.seismicityGraphsController.createChart(selectedColoring, "lat-vs-depth-graph");
+                myMap.seismicityGraphsController.createChart(selectedColoring, "depth-vs-long-graph", null);
+                myMap.seismicityGraphsController.createChart(selectedColoring, "lat-vs-depth-graph", null);
             }
             myMap.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], selectedColoring);
         }

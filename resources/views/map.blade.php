@@ -362,6 +362,18 @@
       </div>
     </div>
   </div>
+  <div class="wrap" id="seismicity-chart-sliders">
+    <div class="top-right-buttons">
+      <button type="button" class="minimize-button" data-dismiss="modal" id="seismicity-chart-sliders-minimize-button"></button>
+    </div>
+    <div class="content">
+      <div class="chart-containers">
+        <div class="seismicity-chart-slider" id="depth-slider"></div>
+        <div class="seismicity-chart-slider" id="time-slider"></div>
+      </div>
+    </div>
+  </div>
+  </div>
   <div class="wrap minimized" id="area-attributes-div" title="Attributes">
    <div class="top-right-buttons">
       <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"></button>
