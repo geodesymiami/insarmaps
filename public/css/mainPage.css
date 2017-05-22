@@ -679,6 +679,12 @@ input[type=number] {
     width: 100%;
 }
 
+#seismicity-charts-container > div > div.side-by-side {
+    width: 50%;
+    height: 100%;
+    float: left;
+}
+
 #seismicity-chart-sliders {
     position: absolute;
     left: 10%;

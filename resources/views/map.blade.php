@@ -355,10 +355,13 @@
       <button type="button" class="minimize-button" data-dismiss="modal" id="seismicity-charts-minimize-button"></button>
     </div>
     <div class="content">
-      <div class="chart-containers">
-        <div class="seismicity-chart" id="depth-vs-long-graph"></div>
-        <div class="seismicity-chart" id="lat-vs-depth-graph"></div>
-        <div class="seismicity-chart" id="cumulative-events-vs-date-graph"></div>
+      <div class="chart-containers" id="seismicity-charts-container">
+        <div class="seismicity-chart">
+          <div class="side-by-side" id="lat-vs-long-graph"></div>
+          <div class="side-by-side" id="depth-vs-long-graph"></div>
+        </div>
+        <div class="seismicity-chart"><div id="lat-vs-depth-graph"></div></div>
+        <div class="seismicity-chart"><div id="cumulative-events-vs-date-graph""></div></div>
       </div>
     </div>
   </div>

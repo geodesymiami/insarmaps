@@ -388,7 +388,7 @@ function ThirdPartySourcesController(map) {
 
                 var colors = this.map.colorScale.jet;
                 var opacities = [0.2, 0.6, 1.0];
-                var opacityStops = this.stopsCalculator.calculateStops(1, 10, opacities, 4.5, 1);
+                var opacityStops = this.stopsCalculator.getOpacityStops(1, 10, opacities);
 
                 var layerID = "USGSEarthquake";
                 var before = this.getLayerOnTopOf(layerID);

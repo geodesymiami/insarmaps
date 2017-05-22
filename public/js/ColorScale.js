@@ -47,6 +47,8 @@ function MapboxStopsCalculator() {
         return this.calculateStops(inputs, colors, increment, 1);
     };
 
+    // TODO: below for functions all do the same thing, just have different names.
+    // it is a result of better refactoring and coding such that we now only need one function...
     this.getDepthStops = function(min, max, outputArray) {
         var valueIncrement = (max - min) / outputArray.length;
         var inputs = this.inputsFromMinAndMax(min, max, valueIncrement);
@@ -62,6 +64,13 @@ function MapboxStopsCalculator() {
     };
 
     this.getTimeStops = function(min, max, outputArray) {
+        var valueIncrement = (max - min) / outputArray.length;
+        var inputs = this.inputsFromMinAndMax(min, max, valueIncrement);
+
+        return this.calculateStops(inputs, outputArray, valueIncrement, 1);
+    };
+
+    this.getOpacityStops = function(min, max, outputArray) {
         var valueIncrement = (max - min) / outputArray.length;
         var inputs = this.inputsFromMinAndMax(min, max, valueIncrement);
 
