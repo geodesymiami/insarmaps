@@ -80,6 +80,57 @@ function AbstractGraphsController() {
         }
         chart.xAxis[0].setExtremes(curExtremes.min, max);
     };
+
+    this.getBasicChartJSON = function() {
+        var chartOpts = {
+            title: {
+                text: null
+            },
+            subtitle: null,
+            scrollbar: {
+                liveRedraw: false
+            },
+            xAxis: {
+                title: null
+            },
+            yAxis: {
+                title: null,
+                legend: {
+                    layout: 'vertical',
+                    align: 'left',
+                    verticalAlign: 'top',
+                    x: 100,
+                    y: 70,
+                    floating: true,
+                    backgroundColor: '#FFFFFF',
+                    borderWidth: 1,
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                headerFormat: '',
+                pointFormat: '{point.y:.6f} Km'
+            },
+            series: [],
+            chart: {
+                marginRight: 50
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    turboThreshold: 0
+                }
+            }
+        };
+
+        return chartOpts;
+    };
 }
 
 
@@ -187,6 +238,7 @@ function setupGraphsController() {
         // edge case: set an index for the last point clicked so user cannot click a single dot twice
         var lastPointClicked = -1;
 
+        // TODO: use getBasicChartJSON function instead of hard coding
         var chartOpts = {
             title: {
                 text: null
@@ -790,12 +842,6 @@ function setupSeismicityGraphsController() {
         this.features = features.sort(function(feature1, feature2) {
             return feature1.properties.time - feature2.properties.time;
         });
-
-        for (var i = 1; i < this.features.length; i++) {
-            if (this.features[i] < this.features[i - 1]) {
-                console.log("NOT SORTED");
-            }
-        }
     };
 
     SeismicityGraphsController.prototype.getSeriesData = function(xValues, yValues, colorOnInputs, colorStops) {
@@ -834,58 +880,6 @@ function setupSeismicityGraphsController() {
         return seriesData;
     };
 
-    // TODO: make this a method of AbstractGraphsController and edit GraphsController as appropriate
-    SeismicityGraphsController.prototype.getBasicChartJSON = function() {
-        var chartOpts = {
-            title: {
-                text: null
-            },
-            subtitle: null,
-            scrollbar: {
-                liveRedraw: false
-            },
-            xAxis: {
-                title: null
-            },
-            yAxis: {
-                title: null,
-                legend: {
-                    layout: 'vertical',
-                    align: 'left',
-                    verticalAlign: 'top',
-                    x: 100,
-                    y: 70,
-                    floating: true,
-                    backgroundColor: '#FFFFFF',
-                    borderWidth: 1,
-                },
-                plotLines: [{
-                    value: 0,
-                    width: 1,
-                    color: '#808080'
-                }]
-            },
-            tooltip: {
-                headerFormat: '',
-                pointFormat: '{point.y:.6f} Km'
-            },
-            series: [],
-            chart: {
-                marginRight: 50
-            },
-            exporting: {
-                enabled: false
-            },
-            plotOptions: {
-                series: {
-                    turboThreshold: 0
-                }
-            }
-        };
-
-        return chartOpts;
-    };
-
     SeismicityGraphsController.prototype.createChartIfNotThere = function(chartContainer, chartOpts) {
         var chart = $("#" + chartContainer).highcharts();
         if (chart) {
@@ -906,15 +900,23 @@ function setupSeismicityGraphsController() {
         var depths = features.map(function(feature) {
             return feature.properties.depth;
         });
-        var times = features.map(function(feature) {
+        var millisecondValues = features.map(function(feature) {
             return feature.properties.time;
         });
-        var colorOnInputs = depths;
-        var colorOnInputs = depthValues;
+        var minDate = new Date(millisecondValues[0]);
+        var maxDate = new Date(millisecondValues[millisecondValues.length - 1]);
+        var minDateString = minDate.toLocaleDateString();
+        var maxDateString = maxDate.toLocaleDateString();
+
+        var colorOnInputs = millisecondValues;
+        var stopsCalculator = new MapboxStopsCalculator();
+        var now = new Date();
+        const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
         var min = this.map.colorScale.min;
         var max = this.map.colorScale.max;
-        var stopsCalculator = new MapboxStopsCalculator();
-        var colorStops = stopsCalculator.getDepthStops(min, max, this.map.colorScale.jet_r);
+        min = (min * millisecondsPerYear) + now.getTime();
+        max = (max * millisecondsPerYear) + now.getTime();
+        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
 
         var depthVLongValues = this.getSeriesData(longValues, depthValues, colorOnInputs, colorStops);
         var chartOpts = this.getBasicChartJSON();
@@ -946,14 +948,23 @@ function setupSeismicityGraphsController() {
             return feature.geometry.coordinates[1];
         });
 
-        var times = features.map(function(feature) {
+        var millisecondValues = features.map(function(feature) {
             return feature.properties.time;
         });
-        var colorOnInputs = depthValues;
+        var minDate = new Date(millisecondValues[0]);
+        var maxDate = new Date(millisecondValues[millisecondValues.length - 1]);
+        var minDateString = minDate.toLocaleDateString();
+        var maxDateString = maxDate.toLocaleDateString();
+
+        var colorOnInputs = millisecondValues;
+        var stopsCalculator = new MapboxStopsCalculator();
+        var now = new Date();
+        const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
         var min = this.map.colorScale.min;
         var max = this.map.colorScale.max;
-        var stopsCalculator = new MapboxStopsCalculator();
-        var colorStops = stopsCalculator.getDepthStops(min, max, this.map.colorScale.jet_r);
+        min = (min * millisecondsPerYear) + now.getTime();
+        max = (max * millisecondsPerYear) + now.getTime();
+        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
 
         var latVdepthValues = this.getSeriesData(depthValues, latValues, colorOnInputs, colorStops);
         var chartOpts = this.getBasicChartJSON();
@@ -987,26 +998,20 @@ function setupSeismicityGraphsController() {
             return index + 1;
         });
 
-        var depths = features.map(function(feature) {
+        var depthValues = features.map(function(feature) {
             return feature.properties.depth;
         });
 
-        var colorOnInputs = depths;
+        var colorOnInputs = depthValues;
+        var min = this.map.colorScale.min;
+        var max = this.map.colorScale.max;
+        var stopsCalculator = new MapboxStopsCalculator();
+        var colorStops = stopsCalculator.getDepthStops(min, max, this.map.colorScale.jet_r);
 
         var minDate = new Date(millisecondValues[0]);
         var maxDate = new Date(millisecondValues[millisecondValues.length - 1]);
         var minDateString = minDate.toLocaleDateString();
         var maxDateString = maxDate.toLocaleDateString();
-
-        var colorOnInputs = millisecondValues;
-        var stopsCalculator = new MapboxStopsCalculator();
-        var now = new Date();
-        const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
-        var min = this.map.colorScale.min;
-        var max = this.map.colorScale.max;
-        min = (min * millisecondsPerYear) + now.getTime();
-        max = (max * millisecondsPerYear) + now.getTime();
-        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
 
         var eventsPerDate = this.getSeriesData(millisecondValues, cumulativeValues, colorOnInputs, colorStops);
         var chartOpts = this.getBasicChartJSON();
@@ -1113,5 +1118,13 @@ function setupSeismicityGraphsController() {
 
         this.destroyAllCharts();
         this.createAllCharts(selectedColoring, features);
+    };
+}
+
+function CustomHighchartsSlider() {}
+
+function setupCustomHighchartsSlider() {
+    CustomHighchartsSlider.prototype.init = function(container) {
+
     };
 }

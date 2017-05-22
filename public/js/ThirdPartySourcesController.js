@@ -482,7 +482,6 @@ function ThirdPartySourcesController(map) {
                 var depthStops = this.currentSeismicityColorStops;
                 var magCircleSizes = this.defaultCircleSizes();
                 var magStops = this.stopsCalculator.getMagnitudeStops(4, 6, magCircleSizes);
-                console.log(JSON.stringify(magStops));
 
                 var layerID = "IGEPNEarthquake";
                 var before = this.getLayerOnTopOf(layerID);
