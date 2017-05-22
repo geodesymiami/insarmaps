@@ -1148,10 +1148,6 @@ $(window).load(function() {
 
             myMap.colorScale.setMinMax(bottomValue, topValue);
 
-            // now the color scale has decided min and max, let's get them
-            var min = myMap.colorScale.min;
-            var max = myMap.colorScale.max;
-
             // if they are loaded, refresh them. if aren't loaded, nothing
             // will happen
             myMap.refreshDataset();
@@ -1161,16 +1157,11 @@ $(window).load(function() {
 
             // if time is selected, convert to milliseconds
             if (selectedColoring == "time") {
-                var now = new Date();
-                const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
-                min = (min * millisecondsPerYear) + now.getTime();
-                max = (max * millisecondsPerYear) + now.getTime();
                 myMap.seismicityGraphsController.createChart(selectedColoring, "cumulative-events-vs-date-graph", null);
             } else {
                 myMap.seismicityGraphsController.createChart(selectedColoring, "depth-vs-long-graph", null);
                 myMap.seismicityGraphsController.createChart(selectedColoring, "lat-vs-depth-graph", null);
             }
-            myMap.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], selectedColoring);
         }
     });
 

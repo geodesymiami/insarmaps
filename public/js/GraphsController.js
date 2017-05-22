@@ -1172,15 +1172,15 @@ function setupCustomHighchartsSlider() {
         chartOpts.tooltip = {
             enabled: false
         };
-        chartOpts.title = {
-            text: null
-        };
 
         this.highChartsOpts = chartOpts;
     };
 
-    CustomHighchartsSlider.prototype.display = function(chartContainer, data, dataType) {
+    CustomHighchartsSlider.prototype.display = function(chartContainer, data, dataType, title) {
         var chartOpts = this.highChartsOpts;
+        chartOpts.subtitle = {
+            text: title
+        };
         if (dataType) {
             chartOpts.chart.type = dataType;
             // if linear linear (i.e. when we use depth) it was showing strange formatting
@@ -1243,24 +1243,26 @@ function setupCustomSliderSeismicityController() {
             millisecondValues.push(millisecond);
         }
 
-        this.createSlider("depth-slider", depthData, "linear", function(e) {
+        this.createSlider("depth-slider", depthData, "linear", "Depth", function(e) {
             var minMax = this.mapDatesToArrayIndeces(e.min, e.max, depthValues);
             var min = depthValues[minMax.minIndex];
             var max = depthValues[minMax.maxIndex];
 
             this.map.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], "depth");
-        }.bind(this));
-        this.createSlider("time-slider", millisecondData, "datetime", function(e) {
+        });
+        this.createSlider("time-slider", millisecondData, "datetime", "Time", function(e) {
             var minMax = this.mapDatesToArrayIndeces(e.min, e.max, millisecondValues);
             var min = millisecondValues[minMax.minIndex];
             var max = millisecondValues[minMax.maxIndex];
 
+            console.log(this.highChartsOpts)
+
             this.map.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], "time");
-        }.bind(this));
+        });
     };
-    CustomSliderSeismicityController.prototype.createSlider = function(sliderContainer, data, dataType, afterSetExtremes) {
+    CustomSliderSeismicityController.prototype.createSlider = function(sliderContainer, data, dataType, title, afterSetExtremes) {
         var slider = new CustomHighchartsSlider();
-        slider.init(null, afterSetExtremes);
-        slider.display(sliderContainer, data, dataType);
+        slider.init(null, afterSetExtremes.bind(this));
+        slider.display(sliderContainer, data, dataType, title);
     };
 }
