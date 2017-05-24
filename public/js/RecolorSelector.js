@@ -86,14 +86,14 @@ function setupRecolorSelector() {
         //  wait if they cancel a recoloring and want to do another one
 
         if (this.map.map.getSource("onTheFlyJSON")) {
-            this.map.map.removeSource("onTheFlyJSON");
-            this.map.map.removeLayer("onTheFlyJSON");
+            this.map.removeSource("onTheFlyJSON");
+            this.map.removeLayer("onTheFlyJSON");
         }
 
         // get the names of all the layers
         var pointLayers = [];
-        for (var i = 1; i < this.map.layers_.length; i++) {
-            pointLayers.push(this.map.layers_[i].id);
+        for (var i = 1; i <= currentArea.properties.num_chunks; i++) {
+            pointLayers.push("chunk_" + i);
         }
 
         var features = null;
@@ -209,15 +209,15 @@ function setupRecolorSelector() {
                     // console.log(curFeature);
                 }
                 if (this.map.map.getSource("onTheFlyJSON")) {
-                    this.map.map.removeSource("onTheFlyJSON");
-                    this.map.map.removeLayer("onTheFlyJSON");
+                    this.map.removeSource("onTheFlyJSON");
+                    this.map.removeLayer("onTheFlyJSON");
                 }
-                this.map.map.addSource("onTheFlyJSON", {
+                this.map.addSource("onTheFlyJSON", {
                     "type": "geojson",
                     "data": geoJSONData
                 });
 
-                this.map.map.addLayer({
+                this.map.addLayer({
                     "id": "onTheFlyJSON",
                     "type": "circle",
                     "source": "onTheFlyJSON",

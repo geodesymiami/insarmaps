@@ -247,8 +247,8 @@ function getGEOJSON(area) {
     midasStationsToggleButton.set("off");
 
     myMap.addDataset(tileJSON);
-    var styleLoadFunc = function(event) {
-        myMap.map.off("data", styleLoadFunc);
+
+    myMap.map.once("data", function(event) {
         myMap.removeAreaMarkers();
 
         overlayToggleButton.set("on");
@@ -286,9 +286,7 @@ function getGEOJSON(area) {
             // in case someone called loading screen
             hideLoadingScreen();
         }, 1000);
-    };
-
-    myMap.map.on("data", styleLoadFunc);
+    });
 }
 
 function goToTab(event, id) {
@@ -390,143 +388,14 @@ function ToggleButton(id, container, label) {
 }
 
 function switchLayer(layer) {
+    // TODO: consider making map controller own set paint property etc, to avoid
+    // having to process attributes when we switch styles
+    myMap.map.once("data", function() {
+        var attributesController = new AreaAttributesController(myMap, currentArea);
+        attributesController.processAttributes();
+    });
     var layerID = layer.target.id;
     myMap.setBaseMapLayer(layerID);
-    // var styleLoadFunc = null;
-
-    // // we assume in this case that an area has been clicked
-    // if (overlayToggleButton.toggleState == ToggleStates.ON && myMap.anAreaWasPreviouslyLoaded()) {
-    //     // remove selected point marker if it exists, and create a new GeoJSONSource for it
-    //     // prevents crash of "cannot read property 'send' of undefined"
-    //     // if (myMap.map.getLayer(layerID)) {
-
-    //     // }
-    //     var layerIDTop = "Top Graph";
-    //     var latTop = 0.0;
-    //     var longTop = 0.0;
-    //     var mapHadClickLocationMarkerTop = false;
-    //     var layerIDBot = "Bottom Graph";
-    //     var latBot = 0.0;
-    //     var longBot = 0.0;
-    //     var mapHadClickLocationMarkerBot = false;
-
-    //     if (myMap.map.getLayer(layerIDTop)) {
-    //         var markerCoords = myMap.clickLocationMarker.data.features[0].geometry
-    //             .coordinates;
-    //         latTop = markerCoords[0];
-    //         longTop = markerCoords[1];
-    //         mapHadClickLocationMarkerTop = true;
-
-    //         if (myMap.map.getLayer(layerIDBot)) {
-    //             var markerCoords = myMap.clickLocationMarker2.data.features[0].geometry
-    //                 .coordinates;
-    //             latBot = markerCoords[0];
-    //             longBot = markerCoords[1];
-    //             mapHadClickLocationMarkerBot = true;
-    //         }
-    //     }
-
-    //     myMap.setBaseMapLayer(layerID);
-
-    //     // finally, add back the click location marker, do on load of style to prevent
-    //     // style not done loading error
-    //     styleLoadFunc = function() {
-    //         myMap.map.off("data", styleLoadFunc);
-    //         myMap.addDataset(myMap.tileJSON);
-    //         myMap.loadAreaMarkersExcluding([currentArea.properties.unavco_name], null)
-    //         if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
-    //             myMap.thirdPartySourcesController.addGPSStationMarkers(gpsStations);
-    //         }
-
-    //         midasStationsToggleButton.set("off");
-    //         usgsEarthquakeToggleButton.set("off");
-    //         IGEPNEarthquakeToggleButton.set("off");
-
-    //         if (mapHadClickLocationMarkerTop) {
-    //             myMap.removeTouchLocationMarkers();
-
-    //             myMap.clickLocationMarker.data = {
-    //                 "type": "FeatureCollection",
-    //                 "features": [{
-    //                     "type": "Feature",
-    //                     "geometry": {
-    //                         "type": "Point",
-    //                         "coordinates": [latTop, longTop]
-    //                     },
-    //                     "properties": {
-    //                         "marker-symbol": "cross"
-    //                     }
-    //                 }]
-    //             };
-    //             myMap.map.addSource(layerIDTop, myMap.clickLocationMarker);
-
-    //             myMap.map.addLayer({
-    //                 "id": layerIDTop,
-    //                 "type": "symbol",
-    //                 "source": layerIDTop,
-    //                 "layout": {
-    //                     "icon-image": "{marker-symbol}-15",
-    //                 }
-    //             });
-    //         }
-
-    //         if (mapHadClickLocationMarkerBot) {
-    //             myMap.clickLocationMarker2.data = {
-    //                 "type": "FeatureCollection",
-    //                 "features": [{
-    //                     "type": "Feature",
-    //                     "geometry": {
-    //                         "type": "Point",
-    //                         "coordinates": [latBot, longBot]
-    //                     },
-    //                     "properties": {
-    //                         "marker-symbol": "crossRed"
-    //                     }
-    //                 }]
-    //             };
-    //             myMap.map.addSource(layerIDBot, myMap.clickLocationMarker2);
-
-    //             myMap.map.addLayer({
-    //                 "id": layerIDBot,
-    //                 "type": "symbol",
-    //                 "source": layerIDBot,
-    //                 "layout": {
-    //                     "icon-image": "{marker-symbol}-15",
-    //                 }
-    //             });
-    //         }
-
-    //         // is contour lines clicked?
-    //         if (contourToggleButton.toggleState == ToggleStates.ON) {
-    //             myMap.addContourLines();
-    //         }
-    //     };
-    //     myMap.map.on("data", styleLoadFunc);
-    // } else {
-    //     myMap.setBaseMapLayer(layerID);
-
-    //     if (myMap.areaFeatures != null) {
-    //         styleLoadFunc = function(event) {
-    //             myMap.map.off("data", styleLoadFunc);
-    //             if (contourToggleButton.toggleState == ToggleStates.ON) {
-    //                 myMap.addContourLines();
-    //             }
-    //             if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
-    //                 myMap.thirdPartySourcesController.addGPSStationMarkers(gpsStations);
-    //             }
-
-    //             midasStationsToggleButton.set("off");
-    //             usgsEarthquakeToggleButton.set("off");
-    //             IGEPNEarthquakeToggleButton.set("off");
-
-    //             myMap.loadAreaMarkers(null);
-    //         };
-
-    //         myMap.map.on("data", styleLoadFunc);
-    //     }
-    // }
-
-    // myMap.map.off("data");
 }
 
 function setupToggleButtons() {
@@ -776,8 +645,8 @@ function search() {
 
 function slideFunction(event, ui) {
     // start at 1 to avoid base map layer
-    for (var i = 1; i < myMap.layers_.length; i++) {
-        var layerName = myMap.layers_[i].id;
+    for (var i = 1; i <= currentArea.properties.num_chunks; i++) {
+        var layerName = "chunk_" + i;
         var newOpacity = ui.value / 100.0;
         newOpacity *= newOpacity * newOpacity; // scale it, as the default scale is not very linear
 
@@ -1065,14 +934,14 @@ $(window).load(function() {
             value: 100,
             change: function(event, ui) {
                 // call change only if too many layers, to avoid lag
-                if (myMap.layers_.length >
+                if (currentArea.properties.num_chunks >
                     NUM_CHUNKS) {
                     slideFunction(event, ui);
                 }
             },
             slide: function(event, ui) {
                 // call slide only if sufficiently small amount of layers, otherwise lag
-                if (myMap.layers_.length <=
+                if (currentArea.properties.num_chunks <=
                     NUM_CHUNKS) {
                     slideFunction(event, ui);
                 }

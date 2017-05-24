@@ -718,8 +718,8 @@ function setupGraphsController() {
     GraphsController.prototype.removeSecondGraph = function() {
         var layerID = "touchLocation2";
         if (myMap.map.getLayer(layerID)) {
-            myMap.map.removeLayer(layerID);
-            myMap.map.removeSource(layerID);
+            mythis.map.removeLayer(layerID);
+            mythis.map.removeSource(layerID);
             myMap.touchLocationMarker2 = new mapboxgl.GeoJSONSource();
         }
 

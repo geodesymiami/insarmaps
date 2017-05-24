@@ -563,7 +563,6 @@ function MapController(loadJSONFunc) {
                     }
                 }
             }
-            this.layers_.push(layer);
             this.addLayer(layer);
         }.bind(this));
 
@@ -757,7 +756,7 @@ function MapController(loadJSONFunc) {
             compact: true
         }));
 
-        this.map.on("load", function() {
+        this.map.once("load", function() {
             this.map.getCanvas().style.cursor = 'auto';
             this.selector = new RecolorSelector();
             this.selector.map = this;
@@ -934,12 +933,8 @@ function MapController(loadJSONFunc) {
             this.removeLayer("chunk_" + i);
         }
 
-        // remove all layers but the first, base layer
-        this.layers_ = this.layers_.slice(0, 1);
-
         if (this.map.getSource("onTheFlyJSON")) {
-            this.removeSource("onTheFlyJSON");
-            this.removeLayer("onTheFlyJSON");
+            this.removeSourceAndLayer("onTheFlyJSON");
         }
     }
 
@@ -1139,9 +1134,9 @@ function MapController(loadJSONFunc) {
     this.refreshDataset = function() {
         var stops = this.colorScale.getMapboxStops();
 
-        this.layers_.forEach(function(layer) {
-            if (this.map.getPaintProperty(layer.id, "circle-color")) {
-                this.map.setPaintProperty(layer.id, "circle-color", {
+        this.layers_.forEach(function(layer, layerID) {
+            if (this.map.getPaintProperty(layerID, "circle-color")) {
+                this.map.setPaintProperty(layerID, "circle-color", {
                     "property": 'm',
                     "stops": stops
                 });

@@ -45,8 +45,8 @@ function ThirdPartySourcesController(map) {
 
                 var layerID = "gpsStations";
                 var before = this.getLayerOnTopOf(layerID);
-                this.map.map.addSource(layerID, mapboxStationFeatures);
-                this.map.map.addLayer({
+                this.map.addSource(layerID, mapboxStationFeatures);
+                this.map.addLayer({
                     "id": layerID,
                     "type": "circle",
                     "source": layerID,
@@ -291,9 +291,9 @@ function ThirdPartySourcesController(map) {
                 if (loadVelocityArrows) {
                     var layerID = "midas-arrows";
                     mapboxStationFeatures.data.features = features.arrows;
-                    this.map.map.addSource(layerID, mapboxStationFeatures);
+                    this.map.addSource(layerID, mapboxStationFeatures);
                     var before = this.getLayerOnTopOf(layerID);
-                    this.map.map.addLayer({
+                    this.map.addLayer({
                         "id": layerID,
                         "type": "line",
                         "source": layerID,
@@ -310,10 +310,10 @@ function ThirdPartySourcesController(map) {
                 } else {
                     var layerID = "midas";
                     mapboxStationFeatures.data.features = features.points;
-                    this.map.map.addSource(layerID, mapboxStationFeatures);
+                    this.map.addSource(layerID, mapboxStationFeatures);
                     var stops = this.map.colorScale.getMapboxStops();
                     var before = this.getLayerOnTopOf(layerID);
-                    this.map.map.addLayer({
+                    this.map.addLayer({
                         "id": layerID,
                         "type": "circle",
                         "source": layerID,
@@ -392,8 +392,8 @@ function ThirdPartySourcesController(map) {
 
                 var layerID = "USGSEarthquake";
                 var before = this.getLayerOnTopOf(layerID);
-                this.map.map.addSource(layerID, mapboxStationFeatures);
-                this.map.map.addLayer({
+                this.map.addSource(layerID, mapboxStationFeatures);
+                this.map.addLayer({
                     "id": layerID,
                     "type": "circle",
                     "source": layerID,
@@ -485,8 +485,8 @@ function ThirdPartySourcesController(map) {
 
                 var layerID = "IGEPNEarthquake";
                 var before = this.getLayerOnTopOf(layerID);
-                this.map.map.addSource(layerID, mapboxStationFeatures);
-                this.map.map.addLayer({
+                this.map.addSource(layerID, mapboxStationFeatures);
+                this.map.addLayer({
                     "id": layerID,
                     "type": "circle",
                     "source": layerID,
@@ -544,8 +544,8 @@ function ThirdPartySourcesController(map) {
                 var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
 
                 var layerID = "HawaiiReloc";
-                this.map.map.addSource(layerID, mapboxStationFeatures);
-                this.map.map.addLayer({
+                this.map.addSource(layerID, mapboxStationFeatures);
+                this.map.addLayer({
                     "id": layerID,
                     "type": "circle",
                     "source": layerID,
@@ -688,8 +688,8 @@ function ThirdPartySourcesController(map) {
                 var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
 
                 var layerID = "IRISEarthquake";
-                this.map.map.addSource(layerID, mapboxStationFeatures);
-                this.map.map.addLayer({
+                this.map.addSource(layerID, mapboxStationFeatures);
+                this.map.addLayer({
                     "id": layerID,
                     "type": "circle",
                     "source": layerID,
