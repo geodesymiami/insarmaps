@@ -243,8 +243,8 @@ function SearchFormController(container) {
         }
 
         // get array of all areas on map
-        var attributesController = new AreaAttributesController(myMap, myMap.areaFeatures[0]);
         var areas = myMap.allAreaFeatures;
+        var attributesController = new AreaAttributesController(myMap, areas[0]);
         var fileAttributes = null;
         var attributesMatch = true;
 
