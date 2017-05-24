@@ -967,9 +967,7 @@ $(window).load(function() {
     $("#seismicity-charts-minimize-button").on("click", function() {
         var $container = $("#seismicity-charts");
         if ($container.hasClass("active")) {
-            $(".seismicity-chart").each(function() {
-                $(this).highcharts().destroy();
-            });
+            myMap.seismicityGraphsController.destroyAllCharts();
             $container.removeClass("active");
         }
     });
@@ -977,9 +975,7 @@ $(window).load(function() {
     $("#seismicity-chart-sliders-minimize-button").on("click", function() {
         var $container = $("#seismicity-chart-sliders");
         if ($container.hasClass("active")) {
-            $(".seismicity-chart").each(function() {
-                $(this).highcharts().destroy();
-            });
+            myMap.seismicityGraphsController.destroyAllSliders();
             $container.removeClass("active");
         }
     });

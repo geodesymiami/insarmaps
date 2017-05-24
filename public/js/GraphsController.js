@@ -842,6 +842,7 @@ function setupGraphsController() {
 // of each graph, but it will allow us flexiblity in case sliders for the other graphs are required in the future.
 function SeismicityGraphsController() {
     this.features = null;
+    this.mapForPlot = null;
 }
 
 function setupSeismicityGraphsController() {
@@ -992,7 +993,7 @@ function setupSeismicityGraphsController() {
         return latVdepthValues;
     };
 
-    SeismicityGraphsController.prototype.createCumulativeEventsVDay = function(features, chartContainer, selectedColoring) {
+    SeismicityGraphsController.prototype.createCumulativeEventsVDayGraph = function(features, chartContainer, selectedColoring) {
         var millisecondValues = features.map(function(feature) {
             return feature.properties.time;
         });
@@ -1069,7 +1070,56 @@ function setupSeismicityGraphsController() {
         return eventsPerDate;
     };
 
-    SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, optionalFeatures) {
+    SeismicityGraphsController.prototype.createLatVLongGraph = function(features, chartContainer, selectedColoring, bounds) {
+        if (this.mapForPlot) {
+            this.mapForPlot.remove();
+        }
+        this.mapForPlot = new mapboxgl.Map({
+            container: chartContainer, // container id
+            attributionControl: false,
+            interactive: false,
+            maxBounds: bounds
+        });
+        this.mapForPlot.on("load", function() {
+            var colors = this.map.colorScale.jet_r;
+            var depthStops = this.map.thirdPartySourcesController.currentSeismicityColorStops;
+            var magCircleSizes = this.map.thirdPartySourcesController.defaultCircleSizes();
+            var stopsCalculator = new MapboxStopsCalculator();
+            var magStops = stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
+
+            var layerID = "LatVLongPlotPoints";
+            var mapboxStationFeatures = {
+                type: "geojson",
+                cluster: false,
+                data: {
+                    "type": "FeatureCollection",
+                    "features": features
+                }
+            };
+            this.mapForPlot.addSource(layerID, mapboxStationFeatures);
+            this.mapForPlot.addLayer({
+                "id": layerID,
+                "type": "circle",
+                "source": layerID,
+                "paint": {
+                    "circle-color": {
+                        "property": "depth",
+                        "stops": depthStops,
+                        "type": "interval"
+                    },
+                    "circle-radius": {
+                        "property": "mag",
+                        "stops": magStops,
+                        "type": "interval"
+                    }
+                }
+            });
+        }.bind(this));
+        var styleAndLayer = this.map.getMapBaseStyle("mapbox.streets");
+        this.mapForPlot.setStyle(styleAndLayer.style);
+    };
+
+    SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, bounds, optionalFeatures) {
         var features = optionalFeatures;
 
         if (!features) {
@@ -1081,9 +1131,10 @@ function setupSeismicityGraphsController() {
         this.createChart(selectedColoring, "depth-vs-long-graph", features);
         this.createChart(selectedColoring, "lat-vs-depth-graph", features);
         this.createChart(selectedColoring, "cumulative-events-vs-date-graph", features);
+        this.createChart(selectedColoring, "lat-vs-long-graph", features, bounds);
     };
 
-    SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, optionalFeatures) {
+    SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, optionalFeatures, bounds) {
         // all graphs share same features
         var features = optionalFeatures;
 
@@ -1100,7 +1151,9 @@ function setupSeismicityGraphsController() {
         } else if (chartType === "lat-vs-depth-graph") {
             chartData = this.createLatVDepthGraph(features, "lat-vs-depth-graph", selectedColoring);
         } else if (chartType === "cumulative-events-vs-date-graph") {
-            chartData = this.createCumulativeEventsVDay(features, "cumulative-events-vs-date-graph", selectedColoring);
+            chartData = this.createCumulativeEventsVDayGraph(features, "cumulative-events-vs-date-graph", selectedColoring);
+        } else if (chartType === "lat-vs-long-graph") {
+            chartData = this.createLatVLongGraph(features, "lat-vs-long-graph", selectedColoring, bounds);
         } else {
             throw new Error("Unrecognized chart type " + chartType);
         }
@@ -1109,6 +1162,10 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.destroyAllCharts = function() {
+        if (this.mapForPlot) {
+            this.mapForPlot.remove();
+            this.mapForPlot = null;
+        }
         $("#depth-vs-long-graph").highcharts().destroy();
         $("#lat-vs-depth-graph").highcharts().destroy();
         $("#cumulative-events-vs-date-graph").highcharts().destroy();
@@ -1216,7 +1273,7 @@ function setupCustomHighchartsSlider() {
 function CustomSliderSeismicityController() {}
 
 function setupCustomSliderSeismicityController() {
-    CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalFeatures) {
+    CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, bounds, optionalFeatures) {
         var features = optionalFeatures;
 
         if (!features) {
@@ -1228,6 +1285,7 @@ function setupCustomSliderSeismicityController() {
         this.createChart(selectedColoring, "depth-vs-long-graph", features);
         var depthData = this.createChart(selectedColoring, "lat-vs-depth-graph", features);
         var millisecondData = this.createChart(selectedColoring, "cumulative-events-vs-date-graph", features);
+        this.createChart(selectedColoring, "lat-vs-long-graph", features, bounds);
         // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
         // no need to sort milliseconds as the features are already sorted by this
         depthData.sort(function(data1, data2) {
@@ -1255,8 +1313,6 @@ function setupCustomSliderSeismicityController() {
             var min = millisecondValues[minMax.minIndex];
             var max = millisecondValues[minMax.maxIndex];
 
-            console.log(this.highChartsOpts)
-
             this.map.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], "time");
         });
     };
@@ -1264,5 +1320,10 @@ function setupCustomSliderSeismicityController() {
         var slider = new CustomHighchartsSlider();
         slider.init(null, afterSetExtremes.bind(this));
         slider.display(sliderContainer, data, dataType, title);
+    };
+
+    CustomSliderSeismicityController.prototype.destroyAllSliders = function() {
+        $("#depth-slider").highcharts().destroy();
+        $("#time-slider").highcharts().destroy();
     };
 }

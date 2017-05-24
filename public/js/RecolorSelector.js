@@ -3,7 +3,7 @@ function RecolorSelector() {
 }
 
 function setupRecolorSelector() {
-    RecolorSelector.prototype.createSeismicityPlots = function(features) {
+    RecolorSelector.prototype.createSeismicityPlots = function(features, bbox) {
         var $chartContainer = $("#seismicity-charts");
         if (!$chartContainer.hasClass("active")) {
             $chartContainer.addClass("active");
@@ -16,8 +16,8 @@ function setupRecolorSelector() {
 
         var selectedColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
         var features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
-        this.map.seismicityGraphsController.setFeatures(this.getUniqueFeatures(features));
-        this.map.seismicityGraphsController.createAllCharts(selectedColoring, null);
+        this.map.seismicityGraphsController.setFeatures(features);
+        this.map.seismicityGraphsController.createAllCharts(selectedColoring, bbox, null);
     };
 
     RecolorSelector.prototype.finish = function(bbox) {
@@ -45,7 +45,7 @@ function setupRecolorSelector() {
             var featureID = feature.layer.id;
 
             if (this.map.thirdPartySourcesController.seismicities.includes(featureID)) {
-                this.createSeismicityPlots(features);
+                this.createSeismicityPlots(features, bbox);
                 return;
             }
         }

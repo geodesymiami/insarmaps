@@ -440,18 +440,18 @@ function Map(loadJSONFunc) {
         }
     };
 
-    this.setBaseMapLayer = function(mapType) {
-        var tileset = 'mapbox.' + mapType;
-        this.layers_ = [];
-
-        this.layers_.push({
+    this.getMapBaseStyle = function(tileset) {
+        var layers = [];
+        var layer = {
             "id": "simple-tiles",
             "type": "raster",
             "source": "raster-tiles",
             "minzoom": 0,
             "maxzoom": 22
-        });
-        this.map.setStyle({
+        };
+
+        layers.push(layer);
+        var style = {
             version: 8,
             sprite: getRootUrl() + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
@@ -466,8 +466,19 @@ function Map(loadJSONFunc) {
                     url: 'mapbox://mapbox.mapbox-terrain-v2'
                 }
             },
-            layers: this.layers_
-        });
+            layers: layers
+        };
+
+        return { style: style, layer: layer };
+    };
+
+    this.setBaseMapLayer = function(mapType) {
+        var tileset = 'mapbox.' + mapType;
+        this.layers_ = null;
+        var styleAndLayer = this.getMapBaseStyle(tileset);
+        this.layers_ = styleAndLayer.style.layers;
+
+        this.map.setStyle(styleAndLayer.style);
     };
 
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
