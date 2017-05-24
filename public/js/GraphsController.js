@@ -1315,6 +1315,8 @@ function setupCustomSliderSeismicityController() {
 
             this.map.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], "time");
         });
+
+        this.showChartContainers();
     };
     CustomSliderSeismicityController.prototype.createSlider = function(sliderContainer, data, dataType, title, afterSetExtremes) {
         var slider = new CustomHighchartsSlider();
@@ -1325,5 +1327,29 @@ function setupCustomSliderSeismicityController() {
     CustomSliderSeismicityController.prototype.destroyAllSliders = function() {
         $("#depth-slider").highcharts().destroy();
         $("#time-slider").highcharts().destroy();
+    };
+
+    CustomSliderSeismicityController.prototype.showChartContainers = function() {
+        var $chartContainer = $("#seismicity-charts");
+        if (!$chartContainer.hasClass("active")) {
+            $chartContainer.addClass("active");
+        }
+
+        var $sliderContainer = $("#seismicity-chart-sliders");
+        if (!$sliderContainer.hasClass("active")) {
+            $sliderContainer.addClass("active");
+        }
+    };
+
+    CustomSliderSeismicityController.prototype.hideChartContainers = function() {
+        var $chartContainer = $("#seismicity-charts");
+        if ($chartContainer.hasClass("active")) {
+            $chartContainer.removeClass("active");
+        }
+
+        var $sliderContainer = $("#seismicity-chart-sliders");
+        if ($sliderContainer.hasClass("active")) {
+            $sliderContainer.removeClass("active");
+        }
     };
 }

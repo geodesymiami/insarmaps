@@ -4,16 +4,6 @@ function RecolorSelector() {
 
 function setupRecolorSelector() {
     RecolorSelector.prototype.createSeismicityPlots = function(features, bbox) {
-        var $chartContainer = $("#seismicity-charts");
-        if (!$chartContainer.hasClass("active")) {
-            $chartContainer.addClass("active");
-        }
-
-        var $sliderContainer = $("#seismicity-chart-sliders");
-        if (!$sliderContainer.hasClass("active")) {
-            $sliderContainer.addClass("active");
-        }
-
         var selectedColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
         var features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
         this.map.seismicityGraphsController.setFeatures(features);

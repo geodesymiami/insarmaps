@@ -1021,6 +1021,7 @@ function MapController(loadJSONFunc) {
 
         this.removeAreaPopups();
         $("#search-form-and-results-minimize-button").click();
+        this.seismicityGraphsController.hideChartContainers();
 
         $("#point-details").empty();
 
