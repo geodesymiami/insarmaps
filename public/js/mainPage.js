@@ -390,10 +390,12 @@ function ToggleButton(id, container, label) {
 function switchLayer(layer) {
     // TODO: consider making map controller own set paint property etc, to avoid
     // having to process attributes when we switch styles
-    myMap.map.once("data", function() {
-        var attributesController = new AreaAttributesController(myMap, currentArea);
-        attributesController.processAttributes();
-    });
+    if (currentArea) {
+        myMap.map.once("data", function() {
+            var attributesController = new AreaAttributesController(myMap, currentArea);
+            attributesController.processAttributes();
+        });
+    }
     var layerID = layer.target.id;
     myMap.setBaseMapLayer(layerID);
 }
@@ -934,14 +936,14 @@ $(window).load(function() {
             value: 100,
             change: function(event, ui) {
                 // call change only if too many layers, to avoid lag
-                if (currentArea.properties.num_chunks >
+                if (currentArea && currentArea.properties.num_chunks >
                     NUM_CHUNKS) {
                     slideFunction(event, ui);
                 }
             },
             slide: function(event, ui) {
                 // call slide only if sufficiently small amount of layers, otherwise lag
-                if (currentArea.properties.num_chunks <=
+                if (currentArrea && currentArea.properties.num_chunks <=
                     NUM_CHUNKS) {
                     slideFunction(event, ui);
                 }

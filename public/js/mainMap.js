@@ -187,9 +187,22 @@ function MapController(loadJSONFunc) {
         this.map.removeSource(id);
     };
 
-    this.addLayer = function(layer, before) {
-        this.layers_.set(layer.id, layer);
-        this.map.addLayer(layer, before);
+    this.addLayer = function(newLayer, before) {
+        // handle when before layerID is supplied
+        if (before) {
+            var tempLayers = new Map();
+            this.layers_.forEach(function(layer, layerID) {
+                if (layerID === before) {
+                    tempLayers.set(newLayer.id, newLayer);
+                }
+
+                tempLayers.set(layerID, layer);
+            });
+            this.layers_ = tempLayers;
+        } else {
+            this.layers_.set(newLayer.id, newLayer);
+        }
+        this.map.addLayer(newLayer, before);
     };
 
     this.removeLayer = function(id) {
@@ -515,7 +528,6 @@ function MapController(loadJSONFunc) {
 
         baseStyle.layers = [];
         this.layers_.forEach(function(layer, layerID) {
-            if (!layer) console.log("IT IS " + layerID);
             baseStyle.layers.push(layer);
         });
 
