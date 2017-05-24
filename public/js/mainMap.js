@@ -113,7 +113,7 @@ function getDisplacementChartData(displacements, dates) {
     return data;
 }
 
-function Map(loadJSONFunc) {
+function MapController(loadJSONFunc) {
     // my mapbox api key
     mapboxgl.accessToken = "pk.eyJ1Ijoia2pqajExMjIzMzQ0IiwiYSI6ImNpbDJqYXZ6czNjdWd2eW0zMTA2aW1tNXUifQ.cPofQqq5jqm6l4zix7k6vw";
     this.startingZoom = 1.6;
@@ -123,7 +123,9 @@ function Map(loadJSONFunc) {
     this.geoJSONSource = null;
     this.geodata = null;
     this.geoDataMap = {};
-    this.layers_ = [];
+    // maps maintain insertion order. especially useful for maintaining layer orders
+    this.layers_ = new Map();
+    this.sources = new Map();
     this.loadJSONFunc = loadJSONFunc;
     this.tileURLID = "kjjj11223344.4avm5zmh";
     this.tileJSON = null;
@@ -174,6 +176,26 @@ function Map(loadJSONFunc) {
     this.cancellableAjax = new CancellableAjax();
 
     this.previousZoom = this.startingZoom;
+
+    this.addSource = function(id, source) {
+        this.sources.set(id, source);
+        this.map.addSource(id, source);
+    };
+
+    this.removeSource = function(id) {
+        this.sources.delete(id);
+        this.map.removeSource(id);
+    };
+
+    this.addLayer = function(layer, before) {
+        this.layers_.set(layer.id, layer);
+        this.map.addLayer(layer, before);
+    };
+
+    this.removeLayer = function(id) {
+        this.layers_.delete(id);
+        this.map.removeLayer(id);
+    };
 
     this.disableInteractivity = function() {
         this.map.dragPan.disable();
@@ -268,12 +290,12 @@ function Map(loadJSONFunc) {
 
         // show cross on clicked point
         if (this.map.getLayer(layerID)) {
-            this.map.removeLayer(layerID);
-            this.map.removeSource(layerID);
+            this.removeLayer(layerID);
+            this.removeSource(layerID);
         }
 
-        this.map.addSource(layerID, clickMarker);
-        this.map.addLayer({
+        this.addSource(layerID, clickMarker);
+        this.addLayer({
             "id": layerID,
             "type": "symbol",
             "source": layerID,
@@ -469,14 +491,33 @@ function Map(loadJSONFunc) {
             layers: layers
         };
 
-        return { style: style, layer: layer };
+        return { style: style, layers: layers };
     };
 
     this.setBaseMapLayer = function(mapType) {
         var tileset = 'mapbox.' + mapType;
-        this.layers_ = null;
         var styleAndLayer = this.getMapBaseStyle(tileset);
-        this.layers_ = styleAndLayer.style.layers;
+        styleAndLayer.layers.forEach(function(layer) {
+            this.layers_.set(layer.id, layer);
+        }.bind(this));
+
+        var baseStyle = styleAndLayer.style;
+        var sources = styleAndLayer.style.sources;
+        for (var sourceID in sources) {
+            if (sources.hasOwnProperty(sourceID)) {
+                this.sources.set(sourceID, sources[sourceID]);
+            }
+        }
+
+        this.sources.forEach(function(source, sourceID) {
+            baseStyle.sources[sourceID] = source;
+        });
+
+        baseStyle.layers = [];
+        this.layers_.forEach(function(layer, layerID) {
+            if (!layer) console.log("IT IS " + layerID);
+            baseStyle.layers.push(layer);
+        });
 
         this.map.setStyle(styleAndLayer.style);
     };
@@ -487,7 +528,7 @@ function Map(loadJSONFunc) {
         this.colorOnDisplacement = false;
         var stops = this.colorScale.getMapboxStops();
 
-        this.map.addSource('vector_layer_', {
+        this.addSource('vector_layer_', {
             type: 'vector',
             tiles: data['tiles'],
             minzoom: data['minzoom'],
@@ -523,7 +564,7 @@ function Map(loadJSONFunc) {
                 }
             }
             this.layers_.push(layer);
-            this.map.addLayer(layer);
+            this.addLayer(layer);
         }.bind(this));
 
         // remove click listener for selecting an area, and add new one for clicking on a point
@@ -583,7 +624,7 @@ function Map(loadJSONFunc) {
             var id = "areas" + properties.unavco_name;
             var polygonID = "areas" + properties.unavco_name + "fill"
             var center = area.properties.centerOfDataset ?
-                        area.properties.centerOfDataset : area.geometry.coordinates;
+                area.properties.centerOfDataset : area.geometry.coordinates;
 
             var feature = {
                 "type": "Feature",
@@ -830,8 +871,8 @@ function Map(loadJSONFunc) {
             }
 
             if (this.map.getSource("onTheFlyJSON")) {
-                this.map.removeSource("onTheFlyJSON");
-                this.map.removeLayer("onTheFlyJSON");
+                this.removeSource("onTheFlyJSON");
+                this.removeLayer("onTheFlyJSON");
             }
 
             this.previousZoom = currentZoom;
@@ -861,8 +902,8 @@ function Map(loadJSONFunc) {
     this.colorDatasetOnVelocity = function() {
         this.colorOnDisplacement = false;
         if (this.map.getSource("onTheFlyJSON")) {
-            this.map.removeSource("onTheFlyJSON");
-            this.map.removeLayer("onTheFlyJSON");
+            this.removeSource("onTheFlyJSON");
+            this.removeLayer("onTheFlyJSON");
         }
         this.colorScale.setTitle("LOS Velocity [cm/yr]");
     };
@@ -887,18 +928,18 @@ function Map(loadJSONFunc) {
             return;
         }
 
-        this.map.removeSource("vector_layer_");
+        this.removeSource("vector_layer_");
 
         for (var i = 1; i <= currentArea.properties.num_chunks; i++) {
-            this.map.removeLayer("chunk_" + i);
+            this.removeLayer("chunk_" + i);
         }
 
         // remove all layers but the first, base layer
         this.layers_ = this.layers_.slice(0, 1);
 
         if (this.map.getSource("onTheFlyJSON")) {
-            this.map.removeSource("onTheFlyJSON");
-            this.map.removeLayer("onTheFlyJSON");
+            this.removeSource("onTheFlyJSON");
+            this.removeLayer("onTheFlyJSON");
         }
     }
 
@@ -907,8 +948,8 @@ function Map(loadJSONFunc) {
         // prevents crash of "cannot read property 'send' of undefined"
         var layerID = "Top Graph";
         if (this.map.getLayer(layerID)) {
-            this.map.removeLayer(layerID);
-            this.map.removeSource(layerID);
+            this.removeLayer(layerID);
+            this.removeSource(layerID);
 
             this.clickLocationMarker = {
                 type: "geojson",
@@ -918,8 +959,8 @@ function Map(loadJSONFunc) {
 
         layerID = "Bottom Graph";
         if (this.map.getLayer(layerID)) {
-            this.map.removeLayer(layerID);
-            this.map.removeSource(layerID);
+            this.removeLayer(layerID);
+            this.removeSource(layerID);
 
             this.clickLocationMarker2 = {
                 type: "geojson",
@@ -984,7 +1025,7 @@ function Map(loadJSONFunc) {
     };
 
     this.addContourLines = function() {
-        this.map.addLayer({
+        this.addLayer({
             'id': 'contours',
             'type': 'line',
             'source': 'Mapbox Terrain V2',
@@ -999,7 +1040,7 @@ function Map(loadJSONFunc) {
                 'line-width': 1
             }
         });
-        this.map.addLayer({
+        this.addLayer({
             "id": "contour_label",
             "type": "symbol",
             "source": "Mapbox Terrain V2",
@@ -1033,8 +1074,8 @@ function Map(loadJSONFunc) {
     };
 
     this.removeContourLines = function() {
-        this.map.removeLayer("contours");
-        this.map.removeLayer("contour_label");
+        this.removeLayer("contours");
+        this.removeLayer("contour_label");
     };
 
     this.prettyPrintProjectName = function(projectName) {
@@ -1117,11 +1158,11 @@ function Map(loadJSONFunc) {
 
     this.removeSourceAndLayer = function(name) {
         if (this.map.getSource(name)) {
-            this.map.removeSource(name);
+            this.removeSource(name);
         }
 
         if (this.map.getLayer(name)) {
-            this.map.removeLayer(name);
+            this.removeLayer(name);
         }
     };
 

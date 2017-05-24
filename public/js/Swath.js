@@ -28,13 +28,13 @@ function Swath(map, satellite, width, feature, id) {
 
     this.remove = function() {
         if (this.map.map.getSource(this.id)) {
-            this.map.map.removeSource(this.id);
-            this.map.map.removeSource(this.polygonID)
+            this.map.removeSource(this.id);
+            this.map.removeSource(this.polygonID)
         }
 
         if (this.map.map.getLayer(this.id)) {
-            this.map.map.removeLayer(this.id);
-            this.map.map.removeLayer(this.polygonID);
+            this.map.removeLayer(this.id);
+            this.map.removeLayer(this.polygonID);
         }
     };
 
@@ -54,7 +54,7 @@ function Swath(map, satellite, width, feature, id) {
 
         this.remove();
 
-        this.map.map.addSource(this.id, areaMarker);
+        this.map.addSource(this.id, areaMarker);
         var polygonFeature = {
             "type": "Feature",
             "geometry": this.feature.geometry,
@@ -65,7 +65,7 @@ function Swath(map, satellite, width, feature, id) {
             "type": "FeatureCollection",
             "features": [polygonFeature]
         };
-        this.map.map.addSource(this.polygonID, areaMarker);
+        this.map.addSource(this.polygonID, areaMarker);
         // use same properties as the main feature which will be used
         // for the fill layer. We use the id of the corresponding fill layer...
         // allows for only highlighting on frame hover
@@ -74,7 +74,7 @@ function Swath(map, satellite, width, feature, id) {
         this.fillColor = this.color.slice(0, -6) + ", 0.0)";
 
         if (this.map.map.getLayer("chunk_1")) {
-            this.map.map.addLayer({
+            this.map.addLayer({
                 "id": this.id,
                 "type": "fill",
                 "source": this.id,
@@ -83,7 +83,7 @@ function Swath(map, satellite, width, feature, id) {
                     "fill-outline-color": this.color
                 }
             }, "chunk_1");
-            this.map.map.addLayer({
+            this.map.addLayer({
                 "id": this.polygonID,
                 "type": "line",
                 "source": this.polygonID,
@@ -97,7 +97,7 @@ function Swath(map, satellite, width, feature, id) {
                 }
             }, "chunk_1");
         } else {
-            this.map.map.addLayer({
+            this.map.addLayer({
                 "id": this.id,
                 "type": "fill",
                 "source": this.id,
@@ -106,7 +106,7 @@ function Swath(map, satellite, width, feature, id) {
                     "fill-outline-color": this.color
                 }
             });
-            this.map.map.addLayer({
+            this.map.addLayer({
                 "id": this.polygonID,
                 "type": "line",
                 "source": this.polygonID,
