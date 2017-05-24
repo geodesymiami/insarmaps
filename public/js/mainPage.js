@@ -943,7 +943,7 @@ $(window).load(function() {
             },
             slide: function(event, ui) {
                 // call slide only if sufficiently small amount of layers, otherwise lag
-                if (currentArrea && currentArea.properties.num_chunks <=
+                if (currentArea && currentArea.properties.num_chunks <=
                     NUM_CHUNKS) {
                     slideFunction(event, ui);
                 }
