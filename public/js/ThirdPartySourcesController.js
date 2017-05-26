@@ -777,8 +777,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.recolorSeismicitiesOn = function(property, stops, type) {
-        var min = stops[0][0];
-        var max = stops[stops.length - 1][0];
+        this.currentSeismicityColorStops = stops;
 
         this.seismicities.forEach(function(layerID) {
             if (this.map.map.getLayer(layerID)) {

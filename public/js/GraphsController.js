@@ -843,6 +843,7 @@ function setupGraphsController() {
 function SeismicityGraphsController() {
     this.features = null;
     this.mapForPlot = null;
+    this.bbox = null;
 }
 
 function setupSeismicityGraphsController() {
@@ -851,6 +852,10 @@ function setupSeismicityGraphsController() {
         this.features = features.sort(function(feature1, feature2) {
             return feature1.properties.time - feature2.properties.time;
         });
+    };
+
+    SeismicityGraphsController.prototype.setBbox = function(bbox) {
+        this.bbox = bbox;
     };
 
     SeismicityGraphsController.prototype.getSeriesData = function(xValues, yValues, colorOnInputs, colorStops) {
@@ -1080,9 +1085,13 @@ function setupSeismicityGraphsController() {
             interactive: false,
             maxBounds: bounds
         });
+
         this.mapForPlot.on("load", function() {
-            var colors = this.map.colorScale.jet_r;
-            var depthStops = this.map.thirdPartySourcesController.currentSeismicityColorStops;
+            var min = this.map.colorScale.min;
+            var max = this.map.colorScale.max;
+            var stopsCalculator = new MapboxStopsCalculator();
+            var depthStops = stopsCalculator.getDepthStops(min, max, this.map.colorScale.jet_r);
+
             var magCircleSizes = this.map.thirdPartySourcesController.defaultCircleSizes();
             var stopsCalculator = new MapboxStopsCalculator();
             var magStops = stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
@@ -1119,19 +1128,11 @@ function setupSeismicityGraphsController() {
         this.mapForPlot.setStyle(styleAndLayer.style);
     };
 
-    SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, bounds, optionalFeatures) {
-        var features = optionalFeatures;
-
-        if (!features) {
-            features = this.features;
-            if (!features) {
-                return;
-            }
-        }
-        this.createChart(selectedColoring, "depth-vs-long-graph", features);
-        this.createChart(selectedColoring, "lat-vs-depth-graph", features);
-        this.createChart(selectedColoring, "cumulative-events-vs-date-graph", features);
-        this.createChart(selectedColoring, "lat-vs-long-graph", features, bounds);
+    SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
+        this.createChart(selectedColoring, "depth-vs-long-graph", features, optionalBounds);
+        this.createChart(selectedColoring, "lat-vs-depth-graph", features, optionalBounds);
+        this.createChart(selectedColoring, "cumulative-events-vs-date-graph", features, optionalBounds);
+        this.createChart(selectedColoring, "lat-vs-long-graph", features, optionalBounds);
     };
 
     SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, optionalFeatures, bounds) {
@@ -1143,6 +1144,11 @@ function setupSeismicityGraphsController() {
             if (!features) {
                 return;
             }
+        }
+
+        var bounds = bounds;
+        if (!bounds) {
+            bounds = this.bbox;
         }
 
         var chartData = null;
@@ -1171,18 +1177,9 @@ function setupSeismicityGraphsController() {
         $("#cumulative-events-vs-date-graph").highcharts().destroy();
     };
 
-    SeismicityGraphsController.prototype.recreateAllCharts = function(selectedColoring, optionalFeatures) {
-        var features = optionalFeatures;
-
-        if (!features) {
-            features = this.features;
-            if (!features) {
-                return;
-            }
-        }
-
+    SeismicityGraphsController.prototype.recreateAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
         this.destroyAllCharts();
-        this.createAllCharts(selectedColoring, features);
+        this.createAllCharts(selectedColoring, optionalBounds, optionalFeatures);
     };
 }
 
@@ -1273,12 +1270,20 @@ function setupCustomHighchartsSlider() {
 function CustomSliderSeismicityController() {}
 
 function setupCustomSliderSeismicityController() {
-    CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, bounds, optionalFeatures) {
+    CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
         var features = optionalFeatures;
 
         if (!features) {
             features = this.features;
             if (!features) {
+                return;
+            }
+        }
+
+        var bounds = optionalBounds;
+        if (!bounds) {
+            bounds = this.bbox;
+            if (!bounds) {
                 return;
             }
         }

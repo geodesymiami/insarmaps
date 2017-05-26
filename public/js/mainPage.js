@@ -1025,10 +1025,11 @@ $(window).load(function() {
 
             // if time is selected, convert to milliseconds
             if (selectedColoring == "time") {
-                myMap.seismicityGraphsController.createChart(selectedColoring, "cumulative-events-vs-date-graph", null);
+                myMap.seismicityGraphsController.createChart(selectedColoring, "depth-vs-long-graph", null, null);
+                myMap.seismicityGraphsController.createChart(selectedColoring, "lat-vs-depth-graph", null, null);
             } else {
-                myMap.seismicityGraphsController.createChart(selectedColoring, "depth-vs-long-graph", null);
-                myMap.seismicityGraphsController.createChart(selectedColoring, "lat-vs-depth-graph", null);
+                myMap.seismicityGraphsController.createChart(selectedColoring, "cumulative-events-vs-date-graph", null, null);
+                myMap.seismicityGraphsController.createChart(selectedColoring, "lat-vs-long-graph", null, null);
             }
         }
     });
