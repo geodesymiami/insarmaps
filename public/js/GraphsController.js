@@ -1029,34 +1029,6 @@ function setupSeismicityGraphsController() {
         chartOpts.xAxis.type = "datetime";
         chartOpts.xAxis.dateTimeLabelFormats = { month: '%b %Y', year: '%Y' };
         chartOpts.yAxis.title = { text: "Cumulative Number" };
-        chartOpts.navigator = { enabled: true };
-        chartOpts.xAxis.events = {
-            // get dates for slider bounds
-            afterSetExtremes: function(e) {
-                var minMax = this.mapDatesToArrayIndeces(e.min, e.max, millisecondValues);
-                var minMilliseconds = millisecondValues[minMax.minIndex];
-                var maxMilliseconds = millisecondValues[minMax.maxIndex];
-                var minDateString = new Date(minMilliseconds).toLocaleDateString();
-                var maxDateString = new Date(maxMilliseconds).toLocaleDateString();
-                var title = "Cumulative Number of Events " + minDateString + " - " + maxDateString;
-                $("#" + chartContainer).highcharts().setTitle(null, {
-                    text: title
-                });
-
-                // they all share the same features
-                var features = this.features;
-                var featuresInTimeRange = features.filter(function(feature) {
-                    return feature.properties.time >= minMilliseconds && feature.properties.time <= maxMilliseconds;
-                });
-
-                $("#depth-vs-long-graph").highcharts().destroy();
-                $("#lat-vs-depth-graph").highcharts().destroy();
-                // only create other two graphs, not recreate this one again
-                this.createDepthVLongGraph(featuresInTimeRange, "depth-vs-long-graph", selectedColoring);
-                this.createLatVDepthGraph(featuresInTimeRange, "lat-vs-depth-graph", selectedColoring);
-                this.map.thirdPartySourcesController.filterSeismicities([{ min: minMilliseconds, max: maxMilliseconds }], "time");
-            }.bind(this)
-        };
         // save it before we push the data to series
         this.highChartsOpts[chartContainer] = chartOpts;
 
@@ -1270,6 +1242,8 @@ function setupCustomHighchartsSlider() {
 function CustomSliderSeismicityController() {}
 
 function setupCustomSliderSeismicityController() {
+    // slider creation is coupled to chart creation to avoid having to process data twice.
+    // TODO: he said to show sliders as soon as a seismicity is shown, so it is best to decouple these processes.
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
         var features = optionalFeatures;
 
@@ -1320,8 +1294,6 @@ function setupCustomSliderSeismicityController() {
 
             this.map.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], "time");
         });
-
-        this.showChartContainers();
     };
     CustomSliderSeismicityController.prototype.createSlider = function(sliderContainer, data, dataType, title, afterSetExtremes) {
         var slider = new CustomHighchartsSlider();
@@ -1334,16 +1306,23 @@ function setupCustomSliderSeismicityController() {
         $("#time-slider").highcharts().destroy();
     };
 
-    CustomSliderSeismicityController.prototype.showChartContainers = function() {
-        var $chartContainer = $("#seismicity-charts");
-        if (!$chartContainer.hasClass("active")) {
-            $chartContainer.addClass("active");
-        }
-
+    CustomSliderSeismicityController.prototype.showSliders = function() {
         var $sliderContainer = $("#seismicity-chart-sliders");
         if (!$sliderContainer.hasClass("active")) {
             $sliderContainer.addClass("active");
         }
+    };
+
+    CustomSliderSeismicityController.prototype.showCharts = function() {
+         var $chartContainer = $("#seismicity-charts");
+        if (!$chartContainer.hasClass("active")) {
+            $chartContainer.addClass("active");
+        }
+    };
+
+    CustomSliderSeismicityController.prototype.showChartContainers = function() {
+        this.showSliders();
+        this.showCharts();
     };
 
     CustomSliderSeismicityController.prototype.hideChartContainers = function() {

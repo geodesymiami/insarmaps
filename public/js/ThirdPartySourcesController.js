@@ -357,14 +357,22 @@ function ThirdPartySourcesController(map) {
         return this.map.map.getSource("midas") && this.map.map.getLayer("midas");
     };
 
-    this.setupColorScaleForSeimicities = function() {
+    this.prepareForSeismicities = function(features) {
+        this.setupColorScaleForSeismicities();
+        // in the future, should call a separate method to create only sliders and not all charts including sliders...
+        this.map.seismicityGraphsController.setFeatures(features);
+        this.map.seismicityGraphsController.setBbox(this.map.map.getBounds());
+        this.map.seismicityGraphsController.createAllCharts(this.currentSeismicityColoring, null, null);
+        this.map.seismicityGraphsController.showSliders();
+    };
+
+    this.setupColorScaleForSeismicities = function() {
         this.map.colorScale.show();
         this.map.colorScale.setTitle("Depth (Km)");
         this.map.colorScale.setMinMax(0, 50);
     };
 
     this.loadUSGSEarthquakeFeed = function() {
-        this.setupColorScaleForSeimicities();
         showLoadingScreen("Getting USGS Earthquake Data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/USGSMonthlyFeed",
@@ -407,6 +415,8 @@ function ThirdPartySourcesController(map) {
                     }
                 }, before);
 
+                this.prepareForSeismicities(featureCollection.features);
+
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -430,8 +440,6 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadIGEPNEarthquakeFeed = function() {
-        this.map.colorScale.setTopAsMax(false);
-        this.setupColorScaleForSeimicities();
         showLoadingScreen("Getting IGEPN Data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/IGEPNEarthquakeFeed",
@@ -441,8 +449,8 @@ function ThirdPartySourcesController(map) {
                 var markers = $xml.find("marker");
                 features = [];
                 markers.each(function() {
-                    var lng = $(this).attr("lng");
-                    var lat = $(this).attr("lat");
+                    var lng = parseFloat($(this).attr("lng"));
+                    var lat = parseFloat($(this).attr("lat"));
                     var coordinates = [lng, lat];
                     var magnitude = parseFloat($(this).attr("mg"));
                     var depth = parseFloat($(this).attr("z"));
@@ -503,6 +511,8 @@ function ThirdPartySourcesController(map) {
                         }
                     }
                 }, before);
+                this.map.colorScale.setTopAsMax(false);
+                this.prepareForSeismicities(features);
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -522,8 +532,6 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadHawaiiReloc = function() {
-        this.map.colorScale.setTopAsMax(false);
-        this.setupColorScaleForSeimicities();
         showLoadingScreen("Getting Hawaii Reloc Data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/HawaiiReloc",
@@ -562,6 +570,8 @@ function ThirdPartySourcesController(map) {
                         }
                     }
                 });
+                this.map.colorScale.setTopAsMax(false);
+                this.prepareForSeismicities(features);
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -660,8 +670,6 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadIRISEarthquake = function() {
-        this.map.colorScale.setTopAsMax(false);
-        this.setupColorScaleForSeimicities();
         var now = new Date();
         var startDate = new Date();
         startDate.setFullYear(now.getFullYear() - 2);
@@ -706,6 +714,8 @@ function ThirdPartySourcesController(map) {
                         }
                     }
                 });
+                this.map.colorScale.setTopAsMax(false);
+                this.prepareForSeismicities(features);
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -733,8 +743,7 @@ function ThirdPartySourcesController(map) {
         var itsAMidasGPSFeature = (layerID === "midas");
         var itsASeismicityFeature = this.seismicities.includes(layerID);
 
-        var cursor = (itsAPoint || itsAGPSFeature || itsAMidasGPSFeature
-                        || itsASeismicityFeature) ? 'pointer' : 'auto';
+        var cursor = (itsAPoint || itsAGPSFeature || itsAMidasGPSFeature || itsASeismicityFeature) ? 'pointer' : 'auto';
 
         // a better way is to have two mousemove callbacks like we do with select area vs select marker
         var html = null;
