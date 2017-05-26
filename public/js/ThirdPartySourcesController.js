@@ -596,8 +596,8 @@ function ThirdPartySourcesController(map) {
             // explanation of these indices: http://www.rsmas.miami.edu/personal/glin/Hawaii.html
             // that link is actually wrong, she sent an email with correct indices
             // maybe she'll update the link in the future.
-            var lng = attributes[8]
-            var lat = attributes[7];
+            var lng = parseFloat(attributes[8]);
+            var lat = parseFloat(attributes[7]);
             var mag = parseFloat(attributes[10]);
             var depth = parseFloat(attributes[9]);
             var coordinates = [lng, lat];
@@ -642,8 +642,8 @@ function ThirdPartySourcesController(map) {
         for (var i = 1; i < lines.length; i++) {
             var attributes = lines[i].split("|");
             if (attributes && attributes.length > 0 && attributes[0] != "") {
-                var lat = attributes[2];
-                var long = attributes[3];
+                var lat = parseFloat(attributes[2]);
+                var long = parseFloat(attributes[3]);
                 var depth = parseFloat(attributes[4]);
                 var mag = parseFloat(attributes[10]);
                 var coordinates = [long, lat];
