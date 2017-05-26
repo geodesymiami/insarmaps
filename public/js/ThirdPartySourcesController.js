@@ -892,4 +892,17 @@ function ThirdPartySourcesController(map) {
         this.currentSeismicityColoring = selectedColoring;
         this.recolorSeismicitiesOn(selectedColoring, stops, type);
     };
+
+    this.removeAll = function() {
+        this.layerOrder.forEach(function(layer) {
+            this.map.removeSourceAndLayer(layer);
+        }.bind(this));
+
+        gpsStationsToggleButton.set("off");
+        midasStationsToggleButton.set("off");
+        usgsEarthquakeToggleButton.set("off");
+        IGEPNEarthquakeToggleButton.set("off");
+        HawaiiRelocToggleButton.set("off");
+        irisEarthquakeToggleButton.set("off");
+    };
 }

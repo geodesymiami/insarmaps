@@ -997,16 +997,7 @@ function MapController(loadJSONFunc) {
         this.gpsStationPopup.remove();
         this.gpsStationNamePopup.remove();
 
-        this.thirdPartySourcesController.removeGPSStationMarkers();
-        gpsStationsToggleButton.set("off");
-        this.thirdPartySourcesController.removemidasGpsStationMarkers();
-        midasStationsToggleButton.set("off");
-        this.thirdPartySourcesController.removeUSGSEarthquakeFeed();
-        usgsEarthquakeToggleButton.set("off");
-        this.thirdPartySourcesController.removeIGEPNEarthquakeFeed();
-        IGEPNEarthquakeToggleButton.set("off");
-        this.thirdPartySourcesController.removeHawaiiReloc();
-        HawaiiRelocToggleButton.set("off");
+        this.thirdPartySourcesController.removeAll();
 
         this.colorDatasetOnVelocity();
 
