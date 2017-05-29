@@ -306,7 +306,7 @@ $(window).load(function() {
         var ENTER_KEY = 13;
 
         if (e.keyCode === ENTER_KEY &&
-            !($("#search-input").is(":focus") || $("#scale-values input").is(":focus"))) {
+            !($("#search-input").is(":focus") || $("#color-scale .scale-values input").is(":focus"))) {
             if (myMap.areaFeatures) {
                 searcher.search();
                 $("#search-form-and-results-maximize-button").click();

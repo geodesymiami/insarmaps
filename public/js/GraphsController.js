@@ -844,6 +844,7 @@ function SeismicityGraphsController() {
     this.features = null;
     this.mapForPlot = null;
     this.bbox = null;
+    this.colorScale = new ColorScale(-2.00, 2.00, "lat-vs-long-color-scale");
 }
 
 function setupSeismicityGraphsController() {
@@ -1105,6 +1106,7 @@ function setupSeismicityGraphsController() {
         this.createChart(selectedColoring, "lat-vs-depth-graph", features, optionalBounds);
         this.createChart(selectedColoring, "cumulative-events-vs-date-graph", features, optionalBounds);
         this.createChart(selectedColoring, "lat-vs-long-graph", features, optionalBounds);
+        this.colorScale.initVisualScale();
     };
 
     SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, optionalFeatures, bounds) {
@@ -1239,9 +1241,7 @@ function setupCustomHighchartsSlider() {
     };
 }
 
-function CustomSliderSeismicityController() {
-    this.colorScale = new ColorScale(-2.00, 2.00, "lat-vs-long-color-scale");
-}
+function CustomSliderSeismicityController() {}
 
 function setupCustomSliderSeismicityController() {
     // slider creation is coupled to chart creation to avoid having to process data twice.
@@ -1267,6 +1267,7 @@ function setupCustomSliderSeismicityController() {
         var depthData = this.createChart(selectedColoring, "lat-vs-depth-graph", features);
         var millisecondData = this.createChart(selectedColoring, "cumulative-events-vs-date-graph", features);
         this.createChart(selectedColoring, "lat-vs-long-graph", features, bounds);
+        this.colorScale.initVisualScale();
         // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
         // no need to sort milliseconds as the features are already sorted by this
         depthData.sort(function(data1, data2) {

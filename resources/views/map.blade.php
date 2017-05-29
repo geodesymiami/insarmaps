@@ -255,22 +255,22 @@
       </div>
     </div>
   </div>
-  <div id="color-scale">
+  <div id="color-scale" class="active">
     <div class="color-scale-text-div" class="rotate">
       LOS Velocity [cm/yr]
     </div>
-    <div id="color-scale-main-container">
-      <div id="color-scale-and-values-container" class="clearfix">
+    <div class="color-scale-main-container">
+      <div class="color-scale-and-values-container" class="clearfix">
         <div class="color-scale-picture-div">
-          <img src="img/jet_scale.PNG" alt="jet_scale.PNG" style="width: 30px; height: 255px">
+          <img src="img/jet_scale.PNG" alt="jet_scale.PNG">
         </div>
-        <div id="scale-values">
-          <div id="left-scale-minimum">
+        <div class="scale-values">
+          <div class="left-scale-minimum">
             <div class="form-group">
               <input type="number" class="form-control bottom-scale-value"/>
             </div>
           </div>
-          <div id="right-scale-maximum">
+          <div class="right-scale-maximum">
             <div class="form-group">
               <input type="number" class="form-control top-scale-value"/>
             </div>
@@ -362,7 +362,32 @@
         </div>
         <div class="seismicity-chart">
           <div class="side-by-side" id="depth-vs-long-graph"></div>
-          <div class="side-by-side" id="lat-vs-long-color-scale"></div>
+          <div class="side-by-side">
+            <div id="lat-vs-long-color-scale">
+              <div class="color-scale-text-div" class="rotate">
+                LOS Velocity [cm/yr]
+              </div>
+              <div class="color-scale-main-container">
+                <div class="color-scale-and-values-container clearfix">
+                  <div class="color-scale-picture-div">
+                    <img src="img/jet_scale.PNG" alt="jet_scale.PNG">
+                  </div>
+                  <div class="scale-values">
+                    <div class="left-scale-minimum">
+                      <div class="form-group">
+                        <input type="number" class="form-control bottom-scale-value"/>
+                      </div>
+                    </div>
+                    <div class="right-scale-maximum">
+                      <div class="form-group">
+                        <input type="number" class="form-control top-scale-value"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="seismicity-chart"><div id="cumulative-events-vs-date-graph""></div></div>
       </div>

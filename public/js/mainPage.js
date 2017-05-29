@@ -1023,7 +1023,7 @@ $(window).load(function() {
 
     myMap.colorScale.initVisualScale();
 
-    $("#scale-values .form-group > input").keypress(function(e) {
+    $("#color-scale .scale-values .form-group > input").keypress(function(e) {
         var ENTER_KEY = 13;
 
         if (e.which == ENTER_KEY) {
