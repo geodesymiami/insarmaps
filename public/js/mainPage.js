@@ -868,6 +868,14 @@ $(window).load(function() {
         }
     });
 
+    $("#set-slider-ranges-button").on("click", function() {
+        myMap.seismicityGraphsController.zoomSlidersToCurrentRange();
+    });
+
+    $("#reset-slider-ranges-button").on("click", function() {
+        myMap.seismicityGraphsController.resetSliderRanges();
+    });
+
     // chart div resizable
     $(".wrap#charts").resizable({
         animateDuration: "fast",

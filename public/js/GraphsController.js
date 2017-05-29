@@ -4,7 +4,7 @@ function AbstractGraphsController() {
 
     // takes any object which can be compared. whether that be js objects
     // or milliseconds
-    this.mapDatesToArrayIndeces = function(minDate, maxDate, arrayOfDates) {
+    this.mapExtremesToArrayIndeces = function(minDate, maxDate, arrayOfDates) {
         // lower limit index of subarray bounded by slider dates
         // must be >= minDate; upper limit <= maxDate
         var minIndex = 0;
@@ -38,7 +38,7 @@ function AbstractGraphsController() {
 
         var minDate = graphSettings.navigatorEvent.min;
         var maxDate = graphSettings.navigatorEvent.max;
-        var minMax = this.mapDatesToArrayIndeces(minDate, maxDate, graphSettings.date_array);
+        var minMax = this.mapExtremesToArrayIndeces(minDate, maxDate, graphSettings.date_array);
 
         return minMax;
     };
@@ -132,7 +132,7 @@ function AbstractGraphsController() {
         return chartOpts;
     };
 
-    this.createChartIfNotThere = function(chartContainer, chartOpts) {
+    this.createChartDestroyingOld = function(chartContainer, chartOpts) {
         var chart = $("#" + chartContainer).highcharts();
         if (chart) {
             chart.destroy();
@@ -367,7 +367,7 @@ function setupGraphsController() {
                         var chartData = graphSettings.chart_data;
                         var chart = $('#' + chartContainer).highcharts();
                         var extremes = chart.xAxis[0].getExtremes();
-                        var minMax = this.mapDatesToArrayIndeces(extremes.min, extremes.max, graphSettings.date_array);
+                        var minMax = this.mapExtremesToArrayIndeces(extremes.min, extremes.max, graphSettings.date_array);
 
                         console.log(minMax.maxIndex - minMax.minIndex);
                         // only two points in view, so return
@@ -937,7 +937,7 @@ function setupSeismicityGraphsController() {
             showInLegend: false,
         });
 
-        this.createChartIfNotThere(chartContainer, chartOpts);
+        this.createChartDestroyingOld(chartContainer, chartOpts);
 
         return depthVLongValues;
     };
@@ -980,7 +980,7 @@ function setupSeismicityGraphsController() {
             showInLegend: false,
         });
 
-        this.createChartIfNotThere(chartContainer, chartOpts);
+        this.createChartDestroyingOld(chartContainer, chartOpts);
 
         return latVdepthValues;
     };
@@ -1029,7 +1029,7 @@ function setupSeismicityGraphsController() {
             showInLegend: false,
         });
 
-        this.createChartIfNotThere(chartContainer, chartOpts);
+        this.createChartDestroyingOld(chartContainer, chartOpts);
 
         return eventsPerDate;
     };
@@ -1223,7 +1223,7 @@ function setupCustomHighchartsSlider() {
         });
 
         $("#" + chartContainer).css("height", chartOpts.chart.height + "px");
-        $("#" + chartContainer).highcharts(chartOpts);
+        this.createChartDestroyingOld(chartContainer, chartOpts);
     };
 }
 
@@ -1231,7 +1231,23 @@ function CustomSliderSeismicityController() {}
 
 function setupCustomSliderSeismicityController() {
     // slider creation is coupled to chart creation to avoid having to process data twice.
-    // TODO: he said to show sliders as soon as a seismicity is shown, so it is best to decouple these processes.
+    // also, we depend on mapbox's query rendered features for filtering features in graphs.
+    // we could write our own filering code, but there is no point as mapbox filters for us and
+    // these graphs are so intimately tied to the map features
+    CustomSliderSeismicityController.prototype.depthSliderCallback = function(e, depthValues) {
+        var minMax = this.mapExtremesToArrayIndeces(e.min, e.max, depthValues);
+        var min = depthValues[minMax.minIndex];
+        var max = depthValues[minMax.maxIndex];
+
+        this.map.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], "depth");
+    };
+    CustomSliderSeismicityController.prototype.timeSliderCallback = function(e, millisecondValues) {
+        var minMax = this.mapExtremesToArrayIndeces(e.min, e.max, millisecondValues);
+        var min = millisecondValues[minMax.minIndex];
+        var max = millisecondValues[minMax.maxIndex];
+
+        this.map.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], "time");
+    };
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
         var features = optionalFeatures;
 
@@ -1261,7 +1277,7 @@ function setupCustomSliderSeismicityController() {
         });
         var depthValues = [];
         var millisecondValues = [];
-        // now get millisecond and depth values by themselves, as mapDatesToArrayIndeces needs an array of comparables...
+        // now get millisecond and depth values by themselves, as mapExtremesToArrayIndeces needs an array of comparables...
         for (var i = 0; i < depthData.length; i++) {
             var depth = depthData[i].x;
             var millisecond = millisecondData[i].x;
@@ -1270,19 +1286,11 @@ function setupCustomSliderSeismicityController() {
         }
 
         this.createSlider("depth-slider", depthData, "linear", "Depth", function(e) {
-            var minMax = this.mapDatesToArrayIndeces(e.min, e.max, depthValues);
-            var min = depthValues[minMax.minIndex];
-            var max = depthValues[minMax.maxIndex];
-
-            this.map.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], "depth");
-        });
+            this.depthSliderCallback(e, depthValues);
+        }.bind(this));
         this.createSlider("time-slider", millisecondData, "datetime", "Time", function(e) {
-            var minMax = this.mapDatesToArrayIndeces(e.min, e.max, millisecondValues);
-            var min = millisecondValues[minMax.minIndex];
-            var max = millisecondValues[minMax.maxIndex];
-
-            this.map.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], "time");
-        });
+            this.timeSliderCallback(e, millisecondValues);
+        }.bind(this));
     };
     CustomSliderSeismicityController.prototype.createSlider = function(sliderContainer, data, dataType, title, afterSetExtremes) {
         var slider = new CustomHighchartsSlider();
@@ -1303,7 +1311,7 @@ function setupCustomSliderSeismicityController() {
     };
 
     CustomSliderSeismicityController.prototype.showCharts = function() {
-         var $chartContainer = $("#seismicity-charts");
+        var $chartContainer = $("#seismicity-charts");
         if (!$chartContainer.hasClass("active")) {
             $chartContainer.addClass("active");
         }
@@ -1324,5 +1332,48 @@ function setupCustomSliderSeismicityController() {
         if ($sliderContainer.hasClass("active")) {
             $sliderContainer.removeClass("active");
         }
+    };
+
+    // an alternative would be to keep slider pointers with their associated data and just
+    // use highcharts constructor to update sliders. we create anew because this highcharts
+    // constructor used to have bugs (see: https://forum.highcharts.com/post126503.html#p126503),
+    // and although they've now fixed it, we want to remain consistent with our other graph code.
+    // In the future, someone can use the constructor functions to update graphs rather than creating anew every time.
+    CustomSliderSeismicityController.prototype.zoomSlidersToCurrentRange = function() {
+        var pixelBoundingBox = [this.map.map.project(this.bbox[0]), this.map.map.project(this.bbox[1])];
+        var features = this.map.selector.getUniqueFeatures(this.map.map.queryRenderedFeatures(pixelBoundingBox));
+        features = features.sort(function(feature1, feature2) {
+            return feature1.properties.time - feature2.properties.time;
+        });
+
+        var depthData = this.createChart(null, "lat-vs-depth-graph", features);
+        var millisecondData = this.createChart(null, "cumulative-events-vs-date-graph", features);
+
+        // milliseconds already sorted since features already sorted by time
+        depthData.sort(function(data1, data2) {
+            return data1.x - data2.x;
+        });
+
+        var depthValues = [];
+        var millisecondValues = [];
+        // now get millisecond and depth values by themselves, as mapExtremesToArrayIndeces needs an array of comparables...
+        for (var i = 0; i < depthData.length; i++) {
+            var depth = depthData[i].x;
+            var millisecond = millisecondData[i].x;
+            depthValues.push(depth);
+            millisecondValues.push(millisecond);
+        }
+
+        this.createSlider("depth-slider", depthData, "linear", "Depth", function(e) {
+            this.depthSliderCallback(e, depthValues);
+        }.bind(this));
+        this.createSlider("time-slider", millisecondData, "datetime", "Time", function(e) {
+            this.timeSliderCallback(e, millisecondValues);
+        }.bind(this));
+    };
+
+    CustomSliderSeismicityController.prototype.resetSliderRanges = function() {
+        this.createAllCharts(null, null, null);
+        this.map.thirdPartySourcesController.removeSeismicityFilters();
     };
 }

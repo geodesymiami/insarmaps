@@ -862,6 +862,16 @@ function ThirdPartySourcesController(map) {
         }.bind(this));
     };
 
+    this.removeSeismicityFilters = function() {
+        this.seismicities.forEach(function(layerID) {
+            // if layer not there, mapbox throws exception when getting filter as of version 0.36.0...
+            // not sure if bug or it's meant to be like this, so we check the layer is there
+            if (this.map.map.getLayer(layerID) && this.map.map.getFilter(layerID)) {
+                this.map.map.setFilter(layerID, null);
+            }
+        }.bind(this));
+    };
+
     this.recolorSeismicities = function(selectedColoring) {
         var stops = null;
         var colors = this.map.colorScale.jet;

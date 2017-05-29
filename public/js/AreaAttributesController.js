@@ -88,7 +88,7 @@ function AreaAttributesController(map, area) {
                 this.map.selector.minIndex = 0;
                 this.map.selector.maxIndex = dates.length - 1;
             } else {
-                var possibleDates = this.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, this.datesArray);
+                var possibleDates = this.map.graphsController.mapExtremesToArrayIndeces(decimalDate1, decimalDate2, this.datesArray);
                 this.map.selector.minIndex = possibleDates.minIndex;
                 this.map.selector.maxIndex = possibleDates.maxIndex + 1;
             }
