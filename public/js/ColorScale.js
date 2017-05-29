@@ -339,7 +339,7 @@ function ColorScale(min, max, divID) {
         }
 
         var imgSrc = "img/" + scale + "_scale.PNG";
-        $("#color-scale-picture-div > img").attr("src", imgSrc);
+        $("#" + this.divID + " .color-scale-picture-div > img").attr("src", imgSrc);
     };
 
     this.topIsMax = true;
@@ -349,16 +349,16 @@ function ColorScale(min, max, divID) {
     };
 
     this.initVisualScale = function() {
-        $("#bottom-scale-value").val(this.min);
-        $("#top-scale-value").val(this.max);
+        $("#" + this.divID + " .bottom-scale-value").val(this.min);
+        $("#" + this.divID + " .top-scale-value").val(this.max);
     };
 
     this.setMin = function(min) {
         this.min = min;
         if (this.topIsMax) {
-            $("#bottom-scale-value").val(this.min);
+            $("#" + this.divID + " .bottom-scale-value").val(this.min);
         } else {
-            $("#top-scale-value").val(this.min);
+            $("#" + this.divID + " .top-scale-value").val(this.min);
         }
     };
 
@@ -366,9 +366,9 @@ function ColorScale(min, max, divID) {
         this.max = max;
 
         if (this.topIsMax) {
-            $("#top-scale-value").val(this.max);
+            $("#" + this.divID + " .top-scale-value").val(this.max);
         } else {
-            $("#bottom-scale-value").val(this.max);
+            $("#" + this.divID + " .bottom-scale-value").val(this.max);
         }
     };
 
@@ -392,7 +392,7 @@ function ColorScale(min, max, divID) {
     };
 
     this.setTitle = function(title) {
-        $("#" + this.divID + " > #color-scale-text-div").html(title);
+        $("#" + this.divID + " > .color-scale-text-div").html(title);
     };
 
     this.show = function() {

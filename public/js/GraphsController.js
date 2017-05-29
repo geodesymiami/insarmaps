@@ -1239,7 +1239,9 @@ function setupCustomHighchartsSlider() {
     };
 }
 
-function CustomSliderSeismicityController() {}
+function CustomSliderSeismicityController() {
+    this.colorScale = new ColorScale(-2.00, 2.00, "lat-vs-long-color-scale");
+}
 
 function setupCustomSliderSeismicityController() {
     // slider creation is coupled to chart creation to avoid having to process data twice.

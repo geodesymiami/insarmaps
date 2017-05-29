@@ -256,23 +256,23 @@
     </div>
   </div>
   <div id="color-scale">
-    <div id="color-scale-text-div" class="rotate">
+    <div class="color-scale-text-div" class="rotate">
       LOS Velocity [cm/yr]
     </div>
     <div id="color-scale-main-container">
       <div id="color-scale-and-values-container" class="clearfix">
-        <div id="color-scale-picture-div">
+        <div class="color-scale-picture-div">
           <img src="img/jet_scale.PNG" alt="jet_scale.PNG" style="width: 30px; height: 255px">
         </div>
         <div id="scale-values">
           <div id="left-scale-minimum">
             <div class="form-group">
-              <input type="number" class="form-control" id="bottom-scale-value"/>
+              <input type="number" class="form-control bottom-scale-value"/>
             </div>
           </div>
           <div id="right-scale-maximum">
             <div class="form-group">
-              <input type="number" class="form-control" id="top-scale-value"/>
+              <input type="number" class="form-control top-scale-value"/>
             </div>
           </div>
         </div>
@@ -358,9 +358,12 @@
       <div class="chart-containers" id="seismicity-charts-container">
         <div class="seismicity-chart">
           <div class="side-by-side" id="lat-vs-long-graph"></div>
-          <div class="side-by-side" id="depth-vs-long-graph"></div>
+          <div class="side-by-side" id="lat-vs-depth-graph"></div>
         </div>
-        <div class="seismicity-chart"><div id="lat-vs-depth-graph"></div></div>
+        <div class="seismicity-chart">
+          <div class="side-by-side" id="depth-vs-long-graph"></div>
+          <div class="side-by-side" id="lat-vs-long-color-scale"></div>
+        </div>
         <div class="seismicity-chart"><div id="cumulative-events-vs-date-graph""></div></div>
       </div>
     </div>

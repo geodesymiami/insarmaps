@@ -1027,8 +1027,8 @@ $(window).load(function() {
         var ENTER_KEY = 13;
 
         if (e.which == ENTER_KEY) {
-            var bottomValue = parseFloat($("#bottom-scale-value").val());
-            var topValue = parseFloat($("#top-scale-value").val());
+            var bottomValue = parseFloat($("#color-scale .bottom-scale-value").val());
+            var topValue = parseFloat($("#color-scale .top-scale-value").val());
 
             myMap.colorScale.setMinMax(bottomValue, topValue);
 
