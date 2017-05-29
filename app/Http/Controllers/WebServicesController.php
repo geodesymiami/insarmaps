@@ -158,12 +158,12 @@ class WebServicesController extends Controller
 
       // check if linear regression calculation produced an error; if so return error
       if (isset($linearRegression["errors"])) {
-        return json_encode($linearRegression);
+        return response()->json($linearRegression);
       }
 
       $json["subtitle"]["text"] = "velocity: " . round($linearRegression["m"] * 1000, 2) . " mm/yr";
 
-      $jsonString = json_encode(($json));
+      $jsonString = response()->json(($json));
 
       $tempPictName = tempnam(storage_path(), "pict");
       $command = "highcharts-export-server --instr '" . $jsonString . "' --outfile " . $tempPictName . " --type jpg";
@@ -376,13 +376,13 @@ class WebServicesController extends Controller
       // check if startTime inputted by user is in in yyyy-mm-dd or yyyymmdd format
       if ($startTime !== NULL && $this->dateFormatter->verifyDate($startTime) === NULL) {
         $json["errors"] = "please input startTime in format yyyy-mm-dd (ex: 1990-12-19)";
-        return json_encode($json);
+        return response()->json($json);
       }
 
       // check if inputted by user is in in yyyy-mm-dd or yyyymmdd format
       if ($endTime !== NULL && $this->dateFormatter->verifyDate($endTime) === NULL) {
         $json["errors"] = "please input endTime in format yyyy-mm-dd (ex: 2020-12-19)";
-        return json_encode($json);
+        return response()->json($json);
       }
 
       // check if startTime is less than or equal to endTime
@@ -393,7 +393,7 @@ class WebServicesController extends Controller
 
         if ($interval->format("%a") > 0 && $startDate > $endDate) {
           $json["errors"] = "please make sure startTime is a date earlier than endTime";
-          return json_encode($json);
+          return response()->json($json);
         }
       }
 
@@ -457,7 +457,7 @@ class WebServicesController extends Controller
         }
         
         $csv_string = $this->csvArrayToString($csv_array);
-        return json_encode($csv_string);
+        return response()->json($csv_string);
       }
 
       // QUERY 1C: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
@@ -531,9 +531,9 @@ class WebServicesController extends Controller
           }
         }
         // TODO: tell zishi to construct area objects as in GeoJSONController, not just return dataset names
-        // return json_encode($csv_array);
+        // return response()->json($csv_array);
         $csv_string = $this->csvArrayToString($csv_array);
-        return json_encode($csv_string);
+        return response()->json($csv_string);
       }
 
       // calculate polygon encapsulating longitude and latitude specified by user
@@ -582,13 +582,13 @@ class WebServicesController extends Controller
           }
         }
         $csv_string = $this->csvArrayToString($csv_array);
-        return json_encode($csv_string);
+        return response()->json($csv_string);
       }
 
       // TODO: check if error occured based on startTime and endTime; if so return json 
       // by default we return json unless outputType = dataset
       if (isset($json["errors"]) || strcasecmp($outputType, "json") == 0) {
-        return json_encode($json);
+        return response()->json($json);
       }
 
       // TODO: return plot of first dataset in json array - this will a take a backburner
