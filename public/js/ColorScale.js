@@ -349,8 +349,7 @@ function ColorScale(min, max, divID) {
     };
 
     this.initVisualScale = function() {
-        $("#" + this.divID + " .bottom-scale-value").val(this.min);
-        $("#" + this.divID + " .top-scale-value").val(this.max);
+        this.setMinMax(this.min, this.max);
     };
 
     this.setMin = function(min) {

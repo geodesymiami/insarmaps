@@ -305,8 +305,8 @@ $(window).load(function() {
     document.addEventListener("keydown", function(e) {
         var ENTER_KEY = 13;
 
-        if (e.keyCode === ENTER_KEY &&
-            !($("#search-input").is(":focus") || $("#color-scale .scale-values input").is(":focus"))) {
+        if (e.keyCode === ENTER_KEY && ($("#search-form input").is(":focus"))) {
+            console.log("here");
             if (myMap.areaFeatures) {
                 searcher.search();
                 $("#search-form-and-results-maximize-button").click();

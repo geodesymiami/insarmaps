@@ -844,7 +844,8 @@ function SeismicityGraphsController() {
     this.features = null;
     this.mapForPlot = null;
     this.bbox = null;
-    this.colorScale = new ColorScale(-2.00, 2.00, "lat-vs-long-color-scale");
+    this.colorScale = new ColorScale(0, 50, "lat-vs-long-color-scale");
+    this.colorScale.setTopAsMax(false);
 }
 
 function setupSeismicityGraphsController() {
@@ -909,24 +910,17 @@ function setupSeismicityGraphsController() {
         var millisecondValues = features.map(function(feature) {
             return feature.properties.time;
         });
-        var minDate = new Date(millisecondValues[0]);
-        var maxDate = new Date(millisecondValues[millisecondValues.length - 1]);
-        var minDateString = minDate.toLocaleDateString();
-        var maxDateString = maxDate.toLocaleDateString();
+        var min = millisecondValues[0];
+        var max = millisecondValues[millisecondValues.length - 1];
 
         var colorOnInputs = millisecondValues;
         var stopsCalculator = new MapboxStopsCalculator();
-        var now = new Date();
-        const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
-        var min = this.map.colorScale.min;
-        var max = this.map.colorScale.max;
-        min = (min * millisecondsPerYear) + now.getTime();
-        max = (max * millisecondsPerYear) + now.getTime();
+
         var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
 
         var depthVLongValues = this.getSeriesData(longValues, depthValues, colorOnInputs, colorStops);
         var chartOpts = this.getBasicChartJSON();
-        chartOpts.subtitle = { text: "Longitude vs Depth Cross Section" };
+        chartOpts.subtitle = { text: "Longitude vs. Depth Cross Section" };
         chartOpts.xAxis.title = { text: "Longitude" };
         chartOpts.yAxis.title = { text: "Depth (Km)" };
         chartOpts.yAxis.reversed = true;
@@ -959,19 +953,11 @@ function setupSeismicityGraphsController() {
         var millisecondValues = features.map(function(feature) {
             return feature.properties.time;
         });
-        var minDate = new Date(millisecondValues[0]);
-        var maxDate = new Date(millisecondValues[millisecondValues.length - 1]);
-        var minDateString = minDate.toLocaleDateString();
-        var maxDateString = maxDate.toLocaleDateString();
+        var min = millisecondValues[0];
+        var max = millisecondValues[millisecondValues.length - 1];
 
         var colorOnInputs = millisecondValues;
         var stopsCalculator = new MapboxStopsCalculator();
-        var now = new Date();
-        const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
-        var min = this.map.colorScale.min;
-        var max = this.map.colorScale.max;
-        min = (min * millisecondsPerYear) + now.getTime();
-        max = (max * millisecondsPerYear) + now.getTime();
         var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
 
         var latVdepthValues = this.getSeriesData(depthValues, latValues, colorOnInputs, colorStops);
@@ -1060,8 +1046,8 @@ function setupSeismicityGraphsController() {
         });
 
         this.mapForPlot.on("load", function() {
-            var min = this.map.colorScale.min;
-            var max = this.map.colorScale.max;
+            var min = this.colorScale.min;
+            var max = this.colorScale.max;
             var stopsCalculator = new MapboxStopsCalculator();
             var depthStops = stopsCalculator.getDepthStops(min, max, this.map.colorScale.jet_r);
 

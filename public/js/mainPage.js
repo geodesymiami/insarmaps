@@ -1050,5 +1050,17 @@ $(window).load(function() {
         }
     });
 
+    $("#lat-vs-long-color-scale .scale-values .form-group > input").keypress(function(e) {
+        var ENTER_KEY = 13;
+
+        if (e.which == ENTER_KEY) {
+            var bottomValue = parseFloat($("#lat-vs-long-color-scale .bottom-scale-value").val());
+            var topValue = parseFloat($("#lat-vs-long-color-scale .top-scale-value").val());
+
+            myMap.seismicityGraphsController.colorScale.setMinMax(bottomValue, topValue);
+            myMap.seismicityGraphsController.createChart(null, "lat-vs-long-graph", null, null);
+        }
+    });
+
     // $("#search-form-results-table").tablesorter();
 });

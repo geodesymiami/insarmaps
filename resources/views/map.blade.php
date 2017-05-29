@@ -255,7 +255,7 @@
       </div>
     </div>
   </div>
-  <div id="color-scale" class="active">
+  <div id="color-scale">
     <div class="color-scale-text-div" class="rotate">
       LOS Velocity [cm/yr]
     </div>
@@ -365,7 +365,7 @@
           <div class="side-by-side">
             <div id="lat-vs-long-color-scale">
               <div class="color-scale-text-div" class="rotate">
-                LOS Velocity [cm/yr]
+                Depth (Km)
               </div>
               <div class="color-scale-main-container">
                 <div class="color-scale-and-values-container clearfix">
