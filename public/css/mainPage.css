@@ -694,6 +694,20 @@ input[type=number] {
     bottom: 0%;
 }
 
+#seismicity-chart-sliders-maximize-button, #seismicity-charts-maximize-button {
+    position: absolute;
+    bottom: 10px;
+    z-index: 98;
+}
+
+#seismicity-chart-sliders-maximize-button {
+    left: 5%;
+}
+
+#seismicity-charts-maximize-button {
+    left: 10%;
+}
+
 #graph-div-minimize-button {
     margin-right: 10px;
     margin-top: 6px;

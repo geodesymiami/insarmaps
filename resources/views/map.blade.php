@@ -371,11 +371,15 @@
     </div>
     <div class="content">
       <div class="chart-containers">
+        <h7>Depth</h7>
         <div class="seismicity-chart-slider" id="depth-slider"></div>
+        <h7>Time</h7>
         <div class="seismicity-chart-slider" id="time-slider"></div>
       </div>
     </div>
   </div>
+  <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-charts-maximize-button"></button>
+  <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-chart-sliders-maximize-button"></button>
   </div>
   <div class="wrap minimized" id="area-attributes-div" title="Attributes">
    <div class="top-right-buttons">

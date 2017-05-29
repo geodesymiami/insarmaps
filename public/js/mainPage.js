@@ -839,16 +839,32 @@ $(window).load(function() {
     $("#seismicity-charts-minimize-button").on("click", function() {
         var $container = $("#seismicity-charts");
         if ($container.hasClass("active")) {
-            myMap.seismicityGraphsController.destroyAllCharts();
             $container.removeClass("active");
+            $("#seismicity-charts-maximize-button").css("display", "block");
+        }
+    });
+
+    $("#seismicity-charts-maximize-button").on("click", function() {
+        var $container = $("#seismicity-charts");
+        if (!$container.hasClass("active")) {
+            $container.addClass("active");
+            $("#seismicity-charts-maximize-button").css("display", "none");
         }
     });
 
     $("#seismicity-chart-sliders-minimize-button").on("click", function() {
         var $container = $("#seismicity-chart-sliders");
         if ($container.hasClass("active")) {
-            myMap.seismicityGraphsController.destroyAllSliders();
             $container.removeClass("active");
+            $("#seismicity-chart-sliders-maximize-button").css("display", "block");
+        }
+    });
+
+    $("#seismicity-chart-sliders-maximize-button").on("click", function() {
+        var $container = $("#seismicity-chart-sliders");
+        if (!$container.hasClass("active")) {
+            $container.addClass("active");
+            $("#seismicity-chart-sliders-maximize-button").css("display", "none");
         }
     });
 
