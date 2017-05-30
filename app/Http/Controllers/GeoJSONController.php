@@ -1,4 +1,5 @@
 <?php
+// TODO: change echo json_encodes to proper laravel response objects
 
 namespace App\Http\Controllers;
 
@@ -42,7 +43,6 @@ class GeoJSONController extends Controller {
   }
 
   /** @throws Exception */
-  // TODO: Insert try/catch statement in case query fails
   private function jsonDataForPoint($area, $pointNumber) {
       $json = [];
       // hard coded until zishi is back
@@ -62,7 +62,7 @@ class GeoJSONController extends Controller {
 
      $json["string_dates"] = $this->arrayFormatter->postgresToPHPArray($string_dates);
 
-     $query = "SELECT *, st_astext(wkb_geometry) from " . $area . " where p = ?";
+     $query = 'SELECT *, st_astext(wkb_geometry) from "' . $area . '" where p = ?';
 
      $points = DB::select($query, [$pointNumber]);
      foreach ($points as $point) {
@@ -98,7 +98,7 @@ public function getPoints() {
     $pointsArray = array_slice($parameters, 1, $offset);
 
     $pointsArrayLen = count($pointsArray);
-    $query = "SELECT decimaldates, stringdates FROM area WHERE area.unavco_name like ?";
+    $query = 'SELECT decimaldates, stringdates FROM area WHERE area.unavco_name like ?';
     $dateInfos = DB::select($query, [$area]);
 
     foreach ($dateInfos as $dateInfo) {
@@ -118,7 +118,7 @@ public function getPoints() {
 
     // add last ANY values without comma
   $curPointNum = $pointsArray[$i];
-  $query = $query . "(" . $curPointNum . ")) SELECT *, st_astext(wkb_geometry) from " . $area . " INNER JOIN points p ON (" . $area . ".p = p.point) ORDER BY p ASC";
+  $query = $query . '(' . $curPointNum . ')) SELECT *, st_astext(wkb_geometry) from "' . $area . '" INNER JOIN points p ON ("' . $area . '".p = p.point) ORDER BY p ASC';
 
     // echo $fullQuery;
   // echo $query;
@@ -135,8 +135,8 @@ public function getPoints() {
 }
 }
 
-private function getExtraAttributesForAreas() {
-  $sql = "SELECT * FROM extra_attributes";
+private function getAttributesForAreas($table) {
+  $sql = "SELECT * FROM " . $table;
   $attributes = DB::select($sql);
   $attributesDict = [];
 
@@ -156,7 +156,7 @@ public function getAreas($bbox=NULL) {
   try {
     $query = "SELECT * from area";
     if ($bbox) {
-      $query = "SELECT * FROM area WHERE st_contains(ST_MakePolygon(ST_GeomFromText(" . $bbox . ", 4326)), ST_SetSRID(ST_MakePoint(area.latitude, area.longitude), 4326));";
+      $query = "SELECT * FROM area WHERE st_contains(ST_MakePolygon(ST_GeomFromText(" . $bbox . ", 4326)), ST_SetSRID(ST_MakePoint(area.longitude, area.latitude), 4326));";
     }
     $areas = DB::select($query);
     $permissionController = new PermissionsController();
@@ -171,7 +171,8 @@ public function getAreas($bbox=NULL) {
       $userPermissions = $permissionController->getUserPermissions(Auth::id(), "users", "user_permissions", ["users.id = user_permissions.user_id"]);
       array_push($userPermissions, "public"); // every user must have public permissions
     }
-    $extra_attributes = $this->getExtraAttributesForAreas();
+    $extra_attributes = $this->getAttributesForAreas("extra_attributes");
+    $plot_attributes = $this->getAttributesForAreas("plot_attributes");
 
     $json["areas"] = [];
     foreach ($areas as $area) {
@@ -192,8 +193,10 @@ public function getAreas($bbox=NULL) {
 
       foreach ($curAreaPermissions as $curAreaPermission) {
         if (in_array($curAreaPermission, $userPermissions)) {
-          $currentArea["coords"]["latitude"] = $area->latitude;
-          $currentArea["coords"]["longitude"] = $area->longitude;                
+          $currentArea["type"] = "Feature";
+          $currentArea["geometry"]["type"] = "Point";
+          $currentArea["geometry"]["coordinates"] = [floatval($area->longitude), floatval($area->latitude)];
+
           $currentArea["properties"]["num_chunks"] = $area->numchunks;
           $currentArea["properties"]["country"] = $area->country;
           $currentArea["properties"]["attributekeys"] = $this->arrayFormatter->postgresToPHPArray($area->attributekeys);
@@ -210,13 +213,19 @@ public function getAreas($bbox=NULL) {
             $currentArea["properties"]["extra_attributes"] = NULL;
           }
 
+          if (isset($plot_attributes[$area->id])) {
+            $currentArea["properties"]["plot_attributes"] = $plot_attributes[$area->id]["plotAttributes"];
+          } else {
+            $currentArea["properties"]["plot_attributes"] = NULL;
+          }
+
           array_push($json["areas"], $currentArea);
           continue;
         }
       }
     }
 
-    echo json_encode($json);
+    return response()->json($json);
   } catch (\Illuminate\Database\QueryException $e) {
     echo "error getting areas";
   }

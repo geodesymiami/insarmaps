@@ -14,43 +14,16 @@ function setUpAreaFilterSelector() {
         }
 
         var polygonVertices = this.getVerticesOfSquareBbox(bbox);
-        var serverBboxCoords = ""
-        var bboxString = "LINESTRING()";
-        var buffer = 0; // REMOVE POTENTIALLY
-        for (var i = 0; i < polygonVertices.length; i++) {
-            switch (i) {
-                case 0: // nw
-                    polygonVertices[i].lng -= buffer;
-                    polygonVertices[i].lat += buffer;
-                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
-                    break;
-                case 1: // ne
-                    polygonVertices[i].lng += buffer;
-                    polygonVertices[i].lat += buffer;
-                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
-                    break;
-                case 2: // se
-                    polygonVertices[i].lng += buffer;
-                    polygonVertices[i].lat -= buffer;
-                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
-                    break;
-                case 3: // sw
-                    polygonVertices[i].lng -= buffer;
-                    polygonVertices[i].lat -= buffer;
-                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
-                    break;
-                default:
-                    throw "invalid counter";
-                    break;
-            }
-        }
-        // add initial vertext again to close linestring
-        serverBboxCoords += polygonVertices[0].lng + " " + polygonVertices[0].lat;
+        var serverBboxCoords = this.verticesOfBboxToLineString(polygonVertices);
 
         // TODO: refactor success function and loadareamarkers handler
         // to not repeat code
-        $.ajax({
-            url: "/WebServicesBox?box=LINESTRING(" + serverBboxCoords + ")",
+        if (this.lastAjaxRequest) {
+            this.lastAjaxRequest.abort();
+        }
+
+        this.lastAjaxRequest = $.ajax({
+            url: "/WebServicesBox?box=" + serverBboxCoords,
             success: function(response) {
                 var json = JSON.parse(response);
                 if (json.areas.length == 0) {
@@ -60,15 +33,43 @@ function setUpAreaFilterSelector() {
                 $("#search-form-results-table tbody").empty();
 
                 myMap.removeAreaMarkers();
-                myMap.addAreaMarkersFromJSON(json, null);
-            },
+                var exclude = currentArea ? [currentArea.properties.unavco_name] : null
+                myMap.addSwathsFromJSON(json, exclude, true);
+                this.lastAjaxRequest = null;
+            }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed " + xhr.responseText);
-            }
-        })
+                this.lastAjaxRequest = null;
+            }.bind(this)
+        });
     };
 
     AreaFilterSelector.prototype.filterAreas = function(bbox) {
         this.finish(bbox);
+    };
+
+    AreaFilterSelector.prototype.filterAreasInBrowser = function(bbox, populateTable) {
+        var polygon = this.squareBboxToMapboxPolygon(bbox);
+        var searchWithin = {
+            "type": "FeatureCollection",
+            "features": [polygon]
+        };
+        var points = {
+            "type": "FeatureCollection",
+            "features": this.map.areas.areas
+        };
+
+        var ptsWithin = turf.within(points, searchWithin);
+        if (ptsWithin.features.length > 0) {
+            var json = {
+                "areas": ptsWithin.features
+            };
+            var filter = currentArea ? [currentArea.properties.unavco_name] : null;
+
+            this.map.addSwathsFromJSON(json, filter, populateTable);
+            if (currentArea) {
+                this.map.areaMarkerLayer.setAreaRowHighlighted(currentArea.properties.unavco_name);
+            }
+        }
     };
 }

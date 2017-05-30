@@ -1,7 +1,17 @@
-function RecolorSelector() {}
+function RecolorSelector() {
+    this.recoloringInProgress = false;
+}
 
 function setupRecolorSelector() {
-    RecolorSelector.prototype.recoloringInProgress = false;
+    RecolorSelector.prototype.createSeismicityPlots = function(features, bbox) {
+        var selectedColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
+        var features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
+        this.map.seismicityGraphsController.setFeatures(features);
+        this.map.seismicityGraphsController.setBbox(bbox);
+        this.map.seismicityGraphsController.createAllCharts(selectedColoring, null, null);
+        this.map.seismicityGraphsController.showChartContainers();
+    };
+
     RecolorSelector.prototype.finish = function(bbox) {
         // re enable dragpan only if polygon button isn't selected
         if (!this.map.selector.polygonButtonSelected) {
@@ -14,7 +24,24 @@ function setupRecolorSelector() {
         }
 
         this.lastbbox = this.bbox;
-        if (this.bbox == null || this.minIndex == -1 || this.maxIndex == -1) {
+        if (this.bbox == null) {
+            return;
+        }
+
+        // these next two lines not elegant. ideally, finish calls this method and other functions operate on the features
+        // TODO: refactor this once the details are worked out
+        var pixelBoundingBox = [this.map.map.project(this.bbox[0]), this.map.map.project(this.bbox[1])];
+        var features = this.map.map.queryRenderedFeatures(pixelBoundingBox);
+        if (features.length > 0) {
+            var feature = features[0];
+            var featureID = feature.layer.id;
+
+            if (this.map.thirdPartySourcesController.seismicities.includes(featureID)) {
+                this.createSeismicityPlots(features, bbox);
+                return;
+            }
+        }
+        if (this.minIndex == -1 || this.maxIndex == -1) {
             return;
         }
 
@@ -33,32 +60,32 @@ function setupRecolorSelector() {
             var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
             var startDate = new Date(dates[this.minIndex]);
             var endDate = new Date(dates[this.maxIndex]);
-            this.recolorOnDisplacement(startDate, endDate, "Recoloring...");
+            this.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE to interrupt");
         } else {
             this.recolorDataset();
         }
     };
 
-    RecolorSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate, loadingText) {
-        var millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
+    RecolorSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate, loadingTextTop, loadingTextBottom) {
+        const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
         var yearsElapsed = (endDecimalDate - startDecimalDate) / millisecondsPerYear;
 
-        this.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed, loadingText);
+        this.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed, loadingTextTop, loadingTextBottom);
     };
 
-    RecolorSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingText) {
+    RecolorSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingTextTop, loadingTextBottom) {
         // let the caller check if a coloring is in progress. otherwise user has to sometimes
         //  wait if they cancel a recoloring and want to do another one
 
         if (this.map.map.getSource("onTheFlyJSON")) {
-            this.map.map.removeSource("onTheFlyJSON");
-            this.map.map.removeLayer("onTheFlyJSON");
+            this.map.removeSource("onTheFlyJSON");
+            this.map.removeLayer("onTheFlyJSON");
         }
 
         // get the names of all the layers
         var pointLayers = [];
-        for (var i = 1; i < this.map.layers_.length; i++) {
-            pointLayers.push(this.map.layers_[i].id);
+        for (var i = 1; i <= currentArea.properties.num_chunks; i++) {
+            pointLayers.push("chunk_" + i);
         }
 
         var features = null;
@@ -98,7 +125,7 @@ function setupRecolorSelector() {
             return a.properties.p - b.properties.p;
         });
 
-        showLoadingScreen(loadingText);
+        showLoadingScreen(loadingTextTop, loadingTextBottom);
 
         for (var i = 0; i < features.length; i++) {
             var long = features[i].geometry.coordinates[0];
@@ -131,7 +158,7 @@ function setupRecolorSelector() {
         //console.log(query);
         this.recoloringInProgress = true;
 
-        this.lastAjaxRequest = $.ajax({
+        this.cancellableAjax.ajax({
             url: "/points",
             type: "post",
             async: true,
@@ -174,15 +201,15 @@ function setupRecolorSelector() {
                     // console.log(curFeature);
                 }
                 if (this.map.map.getSource("onTheFlyJSON")) {
-                    this.map.map.removeSource("onTheFlyJSON");
-                    this.map.map.removeLayer("onTheFlyJSON");
+                    this.map.removeSource("onTheFlyJSON");
+                    this.map.removeLayer("onTheFlyJSON");
                 }
-                this.map.map.addSource("onTheFlyJSON", {
+                this.map.addSource("onTheFlyJSON", {
                     "type": "geojson",
                     "data": geoJSONData
                 });
 
-                this.map.map.addLayer({
+                this.map.addLayer({
                     "id": "onTheFlyJSON",
                     "type": "circle",
                     "source": "onTheFlyJSON",
@@ -211,11 +238,14 @@ function setupRecolorSelector() {
                 console.log("failed " + xhr.responseText);
                 hideLoadingScreen();
             }
+        }, function() {
+            this.cancelRecoloring = true;
+            hideLoadingScreen();
         });
     };
 
     RecolorSelector.prototype.recolorDataset = function() {
-        this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1);
+        this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE to interrupt");
     };
 
     RecolorSelector.prototype.recoloring = function() {

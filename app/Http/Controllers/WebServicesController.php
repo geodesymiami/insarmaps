@@ -10,6 +10,7 @@ use DB;
 
 use CpChart\Factory\Factory;
 use Exception;
+use Illuminate\Support\Facades\Input;
 
 // NOTE: We currently use 3 date formats between various dependencies in SQL, Highcharts, etc. 
 // 1) yyyy-mm-dd / string (ex: 2010-12-20)
@@ -23,6 +24,8 @@ use Exception;
 
 class WebServicesController extends Controller
 {
+    private static $MBTILES_PATH = "/var/www/html/tileserver";
+
     public function __construct() {
       $this->arrayFormatter = new PostgresArrayFormatter();
       $this->dateFormatter = new DateFormatter();
@@ -155,12 +158,12 @@ class WebServicesController extends Controller
 
       // check if linear regression calculation produced an error; if so return error
       if (isset($linearRegression["errors"])) {
-        return json_encode($linearRegression);
+        return response()->json($linearRegression);
       }
 
       $json["subtitle"]["text"] = "velocity: " . round($linearRegression["m"] * 1000, 2) . " mm/yr";
 
-      $jsonString = json_encode(($json));
+      $jsonString = response()->json(($json));
 
       $tempPictName = tempnam(storage_path(), "pict");
       $command = "highcharts-export-server --instr '" . $jsonString . "' --outfile " . $tempPictName . " --type jpg";
@@ -373,13 +376,13 @@ class WebServicesController extends Controller
       // check if startTime inputted by user is in in yyyy-mm-dd or yyyymmdd format
       if ($startTime !== NULL && $this->dateFormatter->verifyDate($startTime) === NULL) {
         $json["errors"] = "please input startTime in format yyyy-mm-dd (ex: 1990-12-19)";
-        return json_encode($json);
+        return response()->json($json);
       }
 
       // check if inputted by user is in in yyyy-mm-dd or yyyymmdd format
       if ($endTime !== NULL && $this->dateFormatter->verifyDate($endTime) === NULL) {
         $json["errors"] = "please input endTime in format yyyy-mm-dd (ex: 2020-12-19)";
-        return json_encode($json);
+        return response()->json($json);
       }
 
       // check if startTime is less than or equal to endTime
@@ -390,7 +393,7 @@ class WebServicesController extends Controller
 
         if ($interval->format("%a") > 0 && $startDate > $endDate) {
           $json["errors"] = "please make sure startTime is a date earlier than endTime";
-          return json_encode($json);
+          return response()->json($json);
         }
       }
 
@@ -454,7 +457,7 @@ class WebServicesController extends Controller
         }
         
         $csv_string = $this->csvArrayToString($csv_array);
-        return json_encode($csv_string);
+        return response()->json($csv_string);
       }
 
       // QUERY 1C: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
@@ -528,9 +531,9 @@ class WebServicesController extends Controller
           }
         }
         // TODO: tell zishi to construct area objects as in GeoJSONController, not just return dataset names
-        // return json_encode($csv_array);
+        // return response()->json($csv_array);
         $csv_string = $this->csvArrayToString($csv_array);
-        return json_encode($csv_string);
+        return response()->json($csv_string);
       }
 
       // calculate polygon encapsulating longitude and latitude specified by user
@@ -551,7 +554,7 @@ class WebServicesController extends Controller
       // return data of first point returned by polygon created by (longitude, latitude) and delta
       // key = area id, value = dataset name
       foreach ($datasets as $key => $value) {
-        $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $value . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
+        $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM \"" . $value . "\" WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
         $points = DB::select(DB::raw($query));
 
         if (count($points) > 0) {
@@ -579,13 +582,13 @@ class WebServicesController extends Controller
           }
         }
         $csv_string = $this->csvArrayToString($csv_array);
-        return json_encode($csv_string);
+        return response()->json($csv_string);
       }
 
       // TODO: check if error occured based on startTime and endTime; if so return json 
       // by default we return json unless outputType = dataset
       if (isset($json["errors"]) || strcasecmp($outputType, "json") == 0) {
-        return json_encode($json);
+        return response()->json($json);
       }
 
       // TODO: return plot of first dataset in json array - this will a take a backburner
@@ -667,6 +670,35 @@ class WebServicesController extends Controller
       return $angle * $earthRadius;
     }
 
+    public function uploadMbtiles(Request $request) {
+      $file = $request->file("file");
+      $fileName = $file->getClientOriginalName();
+      try {
+        $file->move(self::$MBTILES_PATH, $fileName);
+      } catch (Exception $e) {
+        return response("Error storing file", 500);
+      }
+
+      return response("Successfully stored file", 200);
+    }
+
+    public function deleteMbtiles(Request $request) {
+      $fileName = self::$MBTILES_PATH . "/" . Input::get("fileName");
+      $res = 0;
+
+      try {
+        $res = unlink($fileName);
+      } catch (Exception $e) {
+        return response("Error deleting file", 500);
+      }
+
+      if (!$res) {
+        return response("Error deleting file", 500);
+      }
+
+      return response("Successfully deleted file", 200);
+    }
+
     /**
     * Return Laravel view object for webservice UI for querying points
     *
@@ -677,3 +709,4 @@ class WebServicesController extends Controller
       return view("webServices");
     }
 }
+

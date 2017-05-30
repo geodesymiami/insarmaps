@@ -1,6 +1,129 @@
-function ColorScale(min, max) {
+function MapboxStopsCalculator() {
+    this.inputsFromMinAndMax = function(min, max, increment) {
+        var currentValue = min;
+        var output = [];
+
+        while (currentValue <= max) {
+            output.push(currentValue);
+            currentValue += increment;
+        }
+
+        return output;
+    };
+
+    this.calculateStops = function(inputArray, outputArray, valueIncrement, outputIncrement) {
+        if (outputIncrement < 1) {
+            throw new Error("outputIncrement can't be less than 1");
+            return;
+        }
+
+        outputIncrement = Math.ceil(outputIncrement);
+        var stops = [];
+
+        for (var i = 0; i < outputArray.length; i += outputIncrement) {
+            var curStop = [inputArray[i], outputArray[i]];
+            stops.push(curStop);
+        }
+
+        // for large output incremnets not a multiple of output array length, we can get
+        // blue shift, especially for categorical scales. thus, always add the last value to
+        // make sure even on these types of scales we get the full gamut of colors. if output
+        // increment == 1 for example, it doesn't matter as we full red color at
+        // max - outputIncrement / outputArray.length, so adding the last max value doesn't affect it
+        stops.push([inputArray[inputArray.length - 1], outputArray[outputArray.length - 1]]);
+
+        return stops;
+    };
+
+    this.colorsToMapboxStops = function(min, max, colors) {
+        // we divide by 100 because this class works in cm, but mapbox works in m as
+        // those are the units in the original h5 files
+        min /= 100.0;
+        max /= 100.0;
+        var colorRange = max - min;
+        var increment = colorRange / colors.length;
+        var inputs = this.inputsFromMinAndMax(min, max, increment);
+
+        return this.calculateStops(inputs, colors, increment, 1);
+    };
+
+    // TODO: below for functions all do the same thing, just have different names.
+    // it is a result of better refactoring and coding such that we now only need one function...
+    this.getDepthStops = function(min, max, outputArray) {
+        var valueIncrement = (max - min) / outputArray.length;
+        var inputs = this.inputsFromMinAndMax(min, max, valueIncrement);
+
+        return this.calculateStops(inputs, outputArray, valueIncrement, 1);
+    };
+
+    this.getMagnitudeStops = function(min, max, outputArray) {
+        var valueIncrement = (max - min) / outputArray.length;
+        var inputs = this.inputsFromMinAndMax(min, max, valueIncrement);
+
+        return this.calculateStops(inputs, outputArray, valueIncrement, 1);
+    };
+
+    this.getTimeStops = function(min, max, outputArray) {
+        var valueIncrement = (max - min) / outputArray.length;
+        var inputs = this.inputsFromMinAndMax(min, max, valueIncrement);
+
+        return this.calculateStops(inputs, outputArray, valueIncrement, 1);
+    };
+
+    this.getOpacityStops = function(min, max, outputArray) {
+        var valueIncrement = (max - min) / outputArray.length;
+        var inputs = this.inputsFromMinAndMax(min, max, valueIncrement);
+
+        return this.calculateStops(inputs, outputArray, valueIncrement, 1);
+    };
+
+    // assume order so use binary search
+    this.getOutputIndexFromInputStop = function(stops, input) {
+        var first = 0,
+            last = stops.length - 1;
+        var middle, cmp = 0;
+
+        while (!(first > last)) {
+            // floor due to js's strange integer/float casting
+            middle = Math.floor((first + last) / 2);
+
+            cmp = input - stops[middle][0];
+
+            if (cmp == 0) {
+                return middle;
+            }
+            if (cmp < 0) {
+                last = middle - 1;
+            } else {
+                first = middle + 1;
+            }
+        }
+
+        // if we don't find it, return value of stops just before our input
+        cmp = input - stops[middle][0];
+        var toReturn = -1;
+        if (cmp < 0) {
+            toReturn = middle - 1;
+        } else {
+            toReturn = middle;
+        }
+
+        // make sure we are in bounds of array
+        if (toReturn < 0) {
+            toReturn = 0;
+        } else if (toReturn >= stops.length) {
+            toReturn = stops.length - 1;
+        }
+
+        return toReturn;
+    };
+}
+
+function ColorScale(min, max, divID) {
     var that = this;
     this.levels = 256;
+    this.divID = divID;
+    this.stopsCalculator = new MapboxStopsCalculator();
 
     this.jet = [
         '#000080', '#000084', '#000089', '#00008d', '#000092', '#000096',
@@ -216,46 +339,46 @@ function ColorScale(min, max) {
         }
 
         var imgSrc = "img/" + scale + "_scale.PNG";
-        $("#color-scale-picture-div > img").attr("src", imgSrc);
+        $("#" + this.divID + " .color-scale-picture-div > img").attr("src", imgSrc);
     };
 
-    this.colorsToMapboxStops = function(min, max, colors) {
-        var stops = [];
-
-        // we divide by 100 because this class works in cm, but mapbox works in m as
-        // those are the units in the original h5 files
-        var colorRange = (Math.abs(min) + Math.abs(max)) / 100;
-        var currentValue = min / 100;
-
-        var increment = colorRange / colors.length;
-
-        for (var i = 0; i < colors.length; i++) {
-            var curStop = [currentValue, colors[i]];
-            stops.push(curStop);
-            currentValue += increment;
-        }
-
-        return stops;
+    this.topIsMax = true;
+    this.setTopAsMax = function(setAsMax) {
+        this.topIsMax = setAsMax;
+        this.setMinMax(this.min, this.max);
     };
 
     this.initVisualScale = function() {
-        $("#min-scale-value").val(this.min);
-        $("#max-scale-value").val(this.max);
+        this.setMinMax(this.min, this.max);
     };
 
     this.setMin = function(min) {
         this.min = min;
-        $("#min-scale-value").val(this.min);
+        if (this.topIsMax) {
+            $("#" + this.divID + " .bottom-scale-value").val(this.min);
+        } else {
+            $("#" + this.divID + " .top-scale-value").val(this.min);
+        }
     };
 
     this.setMax = function(max) {
         this.max = max;
-        $("#max-scale-value").val(this.max);
+
+        if (this.topIsMax) {
+            $("#" + this.divID + " .top-scale-value").val(this.max);
+        } else {
+            $("#" + this.divID + " .bottom-scale-value").val(this.max);
+        }
     };
 
-    this.setMinMax = function(min, max) {
-        this.setMin(min);
-        this.setMax(max);
+    this.setMinMax = function(val1, val2) {
+        if (val1 >= val2) {
+            this.setMin(val2);
+            this.setMax(val1);
+        } else {
+            this.setMin(val1);
+            this.setMax(val2);
+        }
     };
 
     this.defaultValues = function() {
@@ -264,6 +387,24 @@ function ColorScale(min, max) {
     };
 
     this.getMapboxStops = function() {
-        return this.colorsToMapboxStops(this.min, this.max, this.currentScale);
+        return this.stopsCalculator.colorsToMapboxStops(this.min, this.max, this.currentScale);
+    };
+
+    this.setTitle = function(title) {
+        $("#" + this.divID + " > .color-scale-text-div").html(title);
+    };
+
+    this.show = function() {
+        var id = "#" + this.divID;
+        if (!$(id).hasClass("active")) {
+            $(id).toggleClass("active");
+        }
+    };
+
+    this.remove = function() {
+        var id = "#" + this.divID;
+        if ($(id).hasClass("active")) {
+            $(id).toggleClass("active");
+        }
     };
 }

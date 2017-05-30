@@ -21,6 +21,13 @@ Route::get("/file/{area}/{fileChunkNumber}", "GeoJSONController@getJSONFileChunk
 Route::get("/textFile/{area}/{point}", "GeoJSONController@pointDataToTextFile")->name("pointDataToTextFile");
 Route::get("/point/{area}/{point}", "GeoJSONController@getDataForPoint")->name("getDataForPoint");
 Route::get("/areas/", "GeoJSONController@getAreas")->name("getAreas");
+Route::get("/unr", "ThirdPartyDataNoCorsController@getUNR")->name("getUNR");
+Route::get("/midas", "ThirdPartyDataNoCorsController@getMidas")->name("getMidas");
+Route::get("/IGEPNEarthquakeFeed", "ThirdPartyDataNoCorsController@getIGEPNEarthquakeFeed")->name("getIGEPNEarthquakeFeed");
+Route::get("/HawaiiReloc", "ThirdPartyDataNoCorsController@getHawaiiReloc")->name("getHawaiiReloc");
+Route::get("/USGSMonthlyFeed", "ThirdPartyDataNoCorsController@getUSGSMonthlyFeed")->name("getUSGSMonthlyFeed");
+Route::get("/IRISEarthquake/{startDate}/{endDate}", "ThirdPartyDataNoCorsController@getIRISEarthquake")->name("IRISEarthquake");
+
 Route::post("/points", "GeoJSONController@getPoints");
 Route::controllers([
     'auth' => 'Auth\AuthController',    
@@ -40,3 +47,8 @@ Route::get("/WebServicesDatasetUI/", "WebServicesDatasetController@renderView");
 
 // web services for querying dataset via bounding box
 Route::get("/WebServicesBox/", "WebServicesBoxController@processRequest");
+// get point id's in a bounding bos for subsetting
+Route::get("/WebServicesBox/{area}/{lineString}", "WebServicesBoxController@getPointNumbersInBox");
+
+Route::post("/WebServices/uploadMbtiles", "WebServicesController@uploadMbtiles")->middleware("auth");
+Route::post("/WebServices/deleteMbtiles", "WebServicesController@deleteMbtiles")->middleware("auth");

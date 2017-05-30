@@ -13,6 +13,10 @@ button {
     cursor: pointer;
 }
 
+button:focus {
+    outline: none !important;
+}
+
 h1.title {
     font-size: 32px;
     margin-bottom: 2em;
@@ -59,7 +63,9 @@ html[xmlns] .clearfix {
     height: 1%;
 }
 
+
 /*TODO: consolidate the .active classes to mainly use/remove redundant code*/
+
 .active {
     display: block !important;
 }
@@ -148,21 +154,16 @@ html[xmlns] .clearfix {
 
 #area-attributes-div {
     position: fixed;
-    bottom: 4%;
+    bottom: 0%;
     right: 0%;
     height: 310px;
     width: 300px;
-    overflow-y: auto;
     background-color: white !important;
     opacity: 0.8;
 }
 
 #area-attributes-div-minimize-button {
     opacity: 1.0 !important;
-}
-
-.tooltip.left {
-    margin-left: -57px !important;
 }
 
 #topography-wrap {
@@ -186,7 +187,7 @@ html[xmlns] .clearfix {
 .top-right-buttons {
     position: absolute;
     top: 5px;
-    right: 10px;
+    right: 15px;
     z-index: 3;
 }
 
@@ -218,12 +219,10 @@ html[xmlns] .clearfix {
     transition: all 600ms;
     transform: translateY(0px);
     transition: all 0.5s;
-    z-index: 3;
+    z-index: 99;
 }
 
 .wrap.active:before {
-    height: 2000px;
-    width: 2000px;
     border-radius: 50%;
     top: 50%;
     left: 50%;
@@ -239,6 +238,7 @@ html[xmlns] .clearfix {
     z-index: 2;
     opacity: 1;
     transition: all 600ms cubic-bezier(0.55, 0.055, 0.675, 0.19);
+    overflow: auto;
 }
 
 .wrap.active.toggled .content {
@@ -407,6 +407,7 @@ div.menu {
 }
 
 #loading-screen-contents {
+    height: 25%;
     position: absolute;
     margin: 0 auto;
     top: 50%;
@@ -416,37 +417,63 @@ div.menu {
     -moz-transform: translateX(-50%);
     -ms-transform: translateX(-50%);
     transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
-#loading-text-div {
+.loading-text-div {
+    height: 20%;
     max-width: 350px;
+    text-align: center;
+}
+
+#loading-circle-container {
+    position: relative;
+    width: 100%;
+    height: 60%;
 }
 
 .loading-circle {
-    margin: 0 auto;
-    border: 5px solid #f3f3f3; /* Light grey */
-    border-top: 5px solid #3498db; /* Blue */
-    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
     width: 40px;
-    height:40px;
+    height: 40px;
+    margin: -20px auto auto -20px;
+    border: 5px solid #f3f3f3;
+    /* Light grey */
+    border-top: 5px solid #3498db;
+    /* Blue */
+    border-radius: 50%;
     animation: spin 1.5s linear infinite;
     -webkit-animation: spin 1.5s linear infinite;
     -ms-animation: spin 1.5s linear infinite;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 @-webkit-keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 @-ms-keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 #top-map-buttons > div > button {
@@ -480,6 +507,10 @@ div.menu {
 /*disable compass in nav controls*/
 
 .mapboxgl-ctrl-compass {
+    display: none !important;
+}
+
+.mapboxgl-ctrl-logo {
     display: none !important;
 }
 
@@ -545,55 +576,77 @@ div.menu {
     position: absolute;
     top: 50%;
     left: 0;
-    z-index: 99;
+    z-index: 98;
     text-align: center;
+}
+
+#lat-vs-long-color-scale {
+    width: 50%;
+    height: 100%;
+    margin: 0 auto;
 }
 
 #color-scale.active {
     display: block;
     background-color: rgba(255, 255, 255, 0.5);
     width: 75px;
+    height: 45%;
 }
 
-#color-scale-main-container {
-    width: 58px;
-    float: right;
+.color-scale-text-div {
+    height: 15%;
+    width: 100%;
 }
 
-#color-scale-picture-div {
-    width: 30px;
+.color-scale-main-container {
+    width: 100%;
+    height: 85%;
+}
+
+.color-scale-picture-div {
+    width: 30%;
     height: 100%;
     float: left;
 }
 
-#color-scale-and-values-container {
+.color-scale-picture-div > img {
     width: 100%;
+    height: 100%;
 }
 
-#scale-values {
+.color-scale-and-values-container {
+    height: 100%;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.scale-values {
     position: relative;
-    width: 27px;
+    width: 70%;
     float: left;
-    height: 256px;
+    height: 100%;
 }
 
-#left-scale-minimum, #right-scale-maximum {
+.left-scale-minimum,
+.right-scale-maximum {
     position: absolute;
 }
 
-#right-scale-maximum {
+.right-scale-maximum {
     top: 0;
 }
 
-#left-scale-minimum {
+.left-scale-minimum {
     bottom: -15px;
 }
 
-#scale-values .form-group > input {
+.scale-values .form-group > input {
     padding: 0;
 }
 
+
 /*remove the up/down spinners on the number input*/
+
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -601,7 +654,7 @@ input[type=number]::-webkit-inner-spin-button {
 }
 
 input[type=number] {
-    -moz-appearance:textfield;
+    -moz-appearance: textfield;
 }
 
 #slideout-button {
@@ -628,10 +681,50 @@ input[type=number] {
 #charts {
     position: absolute;
     left: 0%;
-    bottom: 5%;
-    margin-top: 70px;
+    bottom: 0%;
     height: 70%;
     width: 40%;
+}
+
+#seismicity-charts {
+    position: absolute;
+    right: 0%;
+    height: 100%;
+    width: 50%;
+}
+
+.seismicity-chart, .seismicity-chart-slider {
+    height: 33%;
+    width: 100%;
+}
+
+#seismicity-charts-container > div > div.side-by-side {
+    width: 50%;
+    height: 100%;
+    float: left;
+}
+
+#seismicity-chart-sliders {
+    position: absolute;
+    left: 10%;
+    height: 50%;
+    max-height: 300px;
+    width: 30%;
+    bottom: 0%;
+}
+
+#seismicity-chart-sliders-maximize-button, #seismicity-charts-maximize-button {
+    position: absolute;
+    bottom: 10px;
+    z-index: 98;
+}
+
+#seismicity-chart-sliders-maximize-button {
+    left: 5%;
+}
+
+#seismicity-charts-maximize-button {
+    left: 10%;
 }
 
 #graph-div-minimize-button {
@@ -643,6 +736,7 @@ input[type=number] {
     width: 100%;
     height: 90%;
     float: left;
+    margin-top: 25px;
 }
 
 #chartContainer {
@@ -713,13 +807,24 @@ input[type=number] {
     display: none;
 }
 
+#toggle-other-bars > div {
+    position: absolute;
+    display: block;
+    bottom: 50%;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    -moz-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    transform: translateX(-50%);
+}
+
 .custom-input {
     -moz-appearance: textfield;
     -webkit-appearance: textfield;
     background-color: white;
     background-color: -moz-field;
-    border: 1px solid darkgray;-
-    box-shadow: 1px 1px 1px 0 lightgray inset;
+    border: 1px solid darkgray;
+    - box-shadow: 1px 1px 1px 0 lightgray inset;
     font: -moz-field;
     font: -webkit-small-control;
     font-family: "Helvetica";
@@ -732,40 +837,47 @@ input[type=number] {
     width: 80%;
     float: left;
     height: 100%;
-    padding: 0 !important;
+    padding-left: 10px;
     margin: 0 !important;
     border: 0 !important;
-}
-
-#hidden-search-bars-container input {
-    width: 100%;
+    font-family: "Helvetica";
+    font-size: 14px;
 }
 
 .custom-input-dropdown {
+    position: relative;
     width: 20%;
     float: left;
     height: 100%;
-    display: table;
 }
 
 .custom-input-dropdown:hover {
     cursor: pointer;
 }
 
-/* always show datalist dropdown arrows */
-input::-webkit-calendar-picker-indicator {
-    opacity: 100;
+#recent-datasets-toggle-button {
+    width: 13px;
+    height: 13px;
+    margin: 4px 0 0 0 !important;
+}
+
+
+/* jquery autocomplete */
+
+.ui-autocomplete {
+    font-family: "Helvetica";
 }
 
 #search-form-and-results-container {
-    display: none; /* hide by default */
+    /* hide by default */
+    display: none;
     width: 35%;
-    height: 30%;
-    overflow-y: auto;
+    height: 35%;
     position: absolute;
     z-index: 99;
     bottom: 0;
-    left: 75px; /* don't overlap with colorscale div */
+    left: 90px;
+    /* don't overlap with colorscale div */
     background: white;
 }
 
@@ -785,19 +897,57 @@ input::-webkit-calendar-picker-indicator {
 }
 
 #search-form-results {
+    position: relative;
     width: 100%;
+    height: 100%;
     float: left;
 }
 
-#search-form-and-results-maximize-button {
-    position: absolute;
-    bottom: 45px;
-    left: 0;
+#subset-swath-popup {
+    position: fixed;
+    display: none;
+    height: 30%;
+    width: 50%;
+    float: left;
+    overflow-y: auto;
     z-index: 99;
-    background-color: rgba(0, 0, 0, 0.0);
+    background-color: white;
 }
 
-.minimize-button, .maximize-button {
+#subset-swath-table > thead > tr {
+    background-color: gray;
+    color: white;
+}
+
+#subset-swath-table td {
+    word-break: break-all;
+    border-bottom: 1px solid #eee;
+}
+
+#search-form-results-table {
+    font-size: 12px;
+}
+#search-form-results-table td {
+    position: relative;
+}
+
+#search-form-and-results-minimize-button {
+    position: fixed;
+}
+
+.flight-direction {
+    height: 30px;
+    float: left;
+}
+
+.show-children-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+}
+
+.minimize-button,
+.maximize-button {
     padding: 0 !important;
     border: 0 !important;
     width: 16px;
@@ -814,7 +964,35 @@ input::-webkit-calendar-picker-indicator {
     background-position: 0 -224px;
 }
 
-.clickable-button:hover {
+#maximize-buttons-container {
+    position: absolute;
+    right: 50%;
+    bottom: 10px;
+    z-index: 98;
+    width: 100px;
+    background-color: white;
+    border: none;
+}
+
+.maximize-button-container {
+    width: 33%;
+    height: 16px;
+    float: left;
+}
+
+.maximize-button-container > div {
+    height: 16px;
+}
+
+.maximize-button-container > div > div {
+    width: 16px;
+    height: 16px;
+    background-color: #b8b8b8;
+    display: block;
+    margin: 0 auto;
+}
+
+.clickable-button:active {
     background-color: #dcdee2 !important;
 }
 
@@ -824,18 +1002,6 @@ input::-webkit-calendar-picker-indicator {
 
 #areas-under-mouse-table td {
     display: flex;
-}
-
-.area-name-popup + .tooltip > .tooltip-inner {
-    background-color: white !important;
-    color: black !important;
-    height: 55px;
-    margin-left: 65px;
-}
-
-.area-name-popup + .tooltip > .tooltip-arrow {
-    border-color: white !important;
-    background-color: white !important;
 }
 
 .preview-attributes-button {
@@ -849,11 +1015,13 @@ input::-webkit-calendar-picker-indicator {
     /*width: 170px;*/
 }
 
+
 /*take out popup area name table top line*/
 
 .mapboxgl-popup-content tr td {
     border-top: none !important;
 }
+
 
 /*area information popup with tabs*/
 
@@ -864,6 +1032,9 @@ ul.tab {
     overflow: hidden;
     border: 1px solid #ccc;
     background-color: #f1f1f1;
+    position: fixed;
+    width: 87%;
+    height: 45px;
 }
 
 ul.tab li {
@@ -876,7 +1047,7 @@ ul.tab li a {
     text-align: center;
     text-decoration: none;
     transition: 0.3s;
-    font-size: 10px;
+    font-size: 12px;
 }
 
 ul.tab li a:hover {
@@ -890,8 +1061,8 @@ ul.tab li a:focus,
 
 .tabcontent {
     /*display: none;*/
-    padding: 6px 12px;
-    border: 1px solid #ccc;
+    padding-top: 45px;
+    border-bottom: 1px solid #ccc;
     border-top: none;
     font-size: 10px !important;
 }
@@ -906,3 +1077,74 @@ ul.tab li a:focus,
 #information-div-buttom-buttons div {
     float: left;
 }
+
+
+/* fixed table headers */
+
+section.fixed-header-table {
+    height: 100%;
+    position: relative;
+    border: 1px solid #000;
+    padding-top: 37px;
+    background: gray;
+}
+
+section.fixed-header-table.positioned {
+    position: absolute;
+    top: 100px;
+    left: 100px;
+    width: 100%;
+    box-shadow: 0 0 15px #333;
+}
+
+.fixed-header-table-container {
+    overflow-y: auto;
+    height: 100%;
+    width: 100%;
+    background-color: white;
+}
+
+.fixed-header-table-container table {
+    border-spacing: 0;
+    width: 100%;
+}
+
+.fixed-header-table-container td + .fixed-header-table-container td {
+    /*border-left: 1px solid #eee;*/
+}
+
+.fixed-header-table-container td,
+.fixed-header-table-container th {
+    border-bottom: 1px solid #eee;
+    color: #000;
+    border-left: 10px;
+}
+
+.fixed-header-table-container th {
+    height: 0 !important;
+    line-height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    color: transparent;
+    border: none;
+    white-space: nowrap;
+}
+
+.fixed-header-table-container th div {
+    position: absolute;
+    background: transparent;
+    color: #fff;
+    padding: 9px 25px;
+    top: 0;
+    margin-left: -25px;
+    line-height: normal;
+    border-left: 1px solid white;
+    font-size: 12px;
+}
+
+.fixed-header-table-container th:first-child div {
+    border: none;
+}
+
+
+/* -------------------------------------------------- */

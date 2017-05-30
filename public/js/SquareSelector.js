@@ -9,7 +9,7 @@ function SquareSelector() {
     this.lastbbox = null;
     this.associatedButton = null;
     this.cancelRecoloring = false;
-    this.lastAjaxRequest = null;
+    this.cancellableAjax = new CancellableAjax();
 
     this.canvas = null;
     this.polygonButtonSelected = false;
@@ -113,23 +113,6 @@ function SquareSelector() {
         }
     };
 
-    // allow cancelling of recolorings.
-    // TODO: figure out way to avoid race conditions with ajax success functions
-    // idea: attach state to each function and when user presses cancel, set that
-    // state to invalid
-    this.onKeyDown = function(e) {
-        // If the ESC key is pressed
-        var ESCAPE_KEY = 27;
-
-        if (e.keyCode === ESCAPE_KEY) {
-            this.cancelRecoloring = true;
-            if (this.lastAjaxRequest) {
-                this.lastAjaxRequest.abort();
-                this.lastAjaxRequest = null;
-            }
-            hideLoadingScreen();
-        }
-    };
     // Set `true` to dispatch the event before other functions
     // call it. This is necessary for disabling the default map
     // dragging behaviour.
@@ -150,11 +133,9 @@ function SquareSelector() {
         // to our actual object... long story short - makes inheritance work
         this.onMouseMove = this.onMouseMove.bind(this);
         this.onMouseUp = this.onMouseUp.bind(this);
-        this.onKeyDown = this.onKeyDown.bind(this);
         // Call functions for the following events
         document.addEventListener('mousemove', this.onMouseMove);
         document.addEventListener('mouseup', this.onMouseUp);
-        document.addEventListener('keydown', this.onKeyDown);
 
         // Capture the first xy coordinates
         this.start = this.mousePos(e);
@@ -166,10 +147,6 @@ function SquareSelector() {
         }
         this.mouseDown = this.mouseDown.bind(this);
         this.canvas.addEventListener('mousedown', this.mouseDown, true);
-    };
-
-    this.removeKeyListeners = function() {
-        document.removeEventListener('keydown', this.onKeyDown);
     };
 
     this.removeMouseListeners = function() {
@@ -250,6 +227,69 @@ function SquareSelector() {
         return vertices;
     };
 
+    this.squareBboxToMapboxPolygon = function(bbox) {
+        var vertices = this.getVerticesOfSquareBbox(bbox);
+        var nw = vertices[0];
+        var ne = vertices[1];
+        var se = vertices[2];
+        var sw = vertices[3];
+
+        var polygon = {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [
+                        [nw.lng, nw.lat],
+                        [ne.lng, ne.lat],
+                        [se.lng, se.lat],
+                        [sw.lng, sw.lat],
+                        [nw.lng, nw.lat]
+                    ]
+                ]
+            }
+        };
+
+        return polygon;
+    };
+
+    this.verticesOfBboxToLineString = function(polygonVertices) {
+        var serverBboxCoords = ""
+        var buffer = 0; // REMOVE POTENTIALLY
+        for (var i = 0; i < polygonVertices.length; i++) {
+            switch (i) {
+                case 0: // nw
+                    polygonVertices[i].lng -= buffer;
+                    polygonVertices[i].lat += buffer;
+                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
+                    break;
+                case 1: // ne
+                    polygonVertices[i].lng += buffer;
+                    polygonVertices[i].lat += buffer;
+                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
+                    break;
+                case 2: // se
+                    polygonVertices[i].lng += buffer;
+                    polygonVertices[i].lat -= buffer;
+                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
+                    break;
+                case 3: // sw
+                    polygonVertices[i].lng -= buffer;
+                    polygonVertices[i].lat -= buffer;
+                    serverBboxCoords += polygonVertices[i].lng + " " + polygonVertices[i].lat + ",";
+                    break;
+                default:
+                    throw "invalid counter";
+                    break;
+            }
+        }
+        // add initial vertext again to close linestring
+        serverBboxCoords += polygonVertices[0].lng + " " + polygonVertices[0].lat;
+
+        return "LINESTRING(" + serverBboxCoords + ")";
+    };
+
     this.setMinMax = function(min, max) {
         this.minIndex = min;
         this.maxIndex = max;
@@ -259,5 +299,22 @@ function SquareSelector() {
         var dates = propertyToJSON(area.properties.decimal_dates);
         this.minIndex = 0;
         this.maxIndex = dates.length - 1;
+    };
+
+    // mapbox gives us duplicate tiles (see documentation to see how query rendered features works)
+    // yet we only want unique features, not duplicates
+    this.getUniqueFeatures = function(features) {
+        var featuresMap = [];
+        var uniqueFeatures = [];
+
+        for (var i = 0; i < features.length; i++) {
+            var curFeatureKey = JSON.stringify(features[i].geometry.coordinates);
+            if (!featuresMap[curFeatureKey]) {
+                featuresMap[curFeatureKey] = true;
+                uniqueFeatures.push(features[i]);
+            }
+        }
+
+        return uniqueFeatures;
     };
 }

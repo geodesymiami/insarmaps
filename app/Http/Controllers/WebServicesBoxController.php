@@ -85,4 +85,17 @@ class WebServicesBoxController extends Controller
       // $requestParameters = $this->requestFormatter->getRequestParameters();
       return view("webServicesBox");
     }
+
+    public function getPointNumbersInBox($area, $lineString) {
+      $bbox = "'" . $lineString . "'";
+      $query = 'SELECT p FROM "'. $area . "\" WHERE st_contains(ST_MakePolygon(ST_GeomFromText('" . $lineString . "', 4326)), ST_SetSRID(wkb_geometry, 4326))";
+      $points = DB::select($query);
+
+      $pointIDs = [];
+      foreach ($points as $point) {
+        array_push($pointIDs, $point->p);
+      }
+
+      return response()->json($pointIDs);
+    }
 }

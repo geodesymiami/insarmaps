@@ -25,6 +25,8 @@ function AreaAttributesController(map, area) {
         var attributeValues = propertyToJSON(this.area.properties.attributevalues);
 
         var extraAttributes = propertyToJSON(this.area.properties.extra_attributes);
+        var plotAttributes = propertyToJSON(this.area.properties.plot_attributes);
+        var unavco_name = this.area.properties.unavco_name;
 
         var fullAttributes = [];
         for (var i = 0; i < attributeKeys.length; i++) {
@@ -45,6 +47,12 @@ function AreaAttributesController(map, area) {
             }
         }
 
+        if (plotAttributes) {
+            fullAttributes["plotAttributes"] = plotAttributes;
+        }
+
+        fullAttributes["unavco_name"] = unavco_name;
+
         return fullAttributes;
     };
 
@@ -58,35 +66,77 @@ function AreaAttributesController(map, area) {
         return this.attributes[attributeKey];
     };
 
-    this.processAttributes = function() {
-        if (this.attributes) {
-            this.map.colorScale.setScale(this.attributes.plotAttributePreset_colorBar);
-            var min = this.attributes.plotAttributePreset_displayMin;
-            var max = this.attributes.plotAttributePreset_displayMax;
-            this.map.colorOnDisplacement = false;
-            var yearsElapsed = 0;
-            var date1 = null;
-            var date2 = null;
+    this.processDatesAndColoring = function(plotAttributes) {
+        var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
+        var min = colorScaleOpts[0];
+        var max = colorScaleOpts[1];
+        var units = colorScaleOpts[2]; // we ignore this
+        var scaleType = colorScaleOpts[3];
 
-            if (this.attributes.plotAttributePreset_Type == "displacement") {
-                this.map.colorOnDisplacement = true;
-                date1 = new Date(this.attributes.plotAttributePreset_startDate);
-                date2 = new Date(this.attributes.plotAttributePreset_endDate);
-            }
-            this.map.colorScale.setMinMax(min, max);
+        if (units == "cm") {
+            var startDate = new Date(plotAttributes[0]["plot.startDate"]);
+            var endDate = new Date(plotAttributes[0]["plot.endDate"]);
 
-            if (this.map.colorOnDisplacement) {
-                var decimalDate1 = dateToDecimal(date1);
-                var decimalDate2 = dateToDecimal(date2);
-                var possibleDates = this.map.graphsController.mapDatesToArrayIndeces(decimalDate1, decimalDate2, this.datesArray);
+            var decimalDate1 = dateToDecimal(startDate);
+            var decimalDate2 = dateToDecimal(endDate);
+
+            // this if is taken if plot start date or endate not there
+            if (!decimalDate1 || !decimalDate2) {
+                var dates = convertStringsToDateArray(propertyToJSON(this.datesArray));
+                startDate = dates[0];
+                endDate = dates[dates.length - 1];
+                this.map.selector.minIndex = 0;
+                this.map.selector.maxIndex = dates.length - 1;
+            } else {
+                var possibleDates = this.map.graphsController.mapExtremesToArrayIndeces(decimalDate1, decimalDate2, this.datesArray);
                 this.map.selector.minIndex = possibleDates.minIndex;
                 this.map.selector.maxIndex = possibleDates.maxIndex + 1;
-                this.map.selector.recolorOnDisplacement(date1, date2, "Recoloring...");
-                $("#color-scale-text-div").html("LOS Displacement (cm)");
-            } else {
-                this.map.refreshDataset();
-                $("#color-scale-text-div").html("LOS Velocity [cm/yr]");
             }
+
+            this.map.colorDatasetOnDisplacement(startDate, endDate);
+        }
+    };
+
+    this.processPresetFigureAttributes = function() {
+        var plotAttributes = this.attributes.plotAttributes;
+        if (plotAttributes) {
+            if (this.areaHasPlotAttribute("plot.colorscale")) {
+                var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
+                var min = colorScaleOpts[0];
+                var max = colorScaleOpts[1];
+                var units = colorScaleOpts[2]; // we ignore this
+                var scaleType = colorScaleOpts[3];
+                this.map.colorScale.setScale(scaleType);
+                this.map.colorScale.setMinMax(min, max);
+
+                if (this.areaHasPlotAttribute("plot.subset.lalo")) {
+                    var pysarSubset = this.getPlotAttribute("plot.subset.lalo");
+                    var bbox = pysarSubsetToMapboxBounds(pysarSubset);
+                    this.map.subsetDataset(bbox, function() {
+                        this.processDatesAndColoring(plotAttributes);
+                    }.bind(this));
+                } else {
+                    this.processDatesAndColoring(plotAttributes);
+                }
+            }
+        }
+    };
+
+    this.processAttributes = function() {
+        var plotAttributes = this.attributes.plotAttributes;
+        if (plotAttributes) {
+            if (plotAttributes[0]["plot.colorscale"]) {
+                var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
+                var min = colorScaleOpts[0];
+                var max = colorScaleOpts[1];
+                var units = colorScaleOpts[2]; // we ignore this
+                var scaleType = colorScaleOpts[3];
+                this.map.colorScale.setScale(scaleType);
+                this.map.colorScale.setMinMax(min, max);
+            }
+
+            this.map.refreshDataset();
+            this.map.colorScale.setTitle("LOS Velocity [cm/yr]");
         }
     };
 
@@ -97,5 +147,21 @@ function AreaAttributesController(map, area) {
 
     this.areaHasAttribute = function(attribute) {
         return this.attributes[attribute] != null;
+    };
+
+    this.areaHasPlotAttribute = function(plotAttribute) {
+        if (!this.attributes.plotAttributes) {
+            return null;
+        }
+
+        return this.attributes.plotAttributes[0][plotAttribute] != null;
+    };
+
+    this.getPlotAttribute = function(plotAttribute) {
+        if (this.areaHasPlotAttribute(plotAttribute)) {
+            return this.attributes.plotAttributes[0][plotAttribute];
+        }
+
+        return null;
     };
 }

@@ -100,16 +100,16 @@ function LineSelector(map) {
 
     this.finish = function(bbox) {
         if (this.map.map.getSource("topographyLine")) {
-            this.map.map.removeLayer("topographyLine");
-            this.map.map.removeSource("topographyLine");
+            this.map.removeLayer("topographyLine");
+            this.map.removeSource("topographyLine");
         }
 
         if (this.map.map.getSource("test")) {
-            this.map.map.removeLayer("test");
-            this.map.map.removeSource("test");
+            this.map.removeLayer("test");
+            this.map.removeSource("test");
         }
 
-        this.map.map.addSource('topographyLine', {
+        this.map.addSource('topographyLine', {
             'type': 'geojson',
             'data': {
                 'type': 'Feature',
@@ -120,7 +120,7 @@ function LineSelector(map) {
             }
         });
 
-        this.map.map.addLayer({
+        this.map.addLayer({
             'id': 'topographyLine',
             'type': 'fill',
             'source': 'topographyLine',

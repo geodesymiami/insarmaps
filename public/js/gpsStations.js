@@ -1,3 +1,6 @@
+// these same values are given to us from txt file on
+// UNR server. Might consider deleting this depending on speed
+// and ask him if speed drawback is worth having latest stations
 var gpsStations = [["00NA", -12.466640, -229.156013, "IGS08", 1 ],
 ["01NA", -12.478224, -229.017953, "IGS08", 1 ],
 ["02NA", -12.355923, -229.118271, "IGS08", 1 ],

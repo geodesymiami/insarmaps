@@ -1,18 +1,21 @@
 // abstract multiple area marker layers into one master layer object
+// TODO: work with swaths rather than id's
 function AreaMarkerLayer(map) {
     var that = this;
 
-    this.layers = [];
+    this.swaths = [];
     this.modifiedLayers = [];
     this.map = map;
 
-    this.addLayer = function(id) {
-        this.layers.push(id);
+    this.mapSceneAndDataFootprints = {};
+
+    this.addSwath = function(swath) {
+        this.swaths.push(swath);
     };
 
     this.resetSizeOfMarkersExcluding = function(toExclude) {
         for (var i = 0; i < this.layers.length; i++) {
-            var layerID = this.layers[i];
+            var layerID = this.swaths[i].id;
 
             if (toExclude != null && toExclude.indexOf(layerID) != -1) {
                 continue;
@@ -48,14 +51,32 @@ function AreaMarkerLayer(map) {
         }
     };
 
-    this.setAreaRowHighlighted = function(unavcoName) {
-        $("#" + unavcoName + "-search-row").css({ "background-color": "rgba(0, 86, 173, 0.5)" });
+    this.setAreaRowHighlighted = function(row) {
+        var $row = $("." + row + "-search-row");
+        var rowColor = "rgba(0, 86, 173, 0.5)"
+        if (!$row.hasClass("highlighted")) {
+            $row.addClass("highlighted");
+            $row.css({ "background-color": rowColor });
+            // now scroll to it, maybe pass in container div as parameter?
+            var position = $row.position();
+
+            // make sure to avoid race condition where table has been cleared but this method is called
+            // (by mousemove event, etc) causing crash and alot of problems
+            if (position) {
+                $(".fixed-header-table-container").scrollTop(position.top);
+            }
+        }
     };
 
     this.resetHighlightsOfAllAreaRows = function(excluding) {
-        $("#search-form-results-table tr").each(function() {
-            if (!excluding || $(this).attr("id") != excluding.properties.layerID + "-search-row") {
-               $(this).css({ "background-color": "white"});
+        if (excluding) {
+            this.setAreaRowHighlighted(excluding.properties.unavco_name);
+        }
+
+        $("#search-form-results-table > tbody > tr, #subset-swath-table > tbody > tr").each(function() {
+            if (!excluding || $(this).attr("class") != excluding.properties.unavco_name + "-search-row") {
+                $(this).css({ "background-color": "white" });
+                $(this).removeClass("highlighted");
             }
         });
     };
@@ -79,5 +100,17 @@ function AreaMarkerLayer(map) {
         }
 
         this.modifiedLayers = [];
+    };
+
+    this.emptyLayers = function() {
+        for (var i = 0; i < this.swaths.length; i++) {
+            this.swaths[i].remove();
+        }
+        this.swaths = [];
+        this.modifiedLayers = [];
+    };
+
+    this.empty = function() {
+        return this.swaths.length == 0;
     };
 }
