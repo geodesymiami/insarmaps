@@ -174,6 +174,11 @@ function GraphsController() {
     };
 }
 
+// for the below two classes, we always destroy and recreate the chart.
+// highcharts used to have a bug when updating series: (see: https://forum.highcharts.com/post126503.html#p126503),
+// so we took this approach. However, this bug seems to have been fixed (see jsfiddle on this site which now works),
+// TODO: so, in the future, consider updating charts instead of destroying and recreating. not doing now as it seems
+// like waste of time when there are more bigger fish to fry
 function setupGraphsController() {
     GraphsController.prototype.selectedGraph = "Top Graph";
 
@@ -1088,15 +1093,6 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
-        this.createChart(selectedColoring, "depth-vs-long-graph", features, optionalBounds);
-        this.createChart(selectedColoring, "lat-vs-depth-graph", features, optionalBounds);
-        this.createChart(selectedColoring, "cumulative-events-vs-date-graph", features, optionalBounds);
-        this.createChart(selectedColoring, "lat-vs-long-graph", features, optionalBounds);
-        this.colorScale.initVisualScale();
-    };
-
-    SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, optionalFeatures, bounds) {
-        // all graphs share same features
         var features = optionalFeatures;
 
         if (!features) {
@@ -1106,11 +1102,22 @@ function setupSeismicityGraphsController() {
             }
         }
 
-        var bounds = bounds;
+        var bounds = optionalBounds;
         if (!bounds) {
             bounds = this.bbox;
+            if (!bounds) {
+                return;
+            }
         }
 
+        this.createChart(selectedColoring, "depth-vs-long-graph", features, bounds);
+        this.createChart(selectedColoring, "lat-vs-depth-graph", features, bounds);
+        this.createChart(selectedColoring, "cumulative-events-vs-date-graph", features, bounds);
+        // this.createChart(selectedColoring, "lat-vs-long-graph", features, bounds);
+        // this.colorScale.initVisualScale();
+    };
+
+    SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, features, bounds) {
         var chartData = null;
         if (chartType === "depth-vs-long-graph") {
             chartData = this.createDepthVLongGraph(features, "depth-vs-long-graph", selectedColoring);
@@ -1227,9 +1234,41 @@ function setupCustomHighchartsSlider() {
     };
 }
 
-function CustomSliderSeismicityController() {}
+function CustomSliderSeismicityController() {
+    this.timeRange = null;
+    this.depthRange = null;
+}
 
 function setupCustomSliderSeismicityController() {
+    CustomSliderSeismicityController.prototype.getFeaturesWithinCurrentSliderRanges = function(features) {
+        var filteredFeatures = features.filter(function(feature) {
+            var props = feature.properties;
+            var time = props.time;
+            var depth = props.depth;
+
+            var withinTimeRange = false;
+            var withinDepthRange = false;
+            if (this.timeRange) {
+                withinTimeRange = (time >= this.timeRange.min && time <= this.timeRange.max);
+            } else {
+                // no time range so we are within time range
+                withinTimeRange = true;
+            }
+
+            if (this.depthRange) {
+                withinDepthRange = (depth >= this.depthRange.min && depth <= this.depthRange.max);
+            } else {
+                // no depth range so we are within depth range
+                withinDepthRange = true;
+            }
+
+            return withinTimeRange && withinDepthRange;
+        }.bind(this));
+
+        console.log(filteredFeatures);
+
+        return filteredFeatures;
+    };
     // slider creation is coupled to chart creation to avoid having to process data twice.
     // also, we depend on mapbox's query rendered features for filtering features in graphs.
     // we could write our own filering code, but there is no point as mapbox filters for us and
@@ -1239,14 +1278,23 @@ function setupCustomSliderSeismicityController() {
         var min = depthValues[minMax.minIndex];
         var max = depthValues[minMax.maxIndex];
 
-        this.map.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], "depth");
+        this.depthRange = { min: min, max: max };
+        this.map.thirdPartySourcesController.filterSeismicities([this.depthRange], "depth");
+        var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features);
+        // call super method to not recreate sliders
+        SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
     };
+
     CustomSliderSeismicityController.prototype.timeSliderCallback = function(e, millisecondValues) {
         var minMax = this.mapExtremesToArrayIndeces(e.min, e.max, millisecondValues);
         var min = millisecondValues[minMax.minIndex];
         var max = millisecondValues[minMax.maxIndex];
 
-        this.map.thirdPartySourcesController.filterSeismicities([{ min: min, max: max }], "time");
+        this.timeRange = { min: min, max: max };
+        this.map.thirdPartySourcesController.filterSeismicities([this.timeRange], "time");
+        var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features);
+        // call super method to not recreate sliders
+        SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
     };
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
         var features = optionalFeatures;

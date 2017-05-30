@@ -740,8 +740,7 @@ function MapController(loadJSONFunc) {
     };
 
     // until mapbox api gives us a way to determine when all points of mbtiles
-    // have finished fully rendering. TODO: use this instead of timers when
-    // endless render loop bug is fixed.
+    // have finished fully rendering.
     this.onDatasetRendered = function(callback) {
         var renderHandler = function() {
             if (this.map.loaded()) {
