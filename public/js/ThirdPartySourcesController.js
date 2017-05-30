@@ -11,6 +11,7 @@ function ThirdPartySourcesController(map) {
     // the default
     this.currentSeismicityColorStops = this.stopsCalculator.getDepthStops(0, 50, this.map.colorScale.jet_r);
     this.currentSeismicityColoring = "depth";
+    this.midasArrows = null;
 
     this.getLayerOnTopOf = function(layer) {
         for (var i = this.layerOrder.length - 1; i >= 0; i--) {
@@ -159,6 +160,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.getArrowGeoJSON = function(startCoordinate, orientation, length) {
+        var orientationInDeg = orientation;
         const DEG_TO_RAD = Math.PI / 180.0;
         orientation *= DEG_TO_RAD
         var head = {
@@ -197,10 +199,29 @@ function ThirdPartySourcesController(map) {
                 "type": "LineString",
                 "coordinates": arrowCoordinates
             },
-            "properties": {}
+            "properties": {
+                "orientation": orientationInDeg
+            }
         };
 
         return arrowFeature;
+    };
+
+    this.updateArrowLengths = function() {
+        if (this.midasArrows) {
+            for (var i = 0; i < this.midasArrows.length; i++) {
+                var curArrow = this.midasArrows[i];
+                var orientation = this.midasArrows[i].properties.orientation;
+                var startCoordinate = curArrow.geometry.coordinates[0];
+
+                this.midasArrows[i] = this.getArrowGeoJSON(startCoordinate, orientation, Math.random());
+            }
+
+            this.map.map.getSource("midas-arrows").setData({
+                "type": "FeatureCollection",
+                "features": this.midasArrows
+            });
+        }
     };
 
     this.parseMidasJSON = function(midasJSON) {
@@ -290,6 +311,7 @@ function ThirdPartySourcesController(map) {
 
                 if (loadVelocityArrows) {
                     var layerID = "midas-arrows";
+                    this.midasArrows = features.arrows;
                     mapboxStationFeatures.data.features = features.arrows;
                     this.map.addSource(layerID, mapboxStationFeatures);
                     var before = this.getLayerOnTopOf(layerID);
@@ -349,6 +371,7 @@ function ThirdPartySourcesController(map) {
 
         if (removeArrows) {
             name += "-arrows";
+            this.midasArrows = null;
         }
         this.map.removeSourceAndLayer(name);
     };

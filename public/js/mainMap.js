@@ -885,6 +885,8 @@ function MapController(loadJSONFunc) {
                 this.removeLayer("onTheFlyJSON");
             }
 
+            // this.thirdPartySourcesController.updateArrowLengths();
+
             this.previousZoom = currentZoom;
         }.bind(this));
 
