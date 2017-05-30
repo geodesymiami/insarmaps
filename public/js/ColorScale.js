@@ -3,6 +3,12 @@ function MapboxStopsCalculator() {
         var currentValue = min;
         var output = [];
 
+        // prevent endless loop if min == max or increment == 0
+        if (min == max || increment <= 0) {
+            output.push(min);
+            return output;
+        }
+
         while (currentValue <= max) {
             output.push(currentValue);
             currentValue += increment;

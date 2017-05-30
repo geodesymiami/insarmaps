@@ -1113,8 +1113,8 @@ function setupSeismicityGraphsController() {
         this.createChart(selectedColoring, "depth-vs-long-graph", features, bounds);
         this.createChart(selectedColoring, "lat-vs-depth-graph", features, bounds);
         this.createChart(selectedColoring, "cumulative-events-vs-date-graph", features, bounds);
-        // this.createChart(selectedColoring, "lat-vs-long-graph", features, bounds);
-        // this.colorScale.initVisualScale();
+        this.createChart(selectedColoring, "lat-vs-long-graph", features, bounds);
+        this.colorScale.initVisualScale();
     };
 
     SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, features, bounds) {
@@ -1264,8 +1264,6 @@ function setupCustomSliderSeismicityController() {
 
             return withinTimeRange && withinDepthRange;
         }.bind(this));
-
-        console.log(filteredFeatures);
 
         return filteredFeatures;
     };
