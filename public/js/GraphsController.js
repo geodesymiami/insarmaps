@@ -1093,6 +1093,14 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
+        this.createChart(selectedColoring, "depth-vs-long-graph", optionalFeatures, optionalBounds);
+        this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures, optionalBounds);
+        this.createChart(selectedColoring, "cumulative-events-vs-date-graph", optionalFeatures, optionalBounds);
+        this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
+        this.colorScale.initVisualScale();
+    };
+
+    SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, optionalFeatures, optionalBounds) {
         var features = optionalFeatures;
 
         if (!features) {
@@ -1109,15 +1117,6 @@ function setupSeismicityGraphsController() {
                 return;
             }
         }
-
-        this.createChart(selectedColoring, "depth-vs-long-graph", features, bounds);
-        this.createChart(selectedColoring, "lat-vs-depth-graph", features, bounds);
-        this.createChart(selectedColoring, "cumulative-events-vs-date-graph", features, bounds);
-        this.createChart(selectedColoring, "lat-vs-long-graph", features, bounds);
-        this.colorScale.initVisualScale();
-    };
-
-    SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, features, bounds) {
         var chartData = null;
         if (chartType === "depth-vs-long-graph") {
             chartData = this.createDepthVLongGraph(features, "depth-vs-long-graph", selectedColoring);
@@ -1295,26 +1294,10 @@ function setupCustomSliderSeismicityController() {
         SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
     };
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
-        var features = optionalFeatures;
-
-        if (!features) {
-            features = this.features;
-            if (!features) {
-                return;
-            }
-        }
-
-        var bounds = optionalBounds;
-        if (!bounds) {
-            bounds = this.bbox;
-            if (!bounds) {
-                return;
-            }
-        }
-        this.createChart(selectedColoring, "depth-vs-long-graph", features);
-        var depthData = this.createChart(selectedColoring, "lat-vs-depth-graph", features);
-        var millisecondData = this.createChart(selectedColoring, "cumulative-events-vs-date-graph", features);
-        this.createChart(selectedColoring, "lat-vs-long-graph", features, bounds);
+        this.createChart(selectedColoring, "depth-vs-long-graph", optionalFeatures);
+        var depthData = this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures);
+        var millisecondData = this.createChart(selectedColoring, "cumulative-events-vs-date-graph", optionalFeatures);
+        this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
         this.colorScale.initVisualScale();
         // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
         // no need to sort milliseconds as the features are already sorted by this
