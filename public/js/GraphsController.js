@@ -1228,8 +1228,8 @@ function setupCustomHighchartsSlider() {
             showInLegend: false,
         });
 
-        $("#" + chartContainer).css("height", chartOpts.chart.height + "px");
         this.createChartDestroyingOld(chartContainer, chartOpts);
+        $("#" + chartContainer).css("height", chartOpts.chart.height + "px");
     };
 }
 
