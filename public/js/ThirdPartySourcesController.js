@@ -159,16 +159,23 @@ function ThirdPartySourcesController(map) {
         return retVector;
     };
 
+    // arrow is in pixels... we convert to appropriate delta degree by using mapbox
+    // functions
     this.getArrowGeoJSON = function(startCoordinate, orientation, length) {
-        var orientationInDeg = orientation;
+        const DEGREE_PER_PIXEL = this.map.calculateDegreesPerPixelAtCurrentZoom(startCoordinate[1]);
         const DEG_TO_RAD = Math.PI / 180.0;
+
+        var lengthInPixels = length;
+        length *= DEGREE_PER_PIXEL;
+        var orientationInDeg = orientation;
         orientation *= DEG_TO_RAD
+
         var head = {
             lng: startCoordinate[0] + (length * Math.cos(orientation)),
             lat: startCoordinate[1] + (length * Math.sin(orientation))
         };
 
-        const TIP_LENGTH = 0.04;
+        const TIP_LENGTH = 5 * DEGREE_PER_PIXEL;
         const TIP_ANGLE_OFFSET = 160 * DEG_TO_RAD;
         const LEFT_TIP_ANGLE = orientation - TIP_ANGLE_OFFSET;
         const RIGHT_TIP_ANGLE = orientation + TIP_ANGLE_OFFSET;
@@ -200,7 +207,8 @@ function ThirdPartySourcesController(map) {
                 "coordinates": arrowCoordinates
             },
             "properties": {
-                "orientation": orientationInDeg
+                "orientation": orientationInDeg,
+                "length": lengthInPixels
             }
         };
 
@@ -211,10 +219,11 @@ function ThirdPartySourcesController(map) {
         if (this.midasArrows) {
             for (var i = 0; i < this.midasArrows.length; i++) {
                 var curArrow = this.midasArrows[i];
-                var orientation = this.midasArrows[i].properties.orientation;
+                var orientation = curArrow.properties.orientation;
                 var startCoordinate = curArrow.geometry.coordinates[0];
+                var length = curArrow.properties.length;
 
-                this.midasArrows[i] = this.getArrowGeoJSON(startCoordinate, orientation, Math.random());
+                this.midasArrows[i] = this.getArrowGeoJSON(startCoordinate, orientation, length);
             }
 
             this.map.map.getSource("midas-arrows").setData({
@@ -283,7 +292,7 @@ function ThirdPartySourcesController(map) {
                     };
 
                     features.points.push(feature);
-                    var arrowLength = resultant.mag * 4;
+                    var arrowLength = resultant.mag * 1000;
                     features.arrows.push(this.getArrowGeoJSON(coordinates, resultant.angle, arrowLength));
                 }
             }

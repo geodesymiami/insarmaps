@@ -222,6 +222,24 @@ function MapController(loadJSONFunc) {
         this.map.doubleClickZoom.enable();
     };
 
+    // an alternative: http://wiki.openstreetmap.org/wiki/Zoom_levels
+    // don't know if formula applies to gl js projection, though
+    this.calculateDegreesPerPixelAtCurrentZoom = function(lat) {
+        var deltaPixels = 100.0;
+        var point1Projected = { x: 0.0, y: 0.0 };
+        var point2Projected = { x: 0.0, y: deltaPixels };
+
+        var point1UnProjected = this.map.unproject(point1Projected);
+        var point2UnProjected = this.map.unproject(point2Projected);
+
+        // we only care about delta degrees in y direction. if innacurate,
+        // take x direction into account
+        // we do 1 - 2 because y axis, and thus unprojected points, is reversed
+        var deltaDegrees = point1UnProjected.lat - point2UnProjected.lat;
+
+        return deltaDegrees / deltaPixels;
+    };
+
     this.clickOnAPoint = function(e) {
         var features = this.map.queryRenderedFeatures(e.point);
 
@@ -885,7 +903,9 @@ function MapController(loadJSONFunc) {
                 this.removeLayer("onTheFlyJSON");
             }
 
-            // this.thirdPartySourcesController.updateArrowLengths();
+            if (this.thirdPartySourcesController.midasArrows) {
+                this.thirdPartySourcesController.updateArrowLengths();
+            }
 
             this.previousZoom = currentZoom;
         }.bind(this));
