@@ -901,16 +901,12 @@ function setupSeismicityGraphsController() {
         return seriesData;
     };
 
-    SeismicityGraphsController.prototype.createDepthVLongGraph = function(features, chartContainer, selectedColoring) {
+    SeismicityGraphsController.prototype.getDepthVLongData = function(features, selectedColoring) {
         var depthValues = features.map(function(feature) {
             return feature.properties.depth;
         });
         var longValues = features.map(function(feature) {
             return feature.geometry.coordinates[0];
-        });
-
-        var depths = features.map(function(feature) {
-            return feature.properties.depth;
         });
         var millisecondValues = features.map(function(feature) {
             return feature.properties.time;
@@ -923,7 +919,10 @@ function setupSeismicityGraphsController() {
 
         var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
 
-        var depthVLongValues = this.getSeriesData(longValues, depthValues, colorOnInputs, colorStops);
+        return this.getSeriesData(longValues, depthValues, colorOnInputs, colorStops);
+    };
+    SeismicityGraphsController.prototype.createDepthVLongGraph = function(features, chartContainer, selectedColoring) {
+        var depthVLongValues = this.getDepthVLongData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
         chartOpts.subtitle = { text: "Longitude vs. Depth Cross Section" };
         chartOpts.xAxis.title = { text: "Longitude" };
@@ -947,7 +946,7 @@ function setupSeismicityGraphsController() {
         return depthVLongValues;
     };
 
-    SeismicityGraphsController.prototype.createLatVDepthGraph = function(features, chartContainer, selectedColoring) {
+    SeismicityGraphsController.prototype.getLatVDepthData = function(features, selectedColoring) {
         var depthValues = features.map(function(feature) {
             return feature.properties.depth;
         });
@@ -965,7 +964,10 @@ function setupSeismicityGraphsController() {
         var stopsCalculator = new MapboxStopsCalculator();
         var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
 
-        var latVdepthValues = this.getSeriesData(depthValues, latValues, colorOnInputs, colorStops);
+        return this.getSeriesData(depthValues, latValues, colorOnInputs, colorStops);
+    };
+    SeismicityGraphsController.prototype.createLatVDepthGraph = function(features, chartContainer, selectedColoring) {
+        var latVdepthValues = this.getLatVDepthData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
         chartOpts.subtitle = { text: "Depth vs. Latitude Cross Section" };
         chartOpts.tooltip.pointFormat = "{point.y:.1f} °";
@@ -990,7 +992,7 @@ function setupSeismicityGraphsController() {
         return latVdepthValues;
     };
 
-    SeismicityGraphsController.prototype.createCumulativeEventsVDayGraph = function(features, chartContainer, selectedColoring) {
+    SeismicityGraphsController.prototype.getCumulativeEventsVDayData = function(features, selectedColoring) {
         var millisecondValues = features.map(function(feature) {
             return feature.properties.time;
         });
@@ -1011,10 +1013,21 @@ function setupSeismicityGraphsController() {
 
         var minDate = new Date(millisecondValues[0]);
         var maxDate = new Date(millisecondValues[millisecondValues.length - 1]);
+
+        return this.getSeriesData(millisecondValues, cumulativeValues, colorOnInputs, colorStops);
+    };
+
+    SeismicityGraphsController.prototype.createCumulativeEventsVDayGraph = function(features, chartContainer, selectedColoring) {
+        var millisecondValues = features.map(function(feature) {
+            return feature.properties.time;
+        });
+
+        var minDate = new Date(millisecondValues[0]);
+        var maxDate = new Date(millisecondValues[millisecondValues.length - 1]);
         var minDateString = minDate.toLocaleDateString();
         var maxDateString = maxDate.toLocaleDateString();
 
-        var eventsPerDate = this.getSeriesData(millisecondValues, cumulativeValues, colorOnInputs, colorStops);
+        var eventsPerDate = this.getCumulativeEventsVDayData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
         chartOpts.subtitle = { text: "Cumulative Number of Events " + minDateString + " - " + maxDateString };
         chartOpts.tooltip.pointFormat = "{point.y} Events";
@@ -1294,11 +1307,32 @@ function setupCustomSliderSeismicityController() {
         SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
     };
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
-        this.createChart(selectedColoring, "depth-vs-long-graph", optionalFeatures);
-        var depthData = this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures);
-        var millisecondData = this.createChart(selectedColoring, "cumulative-events-vs-date-graph", optionalFeatures);
-        this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
-        this.colorScale.initVisualScale();
+        var depthData = null;
+        var millisecondData = null;
+
+        if ($("#seismicity-charts").hasClass("active")) {
+            this.createChart(selectedColoring, "depth-vs-long-graph", optionalFeatures);
+            depthData = this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures);
+            millisecondData = this.createChart(selectedColoring, "cumulative-events-vs-date-graph", optionalFeatures);
+            this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
+            this.colorScale.initVisualScale();
+        }
+
+        var features = optionalFeatures;
+        if (!features) {
+            features = this.features;
+            if (!features) {
+                return;
+            }
+        }
+
+        // if they are null, we didn't get them from creating the chart, get them using standalong function
+        if (!depthData) {
+            depthData = this.getLatVDepthData(features, selectedColoring);
+        }
+        if (!millisecondData) {
+            millisecondData = this.getCumulativeEventsVDayData(features, selectedColoring);
+        }
         // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
         // no need to sort milliseconds as the features are already sorted by this
         depthData.sort(function(data1, data2) {
