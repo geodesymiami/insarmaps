@@ -1252,6 +1252,21 @@ function CustomSliderSeismicityController() {
 }
 
 function setupCustomSliderSeismicityController() {
+    CustomSliderSeismicityController.prototype.getDepthVDepthData = function(features, selectedColoring) {
+        var depthValues = features.map(function(feature) {
+            return feature.properties.depth;
+        });
+
+        var min = depthValues[0];
+        var max = depthValues[depthValues.length - 1];
+
+        var colorOnInputs = depthValues;
+        var stopsCalculator = new MapboxStopsCalculator();
+
+        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
+
+        return this.getSeriesData(depthValues, depthValues, colorOnInputs, colorStops);
+    };
     CustomSliderSeismicityController.prototype.getFeaturesWithinCurrentSliderRanges = function(features) {
         var filteredFeatures = features.filter(function(feature) {
             var props = feature.properties;
@@ -1328,7 +1343,7 @@ function setupCustomSliderSeismicityController() {
 
         // if they are null, we didn't get them from creating the chart, get them using standalong function
         if (!depthData) {
-            depthData = this.getLatVDepthData(features, selectedColoring);
+            depthData = this.getDepthVDepthData(features, selectedColoring);
         }
         if (!millisecondData) {
             millisecondData = this.getCumulativeEventsVDayData(features, selectedColoring);
