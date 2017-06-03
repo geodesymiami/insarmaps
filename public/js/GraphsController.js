@@ -1106,6 +1106,9 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
+        if (!$("#seismicity-charts").hasClass("active")) {
+            return;
+        }
         this.createChart(selectedColoring, "depth-vs-long-graph", optionalFeatures, optionalBounds);
         this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures, optionalBounds);
         this.createChart(selectedColoring, "cumulative-events-vs-date-graph", optionalFeatures, optionalBounds);
