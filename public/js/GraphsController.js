@@ -1325,12 +1325,11 @@ function setupCustomSliderSeismicityController() {
         SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
     };
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
-        var depthData = null;
         var millisecondData = null;
 
         if ($("#seismicity-charts").hasClass("active")) {
             this.createChart(selectedColoring, "depth-vs-long-graph", optionalFeatures);
-            depthData = this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures);
+            this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures);
             millisecondData = this.createChart(selectedColoring, "cumulative-events-vs-date-graph", optionalFeatures);
             this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
             this.colorScale.initVisualScale();
@@ -1344,10 +1343,10 @@ function setupCustomSliderSeismicityController() {
             }
         }
 
-        // if they are null, we didn't get them from creating the chart, get them using standalong function
-        if (!depthData) {
-            depthData = this.getDepthVDepthData(features, selectedColoring);
-        }
+
+        var depthData = this.getDepthVDepthData(features, selectedColoring);
+        // if null, we didn't get them from creating the chart, get them using standalong function
+        // optimizing too much? maybe, but I don't care
         if (!millisecondData) {
             millisecondData = this.getCumulativeEventsVDayData(features, selectedColoring);
         }
@@ -1366,10 +1365,10 @@ function setupCustomSliderSeismicityController() {
             millisecondValues.push(millisecond);
         }
 
-        this.createSlider("depth-slider", depthData, "linear", "Depth", function(e) {
+        this.createSlider("depth-slider", depthData, "linear", null, function(e) {
             this.depthSliderCallback(e, depthValues);
         }.bind(this));
-        this.createSlider("time-slider", millisecondData, "datetime", "Time", function(e) {
+        this.createSlider("time-slider", millisecondData, "datetime", null, function(e) {
             this.timeSliderCallback(e, millisecondValues);
         }.bind(this));
     };
