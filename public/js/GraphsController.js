@@ -1370,7 +1370,10 @@ function setupCustomSliderSeismicityController() {
     // In the future, someone can use the constructor functions to update graphs rather than creating anew every time.
     CustomSliderSeismicityController.prototype.zoomSlidersToCurrentRange = function() {
         var pixelBoundingBox = [this.map.map.project(this.bbox[0]), this.map.map.project(this.bbox[1])];
-        var features = this.map.selector.getUniqueFeatures(this.map.map.queryRenderedFeatures(pixelBoundingBox));
+        var seismicityLayerIDs = this.map.getLayerIDsInCurrentMode();
+        var allFeatures = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: seismicityLayerIDs });
+        var features = this.map.selector.getUniqueFeatures(allFeatures);
+
         features = features.sort(function(feature1, feature2) {
             return feature1.properties.time - feature2.properties.time;
         });

@@ -394,7 +394,8 @@ function ThirdPartySourcesController(map) {
         this.setupColorScaleForSeismicities();
         // in the future, should call a separate method to create only sliders and not all charts including sliders...
         this.map.seismicityGraphsController.setFeatures(features);
-        this.map.seismicityGraphsController.setBbox(this.map.map.getBounds());
+        var mapboxBounds = this.map.map.getBounds();
+        this.map.seismicityGraphsController.setBbox([mapboxBounds._sw, mapboxBounds._ne]);
         this.map.seismicityGraphsController.createAllCharts(this.currentSeismicityColoring, null, null);
         this.map.seismicityGraphsController.showSliders();
     };
