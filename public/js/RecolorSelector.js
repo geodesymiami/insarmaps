@@ -3,7 +3,12 @@ function RecolorSelector() {
 }
 
 function setupRecolorSelector() {
-    RecolorSelector.prototype.createSeismicityPlots = function(features, bbox) {
+    RecolorSelector.prototype.createSeismicityPlots = function(seismicityLayers, bbox) {
+        var pixelBoundingBox = [this.map.map.project(bbox[0]), this.map.map.project(bbox[1])];
+        var features = this.map.map.queryRenderedFeatures(pixelBoundingBox);
+        if (features.length == 0) {
+            return;
+        }
         var selectedColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
         var features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
         this.map.seismicityGraphsController.setFeatures(features);
@@ -28,41 +33,37 @@ function setupRecolorSelector() {
             return;
         }
 
-        // these next two lines not elegant. ideally, finish calls this method and other functions operate on the features
-        // TODO: refactor this once the details are worked out
-        var pixelBoundingBox = [this.map.map.project(this.bbox[0]), this.map.map.project(this.bbox[1])];
-        var features = this.map.map.queryRenderedFeatures(pixelBoundingBox);
-        if (features.length > 0) {
-            var feature = features[0];
-            var featureID = feature.layer.id;
-
-            if (this.map.thirdPartySourcesController.seismicities.includes(featureID)) {
-                this.createSeismicityPlots(features, bbox);
+        var mode = this.map.getCurrentMode();
+        console.log(mode);
+        if (mode === "seismicity") {
+            var layerIDS = this.map.getLayerIDsInCurrentMode();
+            this.createSeismicityPlots(layerIDS, bbox);
+        } else if (mode === "insar") {
+            if (this.minIndex == -1 || this.maxIndex == -1) {
                 return;
             }
-        }
-        if (this.minIndex == -1 || this.maxIndex == -1) {
-            return;
-        }
 
-        // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
-        if (this.lastbbox == this.bbox && this.lastMinIndex == this.minIndex && this.lastMaxIndex == this.maxIndex) {
-            return;
-        }
+            // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
+            if (this.lastbbox == this.bbox && this.lastMinIndex == this.minIndex && this.lastMaxIndex == this.maxIndex) {
+                return;
+            }
 
-        // cancelled recoloring at any point...
-        if (this.cancelRecoloring) {
-            this.cancelRecoloring = false;
-            return;
-        }
+            // cancelled recoloring at any point...
+            if (this.cancelRecoloring) {
+                this.cancelRecoloring = false;
+                return;
+            }
 
-        if (this.map.colorOnDisplacement) {
-            var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
-            var startDate = new Date(dates[this.minIndex]);
-            var endDate = new Date(dates[this.maxIndex]);
-            this.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE to interrupt");
-        } else {
-            this.recolorDataset();
+            if (this.map.colorOnDisplacement) {
+                var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
+                var startDate = new Date(dates[this.minIndex]);
+                var endDate = new Date(dates[this.maxIndex]);
+                this.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE to interrupt");
+            } else {
+                this.recolorDataset();
+            }
+        } else if (mode === "gps") {
+            // TODO: logic for gps selection
         }
     };
 
@@ -83,10 +84,7 @@ function setupRecolorSelector() {
         }
 
         // get the names of all the layers
-        var pointLayers = [];
-        for (var i = 1; i <= currentArea.properties.num_chunks; i++) {
-            pointLayers.push("chunk_" + i);
-        }
+        var pointLayers = this.map.getInsarLayers();
 
         var features = null;
         if (box) {

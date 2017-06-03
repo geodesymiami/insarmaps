@@ -6,6 +6,7 @@ function ThirdPartySourcesController(map) {
     ];
 
     this.seismicities = ["IRISEarthquake", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake"];
+    this.gps = ["midas", "midas-arrows", "gpsStations"];
 
     this.stopsCalculator = new MapboxStopsCalculator();
     // the default
@@ -770,7 +771,7 @@ function ThirdPartySourcesController(map) {
         // this is begging to be refactored. maybe a hash map with callbacks?
         var layerID = feature.layer.id;
         var layerSource = feature.layer.source;
-        var itsAPoint = (layerSource === "vector_layer_" || layerSource === "onTheFlyJSON");
+        var itsAPoint = (layerSource === "insar_vector_source" || layerSource === "onTheFlyJSON");
         var itsAGPSFeature = (layerID === "gpsStations");
         var itsAMidasGPSFeature = (layerID === "midas");
         var itsASeismicityFeature = this.seismicities.includes(layerID);
