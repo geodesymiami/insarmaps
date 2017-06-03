@@ -251,10 +251,22 @@ function MapController(loadJSONFunc) {
         for (var i = allSources.length - 1; i >= 0; i--) {
             var latestMode = allSources[i][0];
             if (this.thirdPartySourcesController.seismicities.includes(latestMode)) {
-                return this.thirdPartySourcesController.seismicities;
+                var activeLayers = [];
+                this.thirdPartySourcesController.seismicities.forEach(function(layerID) {
+                    if (this.map.getLayer(layerID)) {
+                        activeLayers.push(layerID);
+                    }
+                }.bind(this));
+                return activeLayers;
             }
 
             if (this.thirdPartySourcesController.gps.includes(latestMode)) {
+                var activeLayers = [];
+                this.thirdPartySourcesController.gps.forEach(function(layerID) {
+                    if (this.map.getLayer(layerID)) {
+                        activeLayers.push(layerID);
+                    }
+                }.bind(this));
                 return this.thirdPartySourcesController.gps;
             }
 
@@ -844,7 +856,7 @@ function MapController(loadJSONFunc) {
 
         this.map.once("load", function() {
             this.map.getCanvas().style.cursor = 'auto';
-            this.selector = new RecolorSelector();
+            this.selector = new FeatureSelector();
             this.selector.map = this;
             this.selector.associatedButton = $("#polygon-button");
             this.selector.prepareEventListeners();

@@ -233,7 +233,7 @@ function getGEOJSON(area) {
     button.attr("data-original-title", "Select Points");
     myMap.selector.disableSelectMode(); // in case it is selected
     myMap.selector.removeEventListeners(); // remove old event listeners
-    myMap.selector = new RecolorSelector();
+    myMap.selector = new FeatureSelector();
     myMap.selector.map = myMap;
     myMap.selector.associatedButton = button;
     myMap.selector.prepareEventListeners(); // and add new ones
@@ -674,10 +674,10 @@ $(window).load(function() {
     var NUM_CHUNKS = 300;
 
     // inheritance of LineSelector class (TODO: put all these inheritance setups in own function)
-    RecolorSelector.prototype = new SquareSelector();
+    FeatureSelector.prototype = new SquareSelector();
     AreaFilterSelector.prototype = new SquareSelector();
     LineSelector.prototype = new SquareSelector();
-    setupRecolorSelector();
+    setupFeatureSelector();
     setUpAreaFilterSelector();
     // and of graphs controllers
     GraphsController.prototype = new AbstractGraphsController();

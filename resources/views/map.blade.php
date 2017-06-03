@@ -471,7 +471,7 @@
     <script type="text/javascript" src="js/mainMap.js"></script>
     <script type="text/javascript" src="js/SquareSelector.js"></script>
     <script type="text/javascript" src="js/LineSelector.js"></script>
-    <script type="text/javascript" src="js/RecolorSelector.js"></script>
+    <script type="text/javascript" src="js/FeatureSelector.js"></script>
     <script type="text/javascript" src="js/AreaFilterSelector.js"></script>
     <script type="text/javascript" src="js/GoogleElevationChunkedQuerier.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBm77jFIq1iM3mpL5CgB1uvW6jGcefbIYs"
