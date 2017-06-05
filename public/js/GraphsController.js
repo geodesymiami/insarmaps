@@ -1172,12 +1172,15 @@ function setupCustomHighchartsSlider() {
         var chartOpts = this.getBasicChartJSON();
         chartOpts.credits = false;
         chartOpts.chart = {
-            margin: 0,
-            spacing: 0
+            margin: [0, 5, 0, 5],
+            spacing: [0, 0, 0, 0]
         };
         chartOpts.navigator = {
             enabled: true,
-            top: 1
+            top: 1,
+            xAxis: {
+                tickPixelInterval: 50
+            }
         };
 
         if (height) {
@@ -1221,10 +1224,8 @@ function setupCustomHighchartsSlider() {
             chartOpts.chart.type = dataType;
             // if linear linear (i.e. when we use depth) it was showing strange formatting
             if (dataType === "linear") {
-                chartOpts.navigator.xAxis = {
-                    labels: {
-                        format: "{value}"
-                    }
+                chartOpts.navigator.xAxis.labels = {
+                    format: "{value}"
                 }
             }
         }

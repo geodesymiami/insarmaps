@@ -399,9 +399,9 @@
     </div>
     <div class="content">
       <div class="chart-containers">
-        <h7>Depth</h7>
+        <h7>Depth (Distribution)</h7>
         <div class="seismicity-chart-slider" id="depth-slider"></div>
-        <h7>Time</h7>
+        <h7>Time (Cumulative)</h7>
         <div class="seismicity-chart-slider" id="time-slider"></div>
         <button class="btn btn-primary-outline slider-range-button" id="set-slider-ranges-button">Set New Range</button>
         <button class="btn btn-primary-outline slider-range-button" id="reset-slider-ranges-button">Reset Default Range</button>
