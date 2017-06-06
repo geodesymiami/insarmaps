@@ -140,7 +140,7 @@ html[xmlns] .clearfix {
     background-color: white !important;
     width: 100%;
     height: 100%;
-    padding: 0px 20px 5px 20px;
+    padding: 0px 20px 0px 20px;
 }
 
 #select-area-wrap {
@@ -678,6 +678,11 @@ input[type=number] {
     cursor: pointer;
 }
 
+.highcharts-container {
+    width:100% !important;
+    height:100% !important;
+}
+
 #charts {
     position: absolute;
     left: 0%;
@@ -698,10 +703,17 @@ input[type=number] {
     width: 100%;
 }
 
-#seismicity-charts-container > div > div.side-by-side {
+#seismicity-charts-container {
+    height: 100% !important;
+}
+
+.seismicity-chart > div.side-by-side {
     width: 50%;
-    height: 100%;
     float: left;
+}
+
+.seismicity-chart > div {
+    height: 100%;
 }
 
 #seismicity-chart-sliders {
@@ -736,7 +748,6 @@ input[type=number] {
     width: 100%;
     height: 90%;
     float: left;
-    margin-top: 25px;
 }
 
 #chartContainer {

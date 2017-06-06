@@ -399,9 +399,9 @@
     </div>
     <div class="content">
       <div class="chart-containers">
-        <h7>Depth</h7>
+        <h7>Depth (Distribution)</h7>
         <div class="seismicity-chart-slider" id="depth-slider"></div>
-        <h7>Time</h7>
+        <h7>Time (Cumulative)</h7>
         <div class="seismicity-chart-slider" id="time-slider"></div>
         <button class="btn btn-primary-outline slider-range-button" id="set-slider-ranges-button">Set New Range</button>
         <button class="btn btn-primary-outline slider-range-button" id="reset-slider-ranges-button">Reset Default Range</button>
@@ -471,7 +471,7 @@
     <script type="text/javascript" src="js/mainMap.js"></script>
     <script type="text/javascript" src="js/SquareSelector.js"></script>
     <script type="text/javascript" src="js/LineSelector.js"></script>
-    <script type="text/javascript" src="js/RecolorSelector.js"></script>
+    <script type="text/javascript" src="js/FeatureSelector.js"></script>
     <script type="text/javascript" src="js/AreaFilterSelector.js"></script>
     <script type="text/javascript" src="js/GoogleElevationChunkedQuerier.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBm77jFIq1iM3mpL5CgB1uvW6jGcefbIYs"

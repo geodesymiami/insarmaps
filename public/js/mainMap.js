@@ -125,7 +125,7 @@ function MapController(loadJSONFunc) {
     this.geoDataMap = {};
     // maps maintain insertion order. especially useful for maintaining layer orders
     this.layers_ = new Map();
-    this.sources = new Map();
+    this.sources = new Map(); // we use this map as a queue of modes, where the last entry is the recoloring mode we are in
     this.loadJSONFunc = loadJSONFunc;
     this.tileURLID = "kjjj11223344.4avm5zmh";
     this.tileJSON = null;
@@ -210,6 +210,75 @@ function MapController(loadJSONFunc) {
         this.map.removeLayer(id);
     };
 
+    this.getInsarLayers = function() {
+        var pointLayers = [];
+
+        if (currentArea) {
+            for (var i = 1; i <= currentArea.properties.num_chunks; i++) {
+                pointLayers.push("chunk_" + i);
+            }
+
+            return pointLayers;
+        }
+        return null;
+    };
+
+    this.getCurrentMode = function() {
+        var allSources = Array.from(this.sources);
+
+        for (var i = allSources.length - 1; i >= 0; i--) {
+            var latestMode = allSources[i][0];
+            if (this.thirdPartySourcesController.seismicities.includes(latestMode)) {
+                return "seismicity";
+            }
+
+            if (this.thirdPartySourcesController.gps.includes(latestMode)) {
+                return "gps";
+            }
+
+            if (latestMode === "insar_vector_source") {
+                return "insar";
+            }
+        }
+
+        // otherwise
+        return null;
+    };
+
+    this.getLayerIDsInCurrentMode = function() {
+        var allSources = Array.from(this.sources);
+
+        for (var i = allSources.length - 1; i >= 0; i--) {
+            var latestMode = allSources[i][0];
+            if (this.thirdPartySourcesController.seismicities.includes(latestMode)) {
+                var activeLayers = [];
+                this.thirdPartySourcesController.seismicities.forEach(function(layerID) {
+                    if (this.map.getLayer(layerID)) {
+                        activeLayers.push(layerID);
+                    }
+                }.bind(this));
+                return activeLayers;
+            }
+
+            if (this.thirdPartySourcesController.gps.includes(latestMode)) {
+                var activeLayers = [];
+                this.thirdPartySourcesController.gps.forEach(function(layerID) {
+                    if (this.map.getLayer(layerID)) {
+                        activeLayers.push(layerID);
+                    }
+                }.bind(this));
+                return this.thirdPartySourcesController.gps;
+            }
+
+            if (latestMode === "insar_vector_source") {
+                return this.getInsarLayers();
+            }
+        }
+
+        // otherwise
+        return null;
+    };
+
     this.disableInteractivity = function() {
         this.map.dragPan.disable();
         this.map.scrollZoom.disable();
@@ -220,6 +289,24 @@ function MapController(loadJSONFunc) {
         this.map.dragPan.enable();
         this.map.scrollZoom.enable();
         this.map.doubleClickZoom.enable();
+    };
+
+    // an alternative: http://wiki.openstreetmap.org/wiki/Zoom_levels
+    // don't know if formula applies to gl js projection, though
+    this.calculateDegreesPerPixelAtCurrentZoom = function(lat) {
+        var deltaPixels = 100.0;
+        var point1Projected = { x: 0.0, y: 0.0 };
+        var point2Projected = { x: 0.0, y: deltaPixels };
+
+        var point1UnProjected = this.map.unproject(point1Projected);
+        var point2UnProjected = this.map.unproject(point2Projected);
+
+        // we only care about delta degrees in y direction. if innacurate,
+        // take x direction into account
+        // we do 1 - 2 because y axis, and thus unprojected points, is reversed
+        var deltaDegrees = point1UnProjected.lat - point2UnProjected.lat;
+
+        return deltaDegrees / deltaPixels;
     };
 
     this.clickOnAPoint = function(e) {
@@ -540,7 +627,7 @@ function MapController(loadJSONFunc) {
         this.colorOnDisplacement = false;
         var stops = this.colorScale.getMapboxStops();
 
-        this.addSource('vector_layer_', {
+        this.addSource('insar_vector_source', {
             type: 'vector',
             tiles: data['tiles'],
             minzoom: data['minzoom'],
@@ -551,7 +638,7 @@ function MapController(loadJSONFunc) {
         data['vector_layers'].forEach(function(el) {
             var layer = {
                 id: el['id'],
-                source: 'vector_layer_',
+                source: 'insar_vector_source',
                 'source-layer': el['id'],
                 type: 'circle',
                 layout: {
@@ -769,7 +856,7 @@ function MapController(loadJSONFunc) {
 
         this.map.once("load", function() {
             this.map.getCanvas().style.cursor = 'auto';
-            this.selector = new RecolorSelector();
+            this.selector = new FeatureSelector();
             this.selector.map = this;
             this.selector.associatedButton = $("#polygon-button");
             this.selector.prepareEventListeners();
@@ -881,8 +968,11 @@ function MapController(loadJSONFunc) {
             }
 
             if (this.map.getSource("onTheFlyJSON")) {
-                this.removeSource("onTheFlyJSON");
-                this.removeLayer("onTheFlyJSON");
+                this.removeSourceAndLayer("onTheFlyJSON");
+            }
+
+            if (this.thirdPartySourcesController.midasArrows) {
+                this.thirdPartySourcesController.updateArrowLengths();
             }
 
             this.previousZoom = currentZoom;
@@ -919,7 +1009,7 @@ function MapController(loadJSONFunc) {
     };
 
     this.pointsLoaded = function() {
-        return this.map.getSource("vector_layer_") != null;
+        return this.map.getSource("insar_vector_source") != null;
     };
 
     this.areaSwathsLoaded = function() {
@@ -938,7 +1028,7 @@ function MapController(loadJSONFunc) {
             return;
         }
 
-        this.removeSource("vector_layer_");
+        this.removeSource("insar_vector_source");
 
         for (var i = 1; i <= currentArea.properties.num_chunks; i++) {
             this.removeLayer("chunk_" + i);

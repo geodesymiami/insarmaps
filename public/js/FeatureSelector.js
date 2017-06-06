@@ -1,18 +1,25 @@
-function RecolorSelector() {
+function FeatureSelector() {
     this.recoloringInProgress = false;
 }
 
-function setupRecolorSelector() {
-    RecolorSelector.prototype.createSeismicityPlots = function(features, bbox) {
+function setupFeatureSelector() {
+    FeatureSelector.prototype.createSeismicityPlots = function(seismicityLayers, bbox) {
+        var pixelBoundingBox = [this.map.map.project(bbox[0]), this.map.map.project(bbox[1])];
+        var features = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: seismicityLayers });
+        if (features.length == 0) {
+            return;
+        }
         var selectedColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
         var features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
         this.map.seismicityGraphsController.setFeatures(features);
         this.map.seismicityGraphsController.setBbox(bbox);
-        this.map.seismicityGraphsController.createAllCharts(selectedColoring, null, null);
+        // show containers before creating as we have an optimization to not create
+        // unless containers are shown
         this.map.seismicityGraphsController.showChartContainers();
+        this.map.seismicityGraphsController.createAllCharts(selectedColoring, null, null);
     };
 
-    RecolorSelector.prototype.finish = function(bbox) {
+    FeatureSelector.prototype.finish = function(bbox) {
         // re enable dragpan only if polygon button isn't selected
         if (!this.map.selector.polygonButtonSelected) {
             this.map.map.dragPan.enable();
@@ -28,52 +35,48 @@ function setupRecolorSelector() {
             return;
         }
 
-        // these next two lines not elegant. ideally, finish calls this method and other functions operate on the features
-        // TODO: refactor this once the details are worked out
-        var pixelBoundingBox = [this.map.map.project(this.bbox[0]), this.map.map.project(this.bbox[1])];
-        var features = this.map.map.queryRenderedFeatures(pixelBoundingBox);
-        if (features.length > 0) {
-            var feature = features[0];
-            var featureID = feature.layer.id;
+        var mode = this.map.getCurrentMode();
 
-            if (this.map.thirdPartySourcesController.seismicities.includes(featureID)) {
-                this.createSeismicityPlots(features, bbox);
+        if (mode === "seismicity") {
+            var layerIDS = this.map.getLayerIDsInCurrentMode();
+            this.createSeismicityPlots(layerIDS, bbox);
+        } else if (mode === "insar") {
+            if (this.minIndex == -1 || this.maxIndex == -1) {
                 return;
             }
-        }
-        if (this.minIndex == -1 || this.maxIndex == -1) {
-            return;
-        }
 
-        // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
-        if (this.lastbbox == this.bbox && this.lastMinIndex == this.minIndex && this.lastMaxIndex == this.maxIndex) {
-            return;
-        }
+            // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
+            if (this.lastbbox == this.bbox && this.lastMinIndex == this.minIndex && this.lastMaxIndex == this.maxIndex) {
+                return;
+            }
 
-        // cancelled recoloring at any point...
-        if (this.cancelRecoloring) {
-            this.cancelRecoloring = false;
-            return;
-        }
+            // cancelled recoloring at any point...
+            if (this.cancelRecoloring) {
+                this.cancelRecoloring = false;
+                return;
+            }
 
-        if (this.map.colorOnDisplacement) {
-            var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
-            var startDate = new Date(dates[this.minIndex]);
-            var endDate = new Date(dates[this.maxIndex]);
-            this.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE to interrupt");
-        } else {
-            this.recolorDataset();
+            if (this.map.colorOnDisplacement) {
+                var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
+                var startDate = new Date(dates[this.minIndex]);
+                var endDate = new Date(dates[this.maxIndex]);
+                this.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE to interrupt");
+            } else {
+                this.recolorDataset();
+            }
+        } else if (mode === "gps") {
+            // TODO: logic for gps selection
         }
     };
 
-    RecolorSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate, loadingTextTop, loadingTextBottom) {
+    FeatureSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate, loadingTextTop, loadingTextBottom) {
         const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
         var yearsElapsed = (endDecimalDate - startDecimalDate) / millisecondsPerYear;
 
         this.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed, loadingTextTop, loadingTextBottom);
     };
 
-    RecolorSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingTextTop, loadingTextBottom) {
+    FeatureSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingTextTop, loadingTextBottom) {
         // let the caller check if a coloring is in progress. otherwise user has to sometimes
         //  wait if they cancel a recoloring and want to do another one
 
@@ -83,10 +86,7 @@ function setupRecolorSelector() {
         }
 
         // get the names of all the layers
-        var pointLayers = [];
-        for (var i = 1; i <= currentArea.properties.num_chunks; i++) {
-            pointLayers.push("chunk_" + i);
-        }
+        var pointLayers = this.map.getInsarLayers();
 
         var features = null;
         if (box) {
@@ -244,11 +244,11 @@ function setupRecolorSelector() {
         });
     };
 
-    RecolorSelector.prototype.recolorDataset = function() {
+    FeatureSelector.prototype.recolorDataset = function() {
         this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE to interrupt");
     };
 
-    RecolorSelector.prototype.recoloring = function() {
+    FeatureSelector.prototype.recoloring = function() {
         return this.recoloringInProgress;
     };
 }
