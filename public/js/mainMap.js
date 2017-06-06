@@ -922,7 +922,7 @@ function MapController(loadJSONFunc) {
                     $(".show-children-button#" + rowID).mouseover();
                     searchFormController.populateSubsetPopup(frameFeature, subsetFeatures);
                 }
-            } else {
+            } else if (!this.selector.selecting()) {
                 var featureViewOptions = this.thirdPartySourcesController.featureToViewOptions(features[0]);
                 if (featureViewOptions.coordinates) {
                     // this.gpsStationNamePopup.remove();
@@ -1081,6 +1081,7 @@ function MapController(loadJSONFunc) {
         this.removePoints();
         currentArea = null;
         this.removeTouchLocationMarkers();
+        this.selector.cleanup();
         // incase they are up
         this.elevationPopup.remove();
         this.gpsStationPopup.remove();

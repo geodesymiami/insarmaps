@@ -581,7 +581,7 @@ div.menu {
 }
 
 #lat-vs-long-color-scale {
-    width: 50%;
+    width: 25%;
     height: 100%;
     margin: 0 auto;
 }
@@ -604,7 +604,7 @@ div.menu {
 }
 
 .color-scale-picture-div {
-    width: 30%;
+    width: 50%;
     height: 100%;
     float: left;
 }
@@ -622,7 +622,7 @@ div.menu {
 
 .scale-values {
     position: relative;
-    width: 70%;
+    width: 50%;
     float: left;
     height: 100%;
 }
