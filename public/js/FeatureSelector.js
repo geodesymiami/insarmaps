@@ -38,8 +38,8 @@ function setupFeatureSelector() {
         var mode = this.map.getCurrentMode();
 
         if (mode === "seismicity") {
-            var layerIDS = this.map.getLayerIDsInCurrentMode();
-            this.createSeismicityPlots(layerIDS, bbox);
+            // var layerIDS = this.map.getLayerIDsInCurrentMode();
+            // this.createSeismicityPlots(layerIDS, bbox);
         } else if (mode === "insar") {
             if (this.minIndex == -1 || this.maxIndex == -1) {
                 return;
