@@ -283,23 +283,17 @@
   <div id="maximize-buttons-container" class="btn btn-primary">
     <div class="maximize-button-container">
       <div>
-        <div>
-          <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Datasets"></button>
-        </div>
+        <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Datasets"></button>
       </div>
     </div>
     <div class="maximize-button-container">
       <div>
-        <div>
-          <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Displacement Timeseries" id="graph-div-maximize-button"></button>
-        </div>
+        <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Displacement Timeseries" id="graph-div-maximize-button"></button>
       </div>
     </div>
     <div class="maximize-button-container">
       <div>
-        <div>
-          <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Attributes" id="area-attributes-div-maximize-button"></button>
-        </div>
+        <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Attributes" id="area-attributes-div-maximize-button"></button>
       </div>
     </div>
   </div>

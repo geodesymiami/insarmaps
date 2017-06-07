@@ -924,11 +924,21 @@ function setupSeismicityGraphsController() {
     SeismicityGraphsController.prototype.createDepthVLongGraph = function(features, chartContainer, selectedColoring) {
         var depthVLongValues = this.getDepthVLongData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
-        chartOpts.subtitle = { text: "Longitude vs. Depth Cross Section" };
+        chartOpts.subtitle = { text: "Depth vs. Longitude Cross Section" };
         chartOpts.xAxis.title = { text: "Longitude" };
         chartOpts.yAxis.title = { text: "Depth (Km)" };
         chartOpts.yAxis.reversed = true;
 
+        // if minimap is created, set min and max chart axis according to bounds of plot
+        if (this.mapForPlot) {
+            var bounds = this.mapForPlot.getBounds();
+            var minLng = bounds._sw.lng;
+            var maxLng = bounds._ne.lng;
+            chartOpts.xAxis.max = maxLng;
+            chartOpts.xAxis.min = minLng;
+            chartOpts.xAxis.endOnTick = false;
+            chartOpts.xAxis.maxPadding = 0;
+        }
         // save it before we save the data to series
         this.highChartsOpts[chartContainer] = chartOpts;
         chartOpts.series.push({
@@ -969,11 +979,22 @@ function setupSeismicityGraphsController() {
     SeismicityGraphsController.prototype.createLatVDepthGraph = function(features, chartContainer, selectedColoring) {
         var latVdepthValues = this.getLatVDepthData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
-        chartOpts.subtitle = { text: "Depth vs. Latitude Cross Section" };
+        chartOpts.subtitle = { text: "Latitude vs. Depth Cross Section" };
         chartOpts.tooltip.pointFormat = "{point.y:.1f} °";
         chartOpts.xAxis.title = { text: "Depth (Km)" };
         chartOpts.yAxis.title = { text: "Latitude" };
         chartOpts.yAxis.labels = { format: "{value:.1f}" };
+
+        // if minimap is created, set min and max chart axis according to bounds of plot
+        if (this.mapForPlot) {
+            var bounds = this.mapForPlot.getBounds();
+            var minLat = bounds._sw.lat;
+            var maxLat = bounds._ne.lat;
+            chartOpts.yAxis.max = maxLat;
+            chartOpts.yAxis.min = minLat;
+            chartOpts.yAxis.endOnTick = false;
+            chartOpts.yAxis.maxPadding = 0;
+        }
 
         // save it before we push the data to series
         this.highChartsOpts[chartContainer] = chartOpts;
@@ -1109,10 +1130,11 @@ function setupSeismicityGraphsController() {
         if (!$("#seismicity-charts").hasClass("active")) {
             return;
         }
+        // create mini map first so other charts can set their min and max axes values as appropriate
+        this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
         this.createChart(selectedColoring, "depth-vs-long-graph", optionalFeatures, optionalBounds);
         this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures, optionalBounds);
         this.createChart(selectedColoring, "cumulative-events-vs-date-graph", optionalFeatures, optionalBounds);
-        this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
         this.colorScale.initVisualScale();
     };
 
@@ -1329,10 +1351,11 @@ function setupCustomSliderSeismicityController() {
         var millisecondData = null;
 
         if ($("#seismicity-charts").hasClass("active")) {
+            // create mini map first so other charts can set their min and max axes values as appropriate
+            this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
             this.createChart(selectedColoring, "depth-vs-long-graph", optionalFeatures);
             this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures);
             millisecondData = this.createChart(selectedColoring, "cumulative-events-vs-date-graph", optionalFeatures);
-            this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
             this.colorScale.initVisualScale();
         }
 
