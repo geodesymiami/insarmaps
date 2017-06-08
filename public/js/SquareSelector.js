@@ -220,7 +220,7 @@ function SquareSelector() {
         var ne = {
             lat: highestLat,
             lng: highestLong
-        }
+        };
         var se = {
             lat: lowestLat,
             lng: highestLong
