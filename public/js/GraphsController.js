@@ -924,7 +924,7 @@ function setupSeismicityGraphsController() {
     SeismicityGraphsController.prototype.createDepthVLongGraph = function(features, chartContainer, selectedColoring) {
         var depthVLongValues = this.getDepthVLongData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
-        chartOpts.subtitle = { text: "Longitude vs. Depth Cross Section" };
+        chartOpts.subtitle = { text: "Depth vs. Longitude Cross Section" };
         chartOpts.xAxis.title = { text: "Longitude" };
         chartOpts.yAxis.title = { text: "Depth (Km)" };
         chartOpts.yAxis.reversed = true;
@@ -969,7 +969,7 @@ function setupSeismicityGraphsController() {
     SeismicityGraphsController.prototype.createLatVDepthGraph = function(features, chartContainer, selectedColoring) {
         var latVdepthValues = this.getLatVDepthData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
-        chartOpts.subtitle = { text: "Depth vs. Latitude Cross Section" };
+        chartOpts.subtitle = { text: "Latitude vs. Depth Cross Section" };
         chartOpts.tooltip.pointFormat = "{point.y:.1f} °";
         chartOpts.xAxis.title = { text: "Depth (Km)" };
         chartOpts.yAxis.title = { text: "Latitude" };

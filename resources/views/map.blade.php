@@ -280,26 +280,24 @@
     </div>
   </div>
   <div id="point-details"></div>
-  <div id="maximize-buttons-container" class="btn btn-primary">
-    <div class="maximize-button-container">
-      <div>
-        <div>
-          <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Datasets"></button>
-        </div>
+  <div class="maximize-buttons-container">
+    <div class="btn btn-primary">
+      <div class="maximize-button-container">
+          <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-charts-maximize-button" data-toggle="tooltip" title="Seismicity Plots"></button>
+      </div>
+      <div class="maximize-button-container">
+          <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-chart-sliders-maximize-button" data-toggle="tooltip" title="Seismicity Plot Sliders"></button>
       </div>
     </div>
-    <div class="maximize-button-container">
-      <div>
-        <div>
-          <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Displacement Timeseries" id="graph-div-maximize-button"></button>
-        </div>
+    <div class="btn btn-primary">
+      <div class="maximize-button-container">
+        <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Datasets"></button>
       </div>
-    </div>
-    <div class="maximize-button-container">
-      <div>
-        <div>
-          <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Attributes" id="area-attributes-div-maximize-button"></button>
-        </div>
+      <div class="maximize-button-container">
+        <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Displacement Timeseries" id="graph-div-maximize-button"></button>
+      </div>
+      <div class="maximize-button-container">
+        <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Attributes" id="area-attributes-div-maximize-button"></button>
       </div>
     </div>
   </div>
@@ -408,8 +406,6 @@
       </div>
     </div>
   </div>
-  <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-charts-maximize-button"></button>
-  <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-chart-sliders-maximize-button"></button>
   </div>
   <div class="wrap minimized" id="area-attributes-div" title="Attributes">
    <div class="top-right-buttons">
