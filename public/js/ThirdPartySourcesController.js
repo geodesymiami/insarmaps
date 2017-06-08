@@ -769,6 +769,9 @@ function ThirdPartySourcesController(map) {
     };
 
     this.featureToViewOptions = function(feature) {
+        if (!feature.layer) {
+            return null;
+        }
         // this is begging to be refactored. maybe a hash map with callbacks?
         var layerID = feature.layer.id;
         var layerSource = feature.layer.source;
@@ -779,7 +782,6 @@ function ThirdPartySourcesController(map) {
 
         var cursor = (itsAPoint || itsAGPSFeature || itsAMidasGPSFeature || itsASeismicityFeature) ? 'pointer' : 'auto';
 
-        // a better way is to have two mousemove callbacks like we do with select area vs select marker
         var html = null;
         var coordinates = feature.geometry.coordinates;
 

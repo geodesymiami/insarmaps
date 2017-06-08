@@ -72,7 +72,10 @@ function setupFeatureSelector() {
         if (mode === "seismicity") {
             var layerIDS = this.map.getLayerIDsInCurrentMode();
             this.createSeismicityPlots(layerIDS, bbox);
-            this.addSelectionPolygonFromMapBounds(this.map.seismicityGraphsController.mapForPlot.getBounds());
+            var bounds = this.map.seismicityGraphsController.getMinimapBounds();
+            if (bounds) {
+                this.addSelectionPolygonFromMapBounds(this.map.seismicityGraphsController.mapForPlot.getBounds());
+            }
         } else if (mode === "insar") {
             if (this.minIndex == -1 || this.maxIndex == -1) {
                 return;
