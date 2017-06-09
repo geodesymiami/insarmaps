@@ -344,7 +344,7 @@ function ColorScale(min, max, divID) {
             throw "Invalid Color Scale (" + scale + ") selected";
         }
 
-        var imgSrc = "img/" + scale + "_scale.PNG";
+        var imgSrc = "/img/" + scale + "_scale.PNG";
         $("#" + this.divID + " .color-scale-picture-div > img").attr("src", imgSrc);
     };
 

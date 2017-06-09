@@ -506,7 +506,7 @@ function MapController(loadJSONFunc) {
         }
     };
 
-    this.loadDataSetFromFeature = function(feature) {
+    this.loadDataSetFromFeature = function(feature, initialZoom) {
         var tileJSON = {
             "minzoom": 0,
             "maxzoom": 14,
@@ -574,6 +574,10 @@ function MapController(loadJSONFunc) {
                 // quickly switching between areas? don't reset zoom
                 if (this.anAreaWasPreviouslyLoaded()) {
                     zoom = this.map.getZoom();
+                }
+
+                if (initialZoom) {
+                    zoom = initialZoom;
                 }
                 // set our tilejson to the one we've loaded. this will make sure anAreaWasPreviouslyLoaded method returns true after the
                 // first time a dataset is selected
@@ -915,6 +919,15 @@ function MapController(loadJSONFunc) {
     };
 
     this.addMapToPage = function(containerID) {
+        var startingOptions = urlOptions.startingView;
+        try {
+            this.startingCoords = new mapboxgl.LngLat(startingOptions.lng, startingOptions.lat);
+            this.startingZoom = parseFloat(startingOptions.zoom);
+        } catch (error) {
+            this.startingZoom = 1.6;
+            this.startingCoords = [0, 30];
+        }
+
         this.map = new mapboxgl.Map({
             container: containerID, // container id
             center: this.startingCoords, // this.starting position
@@ -932,11 +945,12 @@ function MapController(loadJSONFunc) {
             this.selector.prepareEventListeners();
             this.loadAreaMarkers(function(areaFeatures) {
                 this.allAreaFeatures = areaFeatures;
-                if (viewOptions.startDataset) {
+                var options = urlOptions.startingDatasetOptions;
+                if (options.startDataset) {
                     for (var i = 0; i < areaFeatures.length; i++) {
-                        if (areaFeatures[i].properties.unavco_name === viewOptions.startDataset) {
+                        if (areaFeatures[i].properties.unavco_name === options.startDataset) {
                             showLoadingScreen("Loading requested dataset...", null);
-                            this.loadDataSetFromFeature(areaFeatures[i]);
+                            this.loadDataSetFromFeature(areaFeatures[i], options.zoom);
                             break;
                         }
                     }
