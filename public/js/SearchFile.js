@@ -151,7 +151,7 @@ function SearchFormController(container) {
                 $("." + rowClass).css({ cursor: "pointer" });
                 $("." + rowClass).click(function() {
                     if (!currentArea || (subsetFeature.properties.layerID != currentArea.properties.layerID) && !myMap.pointsLoaded()) {
-                        getGEOJSON(subsetFeature);
+                        myMap.loadDataSetFromFeature(subsetFeature);
                     }
                 });
             });
@@ -203,7 +203,7 @@ function SearchFormController(container) {
         $("." + rowClass).css({ cursor: "pointer" });
         $("." + rowClass).click(function() {
             if (!currentArea || (area.properties.layerID != currentArea.properties.layerID) && !myMap.pointsLoaded()) {
-                getGEOJSON(area);
+                myMap.loadDataSetFromFeature(area);
             }
         });
 
@@ -306,7 +306,6 @@ $(window).load(function() {
         var ENTER_KEY = 13;
 
         if (e.keyCode === ENTER_KEY && ($("#search-form input").is(":focus"))) {
-            console.log("here");
             if (myMap.areaFeatures) {
                 searcher.search();
                 $("#search-form-and-results-maximize-button").click();

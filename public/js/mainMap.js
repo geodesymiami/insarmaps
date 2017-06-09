@@ -506,23 +506,106 @@ function MapController(loadJSONFunc) {
         }
     };
 
+    this.loadDataSetFromFeature = function(feature) {
+        var tileJSON = {
+            "minzoom": 0,
+            "maxzoom": 14,
+            "center": [130.308838,
+                32.091882, 14
+            ],
+            "bounds": null,
+            "tiles": [
+                "http://129.171.60.12:8888/" + feature.properties.unavco_name +
+                "/{z}/{x}/{y}.pbf"
+            ],
+            "vector_layers": []
+        };
+
+        if (this.pointsLoaded()) {
+            this.removePoints();
+            this.removeTouchLocationMarkers();
+        }
+
+        currentArea = feature;
+
+        // make streets toggle button be only checked one
+        $("#streets").prop("checked", true);
+        for (var i = 1; i <= feature.properties.num_chunks; i++) {
+            var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
+            tileJSON.vector_layers.push(layer);
+        }
+
+        areaAttributesPopup.show(feature);
+
+        this.colorScale.show();
+
+        // when we click, we don't reset the highlight of modified markers one final time
+        this.areaMarkerLayer.resetHighlightsOfAllMarkers();
+        // get a recolor selector
+        var button = $("#polygon-button");
+        button.attr("data-original-title", "Select Points");
+        this.selector.disableSelectMode(); // in case it is selected
+        this.selector.removeEventListeners(); // remove old event listeners
+        this.selector = new FeatureSelector();
+        this.selector.map = this;
+        this.selector.associatedButton = button;
+        this.selector.prepareEventListeners(); // and add new ones
+
+        this.colorScale.defaultValues(); // set default values in case they were modified by another area
+        this.selector.reset(currentArea);
+        $("#color-on-dropdown").val("velocity");
+        this.colorScale.setTitle("LOS Velocity [cm/yr]");
+
+        this.thirdPartySourcesController.removemidasGpsStationMarkers();
+        midasStationsToggleButton.set("off");
+
+        this.addDataset(tileJSON);
+
+        this.map.once("data", function(event) {
+            this.removeAreaMarkers();
+
+            overlayToggleButton.set("on");
+
+            // in case it's up
+            this.gpsStationPopup.remove();
+            window.setTimeout(function() {
+                var zoom = 8.0;
+
+                // quickly switching between areas? don't reset zoom
+                if (this.anAreaWasPreviouslyLoaded()) {
+                    zoom = this.map.getZoom();
+                }
+                // set our tilejson to the one we've loaded. this will make sure anAreaWasPreviouslyLoaded method returns true after the
+                // first time a dataset is selected
+                this.tileJSON = tileJSON;
+
+                var centerOfDataset = feature.properties.centerOfDataset;
+
+                if (typeof centerOfDataset === "string") {
+                    centerOfDataset = JSON.parse(centerOfDataset);
+                }
+
+                var long = centerOfDataset[0];
+                var lat = centerOfDataset[1];
+
+                this.map.flyTo({
+                    center: [long, lat],
+                    zoom: zoom
+                });
+
+                var attributesController = new AreaAttributesController(this, feature);
+                attributesController.processAttributes();
+                this.areaMarkerLayer.setAreaRowHighlighted(feature.properties.unavco_name);
+                // in case someone called loading screen
+                hideLoadingScreen();
+            }.bind(this), 1000);
+        }.bind(this));
+    };
+
     this.clickOnAnAreaMarker = function(e) {
         var features = this.map.queryRenderedFeatures(e.point);
 
         if (!features.length) {
-            return;
-        }
-
-        var firstFeature = features[0];
-        var id = firstFeature.layer.id;
-
-        if (id === "gpsStations" || id === "midas") {
-            var coordinates = firstFeature.geometry.coordinates;
-            this.gpsStationPopup.remove();
-            this.gpsStationPopup.setLngLat(coordinates)
-                .setHTML(firstFeature.properties.popupHTML)
-                .addTo(this.map);
-
             return;
         }
 
@@ -553,7 +636,7 @@ function MapController(loadJSONFunc) {
 
                 var markerID = feature.properties.layerID;
 
-                getGEOJSON(feature);
+                this.loadDataSetFromFeature(feature);
             }
         }
     };
@@ -660,15 +743,6 @@ function MapController(loadJSONFunc) {
             }
             this.addLayer(layer);
         }.bind(this));
-
-        // remove click listener for selecting an area, and add new one for clicking on a point
-        this.map.off("click", this.clickOnAnAreaMarker);
-        // also left clicking, only to add it again.
-        // TODO: check how to check what function handlers are registered
-        // while this works, it is ugly to remove and then add immediately
-        this.map.off("click", this.leftClickOnAPoint);
-        this.leftClickOnAPoint = this.leftClickOnAPoint.bind(this);
-        this.map.on('click', this.leftClickOnAPoint);
     };
 
     this.polygonToLineString = function(polygonGeoJSON) {
@@ -862,7 +936,7 @@ function MapController(loadJSONFunc) {
                     for (var i = 0; i < areaFeatures.length; i++) {
                         if (areaFeatures[i].properties.unavco_name === viewOptions.startDataset) {
                             showLoadingScreen("Loading requested dataset...", null);
-                            getGEOJSON(areaFeatures[i]);
+                            this.loadDataSetFromFeature(areaFeatures[i]);
                             break;
                         }
                     }
@@ -881,15 +955,12 @@ function MapController(loadJSONFunc) {
         // and box zoom
         this.map.boxZoom.disable();
 
-        this.clickOnAPoint = this.clickOnAPoint.bind(this);
-        this.map.on('click', this.clickOnAPoint);
+        this.leftClickOnAPoint = this.leftClickOnAPoint.bind(this);
+        this.map.on('click', this.leftClickOnAPoint);
         this.map.on('click', function() { fullyHideSearchBars(); });
 
         //this.map.on("contextmenu", this.rightClickOnAPoint);
 
-        // Use the same approach as above to indicate that the symbols are clickable
-        // by changing the cursor style to 'pointer'.
-        // mainly used to show available areas under a marker
         this.map.on('mousemove', function(e) {
             var features = this.map.queryRenderedFeatures(e.point);
 
@@ -1086,13 +1157,6 @@ function MapController(loadJSONFunc) {
         this.colorDatasetOnVelocity();
 
         this.loadAreaMarkers(null);
-
-        // remove old click listeners, and add new one for clicking on an area marker
-        this.map.off("click", this.leftClickOnAPoint);
-        this.map.off("click", this.clickOnAnAreaMarker);
-
-        this.clickOnAPoint = this.clickOnAPoint.bind(this);
-        this.map.on('click', this.clickOnAPoint);
 
         this.removeAreaPopups();
         $("#search-form-and-results-minimize-button").click();
