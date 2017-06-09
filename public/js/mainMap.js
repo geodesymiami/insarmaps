@@ -312,8 +312,6 @@ function MapController(loadJSONFunc) {
     this.clickOnAPoint = function(e) {
         var features = this.map.queryRenderedFeatures(e.point);
 
-        // var layerID = "touchLocation";
-
         if (!features.length) {
             return;
         }
@@ -321,9 +319,6 @@ function MapController(loadJSONFunc) {
         var feature = features[0];
         var id = feature.layer.id;
 
-        // this callback active when dataset loaded, which is mutually
-        // exclusive to midas being loaded, but leave this check for
-        // midas just in case he changes his mind later
         if (id === "gpsStations" || id === "midas") {
             var coordinates = feature.geometry.coordinates;
             this.gpsStationPopup.remove();
@@ -334,12 +329,14 @@ function MapController(loadJSONFunc) {
             return;
         }
 
+        if (this.getCurrentMode() === "gps" && id === "midas-arrows") {
+            this.thirdPartySourcesController.subtractArrowMagnitudeFromArrows(feature);
+        }
+
         // clicked on area marker, reload a new area.
         var markerSymbol = feature.properties["marker-symbol"];
-        if ((markerSymbol == "marker" || markerSymbol == "fillPolygon") && this.anAreaWasPreviouslyLoaded()) {
-            if (this.pointsLoaded()) {
-                this.removePoints();
-            }
+        if (markerSymbol == "marker" || markerSymbol == "fillPolygon") {
+            this.removePoints();
 
             this.removeTouchLocationMarkers();
             this.clickOnAnAreaMarker(e);
@@ -390,8 +387,7 @@ function MapController(loadJSONFunc) {
 
         // show cross on clicked point
         if (this.map.getLayer(layerID)) {
-            this.removeLayer(layerID);
-            this.removeSource(layerID);
+            this.removeSourceAndLayer(layerID);
         }
 
         this.addSource(layerID, clickMarker);
@@ -885,8 +881,8 @@ function MapController(loadJSONFunc) {
         // and box zoom
         this.map.boxZoom.disable();
 
-        this.clickOnAnAreaMarker = this.clickOnAnAreaMarker.bind(this);
-        this.map.on('click', this.clickOnAnAreaMarker);
+        this.clickOnAPoint = this.clickOnAPoint.bind(this);
+        this.map.on('click', this.clickOnAPoint);
         this.map.on('click', function() { fullyHideSearchBars(); });
 
         //this.map.on("contextmenu", this.rightClickOnAPoint);
@@ -951,9 +947,7 @@ function MapController(loadJSONFunc) {
                 } else if (this.anAreaWasPreviouslyLoaded()) {
                     this.removeAreaPopups();
                     this.loadAreaMarkers(null);
-                    // remove click listener for selecting an area, and add new one for clicking on a point
                     this.map.off("click", this.leftClickOnAPoint);
-                    this.map.on('click', this.clickOnAnAreaMarker);
                 }
             }
 
@@ -1097,8 +1091,8 @@ function MapController(loadJSONFunc) {
         this.map.off("click", this.leftClickOnAPoint);
         this.map.off("click", this.clickOnAnAreaMarker);
 
-        this.clickOnAnAreaMarker = this.clickOnAnAreaMarker.bind(this);
-        this.map.on('click', this.clickOnAnAreaMarker);
+        this.clickOnAPoint = this.clickOnAPoint.bind(this);
+        this.map.on('click', this.clickOnAPoint);
 
         this.removeAreaPopups();
         $("#search-form-and-results-minimize-button").click();

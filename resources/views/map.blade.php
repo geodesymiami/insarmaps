@@ -463,6 +463,7 @@
     <script type="text/javascript" src="js/mainPage.js"></script>
     <script type="text/javascript" src="js/SearchFile.js"></script>
     <script type="text/javascript" src="js/Swath.js"></script>
+    <script type="text/javascript" src="js/Vector.js"></script>
     <script type="text/javascript" src="js/ThirdPartySourcesController.js"></script>
     <script type="text/javascript" src="js/mainMap.js"></script>
     <script type="text/javascript" src="js/SquareSelector.js"></script>
