@@ -740,6 +740,12 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     height: 100%;
 }
 
+#lat-vs-long-graph {
+    height: 80%;
+    width: 35%;
+    margin-left: 7%;
+}
+
 #seismicity-chart-sliders {
     position: absolute;
     left: 10%;

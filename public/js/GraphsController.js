@@ -943,13 +943,14 @@ function setupSeismicityGraphsController() {
     SeismicityGraphsController.prototype.createDepthVLongGraph = function(features, chartContainer, selectedColoring) {
         var depthVLongValues = this.getDepthVLongData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
-        chartOpts.subtitle = { text: "Depth vs. Longitude Cross Section" };
         chartOpts.xAxis.title = { text: "Longitude" };
         chartOpts.yAxis.title = { text: "Depth (Km)" };
+        chartOpts.yAxis.labels = { format: "{value:.1f}" };
         chartOpts.yAxis.reversed = true;
         chartOpts.tooltip = {
             formatter: this.pointFormatterCallback
-        }
+        };
+        chartOpts.chart.spacing = [0, 0, 0, -5];
 
         // if minimap is created, set min and max chart axis according to bounds of plot
         if (this.mapForPlot) {
@@ -959,6 +960,7 @@ function setupSeismicityGraphsController() {
             chartOpts.xAxis.max = maxLng;
             chartOpts.xAxis.min = minLng;
             chartOpts.xAxis.endOnTick = false;
+            chartOpts.xAxis.startOnTick = false;
             chartOpts.xAxis.maxPadding = 0;
         }
         // save it before we save the data to series
@@ -1003,14 +1005,14 @@ function setupSeismicityGraphsController() {
     SeismicityGraphsController.prototype.createLatVDepthGraph = function(features, chartContainer, selectedColoring) {
         var latVdepthValues = this.getLatVDepthData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
-        chartOpts.subtitle = { text: "Latitude vs. Depth Cross Section" };
         chartOpts.tooltip.pointFormat = "{point.y:.1f} °";
         chartOpts.xAxis.title = { text: "Depth (Km)" };
         chartOpts.yAxis.title = { text: "Latitude" };
         chartOpts.yAxis.labels = { format: "{value:.1f}" };
         chartOpts.tooltip = {
             formatter: this.pointFormatterCallback
-        }
+        };
+        chartOpts.chart.spacing = [5, 0, 10, 0];
 
         // if minimap is created, set min and max chart axis according to bounds of plot
         if (this.mapForPlot) {
@@ -1020,6 +1022,7 @@ function setupSeismicityGraphsController() {
             chartOpts.yAxis.max = maxLat;
             chartOpts.yAxis.min = minLat;
             chartOpts.yAxis.endOnTick = false;
+            chartOpts.yAxis.startOnTick = false;
             chartOpts.yAxis.maxPadding = 0;
         }
 
