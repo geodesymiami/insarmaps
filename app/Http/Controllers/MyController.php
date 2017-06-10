@@ -25,7 +25,7 @@ class MyController extends Controller
     return view('map', ["fileName" => $fileName]);
   }
 
-  public function returnPage(Request $request, $lat=0.0, $long=0.0, $zoom=0.0) {
+  public function returnPage(Request $request, $lat=30.0, $long=0.0, $zoom=1.6) {
     $allOptions = [];
     $startingView = [];
     $startingView["lat"] = $lat;
