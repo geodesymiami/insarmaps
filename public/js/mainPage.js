@@ -634,7 +634,9 @@ $(window).load(function() {
         var selectedColoring = $(this).val();
         if (selectedColoring === "time") {
             myMap.colorScale.setTopAsMax(true);
+            myMap.colorScale.setInDateMode(true);
         } else if (selectedColoring === "depth") {
+            myMap.colorScale.setInDateMode(false);
             myMap.colorScale.setTopAsMax(false);
         }
         myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
@@ -936,35 +938,6 @@ $(window).load(function() {
     $("#download-as-text-button").click(function() {
         window.open("/textFile/" + currentArea.properties.unavco_name +
             "/" + currentPoint);
-    });
-
-    myMap.colorScale.initVisualScale();
-
-    $("#color-scale .scale-values .form-group > input").keypress(function(e) {
-        var ENTER_KEY = 13;
-
-        if (e.which == ENTER_KEY) {
-            var bottomValue = parseFloat($("#color-scale .bottom-scale-value").val());
-            var topValue = parseFloat($("#color-scale .top-scale-value").val());
-
-            myMap.colorScale.setMinMax(bottomValue, topValue);
-
-            // if they are loaded, refresh them. if aren't loaded, nothing
-            // will happen
-            myMap.refreshDataset();
-            myMap.thirdPartySourcesController.refreshmidasGpsStationMarkers();
-            var selectedColoring = $("#seismicity-color-on-dropdown").val();
-            myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
-
-            // if time is selected, convert to milliseconds
-            if (selectedColoring == "time") {
-                myMap.seismicityGraphsController.createChart(selectedColoring, "depth-vs-long-graph", null, null);
-                myMap.seismicityGraphsController.createChart(selectedColoring, "lat-vs-depth-graph", null, null);
-            } else {
-                myMap.seismicityGraphsController.createChart(selectedColoring, "cumulative-events-vs-date-graph", null, null);
-                myMap.seismicityGraphsController.createChart(selectedColoring, "lat-vs-long-graph", null, null);
-            }
-        }
     });
 
     // $("#search-form-results-table").tablesorter();

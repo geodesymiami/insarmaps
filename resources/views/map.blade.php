@@ -402,12 +402,12 @@
                   <div class="scale-values">
                     <div class="left-scale-minimum">
                       <div class="form-group">
-                        <input type="date" class="form-control bottom-scale-value date-input"/>
+                        <input type="number" class="form-control bottom-scale-value"/>
                       </div>
                     </div>
                     <div class="right-scale-maximum">
                       <div class="form-group">
-                        <input type="date" class="form-control top-scale-value date-input"/>
+                        <input type="number" class="form-control top-scale-value"/>
                       </div>
                     </div>
                   </div>

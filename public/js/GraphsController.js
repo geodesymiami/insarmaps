@@ -865,8 +865,6 @@ function SeismicityGraphsController() {
     this.timeColorScale.onScaleChange(function(newMin, newMax) {
         if (this.map.seismicityGraphsController.miniMapColoring === "time") {
             this.map.seismicityGraphsController.createChart(null, "lat-vs-long-graph", null, null);
-            this.map.seismicityGraphsController.createChart(null, "lat-vs-depth-graph", null, null);
-            this.map.seismicityGraphsController.createChart(null, "lat-vs-long-graph", null, null);
         }
     }.bind(this));
 }
@@ -885,15 +883,7 @@ function setupSeismicityGraphsController() {
 
     SeismicityGraphsController.prototype.setMinimapColoring = function(coloring) {
         this.miniMapColoring = coloring;
-        if (this.miniMapColoring === "time") {
-            this.createChart(null, "lat-vs-long-graph", null, null);
-            this.createChart(null, "depth-vs-long-graph", null, null);
-            this.createChart(null, "lat-vs-depth-graph", null, null);
-        } else if (this.miniMapColoring === "depth") {
-            this.map.seismicityGraphsController.createChart(null, "lat-vs-long-graph", null, null);
-        } else {
-            throw new Error("Invalid coloring " + this.miniMapColoring + " selected");
-        }
+        this.createChart(null, "lat-vs-long-graph", null, null);
     };
 
     SeismicityGraphsController.prototype.getSeriesData = function(xValues, yValues, extraFeatureData, colorOnInputs, colorStops) {
@@ -1253,6 +1243,9 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.destroyAllCharts = function() {
+        if (!$("#seismicity-charts").hasClass("active")) {
+            return;
+        }
         if (this.mapForPlot) {
             this.mapForPlot.remove();
             this.mapForPlot = null;

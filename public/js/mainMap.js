@@ -145,6 +145,23 @@ function MapController(loadJSONFunc) {
     this.areaFeatures = null;
     this.allAreaFeatures = null;
     this.colorScale = new ColorScale(-2.00, 2.00, "color-scale");
+    this.colorScale.onScaleChange(function(minValue, maxValue) {
+        // if they are loaded, refresh them. if aren't loaded, nothing
+        // will happen
+        this.refreshDataset();
+        this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
+        var selectedColoring = $("#seismicity-color-on-dropdown").val();
+        this.thirdPartySourcesController.recolorSeismicities(selectedColoring);
+
+        // if time is selected, convert to milliseconds
+        if (selectedColoring == "time") {
+            this.seismicityGraphsController.createChart(selectedColoring, "depth-vs-long-graph", null, null);
+            this.seismicityGraphsController.createChart(selectedColoring, "lat-vs-depth-graph", null, null);
+        } else {
+            this.seismicityGraphsController.createChart(selectedColoring, "cumulative-events-vs-date-graph", null, null);
+            this.seismicityGraphsController.createChart(selectedColoring, "lat-vs-long-graph", null, null);
+        }
+    }.bind(this));
     this.colorOnDisplacement = false;
     this.lastAreasRequest = null;
 
@@ -938,6 +955,7 @@ function MapController(loadJSONFunc) {
         }));
 
         this.map.once("load", function() {
+            this.colorScale.initVisualScale();
             this.map.getCanvas().style.cursor = 'auto';
             this.selector = new FeatureSelector();
             this.selector.map = this;

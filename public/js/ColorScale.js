@@ -365,6 +365,26 @@ function ColorScale(min, max, divID) {
     // in DOM as jquery doesn't support just changing the type
     this.setInDateMode = function(inDateMode) {
         this.inDateMode = inDateMode;
+        if (this.inDateMode) {
+            $("#" + this.divID + " .scale-values .form-group > input").each(function() {
+                var classVal = $(this).attr("class");
+                $input = $("<input type='date' class='" + classVal + "'/>").insertBefore(this);
+                if (!$input.hasClass("date-input")) {
+                    $input.addClass("date-input");
+                }
+            }).remove();
+        } else {
+            $("#" + this.divID + " .scale-values .form-group > input").each(function() {
+                var classVal = $(this).attr("class");
+                $input = $("<input type='number' class='" + classVal + "'/>").insertBefore(this);
+                if ($input.hasClass("date-input")) {
+                    $input.removeClass("date-input");
+                }
+            }).remove();
+        }
+
+        // register callbacks again
+        this.onScaleChange(this.scaleChangeCallback);
     };
 
     this.initVisualScale = function() {
@@ -408,8 +428,6 @@ function ColorScale(min, max, divID) {
     };
 
     this.setMinMax = function(val1, val2) {
-        console.log(val1);
-        console.log(val2);
         if (val1 >= val2) {
             this.setMin(val2);
             this.setMax(val1);
@@ -446,6 +464,8 @@ function ColorScale(min, max, divID) {
         }
     };
 
+    this.scaleChangeCallback = null;
+
     this.onScaleChange = function(callback) {
         $("#" + this.divID + " .scale-values .form-group > input").keypress(function(e) {
             var ENTER_KEY = 13;
@@ -462,8 +482,9 @@ function ColorScale(min, max, divID) {
                     var splitBot = topValue.split("-");
 
                     // -1 because js date is 0 based.
-                    this.setMinMax(new Date(splitBot[0], splitBot[1] - 1, splitBot[2]).getTime(),
-                        new Date(splitTop[0], splitTop[1] - 1, splitTop[2]).getTime());
+                    var minMilliseconds = new Date(splitBot[0], splitBot[1] - 1, splitBot[2]).getTime();
+                    var maxMilliseconds = new Date(splitTop[0], splitTop[1] - 1, splitTop[2]).getTime();
+                    this.setMinMax(minMilliseconds, maxMilliseconds);
                 } else {
                     this.setMinMax(parseFloat(bottomValue), parseFloat(topValue));
                 }
@@ -471,5 +492,7 @@ function ColorScale(min, max, divID) {
                 callback(this.min, this.max);
             }
         }.bind(this));
+
+        this.scaleChangeCallback = callback;
     };
 }

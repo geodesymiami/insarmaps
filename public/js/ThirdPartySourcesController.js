@@ -941,19 +941,12 @@ function ThirdPartySourcesController(map) {
     this.recolorSeismicities = function(selectedColoring) {
         var stops = null;
         var colors = this.map.colorScale.jet;
-        var min = parseFloat(this.map.colorScale.min);
-        var max = parseFloat(this.map.colorScale.max);
+        var min = this.map.colorScale.min;
+        var max = this.map.colorScale.max;
         var type = "exponential";
         if (selectedColoring === "time") {
             this.map.colorScale.setTitle("Time (years)")
-            var now = new Date();
-            var maxDate = new Date();
-            var minDate = new Date();
-            minDate.setFullYear(now.getFullYear() + min);
-            maxDate.setFullYear(now.getFullYear() + max);
-            var minMilliSecond = minDate.getTime();
-            var maxMilliSecond = maxDate.getTime();
-            stops = this.stopsCalculator.getTimeStops(minMilliSecond, maxMilliSecond, colors);
+            stops = this.stopsCalculator.getTimeStops(min, max, colors);
             type = "interval"
         } else if (selectedColoring === "depth") {
             colors = this.map.colorScale.jet_r;
