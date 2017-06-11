@@ -634,11 +634,16 @@ $(window).load(function() {
         var selectedColoring = $(this).val();
         if (selectedColoring === "time") {
             myMap.colorScale.setTopAsMax(true);
-        } else {
+        } else if (selectedColoring === "depth") {
             myMap.colorScale.setTopAsMax(false);
         }
         myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
         myMap.seismicityGraphsController.recreateAllCharts(selectedColoring);
+    });
+
+    $("#minimap-color-on-dropdown").change(function() {
+         var selectedColoring = $(this).val();
+         myMap.seismicityGraphsController.setMinimapColoring(selectedColoring);
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {
@@ -959,18 +964,6 @@ $(window).load(function() {
                 myMap.seismicityGraphsController.createChart(selectedColoring, "cumulative-events-vs-date-graph", null, null);
                 myMap.seismicityGraphsController.createChart(selectedColoring, "lat-vs-long-graph", null, null);
             }
-        }
-    });
-
-    $("#lat-vs-long-color-scale .scale-values .form-group > input").keypress(function(e) {
-        var ENTER_KEY = 13;
-
-        if (e.which == ENTER_KEY) {
-            var bottomValue = parseFloat($("#lat-vs-long-color-scale .bottom-scale-value").val());
-            var topValue = parseFloat($("#lat-vs-long-color-scale .top-scale-value").val());
-
-            myMap.seismicityGraphsController.colorScale.setMinMax(bottomValue, topValue);
-            myMap.seismicityGraphsController.createChart(null, "lat-vs-long-graph", null, null);
         }
     });
 

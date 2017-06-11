@@ -579,10 +579,21 @@ div.menu {
     text-align: center;
 }
 
-#lat-vs-long-color-scale {
-    width: 25%;
+.minimap-color-scale {
     height: 100%;
-    margin: 0 auto;
+    float: left;
+}
+
+#lat-vs-long-depth-color-scale {
+    width: 40%;
+}
+
+#lat-vs-long-time-color-scale {
+    width: 60%;
+}
+
+.scale-values input.date-input {
+    font-size: 10px;
 }
 
 #color-scale.active {
@@ -629,6 +640,7 @@ div.menu {
 .left-scale-minimum,
 .right-scale-maximum {
     position: absolute;
+    width: 100%;
 }
 
 .right-scale-maximum {
