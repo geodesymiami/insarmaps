@@ -1112,11 +1112,14 @@ function setupSeismicityGraphsController() {
         if (this.mapForPlot) {
             this.mapForPlot.remove();
         }
+        bounds = this.map.selector.getVerticesOfSquareBbox(bounds);
+        var sanitizedBounds = [bounds[3], bounds[1]]; // sw, ne
+
         this.mapForPlot = new mapboxgl.Map({
             container: chartContainer, // container id
             attributionControl: false,
             interactive: false,
-            maxBounds: bounds
+            maxBounds: sanitizedBounds
         });
 
         this.mapForPlot.on("load", function() {
