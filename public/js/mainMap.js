@@ -204,6 +204,43 @@ function MapController(loadJSONFunc) {
         this.map.removeSource(id);
     };
 
+    // determine which color scales to show, etc when a layer, and potentially
+    // mode, changes
+    this.afterLayersChanged = function() {
+        var curMode = this.getCurrentMode();
+
+        if (!curMode) { // no mode (ie essentially empty map)
+            this.seismicityGraphsController.destroyAllCharts();
+            this.seismicityGraphsController.hideChartContainers();
+            this.selector.removeSelectionPolygon();
+            this.colorScale.remove();
+        } else if (curMode === "insar") {
+            this.seismicityGraphsController.destroyAllCharts();
+            this.seismicityGraphsController.hideChartContainers();
+            this.selector.removeSelectionPolygon();
+            if (this.pointsLoaded()) {
+                this.colorScale.show();
+            } else {
+                this.colorScale.remove();
+            }
+        } else {
+            var layerIDs = this.getLayerIDsInCurrentMode();
+            if (curMode === "gps") {
+                if (layerIDs.includes("midas")) {
+                    this.colorScale.show();
+                } else {
+                    this.colorScale.remove();
+                }
+            } else if (curMode === "seismicity") {
+                // handles setting up color scale for seismicity etc.
+                if (!(this.seismicityGraphsController.slidersVisible()
+                    || this.seismicityGraphsController.chartsVisible())) {
+                    this.thirdPartySourcesController.prepareForSeismicities(null);
+                }
+            }
+        }
+    };
+
     this.addLayer = function(newLayer, before) {
         // handle when before layerID is supplied
         if (before) {
@@ -220,11 +257,13 @@ function MapController(loadJSONFunc) {
             this.layers_.set(newLayer.id, newLayer);
         }
         this.map.addLayer(newLayer, before);
+        this.afterLayersChanged();
     };
 
     this.removeLayer = function(id) {
         this.layers_.delete(id);
         this.map.removeLayer(id);
+        this.afterLayersChanged();
     };
 
     this.getInsarLayers = function() {
@@ -263,33 +302,30 @@ function MapController(loadJSONFunc) {
     };
 
     this.getLayerIDsInCurrentMode = function() {
-        var allSources = Array.from(this.sources);
+        var mode = this.getCurrentMode();
 
-        for (var i = allSources.length - 1; i >= 0; i--) {
-            var latestMode = allSources[i][0];
-            if (this.thirdPartySourcesController.seismicities.includes(latestMode)) {
-                var activeLayers = [];
-                this.thirdPartySourcesController.seismicities.forEach(function(layerID) {
-                    if (this.map.getLayer(layerID)) {
-                        activeLayers.push(layerID);
-                    }
-                }.bind(this));
-                return activeLayers;
-            }
+        if (mode === "seismicity") {
+            var activeLayers = [];
+            this.thirdPartySourcesController.seismicities.forEach(function(layerID) {
+                if (this.map.getLayer(layerID)) {
+                    activeLayers.push(layerID);
+                }
+            }.bind(this));
+            return activeLayers;
+        }
 
-            if (this.thirdPartySourcesController.gps.includes(latestMode)) {
-                var activeLayers = [];
-                this.thirdPartySourcesController.gps.forEach(function(layerID) {
-                    if (this.map.getLayer(layerID)) {
-                        activeLayers.push(layerID);
-                    }
-                }.bind(this));
-                return this.thirdPartySourcesController.gps;
-            }
+        if (mode === "gps") {
+            var activeLayers = [];
+            this.thirdPartySourcesController.gps.forEach(function(layerID) {
+                if (this.map.getLayer(layerID)) {
+                    activeLayers.push(layerID);
+                }
+            }.bind(this));
+            return this.thirdPartySourcesController.gps;
+        }
 
-            if (latestMode === "insar_vector_source") {
-                return this.getInsarLayers();
-            }
+        if (mode === "insar") {
+            return this.getInsarLayers();
         }
 
         // otherwise

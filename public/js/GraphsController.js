@@ -1474,7 +1474,6 @@ function setupCustomSliderSeismicityController() {
             }
         }
 
-
         this.getDepthVDepthData(features, selectedColoring);
         // if null, we didn't get them from creating the chart, get them using standalong function
         // optimizing too much? maybe, but I don't care
@@ -1483,20 +1482,19 @@ function setupCustomSliderSeismicityController() {
         }
         var depthData = this.getDepthHistogram(features);
 
-        // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
-        // no need to sort milliseconds as the features are already sorted by this
-        depthData.sort(function(data1, data2) {
-            return data1[0] - data2[0];
-        });
         var depthValues = [];
         var millisecondValues = [];
-        // now get millisecond and depth values by themselves, as mapExtremesToArrayIndeces needs an array of comparables...
-        for (var i = 0; i < depthData.length; i++) {
-            var depth = depthData[i][0];
-            var millisecond = millisecondData[i].x;
-            depthValues.push(depth);
-            millisecondValues.push(millisecond);
-        }
+
+        features.forEach(function(feature) {
+            depthValues.push(feature.properties.depth);
+            millisecondValues.push(feature.properties.time);
+        });
+
+        // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
+        // also, callbacks depend on sorted arrays (for speed). no need to sort milliseconds as the features are already sorted by this
+        depthValues.sort(function(depth1, depth2) {
+            return depth1 - depth2;
+        });
 
         this.createSlider("depth-slider", depthData, "linear", null, function(e) {
             this.depthSliderCallback(e, depthValues);
@@ -1514,6 +1512,14 @@ function setupCustomSliderSeismicityController() {
     CustomSliderSeismicityController.prototype.destroyAllSliders = function() {
         $("#depth-slider").highcharts().destroy();
         $("#time-slider").highcharts().destroy();
+    };
+
+    CustomSliderSeismicityController.prototype.slidersVisible = function() {
+        return $("#seismicity-chart-sliders").hasClass("active");
+    };
+
+    CustomSliderSeismicityController.prototype.chartsVisible = function() {
+        return $("#seismicity-charts").hasClass("active");
     };
 
     CustomSliderSeismicityController.prototype.showSliders = function() {

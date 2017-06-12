@@ -16,6 +16,12 @@ function ThirdPartySourcesController(map) {
     this.referenceArrow = null;
     this.subtractedMidasArrows = null;
 
+    // keep this around for when main map needs features to pass in to create
+    // the seismicity sliders. notice (below) that we always set this before
+    // calling mapcontroller methods which change layers and depend on having the
+    // latest feature (seismicity or otherwise)
+    this.currentFeatures = null;
+
     this.getLayerOnTopOf = function(layer) {
         for (var i = this.layerOrder.length - 1; i >= 0; i--) {
             if (this.layerOrder[i] === layer) {
@@ -420,6 +426,10 @@ function ThirdPartySourcesController(map) {
 
     this.prepareForSeismicities = function(features) {
         this.setupColorScaleForSeismicities();
+
+        if (!features) {
+            features = this.currentFeatures;
+        }
         // in the future, should call a separate method to create only sliders and not all charts including sliders...
         this.map.seismicityGraphsController.setFeatures(features);
         var mapboxBounds = this.map.map.getBounds();
@@ -450,6 +460,8 @@ function ThirdPartySourcesController(map) {
                     feature.properties["location"] = feature.properties.title;
                 });
 
+                this.currentFeatures = featureCollection.features;
+
                 var mapboxStationFeatures = {
                     type: "geojson",
                     cluster: false,
@@ -476,8 +488,6 @@ function ThirdPartySourcesController(map) {
                         "circle-radius": 5
                     }
                 }, before);
-
-                this.prepareForSeismicities(featureCollection.features);
 
                 hideLoadingScreen();
             }.bind(this),
@@ -539,6 +549,8 @@ function ThirdPartySourcesController(map) {
                     features.push(feature);
                 });
 
+                this.currentFeatures = features;
+
                 var mapboxStationFeatures = {
                     type: "geojson",
                     cluster: false,
@@ -573,8 +585,6 @@ function ThirdPartySourcesController(map) {
                         }
                     }
                 }, before);
-                this.map.colorScale.setTopAsMax(false);
-                this.prepareForSeismicities(features);
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -608,6 +618,8 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
+                this.currentFeatures = features;
+
                 var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
                 var magCircleSizes = this.defaultCircleSizes();
@@ -632,8 +644,6 @@ function ThirdPartySourcesController(map) {
                         }
                     }
                 });
-                this.map.colorScale.setTopAsMax(false);
-                this.prepareForSeismicities(features);
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -752,6 +762,8 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
+                this.currentFeatures = features;
+
                 var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
                 var magCircleSizes = this.defaultCircleSizes();
@@ -777,7 +789,6 @@ function ThirdPartySourcesController(map) {
                     }
                 });
                 this.map.colorScale.setTopAsMax(false);
-                this.prepareForSeismicities(features);
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {

@@ -384,7 +384,9 @@ function ColorScale(min, max, divID) {
         }
 
         // register callbacks again
-        this.onScaleChange(this.scaleChangeCallback);
+        if (this.scaleChangeCallback) {
+            this.onScaleChange(this.scaleChangeCallback);
+        }
     };
 
     this.initVisualScale = function() {

@@ -12,6 +12,7 @@ function setupFeatureSelector() {
             this.map.removeSourceAndLayer("seismicitySelectedArea");
         }
     };
+
     FeatureSelector.prototype.addSelectionPolygonFromMapBounds = function(mapBounds) {
         var bbox = [mapBounds._ne, mapBounds._sw];
         var selectedAreaPolygon = this.squareBboxToMapboxPolygon(bbox);
@@ -34,6 +35,13 @@ function setupFeatureSelector() {
             }
         });
     };
+
+    FeatureSelector.prototype.removeSelectionPolygon = function() {
+        if (this.map.map.getSource("seismicitySelectedArea")) {
+            this.map.removeSourceAndLayer("seismicitySelectedArea");
+        }
+    };
+
     FeatureSelector.prototype.createSeismicityPlots = function(seismicityLayers, bbox) {
         var pixelBoundingBox = [this.map.map.project(bbox[0]), this.map.map.project(bbox[1])];
         var features = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: seismicityLayers });

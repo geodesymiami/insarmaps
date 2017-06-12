@@ -346,7 +346,7 @@
       </div>
     </div> 
   </div>
-  <!--<div class="wrap" id="seismicity-charts">
+  <div class="wrap" id="seismicity-charts">
     <div class="top-right-buttons">
       <button type="button" class="minimize-button" data-dismiss="modal" id="seismicity-charts-minimize-button"></button>
     </div>
@@ -447,7 +447,7 @@
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'downloads-tab')">Downloads</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'reference-tab')">Reference</a></li>
           <li><a href="#" class="tablinks" onclick="goToTab(event, 'figures-tab')">Figures</a></li>
-          <!-- <li><a href="#" class="tablinks" onclick="goToTab(event, 'links-tab')">Links</a></li> -->
+          <li><a href="#" class="tablinks" onclick="goToTab(event, 'links-tab')">Links</a></li>
         </ul>
         <div id="details-tab" class="tabcontent">
           <table class="table" id="area-attributes-table">

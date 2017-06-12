@@ -411,13 +411,9 @@ function setupToggleButtons() {
                 midasEastNorthStationsToggleButton.set("off");
             } else {
                 myMap.thirdPartySourcesController.loadmidasGpsStationMarkers(true);
-                myMap.colorScale.show();
             }
         } else {
             myMap.thirdPartySourcesController.removemidasGpsStationMarkers(true);
-            if (!myMap.pointsLoaded()) {
-                myMap.colorScale.remove();
-            }
         }
     });
 
@@ -428,13 +424,9 @@ function setupToggleButtons() {
                 midasStationsToggleButton.set("off");
             } else {
                 myMap.thirdPartySourcesController.loadmidasGpsStationMarkers(false);
-                myMap.colorScale.show();
             }
         } else {
             myMap.thirdPartySourcesController.removemidasGpsStationMarkers(false);
-            if (!myMap.pointsLoaded()) {
-                myMap.colorScale.remove();
-            }
         }
     });
 
@@ -443,7 +435,6 @@ function setupToggleButtons() {
         if (usgsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadUSGSEarthquakeFeed();
         } else {
-            myMap.colorScale.remove();
             myMap.thirdPartySourcesController.removeUSGSEarthquakeFeed();
         }
     });
@@ -453,7 +444,6 @@ function setupToggleButtons() {
         if (IGEPNEarthquakeToggleButton.toggleState == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadIGEPNEarthquakeFeed();
         } else {
-            myMap.colorScale.remove();
             myMap.thirdPartySourcesController.removeIGEPNEarthquakeFeed();
         }
     });
@@ -463,7 +453,6 @@ function setupToggleButtons() {
         if (HawaiiRelocToggleButton.toggleState == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadHawaiiReloc();
         } else {
-            myMap.colorScale.remove();
             myMap.thirdPartySourcesController.removeHawaiiReloc();
         }
     });
