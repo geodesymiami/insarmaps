@@ -3,6 +3,37 @@ function FeatureSelector() {
 }
 
 function setupFeatureSelector() {
+    FeatureSelector.prototype.cleanup = function() {
+        if (this.map.map.getSource("onTheFlyJSON")) {
+            this.map.removeSourceAndLayer("onTheFlyJSON");
+        }
+
+        if (this.map.map.getSource("seismicitySelectedArea")) {
+            this.map.removeSourceAndLayer("seismicitySelectedArea");
+        }
+    };
+    FeatureSelector.prototype.addSelectionPolygonFromMapBounds = function(mapBounds) {
+        var bbox = [mapBounds._ne, mapBounds._sw];
+        var selectedAreaPolygon = this.squareBboxToMapboxPolygon(bbox);
+
+        if (this.map.map.getSource("seismicitySelectedArea")) {
+            this.map.removeSourceAndLayer("seismicitySelectedArea");
+        }
+        this.map.addSource("seismicitySelectedArea", {
+            "type": "geojson",
+            "data": selectedAreaPolygon
+        });
+        this.map.addLayer({
+            'id': 'seismicitySelectedArea',
+            'type': 'fill',
+            'source': "seismicitySelectedArea",
+            'layout': {},
+            'paint': {
+                'fill-color': '#088',
+                'fill-opacity': 0.8
+            }
+        });
+    };
     FeatureSelector.prototype.createSeismicityPlots = function(seismicityLayers, bbox) {
         var pixelBoundingBox = [this.map.map.project(bbox[0]), this.map.map.project(bbox[1])];
         var features = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: seismicityLayers });
@@ -20,6 +51,7 @@ function setupFeatureSelector() {
     };
 
     FeatureSelector.prototype.finish = function(bbox) {
+        this.disableSelectMode();
         // re enable dragpan only if polygon button isn't selected
         if (!this.map.selector.polygonButtonSelected) {
             this.map.map.dragPan.enable();
@@ -38,8 +70,12 @@ function setupFeatureSelector() {
         var mode = this.map.getCurrentMode();
 
         if (mode === "seismicity") {
-            // var layerIDS = this.map.getLayerIDsInCurrentMode();
-            // this.createSeismicityPlots(layerIDS, bbox);
+            var layerIDS = this.map.getLayerIDsInCurrentMode();
+            this.createSeismicityPlots(layerIDS, bbox);
+            var bounds = this.map.seismicityGraphsController.getMinimapBounds();
+            if (bounds) {
+                this.addSelectionPolygonFromMapBounds(this.map.seismicityGraphsController.mapForPlot.getBounds());
+            }
         } else if (mode === "insar") {
             if (this.minIndex == -1 || this.maxIndex == -1) {
                 return;
@@ -81,8 +117,7 @@ function setupFeatureSelector() {
         //  wait if they cancel a recoloring and want to do another one
 
         if (this.map.map.getSource("onTheFlyJSON")) {
-            this.map.removeSource("onTheFlyJSON");
-            this.map.removeLayer("onTheFlyJSON");
+            this.map.removeSourceAndLayer("onTheFlyJSON");
         }
 
         // get the names of all the layers

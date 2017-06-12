@@ -193,102 +193,6 @@ function pysarSubsetToMapboxBounds(pysarSubset) {
     return bounds;
 }
 
-function getGEOJSON(area) {
-    var tileJSON = {
-        "minzoom": 0,
-        "maxzoom": 14,
-        "center": [130.308838,
-            32.091882, 14
-        ],
-        "bounds": null,
-        "tiles": [
-            "http://129.171.60.12:8888/" + area.properties.unavco_name +
-            "/{z}/{x}/{y}.pbf"
-        ],
-        "vector_layers": []
-    };
-
-    if (myMap.pointsLoaded()) {
-        myMap.removePoints();
-        myMap.removeTouchLocationMarkers();
-    }
-
-    currentArea = area;
-
-    // make streets toggle button be only checked one
-    $("#streets").prop("checked", true);
-    for (var i = 1; i <= area.properties.num_chunks; i++) {
-        var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
-        tileJSON.vector_layers.push(layer);
-    }
-
-    areaAttributesPopup.show(area);
-
-    myMap.colorScale.show();
-
-    // when we click, we don't reset the highlight of modified markers one final time
-    myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
-    // get a recolor selector
-    var button = $("#polygon-button");
-    button.attr("data-original-title", "Select Points");
-    myMap.selector.disableSelectMode(); // in case it is selected
-    myMap.selector.removeEventListeners(); // remove old event listeners
-    myMap.selector = new FeatureSelector();
-    myMap.selector.map = myMap;
-    myMap.selector.associatedButton = button;
-    myMap.selector.prepareEventListeners(); // and add new ones
-
-    myMap.colorScale.defaultValues(); // set default values in case they were modified by another area
-    myMap.selector.reset(currentArea);
-    $("#color-on-dropdown").val("velocity");
-    myMap.colorScale.setTitle("LOS Velocity [cm/yr]");
-
-    myMap.thirdPartySourcesController.removemidasGpsStationMarkers();
-    midasStationsToggleButton.set("off");
-
-    myMap.addDataset(tileJSON);
-
-    myMap.map.once("data", function(event) {
-        myMap.removeAreaMarkers();
-
-        overlayToggleButton.set("on");
-
-        // in case it's up
-        myMap.gpsStationPopup.remove();
-        window.setTimeout(function() {
-            var zoom = 8.0;
-
-            // quickly switching between areas? don't reset zoom
-            if (myMap.anAreaWasPreviouslyLoaded()) {
-                zoom = myMap.map.getZoom();
-            }
-            // set our tilejson to the one we've loaded. this will make sure anAreaWasPreviouslyLoaded method returns true after the
-            // first time a dataset is selected
-            myMap.tileJSON = tileJSON;
-
-            var centerOfDataset = area.properties.centerOfDataset;
-
-            if (typeof centerOfDataset === "string") {
-                centerOfDataset = JSON.parse(centerOfDataset);
-            }
-
-            var long = centerOfDataset[0];
-            var lat = centerOfDataset[1];
-
-            myMap.map.flyTo({
-                center: [long, lat],
-                zoom: zoom
-            });
-
-            var attributesController = new AreaAttributesController(myMap, area);
-            attributesController.processAttributes();
-            myMap.areaMarkerLayer.setAreaRowHighlighted(area.properties.unavco_name);
-            // in case someone called loading screen
-            hideLoadingScreen();
-        }, 1000);
-    });
-}
-
 function goToTab(event, id) {
     // first clear any visible tab
     $(".tabcontent").each(function(index, obj) {
@@ -730,11 +634,18 @@ $(window).load(function() {
         var selectedColoring = $(this).val();
         if (selectedColoring === "time") {
             myMap.colorScale.setTopAsMax(true);
-        } else {
+            myMap.colorScale.setInDateMode(true);
+        } else if (selectedColoring === "depth") {
+            myMap.colorScale.setInDateMode(false);
             myMap.colorScale.setTopAsMax(false);
         }
         myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
         myMap.seismicityGraphsController.recreateAllCharts(selectedColoring);
+    });
+
+    $("#minimap-color-on-dropdown").change(function() {
+         var selectedColoring = $(this).val();
+         myMap.seismicityGraphsController.setMinimapColoring(selectedColoring);
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {
@@ -1027,47 +938,6 @@ $(window).load(function() {
     $("#download-as-text-button").click(function() {
         window.open("/textFile/" + currentArea.properties.unavco_name +
             "/" + currentPoint);
-    });
-
-    myMap.colorScale.initVisualScale();
-
-    $("#color-scale .scale-values .form-group > input").keypress(function(e) {
-        var ENTER_KEY = 13;
-
-        if (e.which == ENTER_KEY) {
-            var bottomValue = parseFloat($("#color-scale .bottom-scale-value").val());
-            var topValue = parseFloat($("#color-scale .top-scale-value").val());
-
-            myMap.colorScale.setMinMax(bottomValue, topValue);
-
-            // if they are loaded, refresh them. if aren't loaded, nothing
-            // will happen
-            myMap.refreshDataset();
-            myMap.thirdPartySourcesController.refreshmidasGpsStationMarkers();
-            var selectedColoring = $("#seismicity-color-on-dropdown").val();
-            myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
-
-            // if time is selected, convert to milliseconds
-            if (selectedColoring == "time") {
-                myMap.seismicityGraphsController.createChart(selectedColoring, "depth-vs-long-graph", null, null);
-                myMap.seismicityGraphsController.createChart(selectedColoring, "lat-vs-depth-graph", null, null);
-            } else {
-                myMap.seismicityGraphsController.createChart(selectedColoring, "cumulative-events-vs-date-graph", null, null);
-                myMap.seismicityGraphsController.createChart(selectedColoring, "lat-vs-long-graph", null, null);
-            }
-        }
-    });
-
-    $("#lat-vs-long-color-scale .scale-values .form-group > input").keypress(function(e) {
-        var ENTER_KEY = 13;
-
-        if (e.which == ENTER_KEY) {
-            var bottomValue = parseFloat($("#lat-vs-long-color-scale .bottom-scale-value").val());
-            var topValue = parseFloat($("#lat-vs-long-color-scale .top-scale-value").val());
-
-            myMap.seismicityGraphsController.colorScale.setMinMax(bottomValue, topValue);
-            myMap.seismicityGraphsController.createChart(null, "lat-vs-long-graph", null, null);
-        }
     });
 
     // $("#search-form-results-table").tablesorter();

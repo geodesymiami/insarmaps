@@ -58,29 +58,33 @@ function MapboxStopsCalculator() {
     this.getDepthStops = function(min, max, outputArray) {
         var valueIncrement = (max - min) / outputArray.length;
         var inputs = this.inputsFromMinAndMax(min, max, valueIncrement);
+        var outputIncrement = Math.ceil(outputArray.length / inputs.length);
 
-        return this.calculateStops(inputs, outputArray, valueIncrement, 1);
+        return this.calculateStops(inputs, outputArray, valueIncrement, outputIncrement);
     };
 
     this.getMagnitudeStops = function(min, max, outputArray) {
         var valueIncrement = (max - min) / outputArray.length;
         var inputs = this.inputsFromMinAndMax(min, max, valueIncrement);
+        var outputIncrement = Math.ceil(outputArray.length / inputs.length);
 
-        return this.calculateStops(inputs, outputArray, valueIncrement, 1);
+        return this.calculateStops(inputs, outputArray, valueIncrement, outputIncrement);
     };
 
     this.getTimeStops = function(min, max, outputArray) {
         var valueIncrement = (max - min) / outputArray.length;
         var inputs = this.inputsFromMinAndMax(min, max, valueIncrement);
+        var outputIncrement = Math.ceil(outputArray.length / inputs.length);
 
-        return this.calculateStops(inputs, outputArray, valueIncrement, 1);
+        return this.calculateStops(inputs, outputArray, valueIncrement, outputIncrement);
     };
 
     this.getOpacityStops = function(min, max, outputArray) {
         var valueIncrement = (max - min) / outputArray.length;
         var inputs = this.inputsFromMinAndMax(min, max, valueIncrement);
+        var outputIncrement = Math.ceil(outputArray.length / inputs.length);
 
-        return this.calculateStops(inputs, outputArray, valueIncrement, 1);
+        return this.calculateStops(inputs, outputArray, valueIncrement, outputIncrement);
     };
 
     // assume order so use binary search
@@ -130,6 +134,7 @@ function ColorScale(min, max, divID) {
     this.levels = 256;
     this.divID = divID;
     this.stopsCalculator = new MapboxStopsCalculator();
+    this.inDateMode = false;
 
     this.jet = [
         '#000080', '#000084', '#000089', '#00008d', '#000092', '#000096',
@@ -344,36 +349,81 @@ function ColorScale(min, max, divID) {
             throw "Invalid Color Scale (" + scale + ") selected";
         }
 
-        var imgSrc = "img/" + scale + "_scale.PNG";
+        var imgSrc = "/img/" + scale + "_scale.PNG";
         $("#" + this.divID + " .color-scale-picture-div > img").attr("src", imgSrc);
     };
 
     this.topIsMax = true;
+
     this.setTopAsMax = function(setAsMax) {
         this.topIsMax = setAsMax;
         this.setMinMax(this.min, this.max);
+    };
+
+    // might want to add logic later on to change attributes of input to date
+    // instead of number, etc. Hint, apparently need to destroy and recreate actual inputs
+    // in DOM as jquery doesn't support just changing the type
+    this.setInDateMode = function(inDateMode) {
+        this.inDateMode = inDateMode;
+        if (this.inDateMode) {
+            $("#" + this.divID + " .scale-values .form-group > input").each(function() {
+                var classVal = $(this).attr("class");
+                $input = $("<input type='date' class='" + classVal + "'/>").insertBefore(this);
+                if (!$input.hasClass("date-input")) {
+                    $input.addClass("date-input");
+                }
+            }).remove();
+        } else {
+            $("#" + this.divID + " .scale-values .form-group > input").each(function() {
+                var classVal = $(this).attr("class");
+                $input = $("<input type='number' class='" + classVal + "'/>").insertBefore(this);
+                if ($input.hasClass("date-input")) {
+                    $input.removeClass("date-input");
+                }
+            }).remove();
+        }
+
+        // register callbacks again
+        this.onScaleChange(this.scaleChangeCallback);
     };
 
     this.initVisualScale = function() {
         this.setMinMax(this.min, this.max);
     };
 
+    this.dateToString = function(dateMilliseconds) {
+        var date = new Date(dateMilliseconds);
+        var day = ("0" + date.getDate()).slice(-2);
+        var month = ("0" + (date.getMonth() + 1)).slice(-2);
+
+        return date.getFullYear() + "-" + (month) + "-" + (day);
+    };
+
     this.setMin = function(min) {
         this.min = min;
+        var minString = this.min;
+        if (this.inDateMode) {
+            minString = this.dateToString(this.min);
+        }
+
         if (this.topIsMax) {
-            $("#" + this.divID + " .bottom-scale-value").val(this.min);
+            $("#" + this.divID + " .bottom-scale-value").val(minString);
         } else {
-            $("#" + this.divID + " .top-scale-value").val(this.min);
+            $("#" + this.divID + " .top-scale-value").val(minString);
         }
     };
 
     this.setMax = function(max) {
         this.max = max;
+        var maxString = this.max;
+        if (this.inDateMode) {
+            maxString = this.dateToString(this.max);
+        }
 
         if (this.topIsMax) {
-            $("#" + this.divID + " .top-scale-value").val(this.max);
+            $("#" + this.divID + " .top-scale-value").val(maxString);
         } else {
-            $("#" + this.divID + " .bottom-scale-value").val(this.max);
+            $("#" + this.divID + " .bottom-scale-value").val(maxString);
         }
     };
 
@@ -412,5 +462,37 @@ function ColorScale(min, max, divID) {
         if ($(id).hasClass("active")) {
             $(id).toggleClass("active");
         }
+    };
+
+    this.scaleChangeCallback = null;
+
+    this.onScaleChange = function(callback) {
+        $("#" + this.divID + " .scale-values .form-group > input").keypress(function(e) {
+            var ENTER_KEY = 13;
+
+            if (e.which == ENTER_KEY) {
+                var bottomValue = $("#" + this.divID + " .bottom-scale-value").val();
+                var topValue = $("#" + this.divID + " .top-scale-value").val();
+                if (this.inDateMode) {
+                    // yyyy-mm-dd is always the value we get (however the display depends)
+                    // on user locale: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/date
+                    // we need this incantation rather than just doing new Date(bottomValue) because
+                    // of how html5 vs js dates work: https://stackoverflow.com/questions/9509360/datepicker-date-off-by-one-day
+                    var splitTop = bottomValue.split("-");
+                    var splitBot = topValue.split("-");
+
+                    // -1 because js date is 0 based.
+                    var minMilliseconds = new Date(splitBot[0], splitBot[1] - 1, splitBot[2]).getTime();
+                    var maxMilliseconds = new Date(splitTop[0], splitTop[1] - 1, splitTop[2]).getTime();
+                    this.setMinMax(minMilliseconds, maxMilliseconds);
+                } else {
+                    this.setMinMax(parseFloat(bottomValue), parseFloat(topValue));
+                }
+
+                callback(this.min, this.max);
+            }
+        }.bind(this));
+
+        this.scaleChangeCallback = callback;
     };
 }

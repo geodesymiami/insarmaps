@@ -5,7 +5,7 @@ function SquareSelector() {
     this.maxIndex = -1;
     this.lastMinIndex = -1;
     this.lastMaxIndex = -1;
-    this.bbox = null;
+    this.bbox = null; // nw and se points array
     this.lastbbox = null;
     this.associatedButton = null;
     this.cancelRecoloring = false;
@@ -13,6 +13,7 @@ function SquareSelector() {
 
     this.canvas = null;
     this.polygonButtonSelected = false;
+    this.selectingInProgress = false;
 
     // Variable to hold the this.starting xy coordinates
     // when `mousedown` occured.
@@ -60,7 +61,12 @@ function SquareSelector() {
         this.removeMouseListeners();
         // Capture xy coordinates
         this.bbox = [this.map.map.unproject(this.start), this.map.map.unproject(this.mousePos(e))];
+        this.selectingInProgress = false;
         this.finish(this.bbox);
+    };
+
+    this.selecting = function() {
+        return this.selectingInProgress;
     };
 
     this.enableSelectMode = function() {
@@ -81,6 +87,8 @@ function SquareSelector() {
         if (this.inSelectMode()) {
             this.polygonButtonSelected = false;
         }
+
+        this.selectingInProgress = false;
 
         var buttonColor = "white";
         var opacity = 1.0;
@@ -136,6 +144,7 @@ function SquareSelector() {
         // Call functions for the following events
         document.addEventListener('mousemove', this.onMouseMove);
         document.addEventListener('mouseup', this.onMouseUp);
+        this.selectingInProgress = true;
 
         // Capture the first xy coordinates
         this.start = this.mousePos(e);
@@ -211,7 +220,7 @@ function SquareSelector() {
         var ne = {
             lat: highestLat,
             lng: highestLong
-        }
+        };
         var se = {
             lat: lowestLat,
             lng: highestLong

@@ -503,7 +503,6 @@ div.menu {
     width: 25%;
 }
 
-
 /*disable compass in nav controls*/
 
 .mapboxgl-ctrl-compass {
@@ -580,10 +579,21 @@ div.menu {
     text-align: center;
 }
 
-#lat-vs-long-color-scale {
-    width: 50%;
+.minimap-color-scale {
     height: 100%;
-    margin: 0 auto;
+    float: left;
+}
+
+#lat-vs-long-depth-color-scale {
+    width: 40%;
+}
+
+#lat-vs-long-time-color-scale {
+    width: 60%;
+}
+
+.scale-values input.date-input {
+    font-size: 10px;
 }
 
 #color-scale.active {
@@ -604,7 +614,7 @@ div.menu {
 }
 
 .color-scale-picture-div {
-    width: 30%;
+    width: 50%;
     height: 100%;
     float: left;
 }
@@ -622,7 +632,7 @@ div.menu {
 
 .scale-values {
     position: relative;
-    width: 70%;
+    width: 50%;
     float: left;
     height: 100%;
 }
@@ -630,6 +640,7 @@ div.menu {
 .left-scale-minimum,
 .right-scale-maximum {
     position: absolute;
+    width: 100%;
 }
 
 .right-scale-maximum {
@@ -679,8 +690,8 @@ input[type=number] {
 }
 
 .highcharts-container {
-    width:100% !important;
-    height:100% !important;
+    width: 100% !important;
+    height: 100% !important;
 }
 
 #charts {
@@ -698,22 +709,53 @@ input[type=number] {
     width: 50%;
 }
 
-.seismicity-chart, .seismicity-chart-slider {
+.seismicity-chart,
+.seismicity-chart-slider {
     height: 33%;
     width: 100%;
+}
+
+.seismicity-chart {
+    position: relative;
 }
 
 #seismicity-charts-container {
     height: 100% !important;
 }
 
+/*we use pos absolute because we reduce size of map and center it vertically
+to get it to exactly match the axes of the lat and long vs depth plots*/
+
+/*we could use flexbox, but I rather not use new fancy features.
+see: https://css-tricks.com/centering-css-complete-guide/*/
+
+/*for now, leave it pos absolute. not sure if he just wanted the axes
+of plots to match up with min and max lat and long of map, or if he physically
+wanted minimap to exactly be aligned with axes of plots (or both?). For now, I think he just wants min and max
+lat and long of plots to match minimap.
+TODO: ask him, as exactly matching physically will take logic, and if he doesnt want it, will be wasted time*/
+
 .seismicity-chart > div.side-by-side {
+    position: absolute;
     width: 50%;
-    float: left;
+}
+
+.seismicity-chart > div.side-by-side:first-child {
+    left: 0;
+}
+
+.seismicity-chart > div.side-by-side:nth-child(2) {
+    right: 0;
 }
 
 .seismicity-chart > div {
     height: 100%;
+}
+
+#lat-vs-long-graph {
+    height: 80%;
+    width: 35%;
+    margin-left: 7%;
 }
 
 #seismicity-chart-sliders {
@@ -723,20 +765,6 @@ input[type=number] {
     max-height: 300px;
     width: 30%;
     bottom: 0%;
-}
-
-#seismicity-chart-sliders-maximize-button, #seismicity-charts-maximize-button {
-    position: absolute;
-    bottom: 10px;
-    z-index: 98;
-}
-
-#seismicity-chart-sliders-maximize-button {
-    left: 5%;
-}
-
-#seismicity-charts-maximize-button {
-    left: 10%;
 }
 
 #graph-div-minimize-button {
@@ -938,6 +966,7 @@ input[type=number] {
 #search-form-results-table {
     font-size: 12px;
 }
+
 #search-form-results-table td {
     position: relative;
 }
@@ -975,14 +1004,17 @@ input[type=number] {
     background-position: 0 -224px;
 }
 
-#maximize-buttons-container {
+.maximize-buttons-container {
     position: absolute;
     right: 50%;
     bottom: 10px;
     z-index: 98;
-    width: 100px;
-    background-color: white;
+}
+
+.maximize-buttons-container > .btn.btn-primary {
+    background-color: white !important;
     border: none;
+    float: left;
 }
 
 .maximize-button-container {
@@ -991,16 +1023,12 @@ input[type=number] {
     float: left;
 }
 
-.maximize-button-container > div {
-    height: 16px;
-}
-
-.maximize-button-container > div > div {
+.maximize-button-container {
     width: 16px;
     height: 16px;
     background-color: #b8b8b8;
-    display: block;
-    margin: 0 auto;
+    display: inline-block;
+    margin: 0 4px 0 4px;
 }
 
 .clickable-button:active {

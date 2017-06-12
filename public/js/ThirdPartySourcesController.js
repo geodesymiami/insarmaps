@@ -13,6 +13,8 @@ function ThirdPartySourcesController(map) {
     this.currentSeismicityColorStops = this.stopsCalculator.getDepthStops(0, 50, this.map.colorScale.jet_r);
     this.currentSeismicityColoring = "depth";
     this.midasArrows = null;
+    this.referenceArrow = null;
+    this.subtractedMidasArrows = null;
 
     this.getLayerOnTopOf = function(layer) {
         for (var i = this.layerOrder.length - 1; i >= 0; i--) {
@@ -143,52 +145,40 @@ function ThirdPartySourcesController(map) {
         return features;
     };
 
-    this.vectorSum = function(vec1, vec2) {
-        var x = vec1.x + vec2.x;
-        var y = vec1.y + vec2.y;
-        var magnitude = Math.sqrt(x * x + y * y);
-        const RAD_TO_ANGLE = 180 / Math.PI;
-        var angle = ((Math.atan2(y, x)) % (2 * Math.PI)) * RAD_TO_ANGLE;
-
-        var retVector = {
-            x: x,
-            y: y,
-            mag: magnitude,
-            angle: angle
-        };
-
-        return retVector;
-    };
-
     // arrow is in pixels... we convert to appropriate delta degree by using mapbox
     // functions
-    this.getArrowGeoJSON = function(startCoordinate, orientation, length) {
+    // we need an id to identify arrows since we need to manipulate them. can't stringify
+    // coordinates as gl js returned feature from queryrendered feature doesn't maintain exact
+    // cords
+    this.getArrowGeoJSON = function(startCoordinate, orientation, length, id) {
         const DEGREE_PER_PIXEL = this.map.calculateDegreesPerPixelAtCurrentZoom(startCoordinate[1]);
-        const DEG_TO_RAD = Math.PI / 180.0;
 
         var lengthInPixels = length;
         length *= DEGREE_PER_PIXEL;
-        var orientationInDeg = orientation;
-        orientation *= DEG_TO_RAD
+
+        var headVector = Vector.newVectorFromMagAndAngle(length, orientation);
 
         var head = {
-            lng: startCoordinate[0] + (length * Math.cos(orientation)),
-            lat: startCoordinate[1] + (length * Math.sin(orientation))
+            lng: startCoordinate[0] + headVector.x,
+            lat: startCoordinate[1] + headVector.y
         };
 
         const TIP_LENGTH = 5 * DEGREE_PER_PIXEL;
-        const TIP_ANGLE_OFFSET = 160 * DEG_TO_RAD;
+        const TIP_ANGLE_OFFSET = 160;
         const LEFT_TIP_ANGLE = orientation - TIP_ANGLE_OFFSET;
         const RIGHT_TIP_ANGLE = orientation + TIP_ANGLE_OFFSET;
 
+        var leftTipVector = Vector.newVectorFromMagAndAngle(TIP_LENGTH, LEFT_TIP_ANGLE);
+
         var leftTip = {
-            lng: head.lng + (TIP_LENGTH * Math.cos(LEFT_TIP_ANGLE)),
-            lat: head.lat + (TIP_LENGTH * Math.sin(LEFT_TIP_ANGLE))
+            lng: head.lng + leftTipVector.x,
+            lat: head.lat + leftTipVector.y
         };
 
+        var rightTipVector = Vector.newVectorFromMagAndAngle(TIP_LENGTH, RIGHT_TIP_ANGLE);
         var rightTip = {
-            lng: head.lng + (TIP_LENGTH * Math.cos(RIGHT_TIP_ANGLE)),
-            lat: head.lat + (TIP_LENGTH * Math.sin(RIGHT_TIP_ANGLE))
+            lng: head.lng + rightTipVector.x,
+            lat: head.lat + rightTipVector.y
         };
 
         // head is included twice since we need to back track
@@ -208,8 +198,10 @@ function ThirdPartySourcesController(map) {
                 "coordinates": arrowCoordinates
             },
             "properties": {
-                "orientation": orientationInDeg,
-                "length": lengthInPixels
+                "orientation": orientation,
+                "length": lengthInPixels,
+                "color": "black",
+                "id": id
             }
         };
 
@@ -218,18 +210,55 @@ function ThirdPartySourcesController(map) {
 
     this.updateArrowLengths = function() {
         if (this.midasArrows) {
+            var arrowsArray = this.subtractedMidasArrows ? this.subtractedMidasArrows : this.midasArrows;
+
+            for (var i = 0; i < arrowsArray.length; i++) {
+                var curArrow = arrowsArray[i];
+                var orientation = curArrow.properties.orientation;
+                var startCoordinate = curArrow.geometry.coordinates[0];
+                var length = curArrow.properties.length;
+
+                var arrowGeoJSON = this.getArrowGeoJSON(startCoordinate, orientation, length, i);
+                if (this.referenceArrow && curArrow.properties.id == this.referenceArrow.properties.id) {
+                    arrowGeoJSON.properties.color = "red";
+                }
+                arrowsArray[i] = arrowGeoJSON;
+            }
+
+            this.map.map.getSource("midas-arrows").setData({
+                "type": "FeatureCollection",
+                "features": arrowsArray
+            });
+        }
+    };
+
+    this.subtractArrowMagnitudeFromArrows = function(arrow) {
+        if (this.midasArrows) {
+            this.referenceArrow = arrow;
+            this.subtractedMidasArrows = null;
+            this.subtractedMidasArrows = [];
+            var arrowVector = Vector.newVectorFromMagAndAngle(arrow.properties.length, arrow.properties.orientation);
+
             for (var i = 0; i < this.midasArrows.length; i++) {
                 var curArrow = this.midasArrows[i];
                 var orientation = curArrow.properties.orientation;
                 var startCoordinate = curArrow.geometry.coordinates[0];
                 var length = curArrow.properties.length;
+                var curArrowVector = Vector.newVectorFromMagAndAngle(length, orientation);
+                var resultVector = curArrowVector.subtract(arrowVector);
 
-                this.midasArrows[i] = this.getArrowGeoJSON(startCoordinate, orientation, length);
+                var arrowGeoJSON = this.getArrowGeoJSON(startCoordinate, resultVector.angle, resultVector.mag, i);
+                if (curArrow.properties.id == arrow.properties.id) {
+                    curArrow.properties.color = "red";
+                    this.subtractedMidasArrows.push(curArrow);
+                } else {
+                    this.subtractedMidasArrows.push(arrowGeoJSON);
+                }
             }
 
             this.map.map.getSource("midas-arrows").setData({
                 "type": "FeatureCollection",
-                "features": this.midasArrows
+                "features": this.subtractedMidasArrows
             });
         }
     };
@@ -254,15 +283,9 @@ function ThirdPartySourcesController(map) {
 
                     // these numbers come from unr midas readme
                     var upVelocity = parseFloat(fields[10]);
-                    var northVelocity = {
-                        x: 0,
-                        y: parseFloat(fields[9])
-                    };
-                    var eastVelocity = {
-                        x: parseFloat(fields[8]),
-                        y: 0
-                    };
-                    var resultant = this.vectorSum(northVelocity, eastVelocity);
+                    var northVelocity = new Vector(0, parseFloat(fields[9]));
+                    var eastVelocity = new Vector(parseFloat(fields[8]), 0);
+                    var resultant = northVelocity.add(eastVelocity);
                     // make sure we only use positive angles as our data driven-styles only handles positive angles
                     if (resultant.angle < 0) {
                         resultant.angle += 360;
@@ -294,7 +317,7 @@ function ThirdPartySourcesController(map) {
 
                     features.points.push(feature);
                     var arrowLength = resultant.mag * 1000;
-                    features.arrows.push(this.getArrowGeoJSON(coordinates, resultant.angle, arrowLength));
+                    features.arrows.push(this.getArrowGeoJSON(coordinates, resultant.angle, arrowLength, i));
                 }
             }
         }
@@ -334,7 +357,10 @@ function ThirdPartySourcesController(map) {
                             "line-cap": "round"
                         },
                         "paint": {
-                            "line-color": "#000",
+                            "line-color": {
+                                'type': 'identity',
+                                'property': 'color'
+                            },
                             "line-width": 2
                         },
                         "icon-allow-overlap": true
@@ -382,6 +408,8 @@ function ThirdPartySourcesController(map) {
         if (removeArrows) {
             name += "-arrows";
             this.midasArrows = null;
+            this.subtractedMidasArrows = null;
+            this.referenceArrow = null;
         }
         this.map.removeSourceAndLayer(name);
     };
@@ -769,17 +797,21 @@ function ThirdPartySourcesController(map) {
     };
 
     this.featureToViewOptions = function(feature) {
+        if (!feature.layer) {
+            return null;
+        }
         // this is begging to be refactored. maybe a hash map with callbacks?
         var layerID = feature.layer.id;
         var layerSource = feature.layer.source;
         var itsAPoint = (layerSource === "insar_vector_source" || layerSource === "onTheFlyJSON");
         var itsAGPSFeature = (layerID === "gpsStations");
         var itsAMidasGPSFeature = (layerID === "midas");
+        var itsAMidasHorizontalArrow = (layerID === "midas-arrows");
         var itsASeismicityFeature = this.seismicities.includes(layerID);
 
-        var cursor = (itsAPoint || itsAGPSFeature || itsAMidasGPSFeature || itsASeismicityFeature) ? 'pointer' : 'auto';
+        var cursor = (itsAPoint || itsAGPSFeature || itsAMidasGPSFeature ||
+                    itsASeismicityFeature || itsAMidasHorizontalArrow) ? 'pointer' : 'auto';
 
-        // a better way is to have two mousemove callbacks like we do with select area vs select marker
         var html = null;
         var coordinates = feature.geometry.coordinates;
 
@@ -909,19 +941,12 @@ function ThirdPartySourcesController(map) {
     this.recolorSeismicities = function(selectedColoring) {
         var stops = null;
         var colors = this.map.colorScale.jet;
-        var min = parseFloat(this.map.colorScale.min);
-        var max = parseFloat(this.map.colorScale.max);
+        var min = this.map.colorScale.min;
+        var max = this.map.colorScale.max;
         var type = "exponential";
         if (selectedColoring === "time") {
             this.map.colorScale.setTitle("Time (years)")
-            var now = new Date();
-            var maxDate = new Date();
-            var minDate = new Date();
-            minDate.setFullYear(now.getFullYear() + min);
-            maxDate.setFullYear(now.getFullYear() + max);
-            var minMilliSecond = minDate.getTime();
-            var maxMilliSecond = maxDate.getTime();
-            stops = this.stopsCalculator.getTimeStops(minMilliSecond, maxMilliSecond, colors);
+            stops = this.stopsCalculator.getTimeStops(min, max, colors);
             type = "interval"
         } else if (selectedColoring === "depth") {
             colors = this.map.colorScale.jet_r;

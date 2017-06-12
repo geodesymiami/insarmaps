@@ -849,8 +849,24 @@ function SeismicityGraphsController() {
     this.features = null;
     this.mapForPlot = null;
     this.bbox = null;
-    this.colorScale = new ColorScale(0, 50, "lat-vs-long-color-scale");
-    this.colorScale.setTopAsMax(false);
+    this.miniMapColoring = "depth";
+    this.depthColorScale = new ColorScale(0, 50, "lat-vs-long-depth-color-scale");
+    this.depthColorScale.setTopAsMax(false);
+    // can't just call this due to js'ism due to how we do inheritance...
+    // TODO: figure out why (not really worth it as it's probably alot of work
+    // just to be able to do this.createChart...)
+    this.depthColorScale.onScaleChange(function(newMin, newMax) {
+        if (this.map.seismicityGraphsController.miniMapColoring === "depth") {
+            this.map.seismicityGraphsController.createChart(null, "lat-vs-long-graph", null, null);
+        }
+    }.bind(this));
+    this.timeColorScale = new ColorScale(new Date(0).getTime(), new Date(50).getTime(), "lat-vs-long-time-color-scale");
+    this.timeColorScale.setInDateMode(true);
+    this.timeColorScale.onScaleChange(function(newMin, newMax) {
+        if (this.map.seismicityGraphsController.miniMapColoring === "time") {
+            this.map.seismicityGraphsController.createChart(null, "lat-vs-long-graph", null, null);
+        }
+    }.bind(this));
 }
 
 function setupSeismicityGraphsController() {
@@ -865,7 +881,12 @@ function setupSeismicityGraphsController() {
         this.bbox = bbox;
     };
 
-    SeismicityGraphsController.prototype.getSeriesData = function(xValues, yValues, colorOnInputs, colorStops) {
+    SeismicityGraphsController.prototype.setMinimapColoring = function(coloring) {
+        this.miniMapColoring = coloring;
+        this.createChart(null, "lat-vs-long-graph", null, null);
+    };
+
+    SeismicityGraphsController.prototype.getSeriesData = function(xValues, yValues, extraFeatureData, colorOnInputs, colorStops) {
         var seriesData = [];
 
         if (xValues.length != yValues.length) {
@@ -891,6 +912,10 @@ function setupSeismicityGraphsController() {
                     name: "Point2",
                     color: color
                 });
+
+                if (extraFeatureData) {
+                    seriesData[i].extraData = extraFeatureData[i];
+                }
             }
         } else {
             for (var i = 0; i < xValues.length; i++) {
@@ -905,9 +930,11 @@ function setupSeismicityGraphsController() {
         var depthValues = features.map(function(feature) {
             return feature.properties.depth;
         });
+        var htmls = [];
         var longValues = features.map(function(feature) {
+            htmls.push(this.map.thirdPartySourcesController.featureToViewOptions(feature));
             return feature.geometry.coordinates[0];
-        });
+        }.bind(this));
         var millisecondValues = features.map(function(feature) {
             return feature.properties.time;
         });
@@ -919,16 +946,44 @@ function setupSeismicityGraphsController() {
 
         var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
 
-        return this.getSeriesData(longValues, depthValues, colorOnInputs, colorStops);
+        return this.getSeriesData(longValues, depthValues, htmls, colorOnInputs, colorStops);
     };
+
+    SeismicityGraphsController.prototype.getMinimapBounds = function() {
+        if (this.mapForPlot) {
+            return this.mapForPlot.getBounds();
+        }
+
+        return null;
+    };
+
+    SeismicityGraphsController.prototype.pointFormatterCallback = function() {
+        return this.point.extraData.html;
+    };
+
     SeismicityGraphsController.prototype.createDepthVLongGraph = function(features, chartContainer, selectedColoring) {
         var depthVLongValues = this.getDepthVLongData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
-        chartOpts.subtitle = { text: "Longitude vs. Depth Cross Section" };
         chartOpts.xAxis.title = { text: "Longitude" };
         chartOpts.yAxis.title = { text: "Depth (Km)" };
+        chartOpts.yAxis.labels = { format: "{value:.1f}" };
         chartOpts.yAxis.reversed = true;
+        chartOpts.tooltip = {
+            formatter: this.pointFormatterCallback
+        };
+        chartOpts.chart.spacing = [0, 0, 0, -5];
 
+        // if minimap is created, set min and max chart axis according to bounds of plot
+        if (this.mapForPlot) {
+            var bounds = this.mapForPlot.getBounds();
+            var minLng = bounds._sw.lng;
+            var maxLng = bounds._ne.lng;
+            chartOpts.xAxis.max = maxLng;
+            chartOpts.xAxis.min = minLng;
+            chartOpts.xAxis.endOnTick = false;
+            chartOpts.xAxis.startOnTick = false;
+            chartOpts.xAxis.maxPadding = 0;
+        }
         // save it before we save the data to series
         this.highChartsOpts[chartContainer] = chartOpts;
         chartOpts.series.push({
@@ -950,9 +1005,11 @@ function setupSeismicityGraphsController() {
         var depthValues = features.map(function(feature) {
             return feature.properties.depth;
         });
+        var htmls = [];
         var latValues = features.map(function(feature) {
+            htmls.push(this.map.thirdPartySourcesController.featureToViewOptions(feature));
             return feature.geometry.coordinates[1];
-        });
+        }.bind(this));
 
         var millisecondValues = features.map(function(feature) {
             return feature.properties.time;
@@ -964,16 +1021,31 @@ function setupSeismicityGraphsController() {
         var stopsCalculator = new MapboxStopsCalculator();
         var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
 
-        return this.getSeriesData(depthValues, latValues, colorOnInputs, colorStops);
+        return this.getSeriesData(depthValues, latValues, htmls, colorOnInputs, colorStops);
     };
     SeismicityGraphsController.prototype.createLatVDepthGraph = function(features, chartContainer, selectedColoring) {
         var latVdepthValues = this.getLatVDepthData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
-        chartOpts.subtitle = { text: "Depth vs. Latitude Cross Section" };
         chartOpts.tooltip.pointFormat = "{point.y:.1f} °";
         chartOpts.xAxis.title = { text: "Depth (Km)" };
         chartOpts.yAxis.title = { text: "Latitude" };
         chartOpts.yAxis.labels = { format: "{value:.1f}" };
+        chartOpts.tooltip = {
+            formatter: this.pointFormatterCallback
+        };
+        chartOpts.chart.spacing = [5, 0, 10, 0];
+
+        // if minimap is created, set min and max chart axis according to bounds of plot
+        if (this.mapForPlot) {
+            var bounds = this.mapForPlot.getBounds();
+            var minLat = bounds._sw.lat;
+            var maxLat = bounds._ne.lat;
+            chartOpts.yAxis.max = maxLat;
+            chartOpts.yAxis.min = minLat;
+            chartOpts.yAxis.endOnTick = false;
+            chartOpts.yAxis.startOnTick = false;
+            chartOpts.yAxis.maxPadding = 0;
+        }
 
         // save it before we push the data to series
         this.highChartsOpts[chartContainer] = chartOpts;
@@ -997,9 +1069,11 @@ function setupSeismicityGraphsController() {
             return feature.properties.time;
         });
 
+        var htmls = [];
         var cumulativeValues = features.map(function(feature, index, array) {
+            htmls.push(this.map.thirdPartySourcesController.featureToViewOptions(feature));
             return index + 1;
-        });
+        }.bind(this));
 
         var depthValues = features.map(function(feature) {
             return feature.properties.depth;
@@ -1011,10 +1085,7 @@ function setupSeismicityGraphsController() {
         var stopsCalculator = new MapboxStopsCalculator();
         var colorStops = stopsCalculator.getDepthStops(min, max, this.map.colorScale.jet_r);
 
-        var minDate = new Date(millisecondValues[0]);
-        var maxDate = new Date(millisecondValues[millisecondValues.length - 1]);
-
-        return this.getSeriesData(millisecondValues, cumulativeValues, colorOnInputs, colorStops);
+        return this.getSeriesData(millisecondValues, cumulativeValues, htmls, colorOnInputs, colorStops);
     };
 
     SeismicityGraphsController.prototype.createCumulativeEventsVDayGraph = function(features, chartContainer, selectedColoring) {
@@ -1027,6 +1098,8 @@ function setupSeismicityGraphsController() {
         var minDateString = minDate.toLocaleDateString();
         var maxDateString = maxDate.toLocaleDateString();
 
+        this.timeColorScale.setMinMax(minDate.getTime(), maxDate.getTime());
+
         var eventsPerDate = this.getCumulativeEventsVDayData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
         chartOpts.subtitle = { text: "Cumulative Number of Events " + minDateString + " - " + maxDateString };
@@ -1034,7 +1107,10 @@ function setupSeismicityGraphsController() {
         chartOpts.xAxis.type = "datetime";
         chartOpts.xAxis.dateTimeLabelFormats = { month: '%b %Y', year: '%Y' };
         chartOpts.yAxis.title = { text: "Cumulative Number" };
-        // save it before we push the data to series
+        chartOpts.tooltip = {
+                formatter: this.pointFormatterCallback
+            }
+            // save it before we push the data to series
         this.highChartsOpts[chartContainer] = chartOpts;
 
         chartOpts.series.push({
@@ -1056,18 +1132,33 @@ function setupSeismicityGraphsController() {
         if (this.mapForPlot) {
             this.mapForPlot.remove();
         }
+        bounds = this.map.selector.getVerticesOfSquareBbox(bounds);
+        var sanitizedBounds = [bounds[3], bounds[1]]; // sw, ne
+
         this.mapForPlot = new mapboxgl.Map({
             container: chartContainer, // container id
             attributionControl: false,
             interactive: false,
-            maxBounds: bounds
+            maxBounds: sanitizedBounds
         });
 
         this.mapForPlot.on("load", function() {
-            var min = this.colorScale.min;
-            var max = this.colorScale.max;
+            var scale = null;
+            var scaleColors = null;
+            if (this.miniMapColoring === "depth") {
+                scale = this.depthColorScale;
+                scaleColors = this.depthColorScale.jet_r;
+            } else if (this.miniMapColoring === "time") {
+                scale = this.timeColorScale;
+                scaleColors = this.timeColorScale.jet;
+            } else {
+                throw new Error("Invalid coloring " + this.miniMapColoring + " selected");
+            }
+            var min = scale.min;
+            var max = scale.max;
+
             var stopsCalculator = new MapboxStopsCalculator();
-            var depthStops = stopsCalculator.getDepthStops(min, max, this.map.colorScale.jet_r);
+            var coloringStops = stopsCalculator.getDepthStops(min, max, scaleColors);
 
             var magCircleSizes = this.map.thirdPartySourcesController.defaultCircleSizes();
             var stopsCalculator = new MapboxStopsCalculator();
@@ -1089,8 +1180,8 @@ function setupSeismicityGraphsController() {
                 "source": layerID,
                 "paint": {
                     "circle-color": {
-                        "property": "depth",
-                        "stops": depthStops,
+                        "property": this.miniMapColoring,
+                        "stops": coloringStops,
                         "type": "interval"
                     },
                     "circle-radius": {
@@ -1109,16 +1200,17 @@ function setupSeismicityGraphsController() {
         if (!$("#seismicity-charts").hasClass("active")) {
             return;
         }
+        // create mini map first so other charts can set their min and max axes values as appropriate
+        this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
         this.createChart(selectedColoring, "depth-vs-long-graph", optionalFeatures, optionalBounds);
         this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures, optionalBounds);
         this.createChart(selectedColoring, "cumulative-events-vs-date-graph", optionalFeatures, optionalBounds);
-        this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
-        this.colorScale.initVisualScale();
+        this.depthColorScale.initVisualScale();
+        this.timeColorScale.initVisualScale();
     };
 
     SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, optionalFeatures, optionalBounds) {
         var features = optionalFeatures;
-
         if (!features) {
             features = this.features;
             if (!features) {
@@ -1133,6 +1225,7 @@ function setupSeismicityGraphsController() {
                 return;
             }
         }
+
         var chartData = null;
         if (chartType === "depth-vs-long-graph") {
             chartData = this.createDepthVLongGraph(features, "depth-vs-long-graph", selectedColoring);
@@ -1150,6 +1243,9 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.destroyAllCharts = function() {
+        if (!$("#seismicity-charts").hasClass("active")) {
+            return;
+        }
         if (this.mapForPlot) {
             this.mapForPlot.remove();
             this.mapForPlot = null;
@@ -1269,7 +1365,7 @@ function setupCustomSliderSeismicityController() {
 
         var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
 
-        return this.getSeriesData(depthValues, depthValues, colorOnInputs, colorStops);
+        return this.getSeriesData(depthValues, depthValues, null, colorOnInputs, colorStops);
     };
     CustomSliderSeismicityController.prototype.getFeaturesWithinCurrentSliderRanges = function(features) {
         var filteredFeatures = features.filter(function(feature) {
@@ -1325,15 +1421,49 @@ function setupCustomSliderSeismicityController() {
         // call super method to not recreate sliders
         SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
     };
+
+    CustomSliderSeismicityController.prototype.getDepthHistogram = function(features) {
+        const NUM_BINS = 100.0; // he said he wanted 100 bins
+        var depthValues = features.map(function(feature) {
+            return feature.properties.depth;
+        });
+
+        // make sure it is sorted
+        depthValues.sort(function(depth1, depth2) {
+            return depth1 - depth2;
+        });
+
+        var min = depthValues[0];
+        var max = depthValues[depthValues.length - 1];
+        var increment = (max - min) / NUM_BINS;
+        var stopsCalculator = new MapboxStopsCalculator();
+        var bins = stopsCalculator.inputsFromMinAndMax(min, max, increment);
+
+        var amountAtEachBin = new Uint8Array(bins.length);
+        var binIndex = 0;
+        for (var i = 0; i < depthValues.length; i++) {
+            var bin = bins[binIndex];
+            var depth = depthValues[i];
+            if (depth <= bin) {
+                amountAtEachBin[binIndex]++;
+            } else {
+                amountAtEachBin[++binIndex]++;
+            }
+        }
+
+        return this.getSeriesData(bins, amountAtEachBin, null, null, null);
+    };
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
         var millisecondData = null;
 
         if ($("#seismicity-charts").hasClass("active")) {
+            // create mini map first so other charts can set their min and max axes values as appropriate
+            this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
             this.createChart(selectedColoring, "depth-vs-long-graph", optionalFeatures);
             this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures);
             millisecondData = this.createChart(selectedColoring, "cumulative-events-vs-date-graph", optionalFeatures);
-            this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
-            this.colorScale.initVisualScale();
+            this.depthColorScale.initVisualScale();
+            this.timeColorScale.initVisualScale();
         }
 
         var features = optionalFeatures;
@@ -1345,22 +1475,24 @@ function setupCustomSliderSeismicityController() {
         }
 
 
-        var depthData = this.getDepthVDepthData(features, selectedColoring);
+        this.getDepthVDepthData(features, selectedColoring);
         // if null, we didn't get them from creating the chart, get them using standalong function
         // optimizing too much? maybe, but I don't care
         if (!millisecondData) {
             millisecondData = this.getCumulativeEventsVDayData(features, selectedColoring);
         }
+        var depthData = this.getDepthHistogram(features);
+
         // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
         // no need to sort milliseconds as the features are already sorted by this
         depthData.sort(function(data1, data2) {
-            return data1.x - data2.x;
+            return data1[0] - data2[0];
         });
         var depthValues = [];
         var millisecondValues = [];
         // now get millisecond and depth values by themselves, as mapExtremesToArrayIndeces needs an array of comparables...
         for (var i = 0; i < depthData.length; i++) {
-            var depth = depthData[i].x;
+            var depth = depthData[i][0];
             var millisecond = millisecondData[i].x;
             depthValues.push(depth);
             millisecondValues.push(millisecond);

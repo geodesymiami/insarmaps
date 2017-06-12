@@ -25,10 +25,17 @@ class MyController extends Controller
     return view('map', ["fileName" => $fileName]);
   }
 
-  public function returnPage(Request $request) {
+  public function returnPage(Request $request, $lat=30.0, $long=0.0, $zoom=1.6) {
+    $allOptions = [];
+    $startingView = [];
+    $startingView["lat"] = $lat;
+    $startingView["lng"] = $long;
+    $startingView["zoom"] = $zoom;
+    $allOptions["startingView"] = $startingView;
     $options = $request->all();
+    $allOptions["startingDatasetOptions"] = $options;
 
-    return view('map', ["viewOptions" => $options]);
+    return view('map', ["urlOptions" => $allOptions]);
   }
 
     // creates a folder to store json and returns string of that folder path
