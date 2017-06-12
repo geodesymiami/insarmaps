@@ -1421,6 +1421,38 @@ function setupCustomSliderSeismicityController() {
         // call super method to not recreate sliders
         SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
     };
+
+    CustomSliderSeismicityController.prototype.getDepthHistogram = function(features) {
+        const NUM_BINS = 100.0; // he said he wanted 100 bins
+        var depthValues = features.map(function(feature) {
+            return feature.properties.depth;
+        });
+
+        // make sure it is sorted
+        depthValues.sort(function(depth1, depth2) {
+            return depth1 - depth2;
+        });
+
+        var min = depthValues[0];
+        var max = depthValues[depthValues.length - 1];
+        var increment = (max - min) / NUM_BINS;
+        var stopsCalculator = new MapboxStopsCalculator();
+        var bins = stopsCalculator.inputsFromMinAndMax(min, max, increment);
+
+        var amountAtEachBin = new Uint8Array(bins.length);
+        var binIndex = 0;
+        for (var i = 0; i < depthValues.length; i++) {
+            var bin = bins[binIndex];
+            var depth = depthValues[i];
+            if (depth <= bin) {
+                amountAtEachBin[binIndex]++;
+            } else {
+                amountAtEachBin[++binIndex]++;
+            }
+        }
+
+        return this.getSeriesData(bins, amountAtEachBin, null, null, null);
+    };
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
         var millisecondData = null;
 
@@ -1443,22 +1475,24 @@ function setupCustomSliderSeismicityController() {
         }
 
 
-        var depthData = this.getDepthVDepthData(features, selectedColoring);
+        this.getDepthVDepthData(features, selectedColoring);
         // if null, we didn't get them from creating the chart, get them using standalong function
         // optimizing too much? maybe, but I don't care
         if (!millisecondData) {
             millisecondData = this.getCumulativeEventsVDayData(features, selectedColoring);
         }
+        var depthData = this.getDepthHistogram(features);
+
         // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
         // no need to sort milliseconds as the features are already sorted by this
         depthData.sort(function(data1, data2) {
-            return data1.x - data2.x;
+            return data1[0] - data2[0];
         });
         var depthValues = [];
         var millisecondValues = [];
         // now get millisecond and depth values by themselves, as mapExtremesToArrayIndeces needs an array of comparables...
         for (var i = 0; i < depthData.length; i++) {
-            var depth = depthData[i].x;
+            var depth = depthData[i][0];
             var millisecond = millisecondData[i].x;
             depthValues.push(depth);
             millisecondValues.push(millisecond);
