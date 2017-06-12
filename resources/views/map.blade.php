@@ -346,7 +346,7 @@
       </div>
     </div> 
   </div>
-  <div class="wrap" id="seismicity-charts">
+  <!--<div class="wrap" id="seismicity-charts">
     <div class="top-right-buttons">
       <button type="button" class="minimize-button" data-dismiss="modal" id="seismicity-charts-minimize-button"></button>
     </div>
