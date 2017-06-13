@@ -1525,14 +1525,14 @@ function setupCustomSliderSeismicityController() {
     CustomSliderSeismicityController.prototype.showSliders = function() {
         var $sliderContainer = $("#seismicity-chart-sliders");
         if (!$sliderContainer.hasClass("active")) {
-            $sliderContainer.addClass("active");
+            $("#seismicity-chart-sliders-maximize-button").click();
         }
     };
 
     CustomSliderSeismicityController.prototype.showCharts = function() {
         var $chartContainer = $("#seismicity-charts");
         if (!$chartContainer.hasClass("active")) {
-            $chartContainer.addClass("active");
+            $("#seismicity-charts-maximize-button").click();
         }
     };
 
@@ -1544,12 +1544,12 @@ function setupCustomSliderSeismicityController() {
     CustomSliderSeismicityController.prototype.hideChartContainers = function() {
         var $chartContainer = $("#seismicity-charts");
         if ($chartContainer.hasClass("active")) {
-            $chartContainer.removeClass("active");
+            $("#seismicity-charts-minimize-button").click();
         }
 
         var $sliderContainer = $("#seismicity-chart-sliders");
         if ($sliderContainer.hasClass("active")) {
-            $sliderContainer.removeClass("active");
+            $("#seismicity-chart-sliders-minimize-button").click();
         }
     };
 

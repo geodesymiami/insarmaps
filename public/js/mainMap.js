@@ -213,11 +213,13 @@ function MapController(loadJSONFunc) {
             this.seismicityGraphsController.destroyAllCharts();
             this.seismicityGraphsController.hideChartContainers();
             this.selector.removeSelectionPolygon();
+            $("#seismicity-maximize-buttons-container").removeClass("active");
             this.colorScale.remove();
         } else if (curMode === "insar") {
             this.seismicityGraphsController.destroyAllCharts();
             this.seismicityGraphsController.hideChartContainers();
             this.selector.removeSelectionPolygon();
+            $("#seismicity-maximize-buttons-container").removeClass("active");
             if (this.pointsLoaded()) {
                 this.colorScale.show();
             } else {
@@ -226,6 +228,9 @@ function MapController(loadJSONFunc) {
         } else {
             var layerIDs = this.getLayerIDsInCurrentMode();
             if (curMode === "gps") {
+                this.seismicityGraphsController.destroyAllCharts();
+                this.seismicityGraphsController.hideChartContainers();
+                $("#seismicity-maximize-buttons-container").removeClass("active");
                 if (layerIDs.includes("midas")) {
                     this.colorScale.show();
                 } else {
@@ -233,8 +238,8 @@ function MapController(loadJSONFunc) {
                 }
             } else if (curMode === "seismicity") {
                 // handles setting up color scale for seismicity etc.
-                if (!(this.seismicityGraphsController.slidersVisible()
-                    || this.seismicityGraphsController.chartsVisible())) {
+                $("#seismicity-maximize-buttons-container").addClass("active");
+                if (!(this.seismicityGraphsController.slidersVisible() || this.seismicityGraphsController.chartsVisible())) {
                     this.thirdPartySourcesController.prepareForSeismicities(null);
                 }
             }

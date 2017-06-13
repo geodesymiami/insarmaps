@@ -279,12 +279,12 @@
   </div>
   <div id="point-details"></div>
   <div class="maximize-buttons-container">
-    <div class="btn btn-primary">
-      <div class="maximize-button-container">
-          <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-charts-maximize-button" data-toggle="tooltip" title="Seismicity Plots"></button>
-      </div>
+    <div class="btn btn-primary" id="seismicity-maximize-buttons-container">
       <div class="maximize-button-container">
           <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-chart-sliders-maximize-button" data-toggle="tooltip" title="Seismicity Plot Sliders"></button>
+      </div>
+      <div class="maximize-button-container">
+          <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-charts-maximize-button" data-toggle="tooltip" title="Seismicity Plots"></button>
       </div>
     </div>
     <div class="btn btn-primary">

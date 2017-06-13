@@ -1011,6 +1011,10 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     z-index: 98;
 }
 
+#seismicity-maximize-buttons-container {
+    display: none;
+}
+
 .maximize-buttons-container > .btn.btn-primary {
     background-color: white !important;
     border: none;

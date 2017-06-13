@@ -741,6 +741,7 @@ $(window).load(function() {
         if ($container.hasClass("active")) {
             $container.removeClass("active");
             $("#seismicity-charts-maximize-button").css("display", "block");
+            myMap.selector.removeSelectionPolygon();
         }
     });
 
