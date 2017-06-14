@@ -1132,17 +1132,26 @@ function setupSeismicityGraphsController() {
         if (this.mapForPlot) {
             this.mapForPlot.remove();
         }
+        // below function has nice side effect of putting vertices in
+        // nw, ne, se, sw order. we can use this fact to get bounds in sw, ne
+        // order as mapbox requires.
         bounds = this.map.selector.getVerticesOfSquareBbox(bounds);
         var sanitizedBounds = [bounds[3], bounds[1]]; // sw, ne
 
         this.mapForPlot = new mapboxgl.Map({
             container: chartContainer, // container id
             attributionControl: false,
-            interactive: false,
             maxBounds: sanitizedBounds
         });
 
+        $("#" + chartContainer).hover(function() {
+            $("#seismicity-charts").draggable("disable");
+        }, function() {
+            $("#seismicity-charts").draggable("enable");
+        });
+
         this.mapForPlot.on("load", function() {
+            this.mapForPlot.setMaxBounds(null); // allow us to pan and drag outside constrained bounds
             var scale = null;
             var scaleColors = null;
             if (this.miniMapColoring === "depth") {
@@ -1192,6 +1201,21 @@ function setupSeismicityGraphsController() {
                 }
             });
         }.bind(this));
+        var onMoveend = function(e) {
+            // we could just call setData... but screw it.
+            // this is less efficient, but it's more abstract, short, and easier to code
+            // if efficiency needed, setData can be used, but for now, that is premature micro-optimization
+            // so, we recreate plots.
+            this.map.selector.removeSelectionPolygon();
+            var bounds = this.mapForPlot.getBounds();
+            this.map.selector.addSelectionPolygonFromMapBounds(bounds);
+            var layerIDS = this.map.getLayerIDsInCurrentMode();
+            // not needed to be in this order for query rendered features, but why not order it?
+            var sanitizedBounds = [bounds._sw, bounds._ne];
+            this.map.selector.createSeismicityPlots(layerIDS, sanitizedBounds);
+        }.bind(this);
+        this.mapForPlot.on("zoomend", onMoveend);
+        this.mapForPlot.on("dragend", onMoveend);
         var styleAndLayer = this.map.getMapBaseStyle("mapbox.streets");
         this.mapForPlot.setStyle(styleAndLayer.style);
     };

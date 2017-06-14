@@ -44,6 +44,7 @@ function setupFeatureSelector() {
 
     FeatureSelector.prototype.createSeismicityPlots = function(seismicityLayers, bbox) {
         var pixelBoundingBox = [this.map.map.project(bbox[0]), this.map.map.project(bbox[1])];
+
         var features = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: seismicityLayers });
         if (features.length == 0) {
             return;
