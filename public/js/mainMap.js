@@ -194,6 +194,8 @@ function MapController(loadJSONFunc) {
 
     this.previousZoom = this.startingZoom;
 
+    this.lastMode = null;
+
     this.addSource = function(id, source) {
         this.sources.set(id, source);
         this.map.addSource(id, source);
@@ -208,6 +210,13 @@ function MapController(loadJSONFunc) {
     // mode, changes
     this.afterLayersChanged = function() {
         var curMode = this.getCurrentMode();
+
+        // small optimization
+        if (this.lastMode === curMode) {
+            return;
+        }
+
+        this.lastMode = curMode;
 
         if (!curMode) { // no mode (ie essentially empty map)
             this.seismicityGraphsController.destroyAllCharts();

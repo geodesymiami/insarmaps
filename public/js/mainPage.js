@@ -633,8 +633,8 @@ $(window).load(function() {
     });
 
     $("#minimap-color-on-dropdown").change(function() {
-         var selectedColoring = $(this).val();
-         myMap.seismicityGraphsController.setMinimapColoring(selectedColoring);
+        var selectedColoring = $(this).val();
+        myMap.seismicityGraphsController.setMinimapColoring(selectedColoring);
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {
@@ -769,6 +769,15 @@ $(window).load(function() {
         }
     });
 
+    $("#seismicity-chart-sliders, #seismicity-charts").draggable({
+        start: function(event, ui) {
+            $(this).removeClass("wrap-transitions");
+        },
+        stop: function(event, ui) {
+            $(this).addClass("wrap-transitions");
+        }
+    });
+
     $("#set-slider-ranges-button").on("click", function() {
         myMap.seismicityGraphsController.zoomSlidersToCurrentRange();
     });
@@ -782,6 +791,7 @@ $(window).load(function() {
         animateDuration: "fast",
         animateEasing: "linear",
         start: function(event, ui) {
+            $(this).removeClass("wrap-transitions");
             var chart = $("#chartContainer").highcharts();
             var chart2 = $("#chartContainer2").highcharts();
             if (chart !== undefined) {
@@ -792,24 +802,16 @@ $(window).load(function() {
             }
         },
         stop: function(event, ui) {
+            $(this).addClass("wrap-transitions");
             myMap.graphsController.resizeChartContainers();
-
             myMap.graphsController.recreateGraphs();
         }
     }).draggable({
         start: function(event, ui) {
-            var chart = $("#chartContainer").highcharts();
-            var chart2 = $("#chartContainer2").highcharts();
-            if (chart !== undefined) {
-                chart.destroy();
-            }
-            if (chart2 !== undefined) {
-                chart2.destroy();
-            }
+            $(this).removeClass("wrap-transitions");
         },
         stop: function(event, ui) {
-            myMap.graphsController.resizeChartContainers();
-            myMap.graphsController.recreateGraphs();
+            $(this).addClass("wrap-transitions");
         }
     });
 

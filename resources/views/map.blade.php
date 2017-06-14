@@ -299,7 +299,7 @@
       </div>
     </div>
   </div>
-  <div class="wrap minimized" id="charts" title="Displacement time-series">
+  <div class="wrap wrap-transitions minimized" id="charts" title="Displacement time-series">
     <div class="top-right-buttons">
       <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="graph-div-minimize-button"></button>
     </div>
@@ -346,7 +346,7 @@
       </div>
     </div> 
   </div>
-  <div class="wrap" id="seismicity-charts">
+  <div class="wrap wrap-transitions" id="seismicity-charts">
     <div class="top-right-buttons">
       <button type="button" class="minimize-button" data-dismiss="modal" id="seismicity-charts-minimize-button"></button>
     </div>
@@ -420,7 +420,7 @@
       </div>
     </div>
   </div>
-  <div class="wrap" id="seismicity-chart-sliders">
+  <div class="wrap wrap-transitions" id="seismicity-chart-sliders">
     <div class="top-right-buttons">
       <button type="button" class="minimize-button" data-dismiss="modal" id="seismicity-chart-sliders-minimize-button"></button>
     </div>
@@ -436,7 +436,7 @@
     </div>
   </div>
   </div>
-  <div class="wrap minimized" id="area-attributes-div" title="Attributes">
+  <div class="wrap wrap-transitions minimized" id="area-attributes-div" title="Attributes">
    <div class="top-right-buttons">
       <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"></button>
     </div>
@@ -475,7 +475,7 @@
       </div>
     </div>
   </div>
-  <div class="wrap" id="topography-wrap" title="Topography-Wrap">
+  <div class="wrap wrap-transitions" id="topography-wrap" title="Topography-Wrap">
     <div class="top-right-buttons">
       <button type="button" class="close close-button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     </div>
