@@ -749,7 +749,7 @@ $(window).load(function() {
         var $container = $("#seismicity-charts");
         if (!$container.hasClass("active")) {
             $container.addClass("active");
-            $("#seismicity-charts-maximize-button").css("display", "none");
+            $(this).css("display", "none");
         }
     });
 
@@ -765,16 +765,37 @@ $(window).load(function() {
         var $container = $("#seismicity-chart-sliders");
         if (!$container.hasClass("active")) {
             $container.addClass("active");
-            $("#seismicity-chart-sliders-maximize-button").css("display", "none");
+            $(this).css("display", "none");
         }
     });
 
-    $("#seismicity-chart-sliders, #seismicity-charts").draggable({
+    $("#seismicity-chart-sliders, #seismicity-charts, #cross-section-charts").draggable({
         start: function(event, ui) {
             $(this).removeClass("wrap-transitions");
         },
         stop: function(event, ui) {
             $(this).addClass("wrap-transitions");
+        }
+    });
+
+    $("#cross-section-charts-maximize-button").on("click", function() {
+        var $container = $("#cross-section-charts");
+        if (!$container.hasClass("active")) {
+            $container.addClass("active");
+            $(this).css("display", "none");
+            if (!myMap.selector.selectionPolygonActive) {
+                return;
+            }
+            myMap.seismicityGraphsController.createCrossSectionChart(null, "depth-vs-long-graph", null, null);
+            myMap.seismicityGraphsController.createCrossSectionChart(null, "lat-vs-depth-graph", null, null);
+        }
+    });
+
+    $("#cross-section-charts-minimize-button").on("click", function() {
+        var $container = $("#cross-section-charts");
+        if ($container.hasClass("active")) {
+            $container.removeClass("active");
+            $("#cross-section-charts-maximize-button").css("display", "block");
         }
     });
 

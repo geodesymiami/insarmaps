@@ -1221,16 +1221,20 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
-        if (!$("#seismicity-charts").hasClass("active")) {
-            return;
+        if ($("#seismicity-charts").hasClass("active")) {
+            // create mini map first so other charts can set their min and max axes values as appropriate
+            this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
+            this.createChart(selectedColoring, "depth-vs-long-graph", optionalFeatures, optionalBounds);
+            this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures, optionalBounds);
+            this.createChart(selectedColoring, "cumulative-events-vs-date-graph", optionalFeatures, optionalBounds);
+            this.depthColorScale.initVisualScale();
+            this.timeColorScale.initVisualScale();
         }
-        // create mini map first so other charts can set their min and max axes values as appropriate
-        this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
-        this.createChart(selectedColoring, "depth-vs-long-graph", optionalFeatures, optionalBounds);
-        this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures, optionalBounds);
-        this.createChart(selectedColoring, "cumulative-events-vs-date-graph", optionalFeatures, optionalBounds);
-        this.depthColorScale.initVisualScale();
-        this.timeColorScale.initVisualScale();
+
+        if ($("#cross-section-charts").hasClass("active")) {
+            this.createCrossSectionChart(selectedColoring, "depth-vs-long-graph", optionalFeatures, optionalBounds);
+            this.createCrossSectionChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures, optionalBounds);
+        }
     };
 
     SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, optionalFeatures, optionalBounds) {
@@ -1266,17 +1270,50 @@ function setupSeismicityGraphsController() {
         return chartData;
     };
 
+    SeismicityGraphsController.prototype.createCrossSectionChart = function(selectedColoring, chartType, optionalFeatures, optionalBounds) {
+        var features = optionalFeatures;
+        if (!features) {
+            features = this.features;
+            if (!features) {
+                return;
+            }
+        }
+
+        var bounds = optionalBounds;
+        if (!bounds) {
+            bounds = this.bbox;
+            if (!bounds) {
+                return;
+            }
+        }
+
+        var chartData = null;
+        if (chartType === "depth-vs-long-graph") {
+            chartData = this.createDepthVLongGraph(features, "cross-section-depth-vs-long-graph", selectedColoring);
+        } else if (chartType === "lat-vs-depth-graph") {
+            chartData = this.createLatVDepthGraph(features, "cross-section-lat-vs-depth-graph", selectedColoring);
+        } else {
+            throw new Error("Unrecognized chart type " + chartType);
+        }
+
+        return chartData;
+    };
+
     SeismicityGraphsController.prototype.destroyAllCharts = function() {
-        if (!$("#seismicity-charts").hasClass("active")) {
-            return;
+        if ($("#seismicity-charts").hasClass("active")) {
+            if (this.mapForPlot) {
+                this.mapForPlot.remove();
+                this.mapForPlot = null;
+            }
+            $("#depth-vs-long-graph").highcharts().destroy();
+            $("#lat-vs-depth-graph").highcharts().destroy();
+            $("#cumulative-events-vs-date-graph").highcharts().destroy();
         }
-        if (this.mapForPlot) {
-            this.mapForPlot.remove();
-            this.mapForPlot = null;
+
+        if ($("#cross-section-charts").hasClass("active")) {
+            $("#cross-section-depth-vs-long-graph").highcharts().destroy();
+            $("#cross-section-lat-vs-depth-graph").highcharts().destroy();
         }
-        $("#depth-vs-long-graph").highcharts().destroy();
-        $("#lat-vs-depth-graph").highcharts().destroy();
-        $("#cumulative-events-vs-date-graph").highcharts().destroy();
     };
 
     SeismicityGraphsController.prototype.recreateAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
@@ -1490,6 +1527,11 @@ function setupCustomSliderSeismicityController() {
             this.timeColorScale.initVisualScale();
         }
 
+        if ($("#cross-section-charts").hasClass("active")) {
+            this.createCrossSectionChart(selectedColoring, "depth-vs-long-graph", optionalFeatures, optionalBounds);
+            this.createCrossSectionChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures, optionalBounds);
+        }
+
         var features = optionalFeatures;
         if (!features) {
             features = this.features;
@@ -1574,6 +1616,11 @@ function setupCustomSliderSeismicityController() {
         var $sliderContainer = $("#seismicity-chart-sliders");
         if ($sliderContainer.hasClass("active")) {
             $("#seismicity-chart-sliders-minimize-button").click();
+        }
+
+        var $sliderContainer = $("#cross-section-charts");
+        if ($sliderContainer.hasClass("active")) {
+            $("#cross-section-charts-minimize-button").click();
         }
     };
 

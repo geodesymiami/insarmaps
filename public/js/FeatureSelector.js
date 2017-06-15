@@ -1,5 +1,6 @@
 function FeatureSelector() {
     this.recoloringInProgress = false;
+    this.selectionPolygonActive = false;
 }
 
 function setupFeatureSelector() {
@@ -34,11 +35,13 @@ function setupFeatureSelector() {
                 'fill-opacity': 0.5
             }
         });
+        this.selectionPolygonActive = true;
     };
 
     FeatureSelector.prototype.removeSelectionPolygon = function() {
         if (this.map.map.getSource("seismicitySelectedArea")) {
             this.map.removeSourceAndLayer("seismicitySelectedArea");
+            this.selectionPolygonActive = false;
         }
     };
 

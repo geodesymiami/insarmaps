@@ -279,12 +279,15 @@
   </div>
   <div id="point-details"></div>
   <div class="maximize-buttons-container">
-    <div class="btn btn-primary" id="seismicity-maximize-buttons-container">
+    <div class="btn btn-primary active" id="seismicity-maximize-buttons-container">
       <div class="maximize-button-container">
           <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-chart-sliders-maximize-button" data-toggle="tooltip" title="Seismicity Plot Sliders"></button>
       </div>
       <div class="maximize-button-container">
           <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-charts-maximize-button" data-toggle="tooltip" title="Seismicity Plots"></button>
+      </div>
+      <div class="maximize-button-container">
+          <button type="button" class="maximize-button" data-dismiss="modal" id="cross-section-charts-maximize-button" data-toggle="tooltip" title="Cross Section Seismicity Plots"></button>
       </div>
     </div>
     <div class="btn btn-primary">
@@ -417,6 +420,17 @@
           </div>
         </div>
         <div class="seismicity-chart"><div id="cumulative-events-vs-date-graph""></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="wrap wrap-transitions" id="cross-section-charts">
+    <div class="top-right-buttons">
+      <button type="button" class="minimize-button" data-dismiss="modal" id="cross-section-charts-minimize-button"></button>
+    </div>
+    <div class="content">
+      <div class="chart-containers">
+        <div class="cross-section-chart"><div id="cross-section-lat-vs-depth-graph""></div></div>
+        <div class="cross-section-chart"><div id="cross-section-depth-vs-long-graph""></div></div>
       </div>
     </div>
   </div>
