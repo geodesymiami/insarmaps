@@ -987,18 +987,17 @@ function MapController(loadJSONFunc) {
 
     this.addMapToPage = function(containerID) {
         var startingOptions = urlOptions.startingView;
+        var startingCoords = this.startingCoords;
+        var startingZoom = this.startingZoom;
         try {
-            this.startingCoords = new mapboxgl.LngLat(startingOptions.lng, startingOptions.lat);
-            this.startingZoom = parseFloat(startingOptions.zoom);
-        } catch (error) {
-            this.startingZoom = 1.6;
-            this.startingCoords = [0, 30];
-        }
+            startingCoords = new mapboxgl.LngLat(startingOptions.lng, startingOptions.lat);
+            startingZoom = parseFloat(startingOptions.zoom);
+        } catch (error) {}
 
         this.map = new mapboxgl.Map({
             container: containerID, // container id
-            center: this.startingCoords, // this.starting position
-            zoom: this.startingZoom, // this.starting zoom
+            center: startingCoords, // this.starting position
+            zoom: startingZoom, // this.starting zoom
             attributionControl: false
         }).addControl(new mapboxgl.AttributionControl({
             compact: true
