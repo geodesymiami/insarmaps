@@ -67,12 +67,12 @@
                 This website was created by University of Miami. Computer Science students Alfredo Terrero and Zishi Wu. It started as a class project of CSC 431, taught by Chris Mader and Julio Perez of the University of Miami’s Center for Computational Sciences (CCS). The data processing is conducted using the University of Miami’s High Performance Computing systems.
             </p>
             @if (Auth::guest())
-              <p>
-                  To identify data sets from published papers please search for the author's names. To access data sets which are not yet finalized, please login here:
-              </p>
-              <div id="login-logout-button">
-                  <button class="btn btn-primary-outline">Login</button>
-              </div>
+            <p>
+                To identify data sets from published papers please search for the author's names. To access data sets which are not yet finalized, please login here:
+            </p>
+            <div id="login-logout-button">
+                <button class="btn btn-primary-outline">Login</button>
+            </div>
             @endif
             <p>
                 For accessing the data products via web services click here:
@@ -169,9 +169,9 @@
                 <button class="btn btn-primary-outline">About</button>
             </div>
             @if (Auth::check())
-              <div class="logged-in" id="login-logout-button">
-                  <button class="btn btn-primary-outline">Logout</button>
-              </div>
+            <div class="logged-in" id="login-logout-button">
+                <button class="btn btn-primary-outline">Logout</button>
+            </div>
             @endif
             <div id="polygon-button-div">
                 <button class="btn btn-primary-outline map-button no-padding clickable-button" data-toggle="tooltip" data-placement="right" title="Select Points" id="polygon-button">
@@ -199,13 +199,6 @@
                         <select id="color-on-dropdown">
                             <option value="velocity">Velocity</option>
                             <option value="displacement">Displacement</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Color Seismicity On:</label>
-                        <select id="seismicity-color-on-dropdown">
-                            <option value="depth">Depth</option>
-                            <option value="time">Time</option>
                         </select>
                     </div>
                     <button class="btn btn-info" id="show-iris-options-button">Iris Options</button>
@@ -272,6 +265,13 @@
             </div>
         </div>
         <div id="color-scale">
+            <div id="seismicity-color-on-container">
+                <label>Color Seismicity On:</label>
+                <select id="seismicity-color-on-dropdown">
+                    <option value="depth">Depth</option>
+                    <option value="time">Time</option>
+                </select>
+            </div>
             <div class="color-scale-text-div" class="rotate">
                 LOS Velocity [cm/yr]
             </div>

@@ -416,11 +416,7 @@ function setupToggleButtons() {
     midasEastNorthStationsToggleButton = new ToggleButton("midas-east-north-stations-toggle-button", "overlay-options-toggles", "MIDAS IGS08 Horizontal (UNR)");
     midasEastNorthStationsToggleButton.onclick(function() {
         if (midasEastNorthStationsToggleButton.toggleState == ToggleStates.ON) {
-            if (myMap.pointsLoaded()) {
-                midasEastNorthStationsToggleButton.set("off");
-            } else {
-                myMap.thirdPartySourcesController.loadmidasGpsStationMarkers(true);
-            }
+            myMap.thirdPartySourcesController.loadmidasGpsStationMarkers(true);
         } else {
             myMap.thirdPartySourcesController.removemidasGpsStationMarkers(true);
         }
@@ -431,11 +427,7 @@ function setupToggleButtons() {
     midasStationsToggleButton = new ToggleButton("midas-stations-toggle-button", "overlay-options-toggles", "MIDAS IGS08 Vertical (UNR)");
     midasStationsToggleButton.onclick(function() {
         if (midasStationsToggleButton.toggleState == ToggleStates.ON) {
-            if (myMap.pointsLoaded()) {
-                midasStationsToggleButton.set("off");
-            } else {
-                myMap.thirdPartySourcesController.loadmidasGpsStationMarkers(false);
-            }
+            myMap.thirdPartySourcesController.loadmidasGpsStationMarkers(false);
         } else {
             myMap.thirdPartySourcesController.removemidasGpsStationMarkers(false);
         }

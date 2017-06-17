@@ -231,21 +231,22 @@ function MapController(loadJSONFunc) {
             this.selector.removeSelectionPolygon();
             $("#seismicity-maximize-buttons-container").removeClass("active");
             this.colorScale.remove();
-        } else if (curMode === "insar") {
-            this.seismicityGraphsController.destroyAllCharts();
-            this.seismicityGraphsController.hideChartContainers();
-            this.selector.removeSelectionPolygon();
-            $("#seismicity-maximize-buttons-container").removeClass("active");
-            if (this.pointsLoaded()) {
-                this.colorScale.show();
-                this.colorScale.setTitle("LOS Velocity [cm/yr]");
-                this.colorScale.setTopAsMax(true);
-            } else {
-                this.colorScale.remove();
-            }
-        } else {
-            var layerIDs = this.getLayerIDsInCurrentMode();
-            if (curMode === "gps") {
+        } else if (curMode !== "seismicity") {
+            $("#seismicity-color-on-container").removeClass("active");
+            if (curMode === "insar") {
+                this.seismicityGraphsController.destroyAllCharts();
+                this.seismicityGraphsController.hideChartContainers();
+                this.selector.removeSelectionPolygon();
+                $("#seismicity-maximize-buttons-container").removeClass("active");
+                if (this.pointsLoaded()) {
+                    this.colorScale.show();
+                    this.colorScale.setTitle("LOS Velocity [cm/yr]");
+                    this.colorScale.setTopAsMax(true);
+                } else {
+                    this.colorScale.remove();
+                }
+            } else if (curMode === "gps") {
+                var layerIDs = this.getLayerIDsInCurrentMode();
                 this.seismicityGraphsController.destroyAllCharts();
                 this.seismicityGraphsController.hideChartContainers();
                 $("#seismicity-maximize-buttons-container").removeClass("active");
@@ -256,12 +257,13 @@ function MapController(loadJSONFunc) {
                 } else {
                     this.colorScale.remove();
                 }
-            } else if (curMode === "seismicity") {
-                // handles setting up color scale for seismicity etc.
-                $("#seismicity-maximize-buttons-container").addClass("active");
-                if (!(this.seismicityGraphsController.slidersVisible() || this.seismicityGraphsController.chartsVisible())) {
-                    this.thirdPartySourcesController.prepareForSeismicities(null);
-                }
+            }
+        } else if (curMode === "seismicity") {
+            $("#seismicity-color-on-container").addClass("active");
+            // handles setting up color scale for seismicity etc.
+            $("#seismicity-maximize-buttons-container").addClass("active");
+            if (!(this.seismicityGraphsController.slidersVisible() || this.seismicityGraphsController.chartsVisible())) {
+                this.thirdPartySourcesController.prepareForSeismicities(null);
             }
         }
     };

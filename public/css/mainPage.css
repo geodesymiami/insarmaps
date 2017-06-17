@@ -827,6 +827,10 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     bottom: 0%;
 }
 
+#seismicity-color-on-container {
+    display: none;
+}
+
 #graph-div-minimize-button {
     margin-right: 10px;
     margin-top: 6px;
