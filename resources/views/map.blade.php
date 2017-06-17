@@ -187,7 +187,7 @@
                 <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="More Options" id="select-layer-button">
                     <img src="/img/layerSwitchIcon.png" alt="layerSwitchIcon.png" style="width: 20px; height: 20px">
                 </button>
-                <div id="overlay-options-toggles">
+                <div id="overlay-options-toggles" class="clearfix">
                     <div id="map-type-menu">
                         <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked" />
                         <label for='streets'>Streets</label>

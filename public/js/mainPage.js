@@ -285,6 +285,14 @@ function ToggleButton(id, container, label) {
         $("#" + this.id).click();
     };
 
+    this.setDescription = function(desciption) {
+        if (this.container) {
+            var html = "<div class='circular-question-mark' data-toggle='tooltip'";
+            html += " title='" + desciption + "'><b>?</b></div>";
+            $(html).insertAfter($("#" + this.container + " input#" + this.id + ""));
+        }
+    };
+
     // add it to the DOM
     if (container) {
         this.create();
@@ -403,6 +411,7 @@ function setupToggleButtons() {
             myMap.thirdPartySourcesController.removeGPSStationMarkers();
         }
     });
+    gpsStationsToggleButton.setDescription("UNR GPS Stations");
 
     midasEastNorthStationsToggleButton = new ToggleButton("midas-east-north-stations-toggle-button", "overlay-options-toggles", "MIDAS IGS08 Horizontal (UNR)");
     midasEastNorthStationsToggleButton.onclick(function() {
@@ -417,6 +426,8 @@ function setupToggleButtons() {
         }
     });
 
+    midasEastNorthStationsToggleButton.setDescription("Midas Horizontal Velocity Vectors");
+
     midasStationsToggleButton = new ToggleButton("midas-stations-toggle-button", "overlay-options-toggles", "MIDAS IGS08 Vertical (UNR)");
     midasStationsToggleButton.onclick(function() {
         if (midasStationsToggleButton.toggleState == ToggleStates.ON) {
@@ -430,6 +441,8 @@ function setupToggleButtons() {
         }
     });
 
+    midasStationsToggleButton.setDescription("Midas Stations");
+
     usgsEarthquakeToggleButton = new ToggleButton("usgs-earthquake-toggle-button", "overlay-options-toggles", "USGS 30 Day Earthquake Feed");
     usgsEarthquakeToggleButton.onclick(function() {
         if (usgsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
@@ -438,6 +451,8 @@ function setupToggleButtons() {
             myMap.thirdPartySourcesController.removeUSGSEarthquakeFeed();
         }
     });
+
+    usgsEarthquakeToggleButton.setDescription("USGS 30-Day Feed");
 
     IGEPNEarthquakeToggleButton = new ToggleButton("IGEPN-earthquake-toggle-button", "overlay-options-toggles", "IGEPN Earthquake Feed");
     IGEPNEarthquakeToggleButton.onclick(function() {
@@ -448,6 +463,8 @@ function setupToggleButtons() {
         }
     });
 
+    IGEPNEarthquakeToggleButton.setDescription("IGEPN EarthQuake Data");
+
     HawaiiRelocToggleButton = new ToggleButton("Hawaii-reloc-toggle-button", "overlay-options-toggles", "Hawaii Relocation (UM)");
     HawaiiRelocToggleButton.onclick(function() {
         if (HawaiiRelocToggleButton.toggleState == ToggleStates.ON) {
@@ -457,6 +474,8 @@ function setupToggleButtons() {
         }
     });
 
+    HawaiiRelocToggleButton.setDescription("Hawaii Reloc Data");
+
     irisEarthquakeToggleButton = new ToggleButton("IRIS-earthquake-toggle-button", "overlay-options-toggles", "IRIS Earthquake");
     irisEarthquakeToggleButton.onclick(function() {
         if (irisEarthquakeToggleButton.toggleState == ToggleStates.ON) {
@@ -465,6 +484,8 @@ function setupToggleButtons() {
             myMap.thirdPartySourcesController.removeIRISEarthquake();
         }
     });
+
+    irisEarthquakeToggleButton.setDescription("IRIS Earthquake Data");
 
     recentDatasetsToggleButton = new ToggleButton("recent-datasets-toggle-button")
     recentDatasetsToggleButton.onclick(null);
