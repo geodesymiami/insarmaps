@@ -26,6 +26,7 @@ Route::get("/unr", "ThirdPartyDataNoCorsController@getUNR")->name("getUNR");
 Route::get("/midas", "ThirdPartyDataNoCorsController@getMidas")->name("getMidas");
 Route::get("/IGEPNEarthquakeFeed", "ThirdPartyDataNoCorsController@getIGEPNEarthquakeFeed")->name("getIGEPNEarthquakeFeed");
 Route::get("/HawaiiReloc", "ThirdPartyDataNoCorsController@getHawaiiReloc")->name("getHawaiiReloc");
+Route::get("/LongValleyReloc", "ThirdPartyDataNoCorsController@getLongValleyReloc")->name("getLongValleyReloc");
 Route::get("/USGSMonthlyFeed", "ThirdPartyDataNoCorsController@getUSGSMonthlyFeed")->name("getUSGSMonthlyFeed");
 Route::get("/IRISEarthquake/{url}", "ThirdPartyDataNoCorsController@getIRISEarthquake")->name("IRISEarthquake")->where("url", ".*");
 

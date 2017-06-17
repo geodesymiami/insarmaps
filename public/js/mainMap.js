@@ -234,6 +234,7 @@ function MapController(loadJSONFunc) {
         } else if (curMode !== "seismicity") {
             $("#seismicity-color-on-container").removeClass("active");
             if (curMode === "insar") {
+                this.colorScale.setTopAsMax(true);
                 this.seismicityGraphsController.destroyAllCharts();
                 this.seismicityGraphsController.hideChartContainers();
                 this.selector.removeSelectionPolygon();
@@ -241,7 +242,6 @@ function MapController(loadJSONFunc) {
                 if (this.pointsLoaded()) {
                     this.colorScale.show();
                     this.colorScale.setTitle("LOS Velocity [cm/yr]");
-                    this.colorScale.setTopAsMax(true);
                 } else {
                     this.colorScale.remove();
                 }
@@ -253,12 +253,12 @@ function MapController(loadJSONFunc) {
                 if (layerIDs.includes("midas")) {
                     this.colorScale.show();
                     this.colorScale.setTitle("Vertical Velocity cm/yr");
-                    this.colorScale.setTopAsMax(true);
                 } else {
                     this.colorScale.remove();
                 }
             }
         } else if (curMode === "seismicity") {
+            this.colorScale.setTopAsMax(false);
             $("#seismicity-color-on-container").addClass("active");
             // handles setting up color scale for seismicity etc.
             $("#seismicity-maximize-buttons-container").addClass("active");

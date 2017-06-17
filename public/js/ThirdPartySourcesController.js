@@ -1,11 +1,13 @@
 function ThirdPartySourcesController(map) {
     this.map = map;
     this.cancellableAjax = new CancellableAjax();
-    this.layerOrder = ["IRISEarthquake", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake", "midas",
+
+    // we should consider creating these next 3 arrays dynamically
+    this.layerOrder = ["IRISEarthquake", "LongValleyReloc", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake", "midas",
         "midas-arrows", "gpsStations"
     ];
 
-    this.seismicities = ["IRISEarthquake", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake"];
+    this.seismicities = ["IRISEarthquake", "LongValleyReloc", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake"];
     this.gps = ["midas", "midas-arrows", "gpsStations"];
 
     this.stopsCalculator = new MapboxStopsCalculator();
@@ -663,6 +665,59 @@ function ThirdPartySourcesController(map) {
         });
     };
 
+    this.loadHawaiiReloc = function() {
+        showLoadingScreen("Getting Hawaii Reloc Data", "ESCAPE to interrupt");
+        this.cancellableAjax.ajax({
+            url: "/HawaiiReloc",
+            success: function(response) {
+                var features = this.parseHawaiiReloc(response);
+                var mapboxStationFeatures = {
+                    type: "geojson",
+                    cluster: false,
+                    data: {
+                        "type": "FeatureCollection",
+                        "features": features
+                    }
+                };
+
+                this.currentFeatures = features;
+
+                var colors = this.map.colorScale.jet_r;
+                var depthStops = this.currentSeismicityColorStops;
+                var magCircleSizes = this.defaultCircleSizes();
+                var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
+
+                var layerID = "HawaiiReloc";
+                this.map.addSource(layerID, mapboxStationFeatures);
+                this.map.addLayer({
+                    "id": layerID,
+                    "type": "circle",
+                    "source": layerID,
+                    "paint": {
+                        "circle-color": {
+                            "property": "depth",
+                            "stops": depthStops,
+                            "type": "interval"
+                        },
+                        "circle-radius": {
+                            "property": "mag",
+                            "stops": magStops,
+                            "type": "interval"
+                        }
+                    }
+                });
+                hideLoadingScreen();
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                hideLoadingScreen();
+                console.log("failed " + xhr.responseText);
+            }
+        }, function() {
+            hideLoadingScreen();
+            HawaiiRelocToggleButton.click();
+        });
+    };
+
     this.parseHawaiiReloc = function(rawData) {
         var pointLines = rawData.split("\n");
         var features = [];
@@ -705,6 +760,108 @@ function ThirdPartySourcesController(map) {
         });
 
         return features;
+    };
+
+    this.parseLongValleyReloc = function(rawData) {
+        var pointLines = rawData.split("\n");
+        var features = [];
+        pointLines.forEach(function(pointLine) {
+            var attributes = pointLine.match(/\S+/g);
+            // in case empty line (usually last line)
+            if (!attributes) {
+                return;
+            }
+            // explanation of these indices: http://www.rsmas.miami.edu/personal/glin/Hawaii.html
+            // that link is actually wrong, she sent an email with correct indices
+            // maybe she'll update the link in the future.
+            var lng = parseFloat(attributes[8]);
+            var lat = parseFloat(attributes[7]);
+            var mag = parseFloat(attributes[10]);
+            var depth = parseFloat(attributes[9]);
+            var coordinates = [lng, lat];
+            var year = attributes[0];
+            var month = attributes[1];
+            var day = attributes[2];
+            var hour = attributes[3];
+            var minute = attributes[4];
+            var second = attributes[5];
+            var milliseconds = new Date(year, month, day, hour, minute, second).getTime();
+
+            var feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": coordinates
+                },
+                "properties": {
+                    "depth": depth,
+                    "mag": mag,
+                    "time": milliseconds
+                }
+            };
+
+            features.push(feature);
+        });
+
+        return features;
+    };
+
+    this.loadLongValleyReloc = function() {
+        showLoadingScreen("Getting Long Valley Reloc Data", "ESCAPE to interrupt");
+        this.cancellableAjax.ajax({
+            url: "/LongValleyReloc",
+            success: function(response) {
+                var features = this.parseHawaiiReloc(response);
+                var mapboxStationFeatures = {
+                    type: "geojson",
+                    cluster: false,
+                    data: {
+                        "type": "FeatureCollection",
+                        "features": features
+                    }
+                };
+
+                this.currentFeatures = features;
+
+                var colors = this.map.colorScale.jet_r;
+                var depthStops = this.currentSeismicityColorStops;
+                var magCircleSizes = this.defaultCircleSizes();
+                var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
+
+                var layerID = "LongValleyReloc";
+                this.map.addSource(layerID, mapboxStationFeatures);
+                this.map.addLayer({
+                    "id": layerID,
+                    "type": "circle",
+                    "source": layerID,
+                    "paint": {
+                        "circle-color": {
+                            "property": "depth",
+                            "stops": depthStops,
+                            "type": "interval"
+                        },
+                        "circle-radius": {
+                            "property": "mag",
+                            "stops": magStops,
+                            "type": "interval"
+                        }
+                    }
+                });
+                hideLoadingScreen();
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                hideLoadingScreen();
+                console.log("failed " + xhr.responseText);
+            }
+        }, function() {
+            hideLoadingScreen();
+            HawaiiRelocToggleButton.click();
+        });
+    };
+
+    this.removeLongValleyReloc = function() {
+        var layerID = "LongValleyReloc";
+        this.map.removeSourceAndLayer(layerID);
     };
 
     this.removeHawaiiReloc = function() {

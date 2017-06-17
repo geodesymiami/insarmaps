@@ -12,6 +12,7 @@ var recentDatasetsToggleButton = null;
 var usgsEarthquakeToggleButton = null;
 var IGEPNEarthquakeToggleButton = null;
 var HawaiiRelocToggleButton = null;
+var LongValleyRelocToggleButton = null;
 var midasEastNorthStationsToggleButton = null;
 var irisEarthquakeToggleButton = null;
 var myMap = null;
@@ -467,6 +468,17 @@ function setupToggleButtons() {
     });
 
     HawaiiRelocToggleButton.setDescription("Hawaii Reloc Data");
+
+    LongValleyRelocToggleButton = new ToggleButton("Long-Valley-reloc-toggle-button", "overlay-options-toggles", "Long Valley Relocation (UM)");
+    LongValleyRelocToggleButton.onclick(function() {
+        if (LongValleyRelocToggleButton.toggleState == ToggleStates.ON) {
+            myMap.thirdPartySourcesController.loadLongValleyReloc();
+        } else {
+            myMap.thirdPartySourcesController.removeLongValleyReloc();
+        }
+    });
+
+    LongValleyRelocToggleButton.setDescription("Long Valley Reloc Data");
 
     irisEarthquakeToggleButton = new ToggleButton("IRIS-earthquake-toggle-button", "overlay-options-toggles", "IRIS Earthquake");
     irisEarthquakeToggleButton.onclick(function() {
