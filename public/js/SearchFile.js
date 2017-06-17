@@ -303,7 +303,7 @@ $(window).load(function() {
     var searcher = new SearchFormController("search-form");
 
     document.addEventListener("keydown", function(e) {
-        var ENTER_KEY = 13;
+        const ENTER_KEY = 13;
 
         if (e.keyCode === ENTER_KEY && ($("#search-form input").is(":focus"))) {
             if (myMap.areaFeatures) {

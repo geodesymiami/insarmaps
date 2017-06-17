@@ -15,7 +15,7 @@ $(window).load(function() {
      * Example url: http://homestead.app/WebServices?longitude=131.67&latitude=32.53&satellite=Alos&relativeOrbit=73&firstFrame=2950&mode=SM&flightDirection=D& endTime=2020-12-20&outputType=json
      */
     $(".form-control").keyup(function(event) {
-        var ENTER_KEY = 13;
+        const ENTER_KEY = 13;
 
         if (event.keyCode == ENTER_KEY) {
             // required parameters: longitude, latitude

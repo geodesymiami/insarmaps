@@ -470,7 +470,7 @@ function ColorScale(min, max, divID) {
 
     this.onScaleChange = function(callback) {
         $("#" + this.divID + " .scale-values .form-group > input").keypress(function(e) {
-            var ENTER_KEY = 13;
+            const ENTER_KEY = 13;
 
             if (e.which == ENTER_KEY) {
                 var bottomValue = $("#" + this.divID + " .bottom-scale-value").val();

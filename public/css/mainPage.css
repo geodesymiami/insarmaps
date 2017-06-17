@@ -260,6 +260,20 @@ html[xmlns] .clearfix {
     display: none;
 }
 
+#iris-options {
+    position: absolute;
+    width: 70%;
+    height: 80%;
+    margin: 0 auto;
+    top: 5%;
+    left: 0;
+    right: 0;
+}
+
+#iris-options .content {
+    padding-top: 30px;
+}
+
 #popupButton {
     outline: none;
     font-size: 12px;

@@ -38,16 +38,19 @@ class ThirdPartyDataNoCorsController extends Controller {
 				]);
 	}
 
-	public function getIRISEarthquake($startDate, $endDate) {
-		$url = 'http://service.iris.edu/fdsnws/event/1/query?starttime=' . $startDate . '&endtime=' . $endDate . '&orderby=time&format=text&nodata=404&maxdepth=30&minmag=4&maxmag=10';
-
+	public function getIRISEarthquake($url) {
 		$curlSession = curl_init();
-	    curl_setopt($curlSession, CURLOPT_URL, $url);
+	    curl_setopt($curlSession, CURLOPT_URL, urldecode($url));
+	    curl_setopt($curlSession, CURLOPT_HEADER, true); 
 	    curl_setopt($curlSession, CURLOPT_BINARYTRANSFER, true);
 	    curl_setopt($curlSession, CURLOPT_RETURNTRANSFER, true);
 	    $data = curl_exec($curlSession);
+	    $responseCode = curl_getinfo($curlSession, CURLINFO_HTTP_CODE);
+	    $responseBody = NULL;
+	    // get body and not headers
+	    $responseBody = explode("\r\n\r\n", $data, 2)[1];
 	    curl_close($curlSession);
 
-		return $data;
+		return response()->make($responseBody, $responseCode);
 	}
 }

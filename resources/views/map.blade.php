@@ -208,7 +208,27 @@
                             <option value="time">Time</option>
                         </select>
                     </div>
+                    <button class="btn btn-info" id="show-iris-options-button">Iris Options</button>
                 </div>
+            </div>
+        </div>
+        <div class="wrap wrap-transitions" id="iris-options">
+            <div class="top-right-buttons">
+                <button type="button" class="minimize-button" data-dismiss="modal" id="iris-options-minimize-button"></button>
+            </div>
+            <div class="content">
+                <label>Start Date</label>
+                <input type="date" class="form-control start-date" />
+                <label>End Date</label>
+                <input type="date" class="form-control end-date" />
+                <label>Min Magnitude</label>
+                <input type="number" class="form-control min-magnitude" value="4" />
+                <label>Max Magnitude</label>
+                <input type="number" class="form-control max-magnitude" value="10" />
+                <label>Min Depth</label>
+                <input type="number" class="form-control min-depth" value="0" />
+                <label>Max Depth</label>
+                <input type="number" class="form-control max-depth" value="30" />
             </div>
         </div>
         <!-- by default, it is toggled, or minimized -->
@@ -277,7 +297,7 @@
         </div>
         <div id="point-details"></div>
         <div class="maximize-buttons-container">
-            <div class="btn btn-primary active" id="seismicity-maximize-buttons-container">
+            <div class="btn btn-primary" id="seismicity-maximize-buttons-container">
                 <div class="maximize-button-container">
                     <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-chart-sliders-maximize-button" data-toggle="tooltip" title="Seismicity Plot Sliders"></button>
                 </div>
@@ -510,6 +530,7 @@
     <script type="text/javascript" src="/js/SearchFile.js"></script>
     <script type="text/javascript" src="/js/Swath.js"></script>
     <script type="text/javascript" src="/js/Vector.js"></script>
+    <script type="text/javascript" src="/js/IrisOptionsController.js"></script>
     <script type="text/javascript" src="/js/ThirdPartySourcesController.js"></script>
     <script type="text/javascript" src="/js/mainMap.js"></script>
     <script type="text/javascript" src="/js/SquareSelector.js"></script>

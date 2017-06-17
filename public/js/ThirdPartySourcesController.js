@@ -15,12 +15,18 @@ function ThirdPartySourcesController(map) {
     this.midasArrows = null;
     this.referenceArrow = null;
     this.subtractedMidasArrows = null;
+    this.irisURL = null;
 
     // keep this around for when main map needs features to pass in to create
     // the seismicity sliders. notice (below) that we always set this before
     // calling mapcontroller methods which change layers and depend on having the
     // latest feature (seismicity or otherwise)
     this.currentFeatures = null;
+
+    this.irisOptionsController = new IrisOptionsController("iris-options");
+    this.irisOptionsController.onEnterKeyUp(function(url) {
+        this.irisURL = url;
+    }.bind(this));
 
     this.getLayerOnTopOf = function(layer) {
         for (var i = this.layerOrder.length - 1; i >= 0; i--) {
@@ -749,8 +755,12 @@ function ThirdPartySourcesController(map) {
         var startDateString = startDate.toISOString().split('T')[0];
 
         showLoadingScreen("Getting IRIS Earthquake Data", "ESCAPE to interrupt");
+        if (!this.irisURL) {
+            this.irisURL = this.irisOptionsController.getURL();
+        }
+
         this.cancellableAjax.ajax({
-            url: "/IRISEarthquake/" + startDateString + "/" + nowString,
+            url: "/IRISEarthquake/" + encodeURIComponent(this.irisURL),
             success: function(response) {
                 var features = this.parseIRISEarthquake(response);
                 var mapboxStationFeatures = {
@@ -793,7 +803,12 @@ function ThirdPartySourcesController(map) {
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
                 hideLoadingScreen();
-                console.log("failed " + xhr.responseText);
+
+                // don't do the below if error is due to pressing escape key
+                if (xhr.responseText) {
+                    irisEarthquakeToggleButton.click();
+                    window.alert("Bad IRIS parameters. Here's the server's response:\n" + xhr.responseText);
+                }
             }
         }, function() {
             hideLoadingScreen();
@@ -821,7 +836,7 @@ function ThirdPartySourcesController(map) {
         var itsASeismicityFeature = this.seismicities.includes(layerID);
 
         var cursor = (itsAPoint || itsAGPSFeature || itsAMidasGPSFeature ||
-                    itsASeismicityFeature || itsAMidasHorizontalArrow) ? 'pointer' : 'auto';
+            itsASeismicityFeature || itsAMidasHorizontalArrow) ? 'pointer' : 'auto';
 
         var html = null;
         var coordinates = feature.geometry.coordinates;

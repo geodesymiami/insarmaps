@@ -618,6 +618,23 @@ $(window).load(function() {
             throw new Error("Invalid dropdown selection");
         }
     });
+    $("#show-iris-options-button").on("click", function() {
+        var $container = $(".wrap#iris-options");
+
+        if (!$container.hasClass("active")) {
+            $container.addClass("active");
+        }
+
+    });
+
+    $("#iris-options-minimize-button").on("click", function() {
+        var $container = $(".wrap#iris-options");
+
+        if ($container.hasClass("active")) {
+            $container.removeClass("active");
+        }
+
+    });
 
     $("#seismicity-color-on-dropdown").change(function() {
         var selectedColoring = $(this).val();
@@ -737,7 +754,7 @@ $(window).load(function() {
     // TODO: again, these minimize buttons are dying to be abstracted into a class along with
     // other toggable, 2 state items
     $("#seismicity-charts-minimize-button").on("click", function() {
-        var $container = $("#seismicity-charts");
+        var $container = $(".wrap#seismicity-charts");
         if ($container.hasClass("active")) {
             $container.removeClass("active");
             $("#seismicity-charts-maximize-button").css("display", "block");
@@ -746,7 +763,7 @@ $(window).load(function() {
     });
 
     $("#seismicity-charts-maximize-button").on("click", function() {
-        var $container = $("#seismicity-charts");
+        var $container = $(".wrap#seismicity-charts");
         if (!$container.hasClass("active")) {
             $container.addClass("active");
             $(this).css("display", "none");
@@ -754,7 +771,7 @@ $(window).load(function() {
     });
 
     $("#seismicity-chart-sliders-minimize-button").on("click", function() {
-        var $container = $("#seismicity-chart-sliders");
+        var $container = $(".wrap#seismicity-chart-sliders");
         if ($container.hasClass("active")) {
             $container.removeClass("active");
             $("#seismicity-chart-sliders-maximize-button").css("display", "block");
@@ -762,14 +779,14 @@ $(window).load(function() {
     });
 
     $("#seismicity-chart-sliders-maximize-button").on("click", function() {
-        var $container = $("#seismicity-chart-sliders");
+        var $container = $(".wrap#seismicity-chart-sliders");
         if (!$container.hasClass("active")) {
             $container.addClass("active");
             $(this).css("display", "none");
         }
     });
 
-    $("#seismicity-chart-sliders, #seismicity-charts, #cross-section-charts").draggable({
+    $(".wrap#seismicity-chart-sliders, .wrap#seismicity-charts, .wrap#cross-section-charts").draggable({
         start: function(event, ui) {
             $(this).removeClass("wrap-transitions");
         },
@@ -779,7 +796,7 @@ $(window).load(function() {
     });
 
     $("#cross-section-charts-maximize-button").on("click", function() {
-        var $container = $("#cross-section-charts");
+        var $container = $(".wrap#cross-section-charts");
         if (!$container.hasClass("active")) {
             $container.addClass("active");
             $(this).css("display", "none");
@@ -792,7 +809,7 @@ $(window).load(function() {
     });
 
     $("#cross-section-charts-minimize-button").on("click", function() {
-        var $container = $("#cross-section-charts");
+        var $container = $(".wrap#cross-section-charts");
         if ($container.hasClass("active")) {
             $container.removeClass("active");
             $("#cross-section-charts-maximize-button").css("display", "block");
@@ -900,8 +917,8 @@ $(window).load(function() {
     });
 
     // enter key triggers go button for search
-    $("#search-input").keyup(function(event) {
-        var ENTER_KEY = 13;
+    $("#search-input").keypress(function(event) {
+        const ENTER_KEY = 13;
 
         if (event.keyCode == ENTER_KEY) {
             search();
