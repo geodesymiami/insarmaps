@@ -90,6 +90,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.refreshmidasGpsStationMarkers = function() {
+        throw new Error("hi");
         var stops = this.map.colorScale.getMapboxStops();
         if (this.map.map.getLayer("midas")) {
             this.map.map.setPaintProperty("midas", "circle-color", {

@@ -146,20 +146,27 @@ function MapController(loadJSONFunc) {
     this.allAreaFeatures = null;
     this.colorScale = new ColorScale(-2.00, 2.00, "color-scale");
     this.colorScale.onScaleChange(function(minValue, maxValue) {
-        // if they are loaded, refresh them. if aren't loaded, nothing
-        // will happen
-        this.refreshDataset();
-        this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
-        var selectedColoring = $("#seismicity-color-on-dropdown").val();
-        this.thirdPartySourcesController.recolorSeismicities(selectedColoring);
+        var curMode = this.getCurrentMode();
 
-        // if time is selected, convert to milliseconds
-        if (selectedColoring == "time") {
-            this.seismicityGraphsController.createChart(selectedColoring, "depth-vs-long-graph", null, null);
-            this.seismicityGraphsController.createChart(selectedColoring, "lat-vs-depth-graph", null, null);
-        } else {
-            this.seismicityGraphsController.createChart(selectedColoring, "cumulative-events-vs-date-graph", null, null);
-            this.seismicityGraphsController.createChart(selectedColoring, "lat-vs-long-graph", null, null);
+        if (curMode) { // no mode (ie essentially empty map)
+            if (curMode === "insar" && this.pointsLoaded()) {
+                this.refreshDataset();
+            } else if (curMode === "gps") {
+                this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
+            } else if (curMode === "seismicity") {
+                var selectedColoring = $("#seismicity-color-on-dropdown").val();
+                this.thirdPartySourcesController.recolorSeismicities(selectedColoring);
+
+                // if time is selected, convert to milliseconds
+                if (selectedColoring == "time") {
+                    this.seismicityGraphsController.createChart(selectedColoring, "depth-vs-long-graph", null, null);
+                    this.seismicityGraphsController.createChart(selectedColoring, "lat-vs-depth-graph", null, null);
+                } else {
+                    this.seismicityGraphsController.createChart(selectedColoring, "cumulative-events-vs-date-graph", null, null);
+                    this.seismicityGraphsController.createChart(selectedColoring, "lat-vs-long-graph", null, null);
+                }
+            }
+
         }
     }.bind(this));
     this.colorOnDisplacement = false;
@@ -231,6 +238,8 @@ function MapController(loadJSONFunc) {
             $("#seismicity-maximize-buttons-container").removeClass("active");
             if (this.pointsLoaded()) {
                 this.colorScale.show();
+                this.colorScale.setTitle("LOS Velocity [cm/yr]");
+                this.colorScale.setTopAsMax(true);
             } else {
                 this.colorScale.remove();
             }
@@ -242,6 +251,8 @@ function MapController(loadJSONFunc) {
                 $("#seismicity-maximize-buttons-container").removeClass("active");
                 if (layerIDs.includes("midas")) {
                     this.colorScale.show();
+                    this.colorScale.setTitle("Vertical Velocity cm/yr");
+                    this.colorScale.setTopAsMax(true);
                 } else {
                     this.colorScale.remove();
                 }
@@ -622,9 +633,6 @@ function MapController(loadJSONFunc) {
         this.selector.reset(currentArea);
         $("#color-on-dropdown").val("velocity");
         this.colorScale.setTitle("LOS Velocity [cm/yr]");
-
-        this.thirdPartySourcesController.removemidasGpsStationMarkers();
-        midasStationsToggleButton.set("off");
 
         this.addDataset(tileJSON);
 
@@ -1366,8 +1374,9 @@ function MapController(loadJSONFunc) {
 
     this.refreshDataset = function() {
         var stops = this.colorScale.getMapboxStops();
+        var insarLayers = this.getInsarLayers();
 
-        this.layers_.forEach(function(layer, layerID) {
+        insarLayers.forEach(function(layerID) {
             if (this.map.getPaintProperty(layerID, "circle-color")) {
                 this.map.setPaintProperty(layerID, "circle-color", {
                     "property": 'm',
