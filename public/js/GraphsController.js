@@ -1486,8 +1486,30 @@ function setupCustomSliderSeismicityController() {
         SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
     };
 
-    CustomSliderSeismicityController.prototype.getDepthHistogram = function(features) {
+    CustomSliderSeismicityController.prototype.getHistogram = function(input) {
         const NUM_BINS = 100.0; // he said he wanted 100 bins
+        var min = input[0];
+        var max = input[input.length - 1];
+        var increment = (max - min) / NUM_BINS;
+        var stopsCalculator = new MapboxStopsCalculator();
+        var bins = stopsCalculator.inputsFromMinAndMax(min, max, increment);
+
+        var amountAtEachBin = new Uint8Array(bins.length);
+        var binIndex = 0;
+        for (var i = 0; i < input.length; i++) {
+            var bin = bins[binIndex];
+            var depth = input[i];
+            if (depth <= bin) {
+                amountAtEachBin[binIndex]++;
+            } else {
+                amountAtEachBin[++binIndex]++;
+            }
+        }
+
+        return { x: bins, y: amountAtEachBin };
+    };
+
+    CustomSliderSeismicityController.prototype.getDepthHistogram = function(features) {
         var depthValues = features.map(function(feature) {
             return feature.properties.depth;
         });
@@ -1497,26 +1519,30 @@ function setupCustomSliderSeismicityController() {
             return depth1 - depth2;
         });
 
-        var min = depthValues[0];
-        var max = depthValues[depthValues.length - 1];
-        var increment = (max - min) / NUM_BINS;
-        var stopsCalculator = new MapboxStopsCalculator();
-        var bins = stopsCalculator.inputsFromMinAndMax(min, max, increment);
-
-        var amountAtEachBin = new Uint8Array(bins.length);
-        var binIndex = 0;
-        for (var i = 0; i < depthValues.length; i++) {
-            var bin = bins[binIndex];
-            var depth = depthValues[i];
-            if (depth <= bin) {
-                amountAtEachBin[binIndex]++;
-            } else {
-                amountAtEachBin[++binIndex]++;
-            }
-        }
+        var histogram = this.getHistogram(depthValues);
+        var amountAtEachBin = histogram.y;
+        var bins = histogram.x;
 
         return this.getSeriesData(bins, amountAtEachBin, null, null, null);
     };
+
+    CustomSliderSeismicityController.prototype.getEventsHistogram = function() {
+        var millisecondValues = features.map(function(feature) {
+            return feature.properties.time;
+        });
+
+        // make sure it is sorted
+        millisecondValues.sort(function(time1, time2) {
+            return time1 - time2;
+        });
+
+        var histogram = this.getHistogram(millisecondValues);
+        var amountAtEachBin = histogram.y;
+        var bins = histogram.x;
+
+        return this.getSeriesData(bins, amountAtEachBin, null, null, null);
+    };
+
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
         var millisecondData = null;
 
@@ -1543,13 +1569,8 @@ function setupCustomSliderSeismicityController() {
             }
         }
 
-        this.getDepthVDepthData(features, selectedColoring);
-        // if null, we didn't get them from creating the chart, get them using standalong function
-        // optimizing too much? maybe, but I don't care
-        if (!millisecondData) {
-            millisecondData = this.getCumulativeEventsVDayData(features, selectedColoring);
-        }
         var depthData = this.getDepthHistogram(features);
+        var millisecondData = this.getEventsHistogram(features);
 
         var depthValues = [];
         var millisecondValues = [];
