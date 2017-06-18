@@ -264,7 +264,7 @@
                 </div>
             </div>
         </div>
-        <div id="color-scale" class="active">
+        <div id="color-scale">
             <div id="seismicity-color-on-container">
                 <label>Color Seismicity On:</label>
                 <select id="seismicity-color-on-dropdown">

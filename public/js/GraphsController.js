@@ -43,21 +43,21 @@ function AbstractGraphsController() {
         return minMax;
     };
 
-    this.setNavigatorHandlers = function() {
-        $(".highcharts-navigator").mouseenter(function() {
-            $(".wrap#charts").draggable("disable");
+    this.setNavigatorHandlers = function(chartID, divIDDisableDraggable) {
+        $("#" + chartID + " .highcharts-navigator").mouseenter(function() {
+            $("#" + divIDDisableDraggable).draggable("disable");
+        }).mouseleave(function() {
+            $("#" + divIDDisableDraggable).draggable("enable");
+        });;
+        $("#" + chartID + ".highcharts-navigator-handle-left").mouseenter(function() {
+            $("#" + divIDDisableDraggable).draggable("disable");
         }).mouseleave(function() {
             $(".wrap#charts").draggable("enable");
         });;
-        $(".highcharts-navigator-handle-left").mouseenter(function() {
-            $(".wrap#charts").draggable("disable");
+        $("#" + chartID + ".highcharts-navigator-handle-right").mouseenter(function() {
+            $("#" + divIDDisableDraggable).draggable("disable");
         }).mouseleave(function() {
-            $(".wrap#charts").draggable("enable");
-        });;
-        $(".highcharts-navigator-handle-right").mouseenter(function() {
-            $(".wrap#charts").draggable("disable");
-        }).mouseleave(function() {
-            $(".wrap#charts").draggable("enable");
+            $("#" + divIDDisableDraggable).draggable("enable");
         });;
     };
 
@@ -417,7 +417,7 @@ function setupGraphsController() {
         $('#' + chartContainer).highcharts(chartOpts);
         this.highChartsOpts[chartContainer] = chartOpts;
 
-        this.setNavigatorHandlers();
+        this.setNavigatorHandlers(chartContainer, "charts");
 
         // this calls recreate in the background.
         // TODO: make detrend data functions not call recreate
@@ -838,7 +838,9 @@ function setupGraphsController() {
             this.addRegressionLines();
         }
 
-        this.setNavigatorHandlers();
+        this.setNavigatorHandlers("chartContainer", "charts");
+        this.setNavigatorHandlers("chartContainer2", "charts");
+
     };
 }
 
@@ -1404,6 +1406,7 @@ function setupCustomHighchartsSlider() {
 
         this.createChartDestroyingOld(chartContainer, chartOpts);
         $("#" + chartContainer).css("height", chartOpts.chart.height + "px");
+        this.setNavigatorHandlers(chartContainer, "seismicity-chart-sliders");
     };
 }
 
