@@ -265,14 +265,7 @@
             </div>
         </div>
         <div id="color-scale">
-            <div id="seismicity-color-on-container">
-                <label>Color Seismicity On:</label>
-                <select id="seismicity-color-on-dropdown">
-                    <option value="depth">Depth</option>
-                    <option value="time">Time</option>
-                </select>
-            </div>
-            <div class="color-scale-text-div" class="rotate">
+            <div class="color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color Seismicity on Time">
                 LOS Velocity [cm/yr]
             </div>
             <div class="color-scale-main-container">
@@ -308,7 +301,7 @@
                     <button type="button" class="maximize-button" data-dismiss="modal" id="cross-section-charts-maximize-button" data-toggle="tooltip" title="Cross Section Seismicity Plots"></button>
                 </div>
             </div>
-            <div class="btn btn-primary">
+            <div class="btn btn-primary" id="insar-maximize-buttons-container">
                 <div class="maximize-button-container">
                     <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Datasets"></button>
                 </div>

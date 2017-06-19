@@ -655,6 +655,10 @@ div.menu {
     width: 100%;
 }
 
+#color-scale .color-scale-text-div {
+    cursor: pointer;
+}
+
 .color-scale-main-container {
     height: 85%;
 }
@@ -822,12 +826,6 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     max-height: 300px;
     width: 30%;
     bottom: 0%;
-}
-
-#seismicity-color-on-container {
-    display: none;
-    position: absolute;
-    top: -45px;
 }
 
 #graph-div-minimize-button {
@@ -1074,7 +1072,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     z-index: 98;
 }
 
-#seismicity-maximize-buttons-container {
+#seismicity-maximize-buttons-container, #insar-maximize-buttons-container {
     display: none;
 }
 

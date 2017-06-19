@@ -869,6 +869,12 @@ function SeismicityGraphsController() {
             this.map.seismicityGraphsController.createChart(null, "lat-vs-long-graph", null, null);
         }
     }.bind(this));
+    this.minMilliseconds = 0;
+    this.maxMilliseconds = 0;
+    this.gpsStationNamePopup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false
+    });
 }
 
 function setupSeismicityGraphsController() {
@@ -877,6 +883,9 @@ function setupSeismicityGraphsController() {
         this.features = features.sort(function(feature1, feature2) {
             return feature1.properties.time - feature2.properties.time;
         });
+
+        this.minMilliseconds = this.features[0].properties.time;
+        this.maxMilliseconds = this.features[this.features.length - 1].properties.time;
     };
 
     SeismicityGraphsController.prototype.setBbox = function(bbox) {
@@ -1153,6 +1162,7 @@ function setupSeismicityGraphsController() {
         });
 
         this.mapForPlot.on("load", function() {
+            this.mapForPlot.getCanvas().style.cursor = 'auto';
             this.mapForPlot.setMaxBounds(null); // allow us to pan and drag outside constrained bounds
             var scale = null;
             var scaleColors = null;
@@ -1202,6 +1212,23 @@ function setupSeismicityGraphsController() {
                     }
                 }
             });
+        }.bind(this));
+        this.mapForPlot.on('mousemove', function(e) {
+            var features = this.mapForPlot.queryRenderedFeatures(e.point);
+            // mouse not under a marker, clear all popups
+            if (!features.length) {
+                this.gpsStationNamePopup.remove();
+                this.mapForPlot.getCanvas().style.cursor = 'auto';
+                return;
+            }
+            var featureViewOptions = this.map.thirdPartySourcesController.featureToViewOptions(features[0]);
+            if (featureViewOptions.coordinates) {
+                var html = "<span style='font-size: 8px'>" + featureViewOptions.html + "</span>";
+                this.gpsStationNamePopup.setLngLat(featureViewOptions.coordinates)
+                    .setHTML(html)
+                    .addTo(this.mapForPlot);
+            }
+            this.mapForPlot.getCanvas().style.cursor = featureViewOptions.cursor;
         }.bind(this));
         var onMoveend = function(e) {
             // we could just call setData... but screw it.

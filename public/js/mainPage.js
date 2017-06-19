@@ -661,22 +661,31 @@ $(window).load(function() {
 
     });
 
-    $("#seismicity-color-on-dropdown").change(function() {
-        var selectedColoring = $(this).val();
-        if (selectedColoring === "time") {
-            myMap.colorScale.setTopAsMax(true);
-            myMap.colorScale.setInDateMode(true);
-        } else if (selectedColoring === "depth") {
-            myMap.colorScale.setInDateMode(false);
-            myMap.colorScale.setTopAsMax(false);
-        }
-        myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
-        myMap.seismicityGraphsController.recreateAllCharts(selectedColoring);
-    });
-
     $("#minimap-color-on-dropdown").change(function() {
         var selectedColoring = $(this).val();
         myMap.seismicityGraphsController.setMinimapColoring(selectedColoring);
+    });
+
+    $("#color-scale .color-scale-text-div").on("click", function() {
+        var selectedColoring = null;
+        var title = $(this).attr("data-original-title");
+
+        if (title === "Color Seismicity on Time") {
+            selectedColoring = "time";
+            $(this).attr("data-original-title", "Color Seismicity on Depth");
+            myMap.colorScale.setTopAsMax(true);
+            myMap.colorScale.setInDateMode(true);
+            myMap.colorScale.setMinMax(myMap.seismicityGraphsController.minMilliseconds, myMap.seismicityGraphsController.maxMilliseconds);
+        } else if (title === "Color Seismicity on Depth") {
+            selectedColoring = "depth";
+            $(this).attr("data-original-title", "Color Seismicity on Time");
+            myMap.colorScale.setInDateMode(false);
+            myMap.colorScale.setTopAsMax(false);
+            myMap.colorScale.setMinMax(0, 50);
+        }
+
+        myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
+        myMap.seismicityGraphsController.recreateAllCharts(selectedColoring);
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {
@@ -701,8 +710,8 @@ $(window).load(function() {
     });
 
     // set up tooltips on graph div and area attributes div
-    $(".wrap#charts").tooltip("disable");
-    $(".wrap#area-attributes-div").tooltip("disable");
+    // $(".wrap#charts").tooltip("disable");
+    // $(".wrap#area-attributes-div").tooltip("disable");
 
     $("#graph-div-minimize-button").on("click", function() {
         var container = $(".wrap#charts");

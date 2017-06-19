@@ -225,45 +225,50 @@ function MapController(loadJSONFunc) {
 
         this.lastMode = curMode;
 
+        // this is quick and dirty.
+        // TODO: it needs cleaning up
         if (!curMode) { // no mode (ie essentially empty map)
             this.seismicityGraphsController.destroyAllCharts();
             this.seismicityGraphsController.hideChartContainers();
             this.selector.removeSelectionPolygon();
             $("#seismicity-maximize-buttons-container").removeClass("active");
+            $("#insar-maximize-buttons-container").removeClass("active");
             this.colorScale.remove();
-        } else if (curMode !== "seismicity") {
-            $("#seismicity-color-on-container").removeClass("active");
-            if (curMode === "insar") {
-                this.colorScale.setTopAsMax(true);
+        } else {
+            if (curMode !== "insar") {
+                $("#insar-maximize-buttons-container").removeClass("active");
+            }
+            if (curMode !== "seismicity") {
                 this.seismicityGraphsController.destroyAllCharts();
                 this.seismicityGraphsController.hideChartContainers();
                 this.selector.removeSelectionPolygon();
                 $("#seismicity-maximize-buttons-container").removeClass("active");
-                if (this.pointsLoaded()) {
-                    this.colorScale.show();
-                    this.colorScale.setTitle("LOS Velocity [cm/yr]");
-                } else {
-                    this.colorScale.remove();
+                if (curMode === "insar") {
+                    $("#insar-maximize-buttons-container").addClass("active");
+                    this.colorScale.setTopAsMax(true);
+                    if (this.pointsLoaded()) {
+                        this.colorScale.show();
+                        this.colorScale.setTitle("LOS Velocity [cm/yr]");
+                    } else {
+                        this.colorScale.remove();
+                    }
+                } else if (curMode === "gps") {
+                    var layerIDs = this.getLayerIDsInCurrentMode();
+                    if (layerIDs.includes("midas")) {
+                        this.colorScale.show();
+                        this.colorScale.setTitle("Vertical Velocity cm/yr");
+                    } else {
+                        this.colorScale.remove();
+                    }
                 }
-            } else if (curMode === "gps") {
-                var layerIDs = this.getLayerIDsInCurrentMode();
-                this.seismicityGraphsController.destroyAllCharts();
-                this.seismicityGraphsController.hideChartContainers();
-                $("#seismicity-maximize-buttons-container").removeClass("active");
-                if (layerIDs.includes("midas")) {
-                    this.colorScale.show();
-                    this.colorScale.setTitle("Vertical Velocity cm/yr");
-                } else {
-                    this.colorScale.remove();
+                // seismicity
+            } else {
+                this.colorScale.setTopAsMax(false);
+                // handles setting up color scale for seismicity etc.
+                $("#seismicity-maximize-buttons-container").addClass("active");
+                if (!(this.seismicityGraphsController.slidersVisible() || this.seismicityGraphsController.chartsVisible())) {
+                    this.thirdPartySourcesController.prepareForSeismicities(null);
                 }
-            }
-        } else if (curMode === "seismicity") {
-            this.colorScale.setTopAsMax(false);
-            $("#seismicity-color-on-container").addClass("active");
-            // handles setting up color scale for seismicity etc.
-            $("#seismicity-maximize-buttons-container").addClass("active");
-            if (!(this.seismicityGraphsController.slidersVisible() || this.seismicityGraphsController.chartsVisible())) {
-                this.thirdPartySourcesController.prepareForSeismicities(null);
             }
         }
     };
@@ -1470,8 +1475,7 @@ function MapController(loadJSONFunc) {
 }
 
 
-// function to use AJAX to load json from that same website - I looked online and AJAX is basically just used
-// to asynchronously load data using javascript from a server, in our case, our local website
+// function to use AJAX to load json from that same website - TODO: remove me and use jquery
 function loadJSON(arg, param, callback) {
     var fullQuery = param + "/"
 

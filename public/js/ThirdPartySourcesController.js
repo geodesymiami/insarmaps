@@ -92,7 +92,6 @@ function ThirdPartySourcesController(map) {
     };
 
     this.refreshmidasGpsStationMarkers = function() {
-        throw new Error("hi");
         var stops = this.map.colorScale.getMapboxStops();
         if (this.map.map.getLayer("midas")) {
             this.map.map.setPaintProperty("midas", "circle-color", {
@@ -991,10 +990,11 @@ function ThirdPartySourcesController(map) {
         var itsAGPSFeature = (layerID === "gpsStations");
         var itsAMidasGPSFeature = (layerID === "midas");
         var itsAMidasHorizontalArrow = (layerID === "midas-arrows");
+        var itsAMiniMapFeature = (layerID === "LatVLongPlotPoints");
         var itsASeismicityFeature = this.seismicities.includes(layerID);
 
         var cursor = (itsAPoint || itsAGPSFeature || itsAMidasGPSFeature ||
-            itsASeismicityFeature || itsAMidasHorizontalArrow) ? 'pointer' : 'auto';
+            itsASeismicityFeature || itsAMidasHorizontalArrow || itsAMiniMapFeature) ? 'pointer' : 'auto';
 
         var html = null;
         var coordinates = feature.geometry.coordinates;
@@ -1006,7 +1006,7 @@ function ThirdPartySourcesController(map) {
             var uncertainty = (feature.properties.u * 100).toFixed(4);
             var html = feature.properties.stationName + "<br>" +
                 velocityInCMYR + " +- " + uncertainty + " cm/yr"; // we work in cm. convert m to cm
-        } else if (itsASeismicityFeature) {
+        } else if (itsASeismicityFeature || itsAMiniMapFeature) {
             html = "";
             var props = feature.properties;
             if (props.depth) {
