@@ -483,7 +483,8 @@ function setupToggleButtons() {
     irisEarthquakeToggleButton = new ToggleButton("IRIS-earthquake-toggle-button", "overlay-options-toggles", "IRIS Earthquake");
     irisEarthquakeToggleButton.onclick(function() {
         if (irisEarthquakeToggleButton.toggleState == ToggleStates.ON) {
-            myMap.thirdPartySourcesController.loadIRISEarthquake();
+            irisEarthquakeToggleButton.set("off");
+            $("#show-iris-options-button").click();
         } else {
             myMap.thirdPartySourcesController.removeIRISEarthquake();
         }
@@ -659,6 +660,13 @@ $(window).load(function() {
             $container.removeClass("active");
         }
 
+    });
+
+    $("#iris-options-submit-button").on("click", function() {
+        myMap.thirdPartySourcesController.removeIRISEarthquake(); // in case it is enabled
+        myMap.thirdPartySourcesController.loadIRISEarthquake();
+        irisEarthquakeToggleButton.set("on");
+        $("#iris-options-minimize-button").click();
     });
 
     $("#minimap-color-on-dropdown").change(function() {

@@ -222,6 +222,7 @@
                 <input type="number" class="form-control min-depth" value="0" />
                 <label>Max Depth</label>
                 <input type="number" class="form-control max-depth" value="30" />
+                <button class="btn btn-info" id="iris-options-submit-button">Submit</button>
             </div>
         </div>
         <!-- by default, it is toggled, or minimized -->

@@ -1553,7 +1553,7 @@ function setupCustomSliderSeismicityController() {
         return this.getSeriesData(bins, amountAtEachBin, null, null, null);
     };
 
-    CustomSliderSeismicityController.prototype.getEventsHistogram = function() {
+    CustomSliderSeismicityController.prototype.getEventsHistogram = function(features) {
         var millisecondValues = features.map(function(feature) {
             return feature.properties.time;
         });
