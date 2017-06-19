@@ -373,6 +373,7 @@ function ColorScale(min, max, divID) {
                     $input.addClass("date-input");
                 }
             }).remove();
+            $("#" + this.divID + " .scale-values").css("width", "100px");
         } else {
             $("#" + this.divID + " .scale-values .form-group > input").each(function() {
                 var classVal = $(this).attr("class");
@@ -381,6 +382,7 @@ function ColorScale(min, max, divID) {
                     $input.removeClass("date-input");
                 }
             }).remove();
+            $("#" + this.divID + " .scale-values").css("width", "50px");
         }
 
         // register callbacks again

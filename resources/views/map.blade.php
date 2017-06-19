@@ -379,9 +379,6 @@
                                 </div>
                                 <div class="color-scale-main-container">
                                     <div class="color-scale-and-values-container clearfix">
-                                        <div class="color-scale-picture-div">
-                                            <img src="/img/jet_scale.PNG" alt="jet_scale.PNG">
-                                        </div>
                                         <div class="scale-values">
                                             <div class="left-scale-minimum">
                                                 <div class="form-group">
@@ -400,13 +397,6 @@
                             <div class="minimap-color-scale" id="lat-vs-long-time-color-scale">
                                 <div class="color-scale-text-div" class="rotate">
                                     Time
-                                    <div>
-                                        <label>Color On:</label>
-                                        <select id="minimap-color-on-dropdown">
-                                            <option value="depth">Depth</option>
-                                            <option value="time">Time</option>
-                                        </select>
-                                    </div>
                                 </div>
                                 <div class="color-scale-main-container">
                                     <div class="color-scale-and-values-container clearfix">
@@ -418,6 +408,13 @@
                                                 <div class="form-group">
                                                     <input type="number" class="form-control bottom-scale-value" />
                                                 </div>
+                                            </div>
+                                            <div id="minimap-color-on-dropdown-container">
+                                                <label>Color On:</label>
+                                                <select id="minimap-color-on-dropdown">
+                                                    <option value="depth">Depth</option>
+                                                    <option value="time">Time</option>
+                                                </select>
                                             </div>
                                             <div class="right-scale-maximum">
                                                 <div class="form-group">
