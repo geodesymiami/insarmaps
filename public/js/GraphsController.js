@@ -4,26 +4,35 @@ function AbstractGraphsController() {
 
     // takes any object which can be compared. whether that be js objects
     // or milliseconds
-    this.mapExtremesToArrayIndeces = function(minDate, maxDate, arrayOfDates) {
+    this.mapExtremesToArrayIndeces = function(minValue, maxDate, values) {
         // lower limit index of subarray bounded by slider dates
-        // must be >= minDate; upper limit <= maxDate
+        // must be >= minValue; upper limit <= maxDate
         var minIndex = 0;
         var maxIndex = 0;
 
-        for (var i = 0; i < arrayOfDates.length; i++) {
-            var currentDate = arrayOfDates[i];
+        for (var i = 0; i < values.length; i++) {
+            var currentDate = values[i];
 
-            if (currentDate >= minDate) {
+            if (currentDate >= minValue) {
                 minIndex = i;
                 break;
             }
         }
-        for (var i = 0; i < arrayOfDates.length; i++) {
-            var currentDate = arrayOfDates[i];
+
+        if (minIndex < 0) {
+            minIndex = 0;
+        }
+
+        for (var i = 0; i < values.length; i++) {
+            var currentDate = values[i];
 
             if (currentDate < maxDate) {
                 maxIndex = i + 1;
             }
+        }
+
+        if (maxIndex > (values.length - 1)) {
+            maxIndex = (values.length - 1);
         }
 
         return {
@@ -1771,6 +1780,8 @@ function setupCustomSliderSeismicityController() {
         var minMax = this.mapExtremesToArrayIndeces(scale.min, scale.max, values);
         this.timeSlider.setNavigatorMin(chartContainer, values[minMax.minIndex]);
         this.timeSlider.setNavigatorMax(chartContainer, values[minMax.maxIndex]);
+        console.log(minMax);
+        console.log("min: " + scale.min + " max: " + scale.max);
     };
 
     CustomSliderSeismicityController.prototype.resetSliderRanges = function() {
