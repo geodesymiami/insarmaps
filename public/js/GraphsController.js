@@ -1272,10 +1272,9 @@ function setupSeismicityGraphsController() {
             this.map.selector.removeSelectionPolygon();
             var bounds = this.mapForPlot.getBounds();
             this.map.selector.addSelectionPolygonFromMapBounds(bounds);
-            var layerIDS = this.map.getLayerIDsInCurrentMode();
-            // not needed to be in this order for query rendered features, but why not order it?
             var sanitizedBounds = [bounds._sw, bounds._ne];
-            this.map.selector.createSeismicityPlots(layerIDS, sanitizedBounds);
+            var features = this.getFeaturesWithinCurrentSliderRanges(this.features);
+            this.createAllCharts(null, sanitizedBounds, features);
         }.bind(this);
         this.mapForPlot.on("zoomend", onMoveend);
         this.mapForPlot.on("dragend", onMoveend);
@@ -1728,30 +1727,7 @@ function setupCustomSliderSeismicityController() {
             return feature1.properties.time - feature2.properties.time;
         });
 
-        var depthData = this.createChart(null, "lat-vs-depth-graph", features);
-        var millisecondData = this.createChart(null, "cumulative-events-vs-date-graph", features);
-
-        // milliseconds already sorted since features already sorted by time
-        depthData.sort(function(data1, data2) {
-            return data1.x - data2.x;
-        });
-
-        var depthValues = [];
-        var millisecondValues = [];
-        // now get millisecond and depth values by themselves, as mapExtremesToArrayIndeces needs an array of comparables...
-        for (var i = 0; i < depthData.length; i++) {
-            var depth = depthData[i].x;
-            var millisecond = millisecondData[i].x;
-            depthValues.push(depth);
-            millisecondValues.push(millisecond);
-        }
-
-        this.depthSlider = this.createSlider("depth-slider", depthData, "linear", "Depth", function(e) {
-            this.depthSliderCallback(e, depthValues);
-        }.bind(this));
-        this.timeSlider = this.createSlider("time-slider", millisecondData, "datetime", "Time", function(e) {
-            this.timeSliderCallback(e, millisecondValues);
-        }.bind(this));
+        this.createAllCharts(null, null, features);
     };
 
     // override
@@ -1783,7 +1759,7 @@ function setupCustomSliderSeismicityController() {
     };
 
     CustomSliderSeismicityController.prototype.resetSliderRanges = function() {
-        this.createAllCharts(null, null, null);
         this.map.thirdPartySourcesController.removeSeismicityFilters();
+        this.createAllCharts(null, null, null);
     };
 }
