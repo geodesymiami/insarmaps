@@ -145,7 +145,7 @@ function MapController(loadJSONFunc) {
     this.areaFeatures = null;
     this.allAreaFeatures = null;
     this.colorScale = new ColorScale(-2.00, 2.00, "color-scale");
-    this.colorScale.onScaleChange(function(minValue, maxValue) {
+    this.colorScale.onScaleChange(function(newMin, newMax) {
         var curMode = this.getCurrentMode();
 
         if (curMode) { // no mode (ie essentially empty map)
@@ -154,17 +154,19 @@ function MapController(loadJSONFunc) {
             } else if (curMode === "gps") {
                 this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             } else if (curMode === "seismicity") {
-                var selectedColoring = $("#seismicity-color-on-dropdown").val();
-                this.thirdPartySourcesController.recolorSeismicities(selectedColoring);
+                var title = $("#color-scale .color-scale-text-div").attr("data-original-title");
+                var selectedColoring = null;
 
-                // if time is selected, convert to milliseconds
-                if (selectedColoring == "time") {
-                    this.seismicityGraphsController.createChart(selectedColoring, "depth-vs-long-graph", null, null);
-                    this.seismicityGraphsController.createChart(selectedColoring, "lat-vs-depth-graph", null, null);
-                } else {
-                    this.seismicityGraphsController.createChart(selectedColoring, "cumulative-events-vs-date-graph", null, null);
-                    this.seismicityGraphsController.createChart(selectedColoring, "lat-vs-long-graph", null, null);
+                // reversed because this attribute signals what we should change to. not what mode we are in
+                if (title === "Color Seismicity on Time") {
+                    selectedColoring = "depth";
+                } else if (title === "Color Seismicity on Depth") {
+                    selectedColoring = "time";
+                    this.seismicityGraphsController.timeColorScale.setMinMax(newMin, newMax);
+                    this.seismicityGraphsController.createAllCharts(selectedColoring, null, null);
                 }
+
+                this.thirdPartySourcesController.recolorSeismicities(selectedColoring);
             }
 
         }

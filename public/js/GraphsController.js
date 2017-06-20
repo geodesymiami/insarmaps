@@ -1108,8 +1108,9 @@ function setupSeismicityGraphsController() {
         });
 
         var colorOnInputs = depthValues;
-        var min = this.map.colorScale.min;
-        var max = this.map.colorScale.max;
+        var min = this.depthColorScale.min;
+        var max = this.depthColorScale.max;
+
         var stopsCalculator = new MapboxStopsCalculator();
         var colorStops = stopsCalculator.getDepthStops(min, max, this.map.colorScale.jet_r);
 
@@ -1126,7 +1127,14 @@ function setupSeismicityGraphsController() {
         var minDateString = minDate.toLocaleDateString();
         var maxDateString = maxDate.toLocaleDateString();
 
-        this.timeColorScale.setMinMax(minDate.getTime(), maxDate.getTime());
+        // if main map is in date mode coloring, use its values for our colorscale
+        if (this.map.colorScale.inDateMode) {
+            var min = this.map.colorScale.min;
+            var max = this.map.colorScale.max;
+            this.timeColorScale.setMinMax(min, max);
+        } else {
+            this.timeColorScale.setMinMax(minDate.getTime(), maxDate.getTime());
+        }
 
         var eventsPerDate = this.getCumulativeEventsVDayData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
@@ -1136,8 +1144,8 @@ function setupSeismicityGraphsController() {
         chartOpts.xAxis.dateTimeLabelFormats = { month: '%b %Y', year: '%Y' };
         chartOpts.yAxis.title = { text: "Cumulative Number" };
         chartOpts.tooltip = {
-                formatter: this.pointFormatterCallback
-            }
+            formatter: this.pointFormatterCallback
+        };
             // save it before we push the data to series
         this.highChartsOpts[chartContainer] = chartOpts;
 

@@ -691,6 +691,8 @@ $(window).load(function() {
             myMap.colorScale.setTopAsMax(false);
             myMap.colorScale.setMinMax(0, 50);
         }
+        $("#minimap-color-on-dropdown").val(selectedColoring);
+        $("#minimap-color-on-dropdown").change();
 
         myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
         myMap.seismicityGraphsController.recreateAllCharts(selectedColoring);
