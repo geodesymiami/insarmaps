@@ -881,6 +881,7 @@ function SeismicityGraphsController() {
         }
     }.bind(this));
     this.timeColorScale = new ColorScale(new Date(0).getTime(), new Date(50).getTime(), "lat-vs-long-time-color-scale");
+    this.timeColorScale.setTopAsMax(false);
     this.timeColorScale.setInDateMode(true);
     this.timeColorScale.onScaleChange(function(newMin, newMax) {
         var graphsController = this.map.seismicityGraphsController;
