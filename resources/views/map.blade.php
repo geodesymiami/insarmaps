@@ -428,8 +428,10 @@
                             </div>
                         </div>
                     </div>
-                    <div class="seismicity-chart">
+                    <div class="seismicity-chart" id="cumulative-events-vs-date-container">
                         <div id="cumulative-events-vs-date-graph"></div>
+                        Switch To Distribution
+                        <input id="switch-to-distribution-toggle-button" type="checkbox" name="overlayToggle" />
                     </div>
                 </div>
             </div>

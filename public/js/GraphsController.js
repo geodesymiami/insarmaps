@@ -1102,16 +1102,47 @@ function setupSeismicityGraphsController() {
         return latVdepthValues;
     };
 
+    SeismicityGraphsController.prototype.getHistogram = function(input) {
+        const NUM_BINS = 100.0; // he said he wanted 100 bins
+        var min = input[0];
+        var max = input[input.length - 1];
+        var increment = (max - min) / NUM_BINS;
+        var stopsCalculator = new MapboxStopsCalculator();
+        var bins = stopsCalculator.inputsFromMinAndMax(min, max, increment);
+
+        var amountAtEachBin = new Uint8Array(bins.length);
+        var binIndex = 0;
+        for (var i = 0; i < input.length; i++) {
+            var bin = bins[binIndex];
+            var depth = input[i];
+            if (depth <= bin) {
+                amountAtEachBin[binIndex]++;
+            } else {
+                amountAtEachBin[++binIndex]++;
+            }
+        }
+
+        return { x: bins, y: amountAtEachBin };
+    };
+
     SeismicityGraphsController.prototype.getCumulativeEventsVDayData = function(features, selectedColoring) {
-        var millisecondValues = features.map(function(feature) {
+        var htmls = [];
+        var xValues = features.map(function(feature) {
+            htmls.push(this.map.thirdPartySourcesController.featureToViewOptions(feature));
             return feature.properties.time;
+        }.bind(this));
+
+        var yValues = null;
+        if (switchToDistributionToggleButton.toggleState == ToggleStates.ON) {
+            var histogram = this.getHistogram(xValues);
+            yValues = histogram.y;
+            xValues = histogram.x;
+            return this.getSeriesData(xValues, yValues);
+        }
+        yValues = features.map(function(feature, index, array) {
+            return index + 1;
         });
 
-        var htmls = [];
-        var cumulativeValues = features.map(function(feature, index, array) {
-            htmls.push(this.map.thirdPartySourcesController.featureToViewOptions(feature));
-            return index + 1;
-        }.bind(this));
 
         var depthValues = features.map(function(feature) {
             return feature.properties.depth;
@@ -1124,7 +1155,7 @@ function setupSeismicityGraphsController() {
         var stopsCalculator = new MapboxStopsCalculator();
         var colorStops = stopsCalculator.getDepthStops(min, max, this.map.colorScale.jet_r);
 
-        return this.getSeriesData(millisecondValues, cumulativeValues, htmls, colorOnInputs, colorStops);
+        return this.getSeriesData(xValues, yValues, htmls, colorOnInputs, colorStops);
     };
 
     SeismicityGraphsController.prototype.createCumulativeEventsVDayGraph = function(features, chartContainer, selectedColoring) {
@@ -1146,7 +1177,7 @@ function setupSeismicityGraphsController() {
             this.timeColorScale.setMinMax(minDate.getTime(), maxDate.getTime());
         }
 
-        var eventsPerDate = this.getCumulativeEventsVDayData(features, selectedColoring);
+        var data = this.getCumulativeEventsVDayData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
         chartOpts.subtitle = { text: "Cumulative Number of Events " + minDateString + " - " + maxDateString };
         chartOpts.tooltip.pointFormat = "{point.y} Events";
@@ -1156,13 +1187,13 @@ function setupSeismicityGraphsController() {
         chartOpts.tooltip = {
             formatter: this.pointFormatterCallback
         };
-            // save it before we push the data to series
+        // save it before we push the data to series
         this.highChartsOpts[chartContainer] = chartOpts;
 
         chartOpts.series.push({
             type: 'scatter',
             name: 'Cumulative',
-            data: eventsPerDate,
+            data: data,
             marker: {
                 enabled: true
             },
@@ -1171,7 +1202,7 @@ function setupSeismicityGraphsController() {
 
         this.createChartDestroyingOld(chartContainer, chartOpts);
 
-        return eventsPerDate;
+        return data;
     };
 
     SeismicityGraphsController.prototype.createLatVLongGraph = function(features, chartContainer, selectedColoring, bounds) {
@@ -1548,29 +1579,6 @@ function setupCustomSliderSeismicityController() {
         var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features);
         // call super method to not recreate sliders
         SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
-    };
-
-    CustomSliderSeismicityController.prototype.getHistogram = function(input) {
-        const NUM_BINS = 100.0; // he said he wanted 100 bins
-        var min = input[0];
-        var max = input[input.length - 1];
-        var increment = (max - min) / NUM_BINS;
-        var stopsCalculator = new MapboxStopsCalculator();
-        var bins = stopsCalculator.inputsFromMinAndMax(min, max, increment);
-
-        var amountAtEachBin = new Uint8Array(bins.length);
-        var binIndex = 0;
-        for (var i = 0; i < input.length; i++) {
-            var bin = bins[binIndex];
-            var depth = input[i];
-            if (depth <= bin) {
-                amountAtEachBin[binIndex]++;
-            } else {
-                amountAtEachBin[++binIndex]++;
-            }
-        }
-
-        return { x: bins, y: amountAtEachBin };
     };
 
     CustomSliderSeismicityController.prototype.getDepthHistogram = function(features) {

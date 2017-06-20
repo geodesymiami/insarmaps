@@ -15,6 +15,7 @@ var HawaiiRelocToggleButton = null;
 var LongValleyRelocToggleButton = null;
 var midasEastNorthStationsToggleButton = null;
 var irisEarthquakeToggleButton = null;
+var switchToDistributionToggleButton = null;
 var myMap = null;
 
 function getRootUrl() {
@@ -392,6 +393,11 @@ function setupToggleButtons() {
         } else {
             myMap.graphsController.selectedGraph = "Top Graph";
         }
+    });
+
+    switchToDistributionToggleButton = new ToggleButton("switch-to-distribution-toggle-button");
+    switchToDistributionToggleButton.onclick(function() {
+        myMap.seismicityGraphsController.createChart(null, "cumulative-events-vs-date-graph", null, null);
     });
 
     contourToggleButton = new ToggleButton("contour-toggle-button", "overlay-options-toggles", "Contour Lines");
