@@ -1304,10 +1304,10 @@ function setupSeismicityGraphsController() {
             this.map.selector.removeSelectionPolygon();
             var bounds = this.mapForPlot.getBounds();
             this.map.selector.addSelectionPolygonFromMapBounds(bounds);
+            var layerIDS = this.map.getLayerIDsInCurrentMode();
             var sanitizedBounds = [bounds._sw, bounds._ne];
-            this.setBbox(sanitizedBounds);
             var features = this.getFeaturesWithinCurrentSliderRanges(this.features);
-            this.createAllCharts(null, sanitizedBounds, features);
+            this.map.selector.createSeismicityPlots(layerIDS, sanitizedBounds);
         }.bind(this);
         this.mapForPlot.on("zoomend", onMoveend);
         this.mapForPlot.on("dragend", onMoveend);
@@ -1770,6 +1770,9 @@ function setupCustomSliderSeismicityController() {
 
     CustomSliderSeismicityController.prototype.resetSliderRanges = function() {
         this.map.thirdPartySourcesController.removeSeismicityFilters();
-        this.createAllCharts(null, null, null);
+        this.map.onDatasetRendered(function(callback) {
+            this.map.map.off("render", callback);
+            this.createAllCharts(null, null, null);
+        }.bind(this));
     };
 }
