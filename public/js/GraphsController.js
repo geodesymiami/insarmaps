@@ -68,6 +68,7 @@ function AbstractGraphsController() {
         if (!chart) {
             return;
         }
+
         chart.xAxis[0].setExtremes(min, curExtremes.max);
     };
 
@@ -858,15 +859,31 @@ function SeismicityGraphsController() {
     // TODO: figure out why (not really worth it as it's probably alot of work
     // just to be able to do this.createChart...)
     this.depthColorScale.onScaleChange(function(newMin, newMax) {
-        if (this.map.seismicityGraphsController.miniMapColoring === "depth") {
-            this.map.seismicityGraphsController.createChart(null, "lat-vs-long-graph", null, null);
+        var graphsController = this.map.seismicityGraphsController;
+        if (graphsController.miniMapColoring === "depth") {
+            var values = graphsController.features.map(function(feature) {
+                return feature.properties.depth;
+            });
+            var chartContainer = "depth-slider";
+
+            var minMax = this.mapExtremesToArrayIndeces(newMin, newMax, values);
+            graphsController.timeSlider.setNavigatorMin(chartContainer, values[minMax.minIndex]);
+            graphsController.timeSlider.setNavigatorMax(chartContainer, values[minMax.maxIndex]);
         }
     }.bind(this));
     this.timeColorScale = new ColorScale(new Date(0).getTime(), new Date(50).getTime(), "lat-vs-long-time-color-scale");
     this.timeColorScale.setInDateMode(true);
     this.timeColorScale.onScaleChange(function(newMin, newMax) {
-        if (this.map.seismicityGraphsController.miniMapColoring === "time") {
-            this.map.seismicityGraphsController.createChart(null, "lat-vs-long-graph", null, null);
+        var graphsController = this.map.seismicityGraphsController;
+        if (graphsController.miniMapColoring === "time") {
+            var values = graphsController.features.map(function(feature) {
+                return feature.properties.time;
+            });
+            var chartContainer = "time-slider";
+
+            var minMax = this.mapExtremesToArrayIndeces(newMin, newMax, values);
+            graphsController.timeSlider.setNavigatorMin(chartContainer, values[minMax.minIndex]);
+            graphsController.timeSlider.setNavigatorMax(chartContainer, values[minMax.maxIndex]);
         }
     }.bind(this));
     this.minMilliseconds = 0;
@@ -1440,6 +1457,8 @@ function setupCustomHighchartsSlider() {
 function CustomSliderSeismicityController() {
     this.timeRange = null;
     this.depthRange = null;
+    this.depthSlider = null;
+    this.timeSlider = null;
 }
 
 function setupCustomSliderSeismicityController() {
@@ -1613,10 +1632,10 @@ function setupCustomSliderSeismicityController() {
             return depth1 - depth2;
         });
 
-        this.createSlider("depth-slider", depthData, "linear", null, function(e) {
+        this.depthSlider = this.createSlider("depth-slider", depthData, "linear", null, function(e) {
             this.depthSliderCallback(e, depthValues);
         }.bind(this));
-        this.createSlider("time-slider", millisecondData, "datetime", null, function(e) {
+        this.timeSlider = this.createSlider("time-slider", millisecondData, "datetime", null, function(e) {
             this.timeSliderCallback(e, millisecondValues);
         }.bind(this));
     };
@@ -1624,6 +1643,8 @@ function setupCustomSliderSeismicityController() {
         var slider = new CustomHighchartsSlider();
         slider.init(null, afterSetExtremes.bind(this));
         slider.display(sliderContainer, data, dataType, title);
+
+        return slider;
     };
 
     CustomSliderSeismicityController.prototype.destroyAllSliders = function() {
@@ -1708,12 +1729,40 @@ function setupCustomSliderSeismicityController() {
             millisecondValues.push(millisecond);
         }
 
-        this.createSlider("depth-slider", depthData, "linear", "Depth", function(e) {
+        this.depthSlider = this.createSlider("depth-slider", depthData, "linear", "Depth", function(e) {
             this.depthSliderCallback(e, depthValues);
         }.bind(this));
-        this.createSlider("time-slider", millisecondData, "datetime", "Time", function(e) {
+        this.timeSlider = this.createSlider("time-slider", millisecondData, "datetime", "Time", function(e) {
             this.timeSliderCallback(e, millisecondValues);
         }.bind(this));
+    };
+
+    // override
+    CustomSliderSeismicityController.prototype.setMinimapColoring = function(coloring) {
+        this.miniMapColoring = coloring;
+        var values = null;
+        var scale = null;
+        var chartContainer = null;
+
+        if (coloring === "time") {
+            values = this.features.map(function(feature) {
+                return feature.properties.time;
+            });
+            scale = this.timeColorScale;
+            chartContainer = "time-slider";
+        } else if (coloring === "depth") {
+            values = this.features.map(function(feature) {
+                return feature.properties.depth;
+            });
+            scale = this.depthColorScale;
+            chartContainer = "depth-slider";
+        } else {
+            throw new Error("Invalid coloring " + coloring + " selected");
+        }
+
+        var minMax = this.mapExtremesToArrayIndeces(scale.min, scale.max, values);
+        this.timeSlider.setNavigatorMin(chartContainer, values[minMax.minIndex]);
+        this.timeSlider.setNavigatorMax(chartContainer, values[minMax.maxIndex]);
     };
 
     CustomSliderSeismicityController.prototype.resetSliderRanges = function() {
