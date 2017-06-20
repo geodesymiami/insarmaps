@@ -1780,8 +1780,6 @@ function setupCustomSliderSeismicityController() {
         var minMax = this.mapExtremesToArrayIndeces(scale.min, scale.max, values);
         this.timeSlider.setNavigatorMin(chartContainer, values[minMax.minIndex]);
         this.timeSlider.setNavigatorMax(chartContainer, values[minMax.maxIndex]);
-        console.log(minMax);
-        console.log("min: " + scale.min + " max: " + scale.max);
     };
 
     CustomSliderSeismicityController.prototype.resetSliderRanges = function() {

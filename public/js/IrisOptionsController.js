@@ -30,7 +30,7 @@ function IrisOptionsController(divID) {
 
     this.getURL = function() {
         var opts = this.getOptions();
-        var url = "http://service.iris.edu/fdsnws/event/1/query?";
+        var url = "https://earthquake.usgs.gov/fdsnws/event/1/query?";
 
         if (opts.minDate) {
             url += "&starttime=" + opts.minDate;
