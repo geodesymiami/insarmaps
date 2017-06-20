@@ -1273,6 +1273,7 @@ function setupSeismicityGraphsController() {
             var bounds = this.mapForPlot.getBounds();
             this.map.selector.addSelectionPolygonFromMapBounds(bounds);
             var sanitizedBounds = [bounds._sw, bounds._ne];
+            this.setBbox(sanitizedBounds);
             var features = this.getFeaturesWithinCurrentSliderRanges(this.features);
             this.createAllCharts(null, sanitizedBounds, features);
         }.bind(this);
