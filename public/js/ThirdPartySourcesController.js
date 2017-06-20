@@ -264,6 +264,7 @@ function ThirdPartySourcesController(map) {
                 var arrowGeoJSON = this.getArrowGeoJSON(startCoordinate, resultVector.angle, resultVector.mag, i);
                 if (curArrow.properties.id == arrow.properties.id) {
                     curArrow.properties.color = "red";
+                    curArrow.properties.isReference = true;
                     this.subtractedMidasArrows.push(curArrow);
                 } else {
                     this.subtractedMidasArrows.push(arrowGeoJSON);
@@ -330,7 +331,7 @@ function ThirdPartySourcesController(map) {
                     };
 
                     features.points.push(feature);
-                    var arrowLength = resultant.mag * 1000;
+                    var arrowLength = resultant.mag * 500;
                     features.arrows.push(this.getArrowGeoJSON(coordinates, resultant.angle, arrowLength, i));
                 }
             }
@@ -1004,8 +1005,11 @@ function ThirdPartySourcesController(map) {
         } else if (itsAMidasGPSFeature) {
             var velocityInCMYR = (feature.properties.v * 100).toFixed(4);
             var uncertainty = (feature.properties.u * 100).toFixed(4);
-            var html = feature.properties.stationName + "<br>" +
+            html = feature.properties.stationName + "<br>" +
                 velocityInCMYR + " +- " + uncertainty + " cm/yr"; // we work in cm. convert m to cm
+        } else if (itsAMidasHorizontalArrow && feature.properties.isReference) {
+            coordinates = feature.geometry.coordinates[0];
+            html = "Reference station. This velocity shown red has been subtracted from the others.";
         } else if (itsASeismicityFeature || itsAMiniMapFeature) {
             html = "";
             var props = feature.properties;
