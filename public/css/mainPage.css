@@ -264,6 +264,8 @@ html[xmlns] .clearfix {
     position: absolute;
     width: 70%;
     height: 80%;
+    max-width: 330px;
+    max-height: 445px;
     margin: 0 auto;
     top: 5%;
     left: 0;
@@ -390,6 +392,14 @@ div.menu {
     z-index: 99;
 }
 
+#top-map-buttons button {
+    background-color: white;
+}
+
+#top-map-buttons a {
+    color: black;
+}
+
 #map-type-menu {
     background: #fff;
     font-family: 'Open Sans', sans-serif;
@@ -505,10 +515,6 @@ div.menu {
     }
 }
 
-#top-map-buttons > div > button {
-    background-color: white;
-}
-
 .logos {
     margin: 2em;
 }
@@ -610,6 +616,12 @@ div.menu {
     cursor: pointer;
 }
 
+/* change jquery tooltip of toggle buttons to white on black */
+.black-on-white-tooltip + .tooltip > .tooltip-inner {
+    background-color: white;
+    color: black;
+}
+
 #overlay-options {
     font-family: 'Open Sans', sans-serif;
     z-index: 99;
@@ -632,6 +644,15 @@ div.menu {
     float: left;
 }
 
+#lat-vs-long-time-color-scale > .color-scale-text-div {
+    padding-left: 35px;
+}
+
+#lat-vs-long-depth-color-scale > .color-scale-text-div {
+    width: 100%;
+    text-align: right;
+}
+
 #lat-vs-long-depth-color-scale {
     width: 40%;
 }
@@ -652,7 +673,6 @@ div.menu {
 
 .color-scale-text-div {
     height: 15%;
-    width: 100%;
 }
 
 #color-scale .color-scale-text-div {

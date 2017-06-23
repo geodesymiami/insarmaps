@@ -245,6 +245,7 @@ function MapController(loadJSONFunc) {
                 this.seismicityGraphsController.hideChartContainers();
                 this.selector.removeSelectionPolygon();
                 $("#seismicity-maximize-buttons-container").removeClass("active");
+                $("#square-selector-button").attr("data-original-title", "Select Points");
                 if (curMode === "insar") {
                     $("#insar-maximize-buttons-container").addClass("active");
                     this.colorScale.setTopAsMax(true);
@@ -265,6 +266,7 @@ function MapController(loadJSONFunc) {
                 }
                 // seismicity
             } else {
+                $("#square-selector-button").attr("data-original-title", "Select Seismicity");
                 this.colorScale.setTopAsMax(false);
                 // handles setting up color scale for seismicity etc.
                 $("#seismicity-maximize-buttons-container").addClass("active");
@@ -629,7 +631,7 @@ function MapController(loadJSONFunc) {
         // when we click, we don't reset the highlight of modified markers one final time
         this.areaMarkerLayer.resetHighlightsOfAllMarkers();
         // get a recolor selector
-        var button = $("#polygon-button");
+        var button = $("#square-selector-button");
         button.attr("data-original-title", "Select Points");
         this.selector.disableSelectMode(); // in case it is selected
         this.selector.removeEventListeners(); // remove old event listeners
@@ -1025,7 +1027,7 @@ function MapController(loadJSONFunc) {
             this.map.getCanvas().style.cursor = 'auto';
             this.selector = new FeatureSelector();
             this.selector.map = this;
-            this.selector.associatedButton = $("#polygon-button");
+            this.selector.associatedButton = $("#square-selector-button");
             this.selector.prepareEventListeners();
             this.loadAreaMarkers(function(areaFeatures) {
                 this.allAreaFeatures = areaFeatures;

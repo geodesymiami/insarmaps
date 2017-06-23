@@ -163,7 +163,7 @@
                 </div>
             </div>
             <div id="reset-button">
-                <button class="btn btn-primary-outline">Reset</button>
+                <a href="/"><button class="btn btn-primary-outline">Reset</button></a>
             </div>
             <div id="information-button">
                 <button class="btn btn-primary-outline">About</button>
@@ -173,8 +173,8 @@
                 <button class="btn btn-primary-outline">Logout</button>
             </div>
             @endif
-            <div id="polygon-button-div">
-                <button class="btn btn-primary-outline map-button no-padding clickable-button" data-toggle="tooltip" data-placement="right" title="Select Points" id="polygon-button">
+            <div id="square-selector-button-div">
+                <button class="btn btn-primary-outline map-button no-padding clickable-button" data-toggle="tooltip" data-placement="right" title="Select Points" id="square-selector-button">
                     <img src="/img/polygon.svg" alt="polygon.svg">
                 </button>
             </div>
@@ -201,7 +201,6 @@
                             <option value="displacement">Displacement</option>
                         </select>
                     </div>
-                    <button class="btn btn-info" id="show-iris-options-button">Iris Options</button>
                 </div>
             </div>
         </div>
@@ -266,7 +265,7 @@
             </div>
         </div>
         <div id="color-scale">
-            <div class="color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color Seismicity on Time">
+            <div class="btn btn-primary color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color Seismicity on Time">
                 LOS Velocity [cm/yr]
             </div>
             <div class="color-scale-main-container">

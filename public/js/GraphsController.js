@@ -1770,6 +1770,9 @@ function setupCustomSliderSeismicityController() {
 
     CustomSliderSeismicityController.prototype.resetSliderRanges = function() {
         this.map.thirdPartySourcesController.removeSeismicityFilters();
+        // this avoids us having to keep all the features in memory for when we reset
+        // we can use map queryRenderedFeatures instead once all features are rendered
+        // after applying filter
         this.map.onDatasetRendered(function(callback) {
             this.map.map.off("render", callback);
             this.createAllCharts(null, null, null);

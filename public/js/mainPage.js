@@ -287,10 +287,10 @@ function ToggleButton(id, container, label) {
         $("#" + this.id).click();
     };
 
-    this.setDescription = function(desciption) {
+    this.setDescription = function(description) {
         if (this.container) {
-            var html = "<div class='circular-question-mark' data-toggle='tooltip'";
-            html += " title='" + desciption + "'><b>?</b></div>";
+            var html = "<div class='circular-question-mark black-on-white-tooltip' data-toggle='tooltip'";
+            html += " title='" + description + "'><b>?</b></div>";
             $(html).insertAfter($("#" + this.container + " input#" + this.id + ""));
         }
     };
@@ -490,7 +490,11 @@ function setupToggleButtons() {
     irisEarthquakeToggleButton.onclick(function() {
         if (irisEarthquakeToggleButton.toggleState == ToggleStates.ON) {
             irisEarthquakeToggleButton.set("off");
-            $("#show-iris-options-button").click();
+            var $container = $(".wrap#iris-options");
+
+            if (!$container.hasClass("active")) {
+                $container.addClass("active");
+            }
         } else {
             myMap.thirdPartySourcesController.removeIRISEarthquake();
         }
@@ -649,14 +653,6 @@ $(window).load(function() {
         } else {
             throw new Error("Invalid dropdown selection");
         }
-    });
-    $("#show-iris-options-button").on("click", function() {
-        var $container = $(".wrap#iris-options");
-
-        if (!$container.hasClass("active")) {
-            $container.addClass("active");
-        }
-
     });
 
     $("#iris-options-minimize-button").on("click", function() {
@@ -903,15 +899,6 @@ $(window).load(function() {
         }
     });
 
-    $("#reset-button").on("click", function() {
-        myMap.reset();
-
-        myMap.map.flyTo({
-            center: myMap.startingCoords,
-            zoom: myMap.startingZoom
-        });
-    });
-
     $("#information-button").on("click", function() {
         $("#information-div.overlay-div").toggleClass("active");
     });
@@ -928,7 +915,7 @@ $(window).load(function() {
         });
     });
 
-    $("#polygon-button").on("click", function() {
+    $("#square-selector-button").on("click", function() {
         myMap.selector.toggleMode();
     });
 
