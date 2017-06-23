@@ -1,3 +1,4 @@
+// TODO: adding and removing sources can be greatly refactored...
 function ThirdPartySourcesController(map) {
     this.map = map;
     this.cancellableAjax = new CancellableAjax();
@@ -478,8 +479,9 @@ function ThirdPartySourcesController(map) {
                 };
 
                 var colors = this.map.colorScale.jet;
-                var opacities = [0.2, 0.6, 1.0];
-                var opacityStops = this.stopsCalculator.getOpacityStops(1, 10, opacities);
+                var depthStops = this.currentSeismicityColorStops;
+                var magCircleSizes = this.defaultCircleSizes();
+                var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
 
                 var layerID = "USGSEarthquake";
                 var before = this.getLayerOnTopOf(layerID);
@@ -489,12 +491,16 @@ function ThirdPartySourcesController(map) {
                     "type": "circle",
                     "source": layerID,
                     "paint": {
-                        "circle-opacity": {
-                            "property": 'mag',
-                            "stops": opacityStops
+                        "circle-color": {
+                            "property": "depth",
+                            "stops": depthStops,
+                            "type": "interval"
                         },
-                        "circle-color": "red",
-                        "circle-radius": 5
+                        "circle-radius": {
+                            "property": "mag",
+                            "stops": magStops,
+                            "type": "interval"
+                        }
                     }
                 }, before);
 
@@ -1020,7 +1026,7 @@ function ThirdPartySourcesController(map) {
                 html += "Mag: " + props.mag + "<br>";
             }
             if (props.time) {
-                html += new Date(props.time) + "<br>";
+                html += new Date(props.time).toISOString().slice(0,10) + "<br>";
             }
             if (props.location) {
                 html += props.location;

@@ -1179,19 +1179,26 @@ function setupSeismicityGraphsController() {
 
         var data = this.getCumulativeEventsVDayData(features, selectedColoring);
         var chartOpts = this.getBasicChartJSON();
-        chartOpts.subtitle = { text: "Cumulative Number of Events " + minDateString + " - " + maxDateString };
-        chartOpts.tooltip.pointFormat = "{point.y} Events";
+        var formatterCallback = this.pointFormatterCallback;
+        var title = "Cumulative Number of Events";
+        var seriesType = "scatter";
+        if (switchToDistributionToggleButton.toggleState == ToggleStates.ON) {
+            title = "Distribution";
+            formatterCallback = null;
+            seriesType = "column";
+        }
+
         chartOpts.xAxis.type = "datetime";
         chartOpts.xAxis.dateTimeLabelFormats = { month: '%b %Y', year: '%Y' };
-        chartOpts.yAxis.title = { text: "Cumulative Number" };
+        chartOpts.yAxis.title = { text: title };
         chartOpts.tooltip = {
-            formatter: this.pointFormatterCallback
+            formatter: formatterCallback
         };
         // save it before we push the data to series
         this.highChartsOpts[chartContainer] = chartOpts;
 
         chartOpts.series.push({
-            type: 'scatter',
+            type: seriesType,
             name: 'Cumulative',
             data: data,
             marker: {
@@ -1283,13 +1290,13 @@ function setupSeismicityGraphsController() {
             var features = this.mapForPlot.queryRenderedFeatures(e.point);
             // mouse not under a marker, clear all popups
             if (!features.length) {
-                this.gpsStationNamePopup.remove();
+                // this.gpsStationNamePopup.remove();
                 this.mapForPlot.getCanvas().style.cursor = 'auto';
                 return;
             }
             var featureViewOptions = this.map.thirdPartySourcesController.featureToViewOptions(features[0]);
             if (featureViewOptions.coordinates) {
-                var html = "<span style='font-size: 8px'>" + featureViewOptions.html + "</span>";
+                var html = "<span style='font-size: 12px'>" + featureViewOptions.html + "</span>";
                 this.gpsStationNamePopup.setLngLat(featureViewOptions.coordinates)
                     .setHTML(html)
                     .addTo(this.mapForPlot);
