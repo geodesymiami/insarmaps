@@ -929,40 +929,33 @@ function setupSeismicityGraphsController() {
         this.createChart(null, "lat-vs-long-graph", null, null);
     };
 
-    SeismicityGraphsController.prototype.getSeriesData = function(xValues, yValues, extraFeatureData, colorOnInputs, colorStops) {
+    SeismicityGraphsController.prototype.getSeriesData = function(features, colorStops) {
         var seriesData = [];
 
-        if (xValues.length != yValues.length) {
-            throw new Error("Number of values for the x axis (" + xValues.length +
-                ") and number of values for the y axis (" + yValues.length + ") differ");
-        }
-
-        if (colorOnInputs && colorOnInputs.length != xValues.length) {
-            throw new Error("Number of values for the x and y axes (" + xValues.length +
-                ") and number of values for the colorOnInputs (" + colorOnInputs.length + ") differ");
-        }
-
         // we do x, y values if no stops provided to avoid highcharts turbothreshold
-        if (colorOnInputs) {
+        if (features[0].colorOnInput) {
             var stopsCalculator = new MapboxStopsCalculator();
 
-            for (var i = 0; i < xValues.length; i++) {
-                var index = stopsCalculator.getOutputIndexFromInputStop(colorStops, colorOnInputs[i]);
+            for (var i = 0; i < features.length; i++) {
+                var feature = features[i];
+                var index = stopsCalculator.getOutputIndexFromInputStop(colorStops, feature.colorOnInput);
+
                 var color = colorStops[index][1];
                 seriesData.push({
-                    x: xValues[i],
-                    y: yValues[i],
+                    x: feature.x,
+                    y: feature.y,
                     name: "Point2",
                     color: color
                 });
 
-                if (extraFeatureData) {
-                    seriesData[i].extraData = extraFeatureData[i];
+                if (feature.extraFeatureData) {
+                    seriesData[i].extraData = feature.extraFeatureData;
                 }
             }
         } else {
-            for (var i = 0; i < xValues.length; i++) {
-                seriesData.push([xValues[i], yValues[i]]);
+            for (var i = 0; i < features.length; i++) {
+                var feature = features[i];
+                seriesData.push([feature.x, feature.y]);
             }
         }
 
@@ -970,26 +963,55 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.getDepthVLongData = function(features, selectedColoring) {
-        var depthValues = features.map(function(feature) {
-            return feature.properties.depth;
-        });
-        var htmls = [];
-        var longValues = features.map(function(feature) {
-            htmls.push(this.map.thirdPartySourcesController.featureToViewOptions(feature));
-            return feature.geometry.coordinates[0];
-        }.bind(this));
-        var millisecondValues = features.map(function(feature) {
-            return feature.properties.time;
-        });
-        var min = millisecondValues[0];
-        var max = millisecondValues[millisecondValues.length - 1];
+        var seriesFeatures = []
 
-        var colorOnInputs = millisecondValues;
+        var min = 0;
+        var max = 0;
+        var colorOnInputs = null;
+        if (selectedColoring === "time") {
+            min = features[0].properties.time;
+            max = features[0].properties.time;
+            features.forEach(function(feature) {
+                var html = this.map.thirdPartySourcesController.featureToViewOptions(feature);
+                var seriesFeature = {
+                    x: feature.geometry.coordinates[0],
+                    y: feature.properties.depth,
+                    colorOnInput: feature.properties.time,
+                    extraFeatureData: html
+                };
+                // could use custom findMinMaxOfArray function to get min and max
+                // by might as well make use of this for loop...
+                if (seriesFeature.colorOnInput < min) {
+                    min = seriesFeature.colorOnInput;
+                } else if (seriesFeature.colorOnInput > max) {
+                    max = seriesFeature.colorOnInput;
+                }
+                seriesFeatures.push(seriesFeature);
+            }.bind(this));
+        } else { // anything else we assume is depth...
+            min = features[0].properties.depth;
+            max = features[0].properties.depth;
+            features.forEach(function(feature) {
+                var html = this.map.thirdPartySourcesController.featureToViewOptions(feature);
+                var seriesFeature = {
+                    x: feature.geometry.coordinates[0],
+                    y: feature.properties.depth,
+                    colorOnInput: feature.properties.depth,
+                    extraFeatureData: html
+                };
+
+                if (seriesFeature.colorOnInput < min) {
+                    min = seriesFeature.colorOnInput;
+                } else if (seriesFeature.colorOnInput > max) {
+                    max = seriesFeature.colorOnInput;
+                }
+                seriesFeatures.push(seriesFeature);
+            }.bind(this));
+        }
         var stopsCalculator = new MapboxStopsCalculator();
+        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet_r);
 
-        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
-
-        return this.getSeriesData(longValues, depthValues, htmls, colorOnInputs, colorStops);
+        return this.getSeriesData(seriesFeatures, colorStops);
     };
 
     SeismicityGraphsController.prototype.getMinimapBounds = function() {
@@ -1045,26 +1067,55 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.getLatVDepthData = function(features, selectedColoring) {
-        var depthValues = features.map(function(feature) {
-            return feature.properties.depth;
-        });
-        var htmls = [];
-        var latValues = features.map(function(feature) {
-            htmls.push(this.map.thirdPartySourcesController.featureToViewOptions(feature));
-            return feature.geometry.coordinates[1];
-        }.bind(this));
+        var seriesFeatures = []
 
-        var millisecondValues = features.map(function(feature) {
-            return feature.properties.time;
-        });
-        var min = millisecondValues[0];
-        var max = millisecondValues[millisecondValues.length - 1];
+        var min = 0;
+        var max = 0;
+        var colorOnInputs = null;
+        if (selectedColoring === "time") {
+            min = features[0].properties.time;
+            max = features[0].properties.time;
+            features.forEach(function(feature) {
+                var html = this.map.thirdPartySourcesController.featureToViewOptions(feature);
+                var seriesFeature = {
+                    x: feature.properties.depth,
+                    y: feature.geometry.coordinates[1],
+                    colorOnInput: feature.properties.time,
+                    extraFeatureData: html
+                };
+                // could use custom findMinMaxOfArray function to get min and max
+                // by might as well make use of this for loop...
+                if (seriesFeature.colorOnInput < min) {
+                    min = seriesFeature.colorOnInput;
+                } else if (seriesFeature.colorOnInput > max) {
+                    max = seriesFeature.colorOnInput;
+                }
+                seriesFeatures.push(seriesFeature);
+            }.bind(this));
+        } else {
+            min = features[0].properties.depth;
+            max = features[0].properties.depth;
+            features.forEach(function(feature) {
+                var html = this.map.thirdPartySourcesController.featureToViewOptions(feature);
+                var seriesFeature = {
+                    x: feature.properties.depth,
+                    y: feature.geometry.coordinates[1],
+                    colorOnInput: feature.properties.depth,
+                    extraFeatureData: html
+                };
 
-        var colorOnInputs = millisecondValues;
+                if (seriesFeature.colorOnInput < min) {
+                    min = seriesFeature.colorOnInput;
+                } else if (seriesFeature.colorOnInput > max) {
+                    max = seriesFeature.colorOnInput;
+                }
+                seriesFeatures.push(seriesFeature);
+            }.bind(this));
+        }
         var stopsCalculator = new MapboxStopsCalculator();
-        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
+        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet_r);
 
-        return this.getSeriesData(depthValues, latValues, htmls, colorOnInputs, colorStops);
+        return this.getSeriesData(seriesFeatures, colorStops);
     };
     SeismicityGraphsController.prototype.createLatVDepthGraph = function(features, chartContainer, selectedColoring) {
         var latVdepthValues = this.getLatVDepthData(features, selectedColoring);
@@ -1131,36 +1182,72 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.getCumulativeEventsVDayData = function(features, selectedColoring) {
-        var htmls = [];
-        var xValues = features.map(function(feature) {
-            htmls.push(this.map.thirdPartySourcesController.featureToViewOptions(feature));
-            return feature.properties.time;
-        }.bind(this));
-
-        var yValues = null;
         if (switchToDistributionToggleButton.toggleState == ToggleStates.ON) {
-            var histogram = this.getHistogram(xValues);
-            yValues = histogram.y;
-            xValues = histogram.x;
-            return this.getSeriesData(xValues, yValues);
+            var millisecondValues = features.map(function(feature) {
+                return feature.properties.time;
+            });
+            var histogram = this.getHistogram(millisecondValues);
+            var yValues = histogram.y;
+            var xValues = histogram.x;
+            var seriesFeatures = [];
+            for (var i = 0; i < yValues.length; i++) {
+                seriesFeatures.push({ x: xValues[i], y: yValues[i] });
+            }
+            return this.getSeriesData(seriesFeatures);
         }
-        yValues = features.map(function(feature, index, array) {
-            return index + 1;
-        });
+        var seriesFeatures = []
 
+        var min = 0;
+        var max = 0;
+        var colorOnInputs = null;
+        if (selectedColoring === "time") {
+            min = features[0].properties.time;
+            max = features[0].properties.time;
+            var numberOfEvents = 1;
+            features.forEach(function(feature) {
+                var html = this.map.thirdPartySourcesController.featureToViewOptions(feature);
+                var seriesFeature = {
+                    x: feature.properties.time,
+                    y: numberOfEvents,
+                    colorOnInput: feature.properties.time,
+                    extraFeatureData: html
+                };
+                numberOfEvents++;
+                // could use custom findMinMaxOfArray function to get min and max
+                // by might as well make use of this for loop...
+                if (seriesFeature.colorOnInput < min) {
+                    min = seriesFeature.colorOnInput;
+                } else if (seriesFeature.colorOnInput > max) {
+                    max = seriesFeature.colorOnInput;
+                }
+                seriesFeatures.push(seriesFeature);
+            }.bind(this));
+        } else {
+            min = features[0].properties.depth;
+            max = features[0].properties.depth;
+            var numberOfEvents = 1;
+            features.forEach(function(feature) {
+                var html = this.map.thirdPartySourcesController.featureToViewOptions(feature);
+                var seriesFeature = {
+                    x: feature.properties.time,
+                    y: numberOfEvents,
+                    colorOnInput: feature.properties.depth,
+                    extraFeatureData: html
+                };
+                numberOfEvents++;
 
-        var depthValues = features.map(function(feature) {
-            return feature.properties.depth;
-        });
-
-        var colorOnInputs = depthValues;
-        var min = this.depthColorScale.min;
-        var max = this.depthColorScale.max;
-
+                if (seriesFeature.colorOnInput < min) {
+                    min = seriesFeature.colorOnInput;
+                } else if (seriesFeature.colorOnInput > max) {
+                    max = seriesFeature.colorOnInput;
+                }
+                seriesFeatures.push(seriesFeature);
+            }.bind(this));
+        }
         var stopsCalculator = new MapboxStopsCalculator();
-        var colorStops = stopsCalculator.getDepthStops(min, max, this.map.colorScale.jet_r);
+        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet_r);
 
-        return this.getSeriesData(xValues, yValues, htmls, colorOnInputs, colorStops);
+        return this.getSeriesData(seriesFeatures, colorStops);
     };
 
     SeismicityGraphsController.prototype.createCumulativeEventsVDayGraph = function(features, chartContainer, selectedColoring) {
@@ -1249,7 +1336,7 @@ function setupSeismicityGraphsController() {
                 scaleColors = this.depthColorScale.jet_r;
             } else if (this.miniMapColoring === "time") {
                 scale = this.timeColorScale;
-                scaleColors = this.timeColorScale.jet;
+                scaleColors = this.timeColorScale.jet_r;
             } else {
                 throw new Error("Invalid coloring " + this.miniMapColoring + " selected");
             }
@@ -1424,8 +1511,8 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.recreateAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
-        // this.destroyAllCharts();
-        // this.createAllCharts(selectedColoring, optionalBounds, optionalFeatures);
+        this.destroyAllCharts();
+        this.createAllCharts(selectedColoring, optionalBounds, optionalFeatures);
     };
 }
 
@@ -1541,7 +1628,7 @@ function setupCustomSliderSeismicityController() {
         var colorOnInputs = depthValues;
         var stopsCalculator = new MapboxStopsCalculator();
 
-        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet);
+        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet_r);
 
         return this.getSeriesData(depthValues, depthValues, null, colorOnInputs, colorStops);
     };
@@ -1620,8 +1707,12 @@ function setupCustomSliderSeismicityController() {
         var histogram = this.getHistogram(depthValues);
         var amountAtEachBin = histogram.y;
         var bins = histogram.x;
+        var seriesFeatures = [];
+        for (var i = 0; i < bins.length; i++) {
+            seriesFeatures.push({ x: bins[i], y: amountAtEachBin[i] });
+        }
 
-        return this.getSeriesData(bins, amountAtEachBin, null, null, null);
+        return this.getSeriesData(seriesFeatures);
     };
 
     CustomSliderSeismicityController.prototype.getEventsHistogram = function(features) {
@@ -1637,8 +1728,12 @@ function setupCustomSliderSeismicityController() {
         var histogram = this.getHistogram(millisecondValues);
         var amountAtEachBin = histogram.y;
         var bins = histogram.x;
+        var seriesFeatures = [];
+        for (var i = 0; i < bins.length; i++) {
+            seriesFeatures.push({ x: bins[i], y: amountAtEachBin[i] });
+        }
 
-        return this.getSeriesData(bins, amountAtEachBin, null, null, null);
+        return this.getSeriesData(seriesFeatures);
     };
 
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
@@ -1700,8 +1795,10 @@ function setupCustomSliderSeismicityController() {
     };
 
     CustomSliderSeismicityController.prototype.destroyAllSliders = function() {
-        $("#depth-slider").highcharts().destroy();
-        $("#time-slider").highcharts().destroy();
+        if (this.slidersVisible()) {
+            $("#depth-slider").highcharts().destroy();
+            $("#time-slider").highcharts().destroy();
+        }
     };
 
     // override

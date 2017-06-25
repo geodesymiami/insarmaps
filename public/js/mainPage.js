@@ -18,10 +18,6 @@ var irisEarthquakeToggleButton = null;
 var switchToDistributionToggleButton = null;
 var myMap = null;
 
-function getRootUrl() {
-    return window.location.origin ? window.location.origin + '/' : window.location.protocol + '/' + window.location.host + '/';
-}
-
 function DivState() {
     this.height = 0;
     this.width = 0;
@@ -831,6 +827,22 @@ $(window).load(function() {
         }
     });
 
+    // this website is begging for a toggable abstract class...
+    $(".seismicity-chart-set-coloring-button").on("click", function() {
+        var selectedColoring = null;
+        var targetGraph = $(this).data().chartType;
+        var tooltipValue = $(this).attr("data-original-title");
+        if (tooltipValue === "Color On Time") {
+            selectedColoring = "time";
+            $(this).attr("data-original-title", "Color On Depth");
+        } else { // depth class or no class we take as depth coloring
+            selectedColoring = "depth";
+            $(this).attr("data-original-title", "Color On Time");
+        }
+
+        myMap.seismicityGraphsController.createChart(selectedColoring, targetGraph, null, null);
+    });
+
     $(".wrap#seismicity-chart-sliders, .wrap#seismicity-charts, .wrap#cross-section-charts").draggable({
         start: function(event, ui) {
             $(this).removeClass("wrap-transitions");
@@ -909,11 +921,7 @@ $(window).load(function() {
     });
 
     $(function() {
-        $('[data-toggle="tooltip"]').tooltip().click(function() {
-            $('.tooltip').fadeOut('fast', function() {
-                $('.tooltip').remove();
-            });
-        });
+        $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
     });
 
     $("#square-selector-button").on("click", function() {

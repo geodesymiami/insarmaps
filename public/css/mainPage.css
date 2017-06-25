@@ -803,6 +803,16 @@ input[type=number] {
     height: 100% !important;
 }
 
+.seismicity-chart-set-coloring-button {
+    position: absolute;
+    z-index: 99;
+    opacity: 0.5;
+}
+/* make the chart containers relative by default so we can position
+    buttons absolutely which change their coloring */
+.seismicity-chart > div {
+    position: relative;
+}
 /*we use pos absolute because we reduce size of map and center it vertically
 to get it to exactly match the axes of the lat and long vs depth plots*/
 
@@ -818,6 +828,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 .seismicity-chart > div.side-by-side {
     position: absolute;
     width: 50%;
+    height: 100%;
 }
 
 .seismicity-chart > div.side-by-side:first-child {
@@ -828,7 +839,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     right: 0;
 }
 
-.seismicity-chart > div, .cross-section-chart > div {
+.seismicity-chart .chart, .cross-section-chart .chart {
     height: 100%;
 }
 
@@ -853,8 +864,8 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 
 #lat-vs-long-graph {
     height: 80%;
-    width: 35%;
-    margin-left: 7%;
+    width: 80%;
+    float: right;
 }
 
 #seismicity-chart-sliders {

@@ -295,10 +295,10 @@
                     <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-chart-sliders-maximize-button" data-toggle="tooltip" title="Seismicity Plot Sliders"></button>
                 </div>
                 <div class="maximize-button-container">
-                    <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-charts-maximize-button" data-toggle="tooltip" title="Seismicity Plots"></button>
+                    <button type="button" class="maximize-button" data-dismiss="modal" id="cross-section-charts-maximize-button" data-toggle="tooltip" title="Cross Section Seismicity Plots"></button>
                 </div>
                 <div class="maximize-button-container">
-                    <button type="button" class="maximize-button" data-dismiss="modal" id="cross-section-charts-maximize-button" data-toggle="tooltip" title="Cross Section Seismicity Plots"></button>
+                    <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-charts-maximize-button" data-toggle="tooltip" title="Seismicity Plots"></button>
                 </div>
             </div>
             <div class="btn btn-primary" id="insar-maximize-buttons-container">
@@ -367,11 +367,20 @@
             <div class="content">
                 <div class="chart-containers" id="seismicity-charts-container">
                     <div class="seismicity-chart">
-                        <div class="side-by-side" id="lat-vs-long-graph"></div>
-                        <div class="side-by-side" id="lat-vs-depth-graph"></div>
+                        <div class="side-by-side">
+                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="lat-vs-long-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Recolor</button>
+                            <div class="chart" id="lat-vs-long-graph"></div>
+                        </div>
+                        <div class="side-by-side">
+                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="lat-vs-depth-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Recolor</button>
+                            <div class="chart" id="lat-vs-depth-graph"></div>
+                        </div>
                     </div>
                     <div class="seismicity-chart">
-                        <div class="side-by-side" id="depth-vs-long-graph"></div>
+                        <div class="side-by-side">
+                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="depth-vs-long-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Recolor</button>
+                            <div class="chart" id="depth-vs-long-graph"></div>
+                        </div>
                         <div class="side-by-side">
                             <div class="minimap-color-scale" id="lat-vs-long-depth-color-scale">
                                 <div class="color-scale-text-div" class="rotate">
@@ -428,9 +437,10 @@
                         </div>
                     </div>
                     <div class="seismicity-chart" id="cumulative-events-vs-date-container">
-                        <div id="cumulative-events-vs-date-graph"></div>
+                        <div class="chart" id="cumulative-events-vs-date-graph"></div>
                         Switch To Distribution
-                        <input id="switch-to-distribution-toggle-button" type="checkbox" name="overlayToggle" />
+                        <input id="switch-to-distribution-toggle-button" type="checkbox" name="overlayToggle" style="display: block" />
+                        <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cumulative-events-vs-date-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Recolor</button>
                     </div>
                 </div>
             </div>
@@ -442,10 +452,10 @@
             <div class="content">
                 <div class="chart-containers">
                     <div class="cross-section-chart">
-                        <div id="cross-section-lat-vs-depth-graph"></div>
+                        <div class="chart" id="cross-section-lat-vs-depth-graph"></div>
                     </div>
                     <div class="cross-section-chart">
-                        <div id="cross-section-depth-vs-long-graph"></div>
+                        <div class="chart" id="cross-section-depth-vs-long-graph"></div>
                     </div>
                 </div>
             </div>
@@ -515,6 +525,7 @@
     var urlOptions = {!!json_encode($urlOptions)!!};
     </script>
     <script type="text/javascript" src="/js/fuse.js"></script>
+    <script type="text/javascript" src="/js/helperFunctions.js"></script>
     <script type="text/javascript" src="/js/GraphsController.js"></script>
     <script type="text/javascript" src="/js/CancellableAjax.js"></script>
     <script type="text/javascript" src="/js/gpsStations.js"></script>
