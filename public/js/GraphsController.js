@@ -130,7 +130,6 @@ function AbstractGraphsController() {
                 events: {
                     load: function() {
                         chartOpts.loaded = true;
-                        console.log(chartOpts);
                     }
                 }
             },
@@ -1760,7 +1759,7 @@ function setupCustomSliderSeismicityController() {
     // constructor used to have bugs (see: https://forum.highcharts.com/post126503.html#p126503),
     // and although they've now fixed it, we want to remain consistent with our other graph code.
     // In the future, someone can use the constructor functions to update graphs rather than creating anew every time.
-    CustomSliderSeismicityController.prototype.zoomSlidersToCurrentRange = function() {
+    CustomSliderSeismicityController.prototype.zoomSliderToCurrentRange = function(sliderName) {
         var pixelBoundingBox = [this.map.map.project(this.bbox[0]), this.map.map.project(this.bbox[1])];
         var seismicityLayerIDs = this.map.getLayerIDsInCurrentMode();
         var allFeatures = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: seismicityLayerIDs });
@@ -1770,7 +1769,76 @@ function setupCustomSliderSeismicityController() {
             return feature1.properties.time - feature2.properties.time;
         });
 
-        this.createAllCharts(null, null, features);
+        var depthData = this.getDepthHistogram(features);
+        var millisecondData = this.getEventsHistogram(features);
+
+        var depthValues = [];
+        var millisecondValues = [];
+
+        features.forEach(function(feature) {
+            depthValues.push(feature.properties.depth);
+            millisecondValues.push(feature.properties.time);
+        });
+
+        // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
+        // also, callbacks depend on sorted arrays (for speed). no need to sort milliseconds as the features are already sorted by this
+        depthValues.sort(function(depth1, depth2) {
+            return depth1 - depth2;
+        });
+
+        if (sliderName === "depth-slider") {
+            this.depthSlider = this.createSlider("depth-slider", depthData, "linear", null, function(e) {
+                this.depthSliderCallback(e, depthValues);
+            }.bind(this));
+        } else if (sliderName === "time-slider") {
+            this.timeSlider = this.createSlider("time-slider", millisecondData, "datetime", null, function(e) {
+                this.timeSliderCallback(e, millisecondValues);
+            }.bind(this));
+        }
+
+        // call super method to not recreate sliders
+        SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, features);
+    };
+
+    // TODO: this method, and the above, look like they can seriously be rafctored
+    CustomSliderSeismicityController.prototype.resetSliderRange = function(sliderName) {
+        this.map.thirdPartySourcesController.removeSeismicityFilters();
+
+        var features = this.features;
+        var depthData = this.getDepthHistogram(features);
+        var millisecondData = this.getEventsHistogram(features);
+
+        var depthValues = [];
+        var millisecondValues = [];
+
+        features.forEach(function(feature) {
+            depthValues.push(feature.properties.depth);
+            millisecondValues.push(feature.properties.time);
+        });
+
+        // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
+        // also, callbacks depend on sorted arrays (for speed). no need to sort milliseconds as the features are already sorted by this
+        depthValues.sort(function(depth1, depth2) {
+            return depth1 - depth2;
+        });
+
+        if (sliderName === "depth-slider") {
+            this.depthSlider = this.createSlider("depth-slider", depthData, "linear", null, function(e) {
+                this.depthSliderCallback(e, depthValues);
+            }.bind(this));
+        } else if (sliderName === "time-slider") {
+            this.timeSlider = this.createSlider("time-slider", millisecondData, "datetime", null, function(e) {
+                this.timeSliderCallback(e, millisecondValues);
+            }.bind(this));
+        }
+        // this avoids us having to keep all the features in memory for when we reset
+        // we can use map queryRenderedFeatures instead once all features are rendered
+        // after applying filter
+        this.map.onDatasetRendered(function(callback) {
+            this.map.map.off("render", callback);
+            // call super method to not recreate sliders
+            SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, features);
+        }.bind(this));
     };
 
     // override
@@ -1798,16 +1866,5 @@ function setupCustomSliderSeismicityController() {
         var minMax = this.mapExtremesToArrayIndeces(scale.min, scale.max, values);
         this.timeSlider.setNavigatorMin(chartContainer, values[minMax.minIndex]);
         this.timeSlider.setNavigatorMax(chartContainer, values[minMax.maxIndex]);
-    };
-
-    CustomSliderSeismicityController.prototype.resetSliderRanges = function() {
-        this.map.thirdPartySourcesController.removeSeismicityFilters();
-        // this avoids us having to keep all the features in memory for when we reset
-        // we can use map queryRenderedFeatures instead once all features are rendered
-        // after applying filter
-        this.map.onDatasetRendered(function(callback) {
-            this.map.map.off("render", callback);
-            this.createAllCharts(null, null, null);
-        }.bind(this));
     };
 }

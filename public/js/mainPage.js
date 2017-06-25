@@ -861,12 +861,14 @@ $(window).load(function() {
         }
     });
 
-    $("#set-slider-ranges-button").on("click", function() {
-        myMap.seismicityGraphsController.zoomSlidersToCurrentRange();
+    $(".slider-range-button").on("click", function() {
+        var sliderName = $(this).data().sliderType;
+        myMap.seismicityGraphsController.zoomSliderToCurrentRange(sliderName);
     });
 
-    $("#reset-slider-ranges-button").on("click", function() {
-        myMap.seismicityGraphsController.resetSliderRanges();
+    $(".slider-reset-button").on("click", function() {
+        var sliderName = $(this).data().sliderType;
+        myMap.seismicityGraphsController.resetSliderRange(sliderName);
     });
 
     // chart div resizable
