@@ -478,7 +478,7 @@ function ThirdPartySourcesController(map) {
                     data: featureCollection
                 };
 
-                var colors = this.map.colorScale.jet;
+                var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
                 var magCircleSizes = this.defaultCircleSizes();
                 var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
@@ -1134,7 +1134,7 @@ function ThirdPartySourcesController(map) {
 
     this.recolorSeismicities = function(selectedColoring) {
         var stops = null;
-        var colors = this.map.colorScale.jet;
+        var colors = this.map.colorScale.jet_r;
         var min = this.map.colorScale.min;
         var max = this.map.colorScale.max;
         var type = "exponential";
@@ -1143,7 +1143,6 @@ function ThirdPartySourcesController(map) {
             stops = this.stopsCalculator.getTimeStops(min, max, colors);
             type = "interval"
         } else if (selectedColoring === "depth") {
-            colors = this.map.colorScale.jet_r;
             this.map.colorScale.setTitle("Depth (Km)");
             stops = this.stopsCalculator.getDepthStops(min, max, colors);
             type = "interval";

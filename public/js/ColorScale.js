@@ -329,31 +329,56 @@ function ColorScale(min, max, divID) {
     ];
 
     this.currentScale = this.jet;
+    this.currentScaleString = "jet";
 
     // in cm
     this.min = min;
     this.max = max;
 
-    this.setScale = function(scale) {
+    this.stringToScale = function(scale) {
         if (scale == "jet") {
-            this.currentScale = this.jet;
-        } else if (scale == "zishiCustom") {
-            this.currentScale = this.zishiCustom;
-        } else if (scale == "jet_r") {
-            this.currentScale = this.jet_r;
-        } else if (scale == "hsv") {
-            this.currentScale = this.hsv;
-        } else if (scale == "bwr") {
-            this.currentScale = this.bwr;
-        } else {
-            throw "Invalid Color Scale (" + scale + ") selected";
+            return this.jet;
         }
+        if (scale == "zishiCustom") {
+            return this.zishiCustom;
+        }
+        if (scale == "jet_r") {
+            return this.jet_r;
+        }
+        if (scale == "hsv") {
+            return this.hsv;
+        }
+        if (scale == "bwr") {
+            return this.bwr;
+        }
+        throw "Invalid Color Scale (" + scale + ") selected";
+    };
+
+    this.topIsMax = true;
+
+    this.setScale = function(scale) {
+        this.currentScale = this.stringToScale(scale);
+        this.currentScaleString = scale;
 
         var imgSrc = "/img/" + scale + "_scale.PNG";
         $("#" + this.divID + " .color-scale-picture-div > img").attr("src", imgSrc);
     };
 
-    this.topIsMax = true;
+    // doesn't return the raw scale per se, but the scale that it APPEARS to be using
+    // so a jet scale with topIsMax of false would actually be a jet_r in terms of values...
+    this.getCurrentScale = function() {
+        var scale = this.currentScaleString;
+        // set forward scale to reverse and vice versa
+        if (!this.topIsMax) {
+            if (scale.includes("_r")) {
+                scale = scale.split("_r")[0];
+            } else {
+                scale += "_r";
+            }
+        }
+
+        return this.stringToScale(scale);
+    };
 
     this.setTopAsMax = function(setAsMax) {
         this.topIsMax = setAsMax;

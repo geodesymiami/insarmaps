@@ -127,7 +127,12 @@ function AbstractGraphsController() {
             },
             series: [],
             chart: {
-                marginRight: 50
+                events: {
+                    load: function() {
+                        chartOpts.loaded = true;
+                        console.log(chartOpts);
+                    }
+                }
             },
             exporting: {
                 enabled: false
@@ -136,7 +141,8 @@ function AbstractGraphsController() {
                 series: {
                     turboThreshold: 0
                 }
-            }
+            },
+            loaded: false
         };
 
         return chartOpts;
@@ -1290,13 +1296,13 @@ function setupSeismicityGraphsController() {
             var features = this.mapForPlot.queryRenderedFeatures(e.point);
             // mouse not under a marker, clear all popups
             if (!features.length) {
-                // this.gpsStationNamePopup.remove();
+                this.gpsStationNamePopup.remove();
                 this.mapForPlot.getCanvas().style.cursor = 'auto';
                 return;
             }
             var featureViewOptions = this.map.thirdPartySourcesController.featureToViewOptions(features[0]);
             if (featureViewOptions.coordinates) {
-                var html = "<span style='font-size: 12px'>" + featureViewOptions.html + "</span>";
+                var html = featureViewOptions.html;
                 this.gpsStationNamePopup.setLngLat(featureViewOptions.coordinates)
                     .setHTML(html)
                     .addTo(this.mapForPlot);
@@ -1419,8 +1425,8 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.recreateAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
-        this.destroyAllCharts();
-        this.createAllCharts(selectedColoring, optionalBounds, optionalFeatures);
+        // this.destroyAllCharts();
+        // this.createAllCharts(selectedColoring, optionalBounds, optionalFeatures);
     };
 }
 
@@ -1432,8 +1438,10 @@ function setupCustomHighchartsSlider() {
         chartOpts.credits = false;
         chartOpts.chart = {
             margin: [0, 5, 0, 5],
-            spacing: [0, 0, 0, 0]
+            spacing: [0, 0, 0, 0],
+            animation: false // no point in on since charts are hidden
         };
+
         chartOpts.navigator = {
             enabled: true,
             top: 1,
@@ -1518,6 +1526,11 @@ function CustomSliderSeismicityController() {
 }
 
 function setupCustomSliderSeismicityController() {
+    // override
+    CustomSliderSeismicityController.prototype.setFeatures = function(features) {
+        SeismicityGraphsController.prototype.setFeatures.call(this, features);
+        this.timeColorScale.setMinMax(this.minMilliseconds, this.maxMilliseconds);
+    };
     CustomSliderSeismicityController.prototype.getDepthVDepthData = function(features, selectedColoring) {
         var depthValues = features.map(function(feature) {
             return feature.properties.depth;
@@ -1570,6 +1583,9 @@ function setupCustomSliderSeismicityController() {
         var max = depthValues[minMax.maxIndex];
 
         this.depthRange = { min: min, max: max };
+        if (!this.map.colorScale.inDateMode) {
+            this.map.colorScale.setMinMax(min, max);
+        }
         this.map.thirdPartySourcesController.filterSeismicities([this.depthRange], "depth");
         var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features);
         // call super method to not recreate sliders
@@ -1582,6 +1598,10 @@ function setupCustomSliderSeismicityController() {
         var max = millisecondValues[minMax.maxIndex];
 
         this.timeRange = { min: min, max: max };
+        if (this.map.colorScale.inDateMode) {
+            this.map.colorScale.setMinMax(min, max);
+            this.timeColorScale.setMinMax(min, max);
+        }
         this.map.thirdPartySourcesController.filterSeismicities([this.timeRange], "time");
         var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features);
         // call super method to not recreate sliders
@@ -1685,6 +1705,12 @@ function setupCustomSliderSeismicityController() {
         $("#time-slider").highcharts().destroy();
     };
 
+    // override
+    CustomSliderSeismicityController.prototype.destroyAllCharts = function() {
+        SeismicityGraphsController.prototype.destroyAllCharts.call(this);
+        this.destroyAllSliders();
+    };
+
     CustomSliderSeismicityController.prototype.slidersVisible = function() {
         return $("#seismicity-chart-sliders").hasClass("active");
     };
@@ -1769,7 +1795,6 @@ function setupCustomSliderSeismicityController() {
         } else {
             throw new Error("Invalid coloring " + coloring + " selected");
         }
-
         var minMax = this.mapExtremesToArrayIndeces(scale.min, scale.max, values);
         this.timeSlider.setNavigatorMin(chartContainer, values[minMax.minIndex]);
         this.timeSlider.setNavigatorMax(chartContainer, values[minMax.maxIndex]);

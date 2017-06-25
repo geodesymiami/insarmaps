@@ -680,17 +680,16 @@ $(window).load(function() {
         var selectedColoring = null;
         var title = $(this).attr("data-original-title");
 
+        myMap.colorScale.setTopAsMax(false);
         if (title === "Color Seismicity on Time") {
             selectedColoring = "time";
             $(this).attr("data-original-title", "Color Seismicity on Depth");
-            myMap.colorScale.setTopAsMax(true);
             myMap.colorScale.setInDateMode(true);
             myMap.colorScale.setMinMax(myMap.seismicityGraphsController.minMilliseconds, myMap.seismicityGraphsController.maxMilliseconds);
         } else if (title === "Color Seismicity on Depth") {
             selectedColoring = "depth";
             $(this).attr("data-original-title", "Color Seismicity on Time");
             myMap.colorScale.setInDateMode(false);
-            myMap.colorScale.setTopAsMax(false);
             myMap.colorScale.setMinMax(0, 50);
         }
         $("#minimap-color-on-dropdown").val(selectedColoring);
