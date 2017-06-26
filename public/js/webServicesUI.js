@@ -2,7 +2,7 @@ function getRootUrl() {
     return window.location.origin ? window.location.origin + '/' : window.location.protocol + '/' + window.location.host + '/';
 }
 
-$(window).load(function() {
+$(window).on("load", function() {
     var outputURL = getRootUrl() + "WebServices?";
     var placeholderURL = outputURL + "longitude=131.67&latitude=32.53&dataset=Alos_SM_72_2970_2980_20070205_20110403&startTime=1990-12-20& endTime=2020-12-20&outputType=plot";
     var html = "Example webservice url: " + getRootUrl() + "WebServices?longitude=131.67&latitude=32.53&satellite=Alos&relativeOrbit=73&firstFrame=2950&mode=SM&flightDirection=D& endTime=2020-12-20&outputType=json"

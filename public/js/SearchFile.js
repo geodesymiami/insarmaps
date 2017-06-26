@@ -299,7 +299,7 @@ function SearchFormController(container) {
 // static variable
 SearchFormController.loadedSubsets = false;
 
-$(window).load(function() {
+$(window).on("load", function() {
     var searcher = new SearchFormController("search-form");
 
     document.addEventListener("keydown", function(e) {

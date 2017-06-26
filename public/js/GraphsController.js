@@ -1182,7 +1182,7 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.getCumulativeEventsVDayData = function(features, selectedColoring) {
-        if (switchToDistributionToggleButton.toggleState == ToggleStates.ON) {
+        if ($("#switch-to-distribution-button").html() === "Switch To Cumulative") {
             var millisecondValues = features.map(function(feature) {
                 return feature.properties.time;
             });
@@ -1274,7 +1274,7 @@ function setupSeismicityGraphsController() {
         var formatterCallback = this.pointFormatterCallback;
         var title = "Cumulative Number of Events";
         var seriesType = "scatter";
-        if (switchToDistributionToggleButton.toggleState == ToggleStates.ON) {
+        if ($("#switch-to-distribution-button").html() === "Switch To Cumulative") {
             title = "Distribution";
             formatterCallback = null;
             seriesType = "column";

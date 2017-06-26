@@ -677,6 +677,9 @@ div.menu {
 
 #color-scale .color-scale-text-div {
     cursor: pointer;
+    background-color: rgb(221, 221, 221);
+    color: black;
+    border: none;
 }
 
 .color-scale-main-container {
@@ -812,6 +815,12 @@ input[type=number] {
 
 #cumulative-events-vs-date-container .seismicity-chart-set-coloring-button {
     left: 0;
+}
+
+#switch-to-distribution-button {
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 /* make the chart containers relative by default so we can position
     buttons absolutely which change their coloring */

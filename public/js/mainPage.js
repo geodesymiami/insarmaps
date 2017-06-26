@@ -15,7 +15,6 @@ var HawaiiRelocToggleButton = null;
 var LongValleyRelocToggleButton = null;
 var midasEastNorthStationsToggleButton = null;
 var irisEarthquakeToggleButton = null;
-var switchToDistributionToggleButton = null;
 var myMap = null;
 
 function DivState() {
@@ -391,11 +390,6 @@ function setupToggleButtons() {
         }
     });
 
-    switchToDistributionToggleButton = new ToggleButton("switch-to-distribution-toggle-button");
-    switchToDistributionToggleButton.onclick(function() {
-        myMap.seismicityGraphsController.createChart(null, "cumulative-events-vs-date-graph", null, null);
-    });
-
     contourToggleButton = new ToggleButton("contour-toggle-button", "overlay-options-toggles", "Contour Lines");
     contourToggleButton.onclick(function() {
         if (contourToggleButton.toggleState == ToggleStates.ON) {
@@ -589,7 +583,7 @@ function showBrowserAlert() {
     }
 }
 // when site loads, turn toggle on
-$(window).load(function() {
+$(window).on("load", function() {
     showBrowserAlert();
 
     $(window).on('hashchange', function(e) {
@@ -843,7 +837,20 @@ $(window).load(function() {
         myMap.seismicityGraphsController.createChart(selectedColoring, targetGraph, null, null);
     });
 
-    $(".wrap#seismicity-chart-sliders, .wrap#seismicity-charts, .wrap#cross-section-charts").draggable({
+    $("#switch-to-distribution-button").on("click", function() {
+        var title = $(this).html();
+        if (title === "Switch To Distribution") {
+            $(this).html("Switch To Cumulative");
+        } else {
+            $(this).html("Switch To Distribution");
+        }
+
+        // this chart takes of care of checking this button's state so we don't have to pass in the state
+        // and refactor alot of code. But maybe it's more elegant to pass it in... might refactor in future
+        myMap.seismicityGraphsController.createChart(null, "cumulative-events-vs-date-graph", null, null);
+    });
+
+    $(".wrap#seismicity-chart-sliders, .wrap#seismicity-charts, .wrap#cross-section-charts, .wrap#iris-options").draggable({
         start: function(event, ui) {
             $(this).removeClass("wrap-transitions");
         },

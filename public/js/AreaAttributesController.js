@@ -102,8 +102,8 @@ function AreaAttributesController(map, area) {
         if (plotAttributes) {
             if (this.areaHasPlotAttribute("plot.colorscale")) {
                 var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
-                var min = colorScaleOpts[0];
-                var max = colorScaleOpts[1];
+                var min = parseInt(colorScaleOpts[0]);
+                var max = parseInt(colorScaleOpts[1]);
                 var units = colorScaleOpts[2]; // we ignore this
                 var scaleType = colorScaleOpts[3];
                 this.map.colorScale.setScale(scaleType);
@@ -127,8 +127,8 @@ function AreaAttributesController(map, area) {
         if (plotAttributes) {
             if (plotAttributes[0]["plot.colorscale"]) {
                 var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
-                var min = colorScaleOpts[0];
-                var max = colorScaleOpts[1];
+                var min = parseInt(colorScaleOpts[0]);
+                var max = parseInt(colorScaleOpts[1]);
                 var units = colorScaleOpts[2]; // we ignore this
                 var scaleType = colorScaleOpts[3];
                 this.map.colorScale.setScale(scaleType);
