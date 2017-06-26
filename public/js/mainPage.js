@@ -667,11 +667,6 @@ $(window).load(function() {
         $("#iris-options-minimize-button").click();
     });
 
-    $("#minimap-color-on-dropdown").change(function() {
-        var selectedColoring = $(this).val();
-        myMap.seismicityGraphsController.setMinimapColoring(selectedColoring);
-    });
-
     $("#color-scale .color-scale-text-div").on("click", function() {
         var selectedColoring = null;
         var title = $(this).attr("data-original-title");
@@ -688,8 +683,6 @@ $(window).load(function() {
             myMap.colorScale.setInDateMode(false);
             myMap.colorScale.setMinMax(0, 50);
         }
-        $("#minimap-color-on-dropdown").val(selectedColoring);
-        $("#minimap-color-on-dropdown").change();
 
         myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
         myMap.seismicityGraphsController.recreateAllCharts(selectedColoring);
@@ -839,9 +832,11 @@ $(window).load(function() {
         var tooltipValue = $(this).attr("data-original-title");
         if (tooltipValue === "Color On Time") {
             selectedColoring = "time";
+            $(this).html("Coloring on Time");
             $(this).attr("data-original-title", "Color On Depth");
         } else { // depth class or no class we take as depth coloring
             selectedColoring = "depth";
+            $(this).html("Coloring on Depth");
             $(this).attr("data-original-title", "Color On Time");
         }
 

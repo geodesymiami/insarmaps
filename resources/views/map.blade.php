@@ -295,10 +295,10 @@
                     <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-chart-sliders-maximize-button" data-toggle="tooltip" title="Seismicity Plot Sliders"></button>
                 </div>
                 <div class="maximize-button-container">
-                    <button type="button" class="maximize-button" data-dismiss="modal" id="cross-section-charts-maximize-button" data-toggle="tooltip" title="Cross Section Seismicity Plots"></button>
+                    <button type="button" class="maximize-button" data-dismiss="modal" id="cross-section-charts-maximize-button" data-toggle="tooltip" title="Cross Section"></button>
                 </div>
                 <div class="maximize-button-container">
-                    <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-charts-maximize-button" data-toggle="tooltip" title="Seismicity Plots"></button>
+                    <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-charts-maximize-button" data-toggle="tooltip" title="Map View"></button>
                 </div>
             </div>
             <div class="btn btn-primary" id="insar-maximize-buttons-container">
@@ -368,17 +368,17 @@
                 <div class="chart-containers" id="seismicity-charts-container">
                     <div class="seismicity-chart">
                         <div class="side-by-side">
-                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="lat-vs-long-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Recolor</button>
+                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="lat-vs-long-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Colored On Depth</button>
                             <div class="chart" id="lat-vs-long-graph"></div>
                         </div>
                         <div class="side-by-side">
-                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="lat-vs-depth-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Recolor</button>
+                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="lat-vs-depth-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Colored On Depth</button>
                             <div class="chart" id="lat-vs-depth-graph"></div>
                         </div>
                     </div>
                     <div class="seismicity-chart">
                         <div class="side-by-side">
-                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="depth-vs-long-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Recolor</button>
+                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="depth-vs-long-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Colored On Depth</button>
                             <div class="chart" id="depth-vs-long-graph"></div>
                         </div>
                         <div class="side-by-side">
@@ -418,13 +418,6 @@
                                                     <input type="number" class="form-control bottom-scale-value" />
                                                 </div>
                                             </div>
-                                            <div id="minimap-color-on-dropdown-container">
-                                                <label>Color On:</label>
-                                                <select id="minimap-color-on-dropdown">
-                                                    <option value="depth">Depth</option>
-                                                    <option value="time">Time</option>
-                                                </select>
-                                            </div>
                                             <div class="right-scale-maximum">
                                                 <div class="form-group">
                                                     <input type="number" class="form-control top-scale-value" />
@@ -440,7 +433,7 @@
                         <div class="chart" id="cumulative-events-vs-date-graph"></div>
                         Switch To Distribution
                         <input id="switch-to-distribution-toggle-button" type="checkbox" name="overlayToggle" style="display: block" />
-                        <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cumulative-events-vs-date-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Recolor</button>
+                        <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cumulative-events-vs-date-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Colored On Depth</button>
                     </div>
                 </div>
             </div>

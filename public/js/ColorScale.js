@@ -430,7 +430,7 @@ function ColorScale(min, max, divID) {
 
     this.setMin = function(min) {
         this.min = min;
-        var minString = this.min;
+        var minString = this.min.toFixed(2);
         if (this.inDateMode) {
             minString = this.dateToString(this.min);
         }
@@ -444,7 +444,7 @@ function ColorScale(min, max, divID) {
 
     this.setMax = function(max) {
         this.max = max;
-        var maxString = this.max;
+        var maxString = this.max.toFixed(2);
         if (this.inDateMode) {
             maxString = this.dateToString(this.max);
         }

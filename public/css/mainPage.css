@@ -806,7 +806,12 @@ input[type=number] {
 .seismicity-chart-set-coloring-button {
     position: absolute;
     z-index: 99;
-    opacity: 0.5;
+    top: 0;
+    right: 0;
+}
+
+#cumulative-events-vs-date-container .seismicity-chart-set-coloring-button {
+    left: 0;
 }
 /* make the chart containers relative by default so we can position
     buttons absolutely which change their coloring */
@@ -854,12 +859,6 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 
 #cumulative-events-vs-date-graph {
     width: 90%;
-}
-
-#minimap-color-on-dropdown-container {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
 }
 
 #lat-vs-long-graph {
