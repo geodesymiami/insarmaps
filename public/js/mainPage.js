@@ -808,6 +808,11 @@ $(window).load(function() {
         if (!$container.hasClass("active")) {
             $container.addClass("active");
             $(this).css("display", "none");
+
+            // charts destroyed? add message saying user needs to select bounding box
+            if ($("#depth-vs-long-graph").find(".highcharts-container").length == 0) {
+                $("#cumulative-events-vs-date-graph").html("Select a bounding box containing seismicity features");
+            }
         }
     });
 
@@ -857,11 +862,7 @@ $(window).load(function() {
         if (!$container.hasClass("active")) {
             $container.addClass("active");
             $(this).css("display", "none");
-            if (!myMap.selector.selectionPolygonActive) {
-                return;
-            }
-            myMap.seismicityGraphsController.createCrossSectionChart(null, "depth-vs-long-graph", null, null);
-            myMap.seismicityGraphsController.createCrossSectionChart(null, "lat-vs-depth-graph", null, null);
+            myMap.selector.createOnlyCrossSectionPlots();
         }
     });
 

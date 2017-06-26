@@ -45,15 +45,37 @@ function setupFeatureSelector() {
         }
     };
 
-    FeatureSelector.prototype.createSeismicityPlots = function(seismicityLayers, bbox) {
-        var pixelBoundingBox = [this.map.map.project(bbox[0]), this.map.map.project(bbox[1])];
+    FeatureSelector.prototype.getAllRenderedSeismicityFeatures = function(bbox) {
+        var seismicityLayers = this.map.getLayerIDsInCurrentMode();
+        if (bbox) {
+            var pixelBoundingBox = [this.map.map.project(bbox[0]), this.map.map.project(bbox[1])];
 
-        var features = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: seismicityLayers });
+            return this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: seismicityLayers });
+        }
+        console.log("NO BBOX");
+        return this.map.map.queryRenderedFeatures({ layers: seismicityLayers });
+    };
+
+    FeatureSelector.prototype.createOnlyCrossSectionPlots = function(bbox) {
+        var features = this.getAllRenderedSeismicityFeatures(bbox);
+        if (features.length == 0) {
+            return;
+        }
+
+        features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
+        console.log(features);
+        this.map.seismicityGraphsController.setFeatures(features);
+        this.map.seismicityGraphsController.createCrossSectionChart(null, "depth-vs-long-graph", null, null);
+        this.map.seismicityGraphsController.createCrossSectionChart(null, "lat-vs-depth-graph", null, null);
+    };
+
+    FeatureSelector.prototype.createSeismicityPlots = function(bbox) {
+        var features = this.getAllRenderedSeismicityFeatures(bbox);
         if (features.length == 0) {
             return;
         }
         var selectedColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
-        var features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
+        features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
         this.map.seismicityGraphsController.setFeatures(features);
         this.map.seismicityGraphsController.setBbox(bbox);
         // show containers before creating as we have an optimization to not create
@@ -82,8 +104,7 @@ function setupFeatureSelector() {
         var mode = this.map.getCurrentMode();
 
         if (mode === "seismicity") {
-            var layerIDS = this.map.getLayerIDsInCurrentMode();
-            this.createSeismicityPlots(layerIDS, bbox);
+            this.createSeismicityPlots(bbox);
             var bounds = this.map.seismicityGraphsController.getMinimapBounds();
             if (bounds) {
                 this.addSelectionPolygonFromMapBounds(this.map.seismicityGraphsController.mapForPlot.getBounds());
