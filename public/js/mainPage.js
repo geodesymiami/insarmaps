@@ -798,7 +798,9 @@ $(window).on("load", function() {
 
             // charts destroyed? add message saying user needs to select bounding box
             if ($("#depth-vs-long-graph").find(".highcharts-container").length == 0) {
-                $("#cumulative-events-vs-date-graph").html("Select a bounding box containing seismicity features");
+                var html = "<span style='position: absolute; top: 35px'>";
+                html += "Select a bounding box containing seismicity features</span";
+                $("#cumulative-events-vs-date-graph").html(html);
             }
         }
     });

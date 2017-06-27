@@ -915,11 +915,6 @@ function setupSeismicityGraphsController() {
         this.bbox = bbox;
     };
 
-    SeismicityGraphsController.prototype.setMinimapColoring = function(coloring) {
-        this.miniMapColoring = coloring;
-        this.createChart(null, "lat-vs-long-graph", null, null);
-    };
-
     SeismicityGraphsController.prototype.getSeriesData = function(features, colorStops) {
         var seriesData = [];
 
@@ -1322,15 +1317,25 @@ function setupSeismicityGraphsController() {
             this.mapForPlot.setMaxBounds(null); // allow us to pan and drag outside constrained bounds
             var scale = null;
             var scaleColors = null;
+
+            // selected coloring has priority, if null, use minimap coloring
+            if (selectedColoring) {
+                console.log("sdsfd " + selectedColoring);
+                this.miniMapColoring = selectedColoring;
+            }
+
             if (this.miniMapColoring === "depth") {
+                selectedColoring = "depth";
                 scale = this.depthColorScale;
                 scaleColors = this.depthColorScale.jet_r;
             } else if (this.miniMapColoring === "time") {
+                selectedColoring = "time";
                 scale = this.timeColorScale;
                 scaleColors = this.timeColorScale.jet_r;
             } else {
                 throw new Error("Invalid coloring " + this.miniMapColoring + " selected");
             }
+
             var min = scale.min;
             var max = scale.max;
 
@@ -1967,32 +1972,5 @@ function setupCustomSliderSeismicityController() {
             // call super method to not recreate sliders
             SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, features);
         }.bind(this));
-    };
-
-    // override
-    CustomSliderSeismicityController.prototype.setMinimapColoring = function(coloring) {
-        this.miniMapColoring = coloring;
-        var values = null;
-        var scale = null;
-        var chartContainer = null;
-
-        if (coloring === "time") {
-            values = this.features.map(function(feature) {
-                return feature.properties.time;
-            });
-            scale = this.timeColorScale;
-            chartContainer = "time-slider";
-        } else if (coloring === "depth") {
-            values = this.features.map(function(feature) {
-                return feature.properties.depth;
-            });
-            scale = this.depthColorScale;
-            chartContainer = "depth-slider";
-        } else {
-            throw new Error("Invalid coloring " + coloring + " selected");
-        }
-        var minMax = this.mapExtremesToArrayIndeces(scale.min, scale.max, values);
-        this.timeSlider.setMin(values[minMax.minIndex]);
-        this.timeSlider.setMax(values[minMax.maxIndex]);
     };
 }

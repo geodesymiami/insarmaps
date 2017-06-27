@@ -72,14 +72,13 @@ function setupFeatureSelector() {
         if (features.length == 0) {
             return;
         }
-        var selectedColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
         features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
         this.map.seismicityGraphsController.setFeatures(features);
         this.map.seismicityGraphsController.setBbox(bbox);
         // show containers before creating as we have an optimization to not create
         // unless containers are shown
         this.map.seismicityGraphsController.showChartContainers();
-        this.map.seismicityGraphsController.createAllCharts(selectedColoring, null, null);
+        this.map.seismicityGraphsController.createAllCharts(null, null, null);
     };
 
     FeatureSelector.prototype.finish = function(bbox) {
