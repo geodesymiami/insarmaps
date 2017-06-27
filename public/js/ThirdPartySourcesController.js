@@ -817,7 +817,7 @@ function ThirdPartySourcesController(map) {
         this.cancellableAjax.ajax({
             url: "/LongValleyReloc",
             success: function(response) {
-                var features = this.parseHawaiiReloc(response);
+                var features = this.parseLongValleyReloc(response);
                 var mapboxStationFeatures = {
                     type: "geojson",
                     cluster: false,
@@ -919,9 +919,8 @@ function ThirdPartySourcesController(map) {
         var startDateString = startDate.toISOString().split('T')[0];
 
         showLoadingScreen("Getting IRIS Earthquake Data", "ESCAPE to interrupt");
-        if (!this.irisURL) {
-            this.irisURL = this.irisOptionsController.getURL();
-        }
+
+        this.irisURL = this.irisOptionsController.getURL();
 
         this.cancellableAjax.ajax({
             url: "/IRISEarthquake/" + encodeURIComponent(this.irisURL),
@@ -1026,7 +1025,7 @@ function ThirdPartySourcesController(map) {
                 html += "Mag: " + props.mag + "<br>";
             }
             if (props.time) {
-                html += new Date(props.time).toISOString().slice(0,10) + "<br>";
+                html += new Date(props.time).toISOString().slice(0, 10) + "<br>";
             }
             if (props.location) {
                 html += props.location;

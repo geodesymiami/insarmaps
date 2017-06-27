@@ -169,6 +169,8 @@ function MapController(loadJSONFunc) {
                 }
                 // seismicity
             } else {
+                // remove swaths
+                this.removeAreaMarkers();
                 $("#square-selector-button").attr("data-original-title", "Select Seismicity");
                 this.colorScale.setTopAsMax(false);
                 // handles setting up color scale for seismicity etc.
@@ -884,6 +886,7 @@ function MapController(loadJSONFunc) {
         this.loadAreaMarkersExcluding(null, after);
     };
 
+    // TODO: might want to rename this since they are now swaths...
     this.removeAreaMarkers = function() {
         this.areaMarkerLayer.emptyLayers();
         this.areaFeatures = [];

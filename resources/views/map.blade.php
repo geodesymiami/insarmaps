@@ -456,15 +456,15 @@
             </div>
             <div class="content">
                 <div class="chart-containers">
-                    <h7>Depth (Distribution)</h7>
-                    <div class="seismicity-chart-slider" id="depth-slider"></div>
-                    <button class="btn btn-primary-outline slider-range-button" data-slider-type="depth-slider">Set New Range</button>
-                    <button class="btn btn-primary-outline slider-reset-button" data-slider-type="depth-slider">Reset</button>
-                    <br>
                     <h7>Time (Distribution)</h7>
                     <div class="seismicity-chart-slider" id="time-slider"></div>
-                    <button class="btn btn-primary-outline slider-range-button" data-slider-type="time-slider">Set New Range</button>
+                    <button class="btn btn-primary-outline slider-range-button" data-slider-type="time-slider">Set Range</button>
                     <button class="btn btn-primary-outline slider-reset-button" data-slider-type="time-slider">Reset</button>
+                    <br>
+                    <h7>Depth (Distribution)</h7>
+                    <div class="seismicity-chart-slider" id="depth-slider"></div>
+                    <button class="btn btn-primary-outline slider-range-button" data-slider-type="depth-slider">Set Range</button>
+                    <button class="btn btn-primary-outline slider-reset-button" data-slider-type="depth-slider">Reset</button>
                 </div>
             </div>
         </div>
