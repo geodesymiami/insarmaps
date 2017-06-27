@@ -481,7 +481,7 @@ function ThirdPartySourcesController(map) {
                 var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
                 var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
+                var magStops = this.stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
 
                 var layerID = "USGSEarthquake";
                 var before = this.getLayerOnTopOf(layerID);
@@ -523,7 +523,12 @@ function ThirdPartySourcesController(map) {
     };
 
     this.defaultCircleSizes = function() {
-        return [3, 5, 7, 9];
+        var sizes = [];
+
+        for (var i = 1; i < 10; i ++) {
+            sizes.push(i * i / 2);
+        }
+        return sizes;
     };
 
     this.loadIGEPNEarthquakeFeed = function() {
@@ -578,7 +583,7 @@ function ThirdPartySourcesController(map) {
                 var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
                 var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(4, 6, magCircleSizes);
+                var magStops = this.stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
 
                 var layerID = "IGEPNEarthquake";
                 var before = this.getLayerOnTopOf(layerID);
@@ -638,7 +643,7 @@ function ThirdPartySourcesController(map) {
                 var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
                 var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
+                var magStops = this.stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
 
                 var layerID = "HawaiiReloc";
                 this.map.addSource(layerID, mapboxStationFeatures);
@@ -691,7 +696,7 @@ function ThirdPartySourcesController(map) {
                 var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
                 var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
+                var magStops = this.stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
 
                 var layerID = "HawaiiReloc";
                 this.map.addSource(layerID, mapboxStationFeatures);
@@ -832,7 +837,7 @@ function ThirdPartySourcesController(map) {
                 var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
                 var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
+                var magStops = this.stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
 
                 var layerID = "LongValleyReloc";
                 this.map.addSource(layerID, mapboxStationFeatures);
@@ -940,7 +945,7 @@ function ThirdPartySourcesController(map) {
                 var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
                 var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
+                var magStops = this.stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
 
                 var layerID = "IRISEarthquake";
                 this.map.addSource(layerID, mapboxStationFeatures);
