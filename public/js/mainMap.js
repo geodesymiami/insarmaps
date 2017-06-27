@@ -59,7 +59,7 @@ function MapController(loadJSONFunc) {
             } else if (curMode === "gps") {
                 this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             } else if (curMode === "seismicity") {
-                if (this.colorScale.inDateMode) {
+                if (!this.colorScale.inDateMode) {
                     this.seismicityGraphsController.depthColorScale.setMinMax(newMin, newMax);
                     this.seismicityGraphsController.depthSlider.setMin(newMin);
                     this.seismicityGraphsController.depthSlider.setMax(newMax);

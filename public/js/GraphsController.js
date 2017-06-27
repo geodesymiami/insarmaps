@@ -1394,10 +1394,9 @@ function setupSeismicityGraphsController() {
             this.map.selector.removeSelectionPolygon();
             var bounds = this.mapForPlot.getBounds();
             this.map.selector.addSelectionPolygonFromMapBounds(bounds);
-            var layerIDS = this.map.getLayerIDsInCurrentMode();
             var sanitizedBounds = [bounds._sw, bounds._ne];
             var features = this.getFeaturesWithinCurrentSliderRanges(this.features);
-            this.map.selector.createSeismicityPlots(layerIDS, sanitizedBounds);
+            this.map.selector.createSeismicityPlots(sanitizedBounds);
         }.bind(this);
         this.mapForPlot.on("zoomend", onMoveend);
         this.mapForPlot.on("dragend", onMoveend);
@@ -1538,6 +1537,7 @@ function setupCustomHighchartsSlider() {
         chartOpts.xAxis = {
             lineWidth: 0,
             tickLength: 0,
+            minRange: 0.01,
             labels: {
                 enabled: false
             }
@@ -1673,6 +1673,7 @@ function setupCustomSliderSeismicityController() {
     // these graphs are so intimately tied to the map features
     CustomSliderSeismicityController.prototype.depthSliderCallback = function(e, depthValues) {
         this.depthRange = { min: e.min, max: e.max };
+
         this.map.thirdPartySourcesController.filterSeismicities([this.depthRange], "depth");
         if (!this.depthSlider.manuallySetExtremes) {
             this.depthColorScale.setMinMax(e.min, e.max);
@@ -1689,7 +1690,7 @@ function setupCustomSliderSeismicityController() {
     };
 
     CustomSliderSeismicityController.prototype.timeSliderCallback = function(e, millisecondValues) {
-        this.timeRange = { min: e.min, max: e.mix };
+        this.timeRange = { min: e.min, max: e.max };
         this.map.thirdPartySourcesController.filterSeismicities([this.timeRange], "time");
         if (!this.depthSlider.manuallySetExtremes) {
             this.timeColorScale.setMinMax(e.min, e.max);
@@ -1946,6 +1947,7 @@ function setupCustomSliderSeismicityController() {
             if (!this.map.colorScale.inDateMode) {
                 this.map.colorScale.setMinMax(minDepth, maxDepth);
             }
+            this.depthRange = { min: minDepth, max: maxDepth };
             this.depthColorScale.setMinMax(minDepth, maxDepth);
         } else if (sliderName === "time-slider") {
             this.timeSlider = this.createSlider("time-slider", millisecondData, "datetime", null, function(e) {
@@ -1954,6 +1956,7 @@ function setupCustomSliderSeismicityController() {
             if (this.map.colorScale.inDateMode) {
                 this.map.colorScale.setMinMax(minMilliseconds, maxMilliseconds);
             }
+            this.timeRange = { min: minMilliseconds, max: maxMilliseconds };
             this.depthColorScale.setMinMax(minMilliseconds, maxMilliseconds);
         }
         // this avoids us having to keep all the features in memory for when we reset
