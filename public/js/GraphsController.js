@@ -1339,7 +1339,7 @@ function setupSeismicityGraphsController() {
 
             var magCircleSizes = this.map.thirdPartySourcesController.defaultCircleSizes();
             var stopsCalculator = new MapboxStopsCalculator();
-            var magStops = stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
+            var magStops = stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
 
             var layerID = "LatVLongPlotPoints";
             var mapboxStationFeatures = {
