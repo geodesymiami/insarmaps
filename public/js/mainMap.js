@@ -59,19 +59,17 @@ function MapController(loadJSONFunc) {
             } else if (curMode === "gps") {
                 this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             } else if (curMode === "seismicity") {
-                var title = $("#color-scale .color-scale-text-div").attr("data-original-title");
-                var selectedColoring = null;
-
-                // reversed because this attribute signals what we should change to. not what mode we are in
-                if (title === "Color Seismicity on Time") {
-                    selectedColoring = "depth";
-                } else if (title === "Color Seismicity on Depth") {
-                    selectedColoring = "time";
+                if (this.thirdPartySourcesController.currentSeismicityColoring === "depth") {
+                    this.seismicityGraphsController.depthColorScale.setMinMax(newMin, newMax);
+                    this.seismicityGraphsController.depthSlider.setMin(newMin);
+                    this.seismicityGraphsController.depthSlider.setMax(newMax);
+                } else if (this.thirdPartySourcesController.currentSeismicityColoring === "time") {
                     this.seismicityGraphsController.timeColorScale.setMinMax(newMin, newMax);
-                    this.seismicityGraphsController.createAllCharts(selectedColoring, null, null);
+                    this.seismicityGraphsController.timeSlider.setMin(newMin);
+                    this.seismicityGraphsController.timeSlider.setMax(newMax);
                 }
-
-                this.thirdPartySourcesController.recolorSeismicities(selectedColoring);
+                this.seismicityGraphsController.createSeismicityCharts(this.thirdPartySourcesController.currentSeismicityColoring, null, null);
+                this.thirdPartySourcesController.recolorSeismicities(this.thirdPartySourcesController.currentSeismicityColoring);
             }
 
         }

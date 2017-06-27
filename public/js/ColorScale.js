@@ -398,7 +398,7 @@ function ColorScale(min, max, divID) {
                     $input.addClass("date-input");
                 }
             }).remove();
-            $("#" + this.divID + " .scale-values").css("width", "100px");
+            $("#" + this.divID + " .scale-values").css("width", "150px");
         } else {
             $("#" + this.divID + " .scale-values .form-group > input").each(function() {
                 var classVal = $(this).attr("class");

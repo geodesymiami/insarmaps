@@ -52,7 +52,6 @@ function setupFeatureSelector() {
 
             return this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: seismicityLayers });
         }
-        console.log("NO BBOX");
         return this.map.map.queryRenderedFeatures({ layers: seismicityLayers });
     };
 
@@ -63,7 +62,6 @@ function setupFeatureSelector() {
         }
 
         features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
-        console.log(features);
         this.map.seismicityGraphsController.setFeatures(features);
         this.map.seismicityGraphsController.createCrossSectionChart(null, "depth-vs-long-graph", null, null);
         this.map.seismicityGraphsController.createCrossSectionChart(null, "lat-vs-depth-graph", null, null);
