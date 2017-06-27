@@ -1928,20 +1928,33 @@ function setupCustomSliderSeismicityController() {
             millisecondValues.push(feature.properties.time);
         });
 
+        var maxMilliseconds = millisecondValues[millisecondValues.length - 1];
+        var minMilliseconds = millisecondValues[0];
         // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
         // also, callbacks depend on sorted arrays (for speed). no need to sort milliseconds as the features are already sorted by this
         depthValues.sort(function(depth1, depth2) {
             return depth1 - depth2;
         });
 
+        var maxDepth = depthValues[depthValues.length - 1];
+        var minDepth = depthValues[0];
+
         if (sliderName === "depth-slider") {
             this.depthSlider = this.createSlider("depth-slider", depthData, "linear", null, function(e) {
                 this.depthSliderCallback(e, depthValues);
             }.bind(this));
+            if (!this.map.colorScale.inDateMode) {
+                this.map.colorScale.setMinMax(minDepth, maxDepth);
+            }
+            this.depthColorScale.setMinMax(minDepth, maxDepth);
         } else if (sliderName === "time-slider") {
             this.timeSlider = this.createSlider("time-slider", millisecondData, "datetime", null, function(e) {
                 this.timeSliderCallback(e, millisecondValues);
             }.bind(this));
+            if (this.map.colorScale.inDateMode) {
+                this.map.colorScale.setMinMax(minMilliseconds, maxMilliseconds);
+            }
+            this.depthColorScale.setMinMax(minMilliseconds, maxMilliseconds);
         }
         // this avoids us having to keep all the features in memory for when we reset
         // we can use map queryRenderedFeatures instead once all features are rendered

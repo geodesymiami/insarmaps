@@ -59,11 +59,11 @@ function MapController(loadJSONFunc) {
             } else if (curMode === "gps") {
                 this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             } else if (curMode === "seismicity") {
-                if (this.thirdPartySourcesController.currentSeismicityColoring === "depth") {
+                if (this.colorScale.inDateMode) {
                     this.seismicityGraphsController.depthColorScale.setMinMax(newMin, newMax);
                     this.seismicityGraphsController.depthSlider.setMin(newMin);
                     this.seismicityGraphsController.depthSlider.setMax(newMax);
-                } else if (this.thirdPartySourcesController.currentSeismicityColoring === "time") {
+                } else {
                     this.seismicityGraphsController.timeColorScale.setMinMax(newMin, newMax);
                     this.seismicityGraphsController.timeSlider.setMin(newMin);
                     this.seismicityGraphsController.timeSlider.setMax(newMax);
