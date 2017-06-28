@@ -1023,7 +1023,7 @@ function setupSeismicityGraphsController() {
         chartOpts.tooltip = {
             formatter: this.pointFormatterCallback
         };
-        chartOpts.chart.spacing = [0, 0, 0, -5];
+        chartOpts.chart.spacing = [5, 0, 0, -5];
 
         // if minimap is created, set min and max chart axis according to bounds of plot
         if (this.mapForPlot) {
