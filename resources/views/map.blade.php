@@ -59,14 +59,14 @@
     <div id="information-div" class="overlay-div">
         <div id="information-div-contents">
             <p>
-                This website provides InSAR displacement time-series produced by the University of Miami Geodesy Laboratory, which is supported by NASA and the NSF. To identify data sets from published papers please search for the author's names.
+                This website provides InSAR displacement time-series produced by the University of Miami Geodesy Laboratory, which is supported by NASA and the NSF. To identify data sets from published papers, please search for the author's names.
             </p>
             <p>
-                This website was created by University of Miami. Computer Science students Alfredo Terrero and Zishi Wu. It started as a class project of CSC 431, taught by Chris Mader and Julio Perez of the University of Miami’s Center for Computational Sciences (CCS). The data processing is conducted using the University of Miami’s High Performance Computing systems.
+                This website was created by University of Miami Computer Science students Alfredo Terrero and Zishi Wu. It started as a class project of CSC 431, taught by Chris Mader and Julio Perez of the University of Miami’s Center for Computational Sciences (CCS). The data processing is conducted using the University of Miami’s High Performance Computing systems.
             </p>
             @if (Auth::guest())
             <p>
-                To identify data sets from published papers please search for the author's names. To access data sets which are not yet finalized, please login here:
+                To identify data sets from published papers, please search for the author's names. To access data sets which are not yet finalized, please login here:
             </p>
             <div id="login-logout-button">
                 <button class="btn btn-primary-outline">Login</button>
