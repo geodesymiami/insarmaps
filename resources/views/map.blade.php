@@ -11,8 +11,8 @@
     <script src="https://unpkg.com/terraformer@1.0.7"></script>
     <script src="https://unpkg.com/terraformer-wkt-parser@1.1.2"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-    <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-    <link href="http://code.jquery.com/ui/1.11.4/themes/ui-lightness/jquery-ui.css" rel="stylesheet">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.3/css/theme.bootstrap.min.css" rel="stylesheet">
     <script type="text/javascript" src="/js/regression.js"></script>
     <script type="text/javascript" src="/js/canvasjs.min.js"></script>
@@ -208,9 +208,9 @@
             </div>
             <div class="content">
                 <label>Start Date</label>
-                <input type="date" class="form-control start-date" />
+                <input type="text" class="form-control start-date date-input" />
                 <label>End Date</label>
-                <input type="date" class="form-control end-date" />
+                <input type="text" class="form-control end-date date-input" />
                 <label>Min Magnitude</label>
                 <input type="number" class="form-control min-magnitude" value="4" />
                 <label>Max Magnitude</label>

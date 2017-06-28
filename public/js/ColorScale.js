@@ -393,14 +393,21 @@ function ColorScale(min, max, divID) {
         if (this.inDateMode) {
             $("#" + this.divID + " .scale-values .form-group > input").each(function() {
                 var classVal = $(this).attr("class");
-                $input = $("<input type='date' class='" + classVal + "'/>").insertBefore(this);
+                $input = $("<input type='text' class='" + classVal + "'/>").insertBefore(this);
                 if (!$input.hasClass("date-input")) {
                     $input.addClass("date-input");
                 }
+                // re add jquery datepicker
+                $input.datepicker({
+                    changeMonth: true,
+                    changeYear: true,
+                    dateFormat: "y-M-d"
+                });
             }).remove();
             $("#" + this.divID + " .scale-values").css("width", "150px");
         } else {
             $("#" + this.divID + " .scale-values .form-group > input").each(function() {
+                $(this).datepicker("destroy");
                 var classVal = $(this).attr("class");
                 $input = $("<input type='number' class='" + classVal + "'/>").insertBefore(this);
                 if ($input.hasClass("date-input")) {
@@ -422,10 +429,8 @@ function ColorScale(min, max, divID) {
 
     this.dateToString = function(dateMilliseconds) {
         var date = new Date(dateMilliseconds);
-        var day = ("0" + date.getDate()).slice(-2);
-        var month = ("0" + (date.getMonth() + 1)).slice(-2);
 
-        return date.getFullYear() + "-" + (month) + "-" + (day);
+        return $.datepicker.formatDate("y-M-d", date);
     };
 
     this.setMin = function(min) {

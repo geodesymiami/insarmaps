@@ -1023,5 +1023,10 @@ $(window).on("load", function() {
             "/" + currentPoint);
     });
 
+    // jQuery datepicker for crossbrowser consistency
+    $(".date-input").datepicker({
+        changeMonth: true, changeYear: true,
+        dateFormat: "y-M-d"
+    });
     // $("#search-form-results-table").tablesorter();
 });
