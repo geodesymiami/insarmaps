@@ -42,7 +42,8 @@ class ThirdPartyDataNoCorsController extends Controller {
 				]);
 	}
 
-	public function getIRISEarthquake($url) {
+	public function getIRISEarthquake(Request $request) {
+		$url = $request->all()["url"];
 		$curlSession = curl_init();
 	    curl_setopt($curlSession, CURLOPT_URL, urldecode($url));
 	    curl_setopt($curlSession, CURLOPT_HEADER, true); 

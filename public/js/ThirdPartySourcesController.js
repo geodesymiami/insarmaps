@@ -928,7 +928,7 @@ function ThirdPartySourcesController(map) {
         this.irisURL = this.irisOptionsController.getURL();
 
         this.cancellableAjax.ajax({
-            url: "/IRISEarthquake/" + encodeURIComponent(this.irisURL),
+            url: "/IRISEarthquake/?url=" + encodeURIComponent(this.irisURL),
             success: function(response) {
                 var features = this.parseIRISEarthquake(response);
                 var mapboxStationFeatures = {
