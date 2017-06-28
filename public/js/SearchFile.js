@@ -305,7 +305,9 @@ $(window).on("load", function() {
     document.addEventListener("keydown", function(e) {
         const ENTER_KEY = 13;
 
-        if (e.keyCode === ENTER_KEY && ($("#search-form input").is(":focus"))) {
+        // enter key, and focus on one of the inputs, and main top search input isn't empty
+        if (e.keyCode === ENTER_KEY && ($("#search-form input").is(":focus"))
+            && (!$("#search-input").val())) {
             if (myMap.areaFeatures) {
                 searcher.search();
                 $("#search-form-and-results-maximize-button").click();

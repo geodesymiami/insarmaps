@@ -551,7 +551,7 @@ function search() {
         var fuse = new Fuse(areas, {
             keys: ["properties.country",
                 "properties.unavco_name", "properties.region",
-                "properties.mission"
+                "properties.mission", "properties.reference"
             ]
         });
         var countries = fuse.search(query);
@@ -973,7 +973,7 @@ $(window).on("load", function() {
     $("#search-input").keypress(function(event) {
         const ENTER_KEY = 13;
 
-        if (event.keyCode == ENTER_KEY) {
+        if (event.keyCode == ENTER_KEY && $(this).val()) {
             search();
             $("#search-form-and-results-maximize-button").click();
         }
