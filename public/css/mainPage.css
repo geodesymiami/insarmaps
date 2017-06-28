@@ -769,7 +769,8 @@ input[type=number] {
     position: absolute;
     right: 0%;
     height: 100%;
-    width: 50%;
+    width: 100%;
+    max-width: 768px;
 }
 
 #cross-section-charts {

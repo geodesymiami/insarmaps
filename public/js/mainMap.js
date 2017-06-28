@@ -1013,7 +1013,9 @@ function MapController(loadJSONFunc) {
         this.map.on('zoomend', function() {
             var currentZoom = this.map.getZoom();
 
-            if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
+            var mode = this.getCurrentMode();
+            if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled")
+                && mode !== "seismicity") {
                 this.loadSwathsInCurrentViewport(true);
             }
             // reshow area markers once we zoom out enough
@@ -1058,7 +1060,9 @@ function MapController(loadJSONFunc) {
                 source: "recenter"
             });
 
-            if (this.areas && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
+            var mode = this.getCurrentMode();
+            if (this.areas && !$("#dataset-frames-toggle-button").hasClass("toggled")
+                && mode !== "seismicity") {
                 this.loadSwathsInCurrentViewport(true);
             }
         }.bind(this));
