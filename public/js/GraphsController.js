@@ -1320,7 +1320,6 @@ function setupSeismicityGraphsController() {
 
             // selected coloring has priority, if null, use minimap coloring
             if (selectedColoring) {
-                console.log("sdsfd " + selectedColoring);
                 this.miniMapColoring = selectedColoring;
             }
 
@@ -1418,11 +1417,23 @@ function setupSeismicityGraphsController() {
             this.createChart(selectedColoring, "cumulative-events-vs-date-graph", optionalFeatures, optionalBounds);
             this.depthColorScale.initVisualScale();
             this.timeColorScale.initVisualScale();
+            // we use visibility and not display for the contents because there seems to be a race
+            // condition between browser rendering the contents of the div and highcharts
+            // creating the plots. This leads to some plots being cut off (I guess highcharts begins)
+            // creating before browser has rendered. I'm no expert so this is just a conjecture.
+            $(".wrap#seismicity-charts > .content").css("visibility", "visible");
+            $("#seismicity-wrap-placeholder-text").css("display", "none");
         }
 
         if ($("#cross-section-charts").hasClass("active")) {
-            this.createCrossSectionChart(selectedColoring, "depth-vs-long-graph", optionalFeatures, optionalBounds);
-            this.createCrossSectionChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures, optionalBounds);
+            this.createCrossSectionCharts(selectedColoring, optionalBounds, optionalFeatures);
+        }
+    };
+
+    SeismicityGraphsController.prototype.createCrossSectionCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
+        if ($("#cross-section-charts").hasClass("active")) {
+            this.createChart(selectedColoring, "cross-section-depth-vs-long-graph", optionalFeatures, optionalBounds);
+            this.createChart(selectedColoring, "cross-section-lat-vs-depth-graph", optionalFeatures, optionalBounds);
         }
     };
 
@@ -1452,34 +1463,9 @@ function setupSeismicityGraphsController() {
             chartData = this.createCumulativeEventsVDayGraph(features, "cumulative-events-vs-date-graph", selectedColoring);
         } else if (chartType === "lat-vs-long-graph") {
             chartData = this.createLatVLongGraph(features, "lat-vs-long-graph", selectedColoring, bounds);
-        } else {
-            throw new Error("Unrecognized chart type " + chartType);
-        }
-
-        return chartData;
-    };
-
-    SeismicityGraphsController.prototype.createCrossSectionChart = function(selectedColoring, chartType, optionalFeatures, optionalBounds) {
-        var features = optionalFeatures;
-        if (!features) {
-            features = this.features;
-            if (!features) {
-                return;
-            }
-        }
-
-        var bounds = optionalBounds;
-        if (!bounds) {
-            bounds = this.bbox;
-            if (!bounds) {
-                return;
-            }
-        }
-
-        var chartData = null;
-        if (chartType === "depth-vs-long-graph") {
+        } else if (chartType === "cross-section-depth-vs-long-graph") {
             chartData = this.createDepthVLongGraph(features, "cross-section-depth-vs-long-graph", selectedColoring);
-        } else if (chartType === "lat-vs-depth-graph") {
+        } else if (chartType === "cross-section-lat-vs-depth-graph") {
             chartData = this.createLatVDepthGraph(features, "cross-section-lat-vs-depth-graph", selectedColoring);
         } else {
             throw new Error("Unrecognized chart type " + chartType);
@@ -1768,8 +1754,7 @@ function setupCustomSliderSeismicityController() {
         }
 
         if ($("#cross-section-charts").hasClass("active")) {
-            this.createCrossSectionChart(selectedColoring, "depth-vs-long-graph", optionalFeatures, optionalBounds);
-            this.createCrossSectionChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures, optionalBounds);
+            this.createCrossSectionCharts(selectedColoring, optionalBounds, optionalFeatures);
         }
 
         var features = optionalFeatures;

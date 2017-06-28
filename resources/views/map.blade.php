@@ -362,7 +362,8 @@
             <div class="top-right-buttons">
                 <button type="button" class="minimize-button" data-dismiss="modal" id="seismicity-charts-minimize-button"></button>
             </div>
-            <div class="content">
+            <h3 id="seismicity-wrap-placeholder-text" style="display: none;">Select bounding box using select tool</h3>
+            <div class="content disable-transitions">
                 <div class="chart-containers" id="seismicity-charts-container">
                     <div class="seismicity-chart">
                         <div class="side-by-side">
@@ -442,9 +443,11 @@
             <div class="content">
                 <div class="chart-containers">
                     <div class="cross-section-chart">
+                        <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cross-section-lat-vs-depth-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Colored On Depth</button>
                         <div class="chart" id="cross-section-lat-vs-depth-graph"></div>
                     </div>
                     <div class="cross-section-chart">
+                        <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cross-section-depth-vs-long-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Colored On Depth</button>
                         <div class="chart" id="cross-section-depth-vs-long-graph"></div>
                     </div>
                 </div>

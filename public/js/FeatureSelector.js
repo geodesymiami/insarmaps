@@ -63,8 +63,7 @@ function setupFeatureSelector() {
 
         features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
         this.map.seismicityGraphsController.setFeatures(features);
-        this.map.seismicityGraphsController.createCrossSectionChart(null, "depth-vs-long-graph", null, null);
-        this.map.seismicityGraphsController.createCrossSectionChart(null, "lat-vs-depth-graph", null, null);
+        this.map.seismicityGraphsController.createCrossSectionCharts(null, null, null);
     };
 
     FeatureSelector.prototype.createSeismicityPlots = function(bbox) {

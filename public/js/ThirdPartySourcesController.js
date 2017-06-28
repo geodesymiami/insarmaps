@@ -866,7 +866,7 @@ function ThirdPartySourcesController(map) {
             }
         }, function() {
             hideLoadingScreen();
-            HawaiiRelocToggleButton.click();
+            LongValleyRelocToggleButton.click();
         });
     };
 

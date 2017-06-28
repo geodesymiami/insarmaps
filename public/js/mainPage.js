@@ -798,9 +798,12 @@ $(window).on("load", function() {
 
             // charts destroyed? add message saying user needs to select bounding box
             if ($("#depth-vs-long-graph").find(".highcharts-container").length == 0) {
-                var html = "<span style='position: absolute; top: 35px'>";
-                html += "Select a bounding box containing seismicity features</span";
-                $("#cumulative-events-vs-date-graph").html(html);
+                // we use visibility and not display for the contents because there seems to be a race
+                // condition between browser rendering the contents of the div and highcharts
+                // creating the plots. This leads to some plots being cut off (I guess highcharts begins)
+                // creating before browser has rendered. I'm no expert so this is just a conjecture.
+                $(".wrap#seismicity-charts > .content").css("visibility", "hidden");
+                $("#seismicity-wrap-placeholder-text").css("display", "block");
             }
         }
     });
@@ -835,7 +838,6 @@ $(window).on("load", function() {
             $(this).html("Coloring on Depth");
             $(this).attr("data-original-title", "Color On Time");
         }
-
         myMap.seismicityGraphsController.createChart(selectedColoring, targetGraph, null, null);
     });
 
@@ -854,10 +856,10 @@ $(window).on("load", function() {
 
     $(".wrap#seismicity-chart-sliders, .wrap#seismicity-charts, .wrap#cross-section-charts, .wrap#iris-options").draggable({
         start: function(event, ui) {
-            $(this).removeClass("wrap-transitions");
+            $(this).addClass("disable-transitions");
         },
         stop: function(event, ui) {
-            $(this).addClass("wrap-transitions");
+            $(this).removeClass("disable-transitions");
         }
     });
 
@@ -893,7 +895,7 @@ $(window).on("load", function() {
         animateDuration: "fast",
         animateEasing: "linear",
         start: function(event, ui) {
-            $(this).removeClass("wrap-transitions");
+            $(this).addClass("disable-transitions");
             var chart = $("#chartContainer").highcharts();
             var chart2 = $("#chartContainer2").highcharts();
             if (chart !== undefined) {
@@ -904,16 +906,16 @@ $(window).on("load", function() {
             }
         },
         stop: function(event, ui) {
-            $(this).addClass("wrap-transitions");
+            $(this).removeClass("disable-transitions");
             myMap.graphsController.resizeChartContainers();
             myMap.graphsController.recreateGraphs();
         }
     }).draggable({
         start: function(event, ui) {
-            $(this).removeClass("wrap-transitions");
+            $(this).addClass("disable-transitions");
         },
         stop: function(event, ui) {
-            $(this).addClass("wrap-transitions");
+            $(this).removeClass("disable-transitions");
         }
     });
 
