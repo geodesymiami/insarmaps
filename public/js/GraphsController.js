@@ -898,6 +898,7 @@ function SeismicityGraphsController() {
         closeButton: false,
         closeOnClick: false
     });
+    this.seismicityColorings = {};
 }
 
 function setupSeismicityGraphsController() {
@@ -1168,7 +1169,7 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.getCumulativeEventsVDayData = function(features, selectedColoring) {
-        if ($("#switch-to-distribution-button").html() === "Switch To Cumulative") {
+        if ($("#switch-to-distribution-button").attr("data-original-title") === "Switch To Cumulative") {
             var millisecondValues = features.map(function(feature) {
                 return feature.properties.time;
             });
@@ -1260,7 +1261,7 @@ function setupSeismicityGraphsController() {
         var formatterCallback = this.pointFormatterCallback;
         var title = "Cumulative Number of Events";
         var seriesType = "scatter";
-        if ($("#switch-to-distribution-button").html() === "Switch To Cumulative") {
+        if ($("#switch-to-distribution-button").attr("data-original-title") === "Switch To Cumulative") {
             title = "Distribution";
             formatterCallback = null;
             seriesType = "column";
@@ -1452,6 +1453,11 @@ function setupSeismicityGraphsController() {
             if (!bounds) {
                 return;
             }
+        }
+
+        // used save coloring if none supplied
+        if (!selectedColoring) {
+            selectedColoring = this.seismicityColorings[chartType];
         }
 
         var chartData = null;

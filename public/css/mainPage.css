@@ -780,10 +780,22 @@ input[type=number] {
     width: 50%;
 }
 
-.seismicity-chart,
-.seismicity-chart-slider {
+.seismicity-chart {
     height: 33%;
     width: 100%;
+}
+
+#seismicity-chart-sliders {
+    position: absolute;
+    left: 10%;
+    width: 30%;
+    bottom: 0%;
+    height: 210px;
+}
+
+.seismicity-chart-slider {
+    height: 45px;
+    margin-bottom: 5px
 }
 
 .seismicity-chart {
@@ -800,17 +812,24 @@ input[type=number] {
     z-index: 99;
     top: 0;
     right: 0;
+    padding: 0 !important;
 }
 
 #cumulative-events-vs-date-container .seismicity-chart-set-coloring-button {
-    left: 0;
+    position: static;
 }
 
-#switch-to-distribution-button {
+#cumulative-events-vs-date-chart-buttons-container {
     position: absolute;
     top: 0;
-    right: 0;
+    left: 70px;
 }
+
+#cumulative-events-vs-date-chart-buttons-container > button {
+    float: left;
+    padding: 0 !important;
+}
+
 /* make the chart containers relative by default so we can position
     buttons absolutely which change their coloring */
 .seismicity-chart > div {
@@ -864,15 +883,6 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     height: 80%;
     width: 80%;
     float: right;
-}
-
-#seismicity-chart-sliders {
-    position: absolute;
-    left: 10%;
-    height: 50%;
-    max-height: 300px;
-    width: 30%;
-    bottom: 0%;
 }
 
 #graph-div-minimize-button {
@@ -1096,6 +1106,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 
 .minimize-button,
 .maximize-button {
+    display: block !important;
     padding: 0 !important;
     border: 0 !important;
     width: 16px;

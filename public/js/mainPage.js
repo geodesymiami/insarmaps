@@ -831,22 +831,25 @@ $(window).on("load", function() {
         var tooltipValue = $(this).attr("data-original-title");
         if (tooltipValue === "Color On Time") {
             selectedColoring = "time";
-            $(this).html("Coloring on Time");
+            $(this).html("Time-colored");
             $(this).attr("data-original-title", "Color On Depth");
         } else { // depth class or no class we take as depth coloring
             selectedColoring = "depth";
-            $(this).html("Coloring on Depth");
+            $(this).html("Depth-colored");
             $(this).attr("data-original-title", "Color On Time");
         }
+        myMap.seismicityGraphsController.seismicityColorings[targetGraph] = selectedColoring;
         myMap.seismicityGraphsController.createChart(selectedColoring, targetGraph, null, null);
     });
 
     $("#switch-to-distribution-button").on("click", function() {
-        var title = $(this).html();
-        if (title === "Switch To Distribution") {
-            $(this).html("Switch To Cumulative");
+        var tooltipValue = $(this).attr("data-original-title");
+        if (tooltipValue === "Switch To Distribution") {
+            $(this).attr("data-original-title", "Switch To Cumulative");
+            $(this).html("Distribution");
         } else {
-            $(this).html("Switch To Distribution");
+            $(this).attr("data-original-title", "Switch To Distribution");
+            $(this).html("Cumulative");
         }
 
         // this chart takes of care of checking this button's state so we don't have to pass in the state

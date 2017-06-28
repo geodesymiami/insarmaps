@@ -137,7 +137,7 @@ function MapController(loadJSONFunc) {
             this.seismicityGraphsController.hideChartContainers();
             this.selector.removeSelectionPolygon();
             $("#seismicity-maximize-buttons-container").removeClass("active");
-            $("#insar-maximize-buttons-container").removeClass("active");
+            $("#insar-maximize-buttons-container").addClass("active");
             this.colorScale.remove();
         } else {
             if (curMode !== "insar") {
