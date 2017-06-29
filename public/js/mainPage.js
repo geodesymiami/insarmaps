@@ -666,20 +666,24 @@ $(window).on("load", function() {
         var title = $(this).attr("data-original-title");
 
         myMap.colorScale.setTopAsMax(false);
+        $seismicityColoringButtons = $(".seismicity-chart-set-coloring-button");
         if (title === "Color Seismicity on Time") {
             selectedColoring = "time";
             $(this).attr("data-original-title", "Color Seismicity on Depth");
             myMap.colorScale.setInDateMode(true);
             myMap.colorScale.setMinMax(myMap.seismicityGraphsController.minMilliseconds, myMap.seismicityGraphsController.maxMilliseconds);
+            $seismicityColoringButtons.attr("data-original-title", "Color On Time")
+            $seismicityColoringButtons.click();
         } else if (title === "Color Seismicity on Depth") {
             selectedColoring = "depth";
             $(this).attr("data-original-title", "Color Seismicity on Time");
             myMap.colorScale.setInDateMode(false);
             myMap.colorScale.setMinMax(0, 50);
+            $seismicityColoringButtons.attr("data-original-title", "Color On Depth")
+            $seismicityColoringButtons.click();
         }
 
         myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
-        myMap.seismicityGraphsController.recreateAllCharts(selectedColoring);
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {
