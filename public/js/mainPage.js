@@ -650,29 +650,6 @@ $(window).on("load", function() {
 
     setupToggleButtons();
 
-    $("#color-on-dropdown").change(function() {
-        var selectedColoring = $(this).val();
-        if (selectedColoring === "displacement") {
-            if (!currentArea) {
-                return;
-            }
-
-            var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.decimal_dates));
-            var startDate = dates[0];
-            var endDate = dates[dates.length - 1];
-            if (myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
-                startDate = dates[myMap.selector.minIndex];
-                endDate = dates[myMap.selector.maxIndex];
-            }
-
-            myMap.colorDatasetOnDisplacement(startDate, endDate);
-        } else if (selectedColoring === "velocity") {
-            myMap.colorDatasetOnVelocity();
-        } else {
-            throw new Error("Invalid dropdown selection");
-        }
-    });
-
     $("#iris-options-minimize-button").on("click", function() {
         var $container = $(".wrap#iris-options");
 
@@ -694,24 +671,47 @@ $(window).on("load", function() {
         var title = $(this).attr("data-original-title");
 
         myMap.colorScale.setTopAsMax(false);
-        $seismicityColoringButtons = $(".seismicity-chart-set-coloring-button");
-        if (title === "Color seismicity on time") {
-            selectedColoring = "time";
-            $(this).attr("data-original-title", "Color seismicity on depth");
-            myMap.colorScale.setInDateMode(true);
-            myMap.colorScale.setMinMax(myMap.seismicityGraphsController.minMilliseconds, myMap.seismicityGraphsController.maxMilliseconds);
-            $seismicityColoringButtons.attr("data-original-title", "Color on time")
-            $seismicityColoringButtons.click();
-        } else if (title === "Color seismicity on depth") {
-            selectedColoring = "depth";
-            $(this).attr("data-original-title", "Color seismicity on time");
-            myMap.colorScale.setInDateMode(false);
-            myMap.colorScale.setMinMax(0, 50);
-            $seismicityColoringButtons.attr("data-original-title", "Color on depth")
-            $seismicityColoringButtons.click();
-        }
+        var curMode = myMap.getCurrentMode();
+        if (curMode === "insar") {
+            if (title === "Color on displacement") {
+                if (!currentArea) {
+                    return;
+                }
 
-        myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
+                var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.decimal_dates));
+                var startDate = dates[0];
+                var endDate = dates[dates.length - 1];
+                if (myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
+                    startDate = dates[myMap.selector.minIndex];
+                    endDate = dates[myMap.selector.maxIndex];
+                }
+
+                myMap.colorDatasetOnDisplacement(startDate, endDate);
+                $(this).attr("data-original-title", "Color on velocity");
+            } else if (title === "Color on velocity") {
+                myMap.colorDatasetOnVelocity();
+                $(this).attr("data-original-title", "Color on displacement");
+            }
+        } else if (curMode === "seismicity") {
+            $seismicityColoringButtons = $(".seismicity-chart-set-coloring-button");
+            if (title === "Color seismicity on time") {
+                selectedColoring = "time";
+                $(this).attr("data-original-title", "Color seismicity on depth");
+                myMap.colorScale.setInDateMode(true);
+                myMap.colorScale.setMinMax(myMap.seismicityGraphsController.minMilliseconds, myMap.seismicityGraphsController.maxMilliseconds);
+                $seismicityColoringButtons.attr("data-original-title", "Color on time")
+                $seismicityColoringButtons.click();
+            } else if (title === "Color seismicity on depth") {
+                selectedColoring = "depth";
+                $(this).attr("data-original-title", "Color seismicity on time");
+                myMap.colorScale.setInDateMode(false);
+                myMap.colorScale.setMinMax(0, 50);
+                $seismicityColoringButtons.attr("data-original-title", "Color on depth")
+                $seismicityColoringButtons.click();
+            }
+
+            myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
+        }
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {

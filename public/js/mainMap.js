@@ -152,12 +152,15 @@ function MapController(loadJSONFunc) {
                 if (curMode === "insar") {
                     $("#insar-maximize-buttons-container").addClass("active");
                     this.colorScale.setTopAsMax(true);
+                    this.colorScale.setInDateMode(false);
+                    this.colorScale.initVisualScale();
                     if (this.pointsLoaded()) {
                         this.colorScale.show();
                         this.colorScale.setTitle("LOS Velocity [cm/yr]");
                     } else {
                         this.colorScale.remove();
                     }
+                    $("#color-scale .color-scale-text-div").attr("data-original-title", "Color on displacement");
                 } else if (curMode === "gps") {
                     var layerIDs = this.getLayerIDsInCurrentMode();
                     if (layerIDs.includes("midas")) {
@@ -172,9 +175,10 @@ function MapController(loadJSONFunc) {
                 // remove swaths
                 this.removeAreaMarkers();
                 $("#square-selector-button").attr("data-original-title", "Select Seismicity");
+                $("#color-scale .color-scale-text-div").attr("data-original-title", "Color seismicity on time");
                 this.colorScale.setTopAsMax(false);
-                // handles setting up color scale for seismicity etc.
                 $("#seismicity-maximize-buttons-container").addClass("active");
+                // handles setting up color scale for seismicity etc.
                 if (!(this.seismicityGraphsController.slidersVisible() || this.seismicityGraphsController.chartsVisible())) {
                     this.thirdPartySourcesController.prepareForSeismicities(null);
                 }
@@ -547,7 +551,6 @@ function MapController(loadJSONFunc) {
 
         this.colorScale.defaultValues(); // set default values in case they were modified by another area
         this.selector.reset(currentArea);
-        $("#color-on-dropdown").val("velocity");
         this.colorScale.setTitle("LOS Velocity [cm/yr]");
 
         this.addDataset(tileJSON);
@@ -1048,6 +1051,10 @@ function MapController(loadJSONFunc) {
                 this.thirdPartySourcesController.updateArrowLengths();
             }
 
+            if (mode === "seismicity") {
+                this.seismicityGraphsController.createCrossSectionCharts(null, null, null);
+            }
+
             this.previousZoom = currentZoom;
         }.bind(this));
 
@@ -1064,6 +1071,10 @@ function MapController(loadJSONFunc) {
             if (this.areas && !$("#dataset-frames-toggle-button").hasClass("toggled")
                 && mode !== "seismicity") {
                 this.loadSwathsInCurrentViewport(true);
+            }
+
+            if (mode === "seismicity") {
+                this.seismicityGraphsController.createCrossSectionCharts(null, null, null);
             }
         }.bind(this));
     };

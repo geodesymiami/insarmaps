@@ -1026,16 +1026,24 @@ function setupSeismicityGraphsController() {
         chartOpts.chart.spacing = [5, 0, 0, -5];
 
         // if minimap is created, set min and max chart axis according to bounds of plot
-        if (this.mapForPlot) {
+        // notice if cross section plots are visible, we will short circuit and use long of main map
+        if (!this.crossSectionChartsVisible() && this.mapForPlot) {
             var bounds = this.mapForPlot.getBounds();
             var minLng = bounds._sw.lng;
             var maxLng = bounds._ne.lng;
             chartOpts.xAxis.max = maxLng;
             chartOpts.xAxis.min = minLng;
-            chartOpts.xAxis.endOnTick = false;
-            chartOpts.xAxis.startOnTick = false;
-            chartOpts.xAxis.maxPadding = 0;
+        } else {
+            var bounds = this.map.map.getBounds();
+            var minLng = bounds._sw.lng;
+            var maxLng = bounds._ne.lng;
+            chartOpts.xAxis.max = maxLng;
+            chartOpts.xAxis.min = minLng;
         }
+
+        chartOpts.xAxis.endOnTick = false;
+        chartOpts.xAxis.startOnTick = false;
+        chartOpts.xAxis.maxPadding = 0;
         // save it before we save the data to series
         this.highChartsOpts[chartContainer] = chartOpts;
         chartOpts.series.push({
@@ -1117,16 +1125,24 @@ function setupSeismicityGraphsController() {
         chartOpts.chart.spacing = [5, 0, 10, 0];
 
         // if minimap is created, set min and max chart axis according to bounds of plot
-        if (this.mapForPlot) {
+        // notice if cross section plots are visible, we will short circuit and use long of main map
+        if (!this.crossSectionChartsVisible() && this.mapForPlot) {
             var bounds = this.mapForPlot.getBounds();
             var minLat = bounds._sw.lat;
             var maxLat = bounds._ne.lat;
             chartOpts.yAxis.max = maxLat;
             chartOpts.yAxis.min = minLat;
-            chartOpts.yAxis.endOnTick = false;
-            chartOpts.yAxis.startOnTick = false;
-            chartOpts.yAxis.maxPadding = 0;
+        } else {
+            var bounds = this.map.map.getBounds();
+            var minLat = bounds._sw.lat;
+            var maxLat = bounds._ne.lat;
+            chartOpts.yAxis.max = maxLat;
+            chartOpts.yAxis.min = minLat;
         }
+
+        chartOpts.yAxis.endOnTick = false;
+        chartOpts.yAxis.startOnTick = false;
+        chartOpts.yAxis.maxPadding = 0;
 
         // save it before we push the data to series
         this.highChartsOpts[chartContainer] = chartOpts;
@@ -1498,6 +1514,34 @@ function setupSeismicityGraphsController() {
         }
     };
 
+    SeismicityGraphsController.prototype.showCharts = function() {
+        var $chartContainer = $("#seismicity-charts");
+        if (!$chartContainer.hasClass("active")) {
+            $("#seismicity-charts-maximize-button").click();
+        }
+    };
+
+
+    SeismicityGraphsController.prototype.crossSectionChartsVisible = function() {
+        return $("#cross-section-charts").hasClass("active");
+    };
+
+    SeismicityGraphsController.prototype.chartsVisible = function() {
+        return $("#seismicity-charts").hasClass("active");
+    };
+
+    SeismicityGraphsController.prototype.hideChartContainers = function() {
+        var $chartContainer = $("#seismicity-charts");
+        if ($chartContainer.hasClass("active")) {
+            $("#seismicity-charts-minimize-button").click();
+        }
+
+        var $sliderContainer = $("#cross-section-charts");
+        if ($sliderContainer.hasClass("active")) {
+            $("#cross-section-charts-minimize-button").click();
+        }
+    };
+
     SeismicityGraphsController.prototype.recreateAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
         this.destroyAllCharts();
         this.createAllCharts(selectedColoring, optionalBounds, optionalFeatures);
@@ -1821,25 +1865,10 @@ function setupCustomSliderSeismicityController() {
         return $("#seismicity-chart-sliders").hasClass("active");
     };
 
-    CustomSliderSeismicityController.prototype.crossSectionChartsVisible = function() {
-        return $("#cross-section-charts").hasClass("active");
-    };
-
-    CustomSliderSeismicityController.prototype.chartsVisible = function() {
-        return $("#seismicity-charts").hasClass("active");
-    };
-
     CustomSliderSeismicityController.prototype.showSliders = function() {
         var $sliderContainer = $("#seismicity-chart-sliders");
         if (!$sliderContainer.hasClass("active")) {
             $("#seismicity-chart-sliders-maximize-button").click();
-        }
-    };
-
-    CustomSliderSeismicityController.prototype.showCharts = function() {
-        var $chartContainer = $("#seismicity-charts");
-        if (!$chartContainer.hasClass("active")) {
-            $("#seismicity-charts-maximize-button").click();
         }
     };
 
@@ -1848,20 +1877,12 @@ function setupCustomSliderSeismicityController() {
         this.showCharts();
     };
 
+    // overrride
     CustomSliderSeismicityController.prototype.hideChartContainers = function() {
-        var $chartContainer = $("#seismicity-charts");
-        if ($chartContainer.hasClass("active")) {
-            $("#seismicity-charts-minimize-button").click();
-        }
-
+        SeismicityGraphsController.prototype.hideChartContainers.call(this);
         var $sliderContainer = $("#seismicity-chart-sliders");
         if ($sliderContainer.hasClass("active")) {
             $("#seismicity-chart-sliders-minimize-button").click();
-        }
-
-        var $sliderContainer = $("#cross-section-charts");
-        if ($sliderContainer.hasClass("active")) {
-            $("#cross-section-charts-minimize-button").click();
         }
     };
 
