@@ -176,20 +176,6 @@ function AreaAttributesPopup() {
     };
 };
 
-function pysarSubsetToMapboxBounds(pysarSubset) {
-    var latLongLimits = pysarSubset.split(",");
-    var latLimits = latLongLimits[0].split(":");
-    var longLimits = latLongLimits[1].split(":");
-    var bottom = latLimits[0];
-    var top = latLimits[1];
-    var left = longLimits[0];
-    var right = longLimits[1];
-
-    var bounds = [left, bottom, right, top];
-
-    return bounds;
-}
-
 function goToTab(event, id) {
     // first clear any visible tab
     $(".tabcontent").each(function(index, obj) {
@@ -229,6 +215,7 @@ function ToggleButton(id, container, label) {
     var that = this;
     this.id = id;
     this.container = container;
+    this.label = label;
     this.toggleState = $(this.id).prop('checked') ? ToggleStates.ON :
         ToggleStates.OFF;
     this.onclick = null;
@@ -236,11 +223,11 @@ function ToggleButton(id, container, label) {
 
     this.create = function() {
         var html = "<div class='overlay-toggle'>\n";
-        if (label) {
-            html += "<label>" + label + "</label>\n";
+        if (this.label) {
+            html += "<label>" + this.label + "</label>\n";
         }
         html += "<input id='" + this.id + "' type='checkbox' name='overlayToggle'/></div>";
-        $("#" + container).append(html);
+        $("#" + this.container).append(html);
     };
 
     this.toggle = function() {
@@ -253,14 +240,23 @@ function ToggleButton(id, container, label) {
         }
     };
 
-    this.set = function(state) {
+    this.clickFunction = null;
+
+    this.set = function(state, execOnClick) {
         if (state == "on") {
             if (this.toggleState == ToggleStates.OFF) {
                 this.toggle();
+
+                if (execOnClick && this.clickFunction) {
+                    this.clickFunction();
+                }
             }
         } else if (state == "off") {
             if (this.toggleState == ToggleStates.ON) {
                 this.toggle();
+                if (execOnClick && this.clickFunction) {
+                    this.clickFunction();
+                }
             }
         } else {
             throw "invalid toggle option";
@@ -268,12 +264,13 @@ function ToggleButton(id, container, label) {
     };
 
     this.onclick = function(clickFunction) {
-        $("#" + this.id).on("click", function() {
+        $("#" + this.id).on("click", function(e) {
             // toggle states
             this.toggle();
 
             if (clickFunction) {
-                clickFunction();
+                this.clickFunction = clickFunction;
+                clickFunction(e);
             }
         }.bind(this));
     };
@@ -294,6 +291,35 @@ function ToggleButton(id, container, label) {
     if (container) {
         this.create();
     }
+}
+
+function SeismicityToggleButton(id, container, label) {
+    this.id = id;
+    this.container = container;
+    this.label = label;
+
+    if (container) {
+        this.create();
+    }
+}
+
+function setupSeismicityToggleButton() {
+    SeismicityToggleButton.prototype.onclick = function(clickFunction) {
+        $("#" + this.id).on("click", function(e) {
+            // toggle states
+            this.toggle();
+
+            if (clickFunction) {
+                this.clickFunction = clickFunction;
+
+                // allow multiple selection only if ctrl key is pressed
+                if (this.toggleState == ToggleStates.ON && !e.ctrlKey) {
+                    myMap.thirdPartySourcesController.removeAll(this);
+                }
+                clickFunction(e);
+            }
+        }.bind(this));
+    };
 }
 
 function switchLayer(layer) {
@@ -408,7 +434,7 @@ function setupToggleButtons() {
             myMap.thirdPartySourcesController.removeGPSStationMarkers();
         }
     });
-    gpsStationsToggleButton.setDescription("UNR GPS Stations");
+    gpsStationsToggleButton.setDescription("GPS solutions provided by the University of Nevada Geodesy Lab at http://geodesy.unr.edu/");
 
     midasEastNorthStationsToggleButton = new ToggleButton("midas-east-north-stations-toggle-button", "overlay-options-toggles", "MIDAS IGS08 Horizontal (UNR)");
     midasEastNorthStationsToggleButton.onclick(function() {
@@ -419,7 +445,7 @@ function setupToggleButtons() {
         }
     });
 
-    midasEastNorthStationsToggleButton.setDescription("Midas Horizontal Velocity Vectors");
+    midasEastNorthStationsToggleButton.setDescription("MIDAS horizontal velocity field provided by the University of Nevada Geodesy Lab at http://geodesy.unr.edu/");
 
     midasStationsToggleButton = new ToggleButton("midas-stations-toggle-button", "overlay-options-toggles", "MIDAS IGS08 Vertical (UNR)");
     midasStationsToggleButton.onclick(function() {
@@ -430,9 +456,9 @@ function setupToggleButtons() {
         }
     });
 
-    midasStationsToggleButton.setDescription("Midas Stations");
+    midasStationsToggleButton.setDescription("MIDAS vertical velocity field provided by the University of Nevada Geodesy Lab at http://geodesy.unr.edu/");
 
-    usgsEarthquakeToggleButton = new ToggleButton("usgs-earthquake-toggle-button", "overlay-options-toggles", "USGS 30 Day Earthquake Feed");
+    usgsEarthquakeToggleButton = new SeismicityToggleButton("usgs-earthquake-toggle-button", "overlay-options-toggles", "USGS 30 Day Earthquake Feed");
     usgsEarthquakeToggleButton.onclick(function() {
         if (usgsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadUSGSEarthquakeFeed();
@@ -441,9 +467,9 @@ function setupToggleButtons() {
         }
     });
 
-    usgsEarthquakeToggleButton.setDescription("USGS 30-Day Feed");
+    usgsEarthquakeToggleButton.setDescription("Recent earthquakes from https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson");
 
-    IGEPNEarthquakeToggleButton = new ToggleButton("IGEPN-earthquake-toggle-button", "overlay-options-toggles", "IGEPN Earthquake Feed");
+    IGEPNEarthquakeToggleButton = new SeismicityToggleButton("IGEPN-earthquake-toggle-button", "overlay-options-toggles", "IGEPN Earthquake Feed");
     IGEPNEarthquakeToggleButton.onclick(function() {
         if (IGEPNEarthquakeToggleButton.toggleState == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadIGEPNEarthquakeFeed();
@@ -452,9 +478,9 @@ function setupToggleButtons() {
         }
     });
 
-    IGEPNEarthquakeToggleButton.setDescription("IGEPN EarthQuake Data");
+    IGEPNEarthquakeToggleButton.setDescription("Recent earthquakes provided by the Instituto Geofisico, Quito, Ecuador at http://www.igepn.edu.ec/portal/eventos/www/events.xml");
 
-    HawaiiRelocToggleButton = new ToggleButton("Hawaii-reloc-toggle-button", "overlay-options-toggles", "Hawaii Relocation (UM)");
+    HawaiiRelocToggleButton = new SeismicityToggleButton("Hawaii-reloc-toggle-button", "overlay-options-toggles", "Hawaii 1992-2008 Relocations");
     HawaiiRelocToggleButton.onclick(function() {
         if (HawaiiRelocToggleButton.toggleState == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadHawaiiReloc();
@@ -463,9 +489,9 @@ function setupToggleButtons() {
         }
     });
 
-    HawaiiRelocToggleButton.setDescription("Hawaii Reloc Data");
+    HawaiiRelocToggleButton.setDescription("Relocated earthquakes provided by the University of Miami at http://www.rsmas.miami.edu/users/glin/Hawaii.html");
 
-    LongValleyRelocToggleButton = new ToggleButton("Long-Valley-reloc-toggle-button", "overlay-options-toggles", "Long Valley Relocation (UM)");
+    LongValleyRelocToggleButton = new SeismicityToggleButton("Long-Valley-reloc-toggle-button", "overlay-options-toggles", "Long Valley 1984-2014 Relocations.");
     LongValleyRelocToggleButton.onclick(function() {
         if (LongValleyRelocToggleButton.toggleState == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadLongValleyReloc();
@@ -474,9 +500,9 @@ function setupToggleButtons() {
         }
     });
 
-    LongValleyRelocToggleButton.setDescription("Long Valley Reloc Data");
+    LongValleyRelocToggleButton.setDescription("Relocated earthquakes provided by the University of Miami at http://www.rsmas.miami.edu/users/glin/Mammoth_Mountain.html");
 
-    irisEarthquakeToggleButton = new ToggleButton("IRIS-earthquake-toggle-button", "overlay-options-toggles", "IRIS Earthquake");
+    irisEarthquakeToggleButton = new SeismicityToggleButton("IRIS-earthquake-toggle-button", "overlay-options-toggles", "USGS Events");
     irisEarthquakeToggleButton.onclick(function() {
         if (irisEarthquakeToggleButton.toggleState == ToggleStates.ON) {
             irisEarthquakeToggleButton.set("off");
@@ -490,7 +516,7 @@ function setupToggleButtons() {
         }
     });
 
-    irisEarthquakeToggleButton.setDescription("IRIS Earthquake Data");
+    irisEarthquakeToggleButton.setDescription("Full USGS events catalogs from http://earthquake.usgs.gov/fdsnws/event/1/");
 
     recentDatasetsToggleButton = new ToggleButton("recent-datasets-toggle-button")
     recentDatasetsToggleButton.onclick(null);
@@ -603,6 +629,7 @@ $(window).on("load", function() {
     SeismicityGraphsController.prototype = new AbstractGraphsController();
     CustomHighchartsSlider.prototype = new AbstractGraphsController();
     CustomSliderSeismicityController.prototype = new SeismicityGraphsController();
+    SeismicityToggleButton.prototype = new ToggleButton();
     myMap = new MapController(loadJSON);
     myMap.addMapToPage("map-container");
     GraphsController.prototype.map = myMap;
@@ -612,6 +639,7 @@ $(window).on("load", function() {
     setupCustomHighchartsSlider();
     setupCustomSliderSeismicityController()
     populateSearchAutocomplete();
+    setupSeismicityToggleButton();
 
     var layerList = document.getElementById('map-type-menu');
     var inputs = layerList.getElementsByTagName('input');
@@ -667,19 +695,19 @@ $(window).on("load", function() {
 
         myMap.colorScale.setTopAsMax(false);
         $seismicityColoringButtons = $(".seismicity-chart-set-coloring-button");
-        if (title === "Color Seismicity on Time") {
+        if (title === "Color seismicity on time") {
             selectedColoring = "time";
-            $(this).attr("data-original-title", "Color Seismicity on Depth");
+            $(this).attr("data-original-title", "Color seismicity on depth");
             myMap.colorScale.setInDateMode(true);
             myMap.colorScale.setMinMax(myMap.seismicityGraphsController.minMilliseconds, myMap.seismicityGraphsController.maxMilliseconds);
-            $seismicityColoringButtons.attr("data-original-title", "Color On Time")
+            $seismicityColoringButtons.attr("data-original-title", "Color on time")
             $seismicityColoringButtons.click();
-        } else if (title === "Color Seismicity on Depth") {
+        } else if (title === "Color seismicity on depth") {
             selectedColoring = "depth";
-            $(this).attr("data-original-title", "Color Seismicity on Time");
+            $(this).attr("data-original-title", "Color seismicity on time");
             myMap.colorScale.setInDateMode(false);
             myMap.colorScale.setMinMax(0, 50);
-            $seismicityColoringButtons.attr("data-original-title", "Color On Depth")
+            $seismicityColoringButtons.attr("data-original-title", "Color on depth")
             $seismicityColoringButtons.click();
         }
 
@@ -796,7 +824,7 @@ $(window).on("load", function() {
 
     $("#seismicity-charts-maximize-button").on("click", function() {
         var $container = $(".wrap#seismicity-charts");
-        if (!$container.hasClass("active")) {
+        if (!$container.hasClass("active") && !myMap.seismicityGraphsController.crossSectionChartsVisible()) {
             $container.addClass("active");
             $(this).css("display", "none");
 
@@ -833,14 +861,14 @@ $(window).on("load", function() {
         var selectedColoring = null;
         var targetGraph = $(this).data().chartType;
         var tooltipValue = $(this).attr("data-original-title");
-        if (tooltipValue === "Color On Time") {
+        if (tooltipValue === "Color on time") {
             selectedColoring = "time";
             $(this).html("Time-colored");
-            $(this).attr("data-original-title", "Color On Depth");
+            $(this).attr("data-original-title", "Color on depth");
         } else { // depth class or no class we take as depth coloring
             selectedColoring = "depth";
             $(this).html("Depth-colored");
-            $(this).attr("data-original-title", "Color On Time");
+            $(this).attr("data-original-title", "Color on time");
         }
         myMap.seismicityGraphsController.seismicityColorings[targetGraph] = selectedColoring;
         myMap.seismicityGraphsController.createChart(selectedColoring, targetGraph, null, null);
@@ -848,11 +876,11 @@ $(window).on("load", function() {
 
     $("#switch-to-distribution-button").on("click", function() {
         var tooltipValue = $(this).attr("data-original-title");
-        if (tooltipValue === "Switch To Distribution") {
-            $(this).attr("data-original-title", "Switch To Cumulative");
+        if (tooltipValue === "Switch to distribution") {
+            $(this).attr("data-original-title", "Switch to cumulative");
             $(this).html("Distribution");
         } else {
-            $(this).attr("data-original-title", "Switch To Distribution");
+            $(this).attr("data-original-title", "Switch to distribution");
             $(this).html("Cumulative");
         }
 
@@ -872,7 +900,7 @@ $(window).on("load", function() {
 
     $("#cross-section-charts-maximize-button").on("click", function() {
         var $container = $(".wrap#cross-section-charts");
-        if (!$container.hasClass("active")) {
+        if (!$container.hasClass("active") && !myMap.seismicityGraphsController.chartsVisible()) {
             $container.addClass("active");
             $(this).css("display", "none");
             myMap.selector.createOnlyCrossSectionPlots();
@@ -947,11 +975,11 @@ $(window).on("load", function() {
     $("#dataset-frames-toggle-button").on("click", function() {
         if ($(this).hasClass("toggled")) {
             myMap.loadSwathsInCurrentViewport(true);
-            $(this).attr("data-original-title", "Hide Swaths");
+            $(this).attr("data-original-title", "Hide swaths");
             $(this).removeClass("toggled");
         } else {
             myMap.removeAreaMarkers();
-            $(this).attr("data-original-title", "Show Swaths");
+            $(this).attr("data-original-title", "Show swaths");
             $(this).addClass("toggled");
         }
     });
@@ -1032,7 +1060,8 @@ $(window).on("load", function() {
 
     // jQuery datepicker for crossbrowser consistency
     $(".date-input").datepicker({
-        changeMonth: true, changeYear: true,
+        changeMonth: true,
+        changeYear: true,
         dateFormat: "y-M-d"
     });
     // $("#search-form-results-table").tablesorter();

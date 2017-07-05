@@ -608,7 +608,9 @@ div.menu {
 }
 
 /* change jquery tooltip of toggle buttons to white on black */
+/* also, disable max-width to allow for long links in descriptions */
 .black-on-white-tooltip + .tooltip > .tooltip-inner {
+    max-width: none;
     background-color: white;
     color: black;
 }
@@ -635,6 +637,10 @@ div.menu {
     float: left;
 }
 
+.minimap-color-scale > .color-scale-text-div {
+    font-size: 15px;
+}
+
 #lat-vs-long-time-color-scale > .color-scale-text-div {
     padding-left: 35px;
 }
@@ -659,18 +665,18 @@ div.menu {
 }
 
 .color-scale-text-div {
-    height: 15%;
+    height: 10%;
 }
 
 #color-scale .color-scale-text-div {
     cursor: pointer;
-    background-color: rgb(221, 221, 221);
+    background-color: white;
     color: black;
     border: none;
 }
 
 .color-scale-main-container {
-    height: 85%;
+    height: 90%;
 }
 
 .color-scale-picture-div {
@@ -802,7 +808,7 @@ input[type=number] {
     position: relative;
 }
 
-#seismicity-charts-container {
+.seismicity-charts-container {
     height: 100% !important;
     padding-top: 20px;
 }
@@ -828,6 +834,7 @@ input[type=number] {
 #cumulative-events-vs-date-chart-buttons-container > button {
     float: left;
     padding: 0 !important;
+    margin-right: 10px;
 }
 
 /* make the chart containers relative by default so we can position

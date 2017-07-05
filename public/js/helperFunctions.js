@@ -113,3 +113,17 @@ function findMinMaxOfArray(array) {
 
     return { max: max, min: min };
 }
+
+function pysarSubsetToMapboxBounds(pysarSubset) {
+    var latLongLimits = pysarSubset.split(",");
+    var latLimits = latLongLimits[0].split(":");
+    var longLimits = latLongLimits[1].split(":");
+    var bottom = latLimits[0];
+    var top = latLimits[1];
+    var left = longLimits[0];
+    var right = longLimits[1];
+
+    var bounds = [left, bottom, right, top];
+
+    return bounds;
+}

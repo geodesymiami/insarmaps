@@ -1271,6 +1271,7 @@ function setupSeismicityGraphsController() {
         chartOpts.xAxis.dateTimeLabelFormats = { month: '%b %Y', year: '%Y' };
         chartOpts.yAxis.title = { text: title };
         chartOpts.tooltip = {
+            xDateFormat: "%Y-%b-%d",
             formatter: formatterCallback
         };
         // save it before we push the data to series
@@ -1818,6 +1819,10 @@ function setupCustomSliderSeismicityController() {
 
     CustomSliderSeismicityController.prototype.slidersVisible = function() {
         return $("#seismicity-chart-sliders").hasClass("active");
+    };
+
+    CustomSliderSeismicityController.prototype.crossSectionChartsVisible = function() {
+        return $("#cross-section-charts").hasClass("active");
     };
 
     CustomSliderSeismicityController.prototype.chartsVisible = function() {

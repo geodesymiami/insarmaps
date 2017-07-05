@@ -1159,16 +1159,24 @@ function ThirdPartySourcesController(map) {
         this.recolorSeismicitiesOn(selectedColoring, stops, type);
     };
 
-    this.removeAll = function() {
-        this.layerOrder.forEach(function(layer) {
-            this.map.removeSourceAndLayer(layer);
-        }.bind(this));
-
-        gpsStationsToggleButton.set("off");
-        midasStationsToggleButton.set("off");
-        usgsEarthquakeToggleButton.set("off");
-        IGEPNEarthquakeToggleButton.set("off");
-        HawaiiRelocToggleButton.set("off");
-        irisEarthquakeToggleButton.set("off");
+    this.removeAll = function(except) {
+        if (gpsStationsToggleButton !== except) {
+            gpsStationsToggleButton.set("off", true);
+        }
+        if (midasStationsToggleButton !== except) {
+            midasStationsToggleButton.set("off", true);
+        }
+        if (usgsEarthquakeToggleButton !== except) {
+            usgsEarthquakeToggleButton.set("off", true);
+        }
+        if (IGEPNEarthquakeToggleButton !== except) {
+            IGEPNEarthquakeToggleButton.set("off", true);
+        }
+        if (HawaiiRelocToggleButton !== except) {
+            HawaiiRelocToggleButton.set("off", true);
+        }
+        if (irisEarthquakeToggleButton !== except) {
+            irisEarthquakeToggleButton.set("off", true);
+        }
     };
 }

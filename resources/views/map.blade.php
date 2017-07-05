@@ -172,17 +172,17 @@
             </div>
             @endif
             <div id="square-selector-button-div">
-                <button class="btn btn-primary-outline map-button no-padding clickable-button" data-toggle="tooltip" data-placement="right" title="Select Points" id="square-selector-button">
+                <button class="btn btn-primary-outline map-button no-padding clickable-button" data-toggle="tooltip" data-placement="right" title="Select points" id="square-selector-button">
                     <img src="/img/polygon.svg" alt="polygon.svg">
                 </button>
             </div>
             <div>
-                <button class="btn btn-primary-outline map-button no-padding" data-toggle="tooltip" data-placement="right" title="Hide Swaths" id="dataset-frames-toggle-button">
+                <button class="btn btn-primary-outline map-button no-padding" data-toggle="tooltip" data-placement="right" title="Hide swaths" id="dataset-frames-toggle-button">
                     <img src="/img/swathIcon.png" alt="swathIcon.png" style="width: 20px; height: 20px">
                 </button>
             </div>
             <div id="select-layer-button-div">
-                <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="More Options" id="select-layer-button">
+                <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="More options" id="select-layer-button">
                     <img src="/img/layerSwitchIcon.png" alt="layerSwitchIcon.png" style="width: 20px; height: 20px">
                 </button>
                 <div id="overlay-options-toggles" class="clearfix">
@@ -263,7 +263,7 @@
             </div>
         </div>
         <div id="color-scale">
-            <div class="btn btn-primary color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color Seismicity on Time">
+            <div class="btn btn-primary color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color seismicity on time">
                 LOS Velocity [cm/yr]
             </div>
             <div class="color-scale-main-container">
@@ -290,13 +290,13 @@
         <div class="maximize-buttons-container">
             <div class="btn btn-primary" id="seismicity-maximize-buttons-container">
                 <div class="maximize-button-container">
-                    <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-chart-sliders-maximize-button" data-toggle="tooltip" title="Seismicity Plot Sliders"></button>
+                    <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-chart-sliders-maximize-button" data-toggle="tooltip" title="Seismicity plot sliders"></button>
                 </div>
                 <div class="maximize-button-container">
-                    <button type="button" class="maximize-button" data-dismiss="modal" id="cross-section-charts-maximize-button" data-toggle="tooltip" title="Cross Section"></button>
+                    <button type="button" class="maximize-button" data-dismiss="modal" id="cross-section-charts-maximize-button" data-toggle="tooltip" title="Cross section"></button>
                 </div>
                 <div class="maximize-button-container">
-                    <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-charts-maximize-button" data-toggle="tooltip" title="Map View"></button>
+                    <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-charts-maximize-button" data-toggle="tooltip" title="Map view"></button>
                 </div>
             </div>
             <div class="btn btn-primary active" id="insar-maximize-buttons-container">
@@ -304,7 +304,7 @@
                     <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Datasets"></button>
                 </div>
                 <div class="maximize-button-container">
-                    <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Displacement Timeseries" id="graph-div-maximize-button"></button>
+                    <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Displacement timeseries" id="graph-div-maximize-button"></button>
                 </div>
                 <div class="maximize-button-container">
                     <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Attributes" id="area-attributes-div-maximize-button"></button>
@@ -363,21 +363,21 @@
                 <button type="button" class="minimize-button" data-dismiss="modal" id="seismicity-charts-minimize-button"></button>
             </div>
             <h3 id="seismicity-wrap-placeholder-text" style="display: none;">Select bounding box using select tool</h3>
-            <div class="content disable-transitions">
-                <div class="chart-containers" id="seismicity-charts-container">
+            <div class="content">
+                <div class="chart-containers seismicity-charts-container">
                     <div class="seismicity-chart">
                         <div class="side-by-side">
-                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="lat-vs-long-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Depth-colored</button>
+                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="lat-vs-long-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored</button>
                             <div class="chart" id="lat-vs-long-graph"></div>
                         </div>
                         <div class="side-by-side">
-                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="lat-vs-depth-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Depth-colored</button>
+                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="lat-vs-depth-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored</button>
                             <div class="chart" id="lat-vs-depth-graph"></div>
                         </div>
                     </div>
                     <div class="seismicity-chart">
                         <div class="side-by-side">
-                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="depth-vs-long-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Depth-colored</button>
+                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="depth-vs-long-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored</button>
                             <div class="chart" id="depth-vs-long-graph"></div>
                         </div>
                         <div class="side-by-side">
@@ -431,8 +431,8 @@
                     <div class="seismicity-chart" id="cumulative-events-vs-date-container">
                         <div class="chart" id="cumulative-events-vs-date-graph"></div>
                         <div id="cumulative-events-vs-date-chart-buttons-container">
-                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cumulative-events-vs-date-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Depth-colored</button>
-                            <button class="btn btn-primary-outline" id="switch-to-distribution-button" data-toggle="tooltip" title="Switch To Distribution" name="overlayToggle" data-placement="bottom" >Cumulative</button>
+                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cumulative-events-vs-date-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored</button>
+                            <button class="btn btn-primary-outline" id="switch-to-distribution-button" data-toggle="tooltip" title="Switch to distribution" name="overlayToggle" data-placement="bottom" >Cumulative</button>
                         </div>
                     </div>
                 </div>
@@ -443,13 +443,13 @@
                 <button type="button" class="minimize-button" data-dismiss="modal" id="cross-section-charts-minimize-button"></button>
             </div>
             <div class="content">
-                <div class="chart-containers">
+                <div class="chart-containers seismicity-charts-container">
                     <div class="cross-section-chart">
-                        <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cross-section-lat-vs-depth-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Depth-colored</button>
+                        <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cross-section-lat-vs-depth-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored</button>
                         <div class="chart" id="cross-section-lat-vs-depth-graph"></div>
                     </div>
                     <div class="cross-section-chart">
-                        <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cross-section-depth-vs-long-graph" data-toggle="tooltip" title="Color On Time" data-placement="bottom">Depth-colored</button>
+                        <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cross-section-depth-vs-long-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored</button>
                         <div class="chart" id="cross-section-depth-vs-long-graph"></div>
                     </div>
                 </div>

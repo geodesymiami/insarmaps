@@ -430,7 +430,7 @@ function ColorScale(min, max, divID) {
     this.dateToString = function(dateMilliseconds) {
         var date = new Date(dateMilliseconds);
 
-        return $.datepicker.formatDate("y-M-d", date);
+        return $.datepicker.formatDate("yy-M-d", date);
     };
 
     this.setMin = function(min) {
