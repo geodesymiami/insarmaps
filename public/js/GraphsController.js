@@ -61,7 +61,7 @@ function AbstractGraphsController() {
         $("#" + chartID + ".highcharts-navigator-handle-left").mouseenter(function() {
             $("#" + divIDDisableDraggable).draggable("disable");
         }).mouseleave(function() {
-            $(".wrap#charts").draggable("enable");
+            $("#" + divIDDisableDraggable).draggable("enable");
         });;
         $("#" + chartID + ".highcharts-navigator-handle-right").mouseenter(function() {
             $("#" + divIDDisableDraggable).draggable("disable");
@@ -155,6 +155,10 @@ function AbstractGraphsController() {
 
         $("#" + chartContainer).highcharts(chartOpts);
     };
+
+    this.createChartNotDestroyingOld = function(chartContainer, chartOpts) {
+        Highcharts.chart(chartContainer, chartOpts);
+    };
 }
 
 
@@ -189,11 +193,12 @@ function GraphsController() {
     };
 }
 
-// for the below two classes, we always destroy and recreate the chart.
+// for the below class, we always destroy and recreate the chart.
 // highcharts used to have a bug when updating series: (see: https://forum.highcharts.com/post126503.html#p126503),
 // so we took this approach. However, this bug seems to have been fixed (see jsfiddle on this site which now works),
-// TODO: so, in the future, consider updating charts instead of destroying and recreating. not doing now as it seems
-// like waste of time when there are more bigger fish to fry
+// TODO: so, in the future, consider updating this class instead of destroying and recreating. not doing now as it seems
+// like waste of time when there are bigger fish to fry. Update: seismicity plots and sliders have been updated, need to update
+// just the main insar plot class (GraphsController)
 function setupGraphsController() {
     GraphsController.prototype.selectedGraph = "Top Graph";
 
@@ -944,7 +949,6 @@ function setupSeismicityGraphsController() {
 
     SeismicityGraphsController.prototype.getSeriesData = function(features, colorStops) {
         var seriesData = [];
-        // console.log(JSON.stringify(colorStops));
 
         // we do x, y values if no stops provided to avoid highcharts turbothreshold
         if (features[0].colorOnInput) {
@@ -1042,48 +1046,55 @@ function setupSeismicityGraphsController() {
 
     SeismicityGraphsController.prototype.createDepthVLongGraph = function(features, chartContainer, selectedColoring) {
         var depthVLongValues = this.getDepthVLongData(features, selectedColoring);
-        var chartOpts = this.getBasicChartJSON();
-        chartOpts.xAxis.title = { text: "Longitude" };
-        chartOpts.yAxis.title = { text: "Depth (Km)" };
-        chartOpts.yAxis.labels = { format: "{value:.1f}" };
-        chartOpts.yAxis.reversed = true;
-        chartOpts.tooltip = {
-            formatter: this.pointFormatterCallback
-        };
-        chartOpts.chart.spacing = [5, 0, 0, -5];
-
         // if minimap is created, set min and max chart axis according to bounds of plot
         // notice if cross section plots are visible, we will short circuit and use long of main map
+        var minLng = 0;
+        var maxLng = 0;
         if (!this.crossSectionChartsVisible() && this.mapForPlot) {
             var bounds = this.mapForPlot.getBounds();
-            var minLng = bounds._sw.lng;
-            var maxLng = bounds._ne.lng;
-            chartOpts.xAxis.max = maxLng;
-            chartOpts.xAxis.min = minLng;
+            minLng = bounds._sw.lng;
+            maxLng = bounds._ne.lng;
         } else {
             var bounds = this.map.map.getBounds();
-            var minLng = bounds._sw.lng;
-            var maxLng = bounds._ne.lng;
+            minLng = bounds._sw.lng;
+            maxLng = bounds._ne.lng;
+        }
+        var curChart = $("#" + chartContainer).highcharts();
+        // chart already made, so we simply update it
+        if (curChart) {
+            curChart.series[0].setData(depthVLongValues, true);
+            curChart.xAxis[0].update({ min: minLng, max: maxLng });
+        } else {
+            var chartOpts = this.getBasicChartJSON();
+            chartOpts.xAxis.title = { text: "Longitude" };
+            chartOpts.yAxis.title = { text: "Depth (Km)" };
+            chartOpts.yAxis.labels = { format: "{value:.1f}" };
+            chartOpts.yAxis.reversed = true;
+            chartOpts.tooltip = {
+                formatter: this.pointFormatterCallback
+            };
+            chartOpts.chart.spacing = [5, 0, 0, -5];
+
             chartOpts.xAxis.max = maxLng;
             chartOpts.xAxis.min = minLng;
+
+            chartOpts.xAxis.endOnTick = false;
+            chartOpts.xAxis.startOnTick = false;
+            chartOpts.xAxis.maxPadding = 0;
+            // save it before we save the data to series
+            this.highChartsOpts[chartContainer] = chartOpts;
+            chartOpts.series.push({
+                type: 'scatter',
+                name: 'Depth',
+                data: depthVLongValues,
+                marker: {
+                    enabled: true
+                },
+                showInLegend: false,
+            });
+
+            this.createChartNotDestroyingOld(chartContainer, chartOpts);
         }
-
-        chartOpts.xAxis.endOnTick = false;
-        chartOpts.xAxis.startOnTick = false;
-        chartOpts.xAxis.maxPadding = 0;
-        // save it before we save the data to series
-        this.highChartsOpts[chartContainer] = chartOpts;
-        chartOpts.series.push({
-            type: 'scatter',
-            name: 'Depth',
-            data: depthVLongValues,
-            marker: {
-                enabled: true
-            },
-            showInLegend: false,
-        });
-
-        this.createChartDestroyingOld(chartContainer, chartOpts);
 
         return depthVLongValues;
     };
@@ -1141,49 +1152,55 @@ function setupSeismicityGraphsController() {
     };
     SeismicityGraphsController.prototype.createLatVDepthGraph = function(features, chartContainer, selectedColoring) {
         var latVdepthValues = this.getLatVDepthData(features, selectedColoring);
-        var chartOpts = this.getBasicChartJSON();
-        chartOpts.tooltip.pointFormat = "{point.y:.1f} °";
-        chartOpts.xAxis.title = { text: "Depth (Km)" };
-        chartOpts.yAxis.title = { text: "Latitude" };
-        chartOpts.yAxis.labels = { format: "{value:.1f}" };
-        chartOpts.tooltip = {
-            formatter: this.pointFormatterCallback
-        };
-        chartOpts.chart.spacing = [5, 0, 10, 0];
-
         // if minimap is created, set min and max chart axis according to bounds of plot
         // notice if cross section plots are visible, we will short circuit and use long of main map
+        var minLat = 0;
+        var maxLat = 0;
         if (!this.crossSectionChartsVisible() && this.mapForPlot) {
             var bounds = this.mapForPlot.getBounds();
-            var minLat = bounds._sw.lat;
-            var maxLat = bounds._ne.lat;
-            chartOpts.yAxis.max = maxLat;
-            chartOpts.yAxis.min = minLat;
+            minLat = bounds._sw.lat;
+            maxLat = bounds._ne.lat;
         } else {
             var bounds = this.map.map.getBounds();
-            var minLat = bounds._sw.lat;
-            var maxLat = bounds._ne.lat;
+            minLat = bounds._sw.lat;
+            maxLat = bounds._ne.lat;
+        }
+        var curChart = $("#" + chartContainer).highcharts();
+        if (curChart) {
+            curChart.series[0].setData(latVdepthValues, true);
+            curChart.yAxis[0].update({ min: minLat, max: maxLat });
+        } else {
+            var chartOpts = this.getBasicChartJSON();
+            chartOpts.tooltip.pointFormat = "{point.y:.1f} °";
+            chartOpts.xAxis.title = { text: "Depth (Km)" };
+            chartOpts.yAxis.title = { text: "Latitude" };
+            chartOpts.yAxis.labels = { format: "{value:.1f}" };
+            chartOpts.tooltip = {
+                formatter: this.pointFormatterCallback
+            };
+            chartOpts.chart.spacing = [5, 0, 10, 0];
+
             chartOpts.yAxis.max = maxLat;
             chartOpts.yAxis.min = minLat;
+
+            chartOpts.yAxis.endOnTick = false;
+            chartOpts.yAxis.startOnTick = false;
+            chartOpts.yAxis.maxPadding = 0;
+
+            // save it before we push the data to series
+            this.highChartsOpts[chartContainer] = chartOpts;
+            chartOpts.series.push({
+                type: 'scatter',
+                name: 'Lat',
+                data: latVdepthValues,
+                marker: {
+                    enabled: true
+                },
+                showInLegend: false,
+            });
+
+            this.createChartDestroyingOld(chartContainer, chartOpts);
         }
-
-        chartOpts.yAxis.endOnTick = false;
-        chartOpts.yAxis.startOnTick = false;
-        chartOpts.yAxis.maxPadding = 0;
-
-        // save it before we push the data to series
-        this.highChartsOpts[chartContainer] = chartOpts;
-        chartOpts.series.push({
-            type: 'scatter',
-            name: 'Lat',
-            data: latVdepthValues,
-            marker: {
-                enabled: true
-            },
-            showInLegend: false,
-        });
-
-        this.createChartDestroyingOld(chartContainer, chartOpts);
 
         return latVdepthValues;
     };
@@ -1292,27 +1309,35 @@ function setupSeismicityGraphsController() {
             seriesType = "column";
         }
 
-        chartOpts.xAxis.type = "datetime";
-        chartOpts.xAxis.dateTimeLabelFormats = { month: '%b %Y', year: '%Y' };
-        chartOpts.yAxis.title = { text: title };
-        chartOpts.tooltip = {
-            xDateFormat: "%Y-%b-%d",
-            formatter: formatterCallback
-        };
-        // save it before we push the data to series
-        this.highChartsOpts[chartContainer] = chartOpts;
+        var curChart = $("#" + chartContainer).highcharts();
+        if (curChart) {
+            curChart.series[0].update({ type: seriesType });
+            curChart.tooltip.options.formatter = formatterCallback;
+            curChart.yAxis[0].setTitle(null, { text: title });
+            curChart.series[0].setData(data, true);
+        } else {
+            chartOpts.xAxis.type = "datetime";
+            chartOpts.xAxis.dateTimeLabelFormats = { month: '%b %Y', year: '%Y' };
+            chartOpts.yAxis.title = { text: title };
+            chartOpts.tooltip = {
+                xDateFormat: "%Y-%b-%d",
+                formatter: formatterCallback
+            };
+            // save it before we push the data to series
+            this.highChartsOpts[chartContainer] = chartOpts;
 
-        chartOpts.series.push({
-            type: seriesType,
-            name: 'Cumulative',
-            data: data,
-            marker: {
-                enabled: true
-            },
-            showInLegend: false,
-        });
+            chartOpts.series.push({
+                type: seriesType,
+                name: 'Cumulative',
+                data: data,
+                marker: {
+                    enabled: true
+                },
+                showInLegend: false,
+            });
 
-        this.createChartDestroyingOld(chartContainer, chartOpts);
+            this.createChartDestroyingOld(chartContainer, chartOpts);
+        }
 
         return data;
     };
@@ -1426,8 +1451,15 @@ function setupSeismicityGraphsController() {
             var bounds = this.mapForPlot.getBounds();
             this.map.selector.addSelectionPolygonFromMapBounds(bounds);
             var sanitizedBounds = [bounds._sw, bounds._ne];
-            var features = this.getFeaturesWithinCurrentSliderRanges(this.features);
-            this.map.selector.createSeismicityPlots(sanitizedBounds);
+
+            var features = this.map.selector.getAllRenderedSeismicityFeatures(sanitizedBounds);
+            if (features.length == 0) {
+                return;
+            }
+            features = this.map.selector.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
+            this.setBbox(sanitizedBounds);
+
+            this.createSeismicityCharts(null, null, features);
         }.bind(this);
         this.mapForPlot.on("zoomend", onMoveend);
         this.mapForPlot.on("dragend", onMoveend);
@@ -1435,13 +1467,19 @@ function setupSeismicityGraphsController() {
         this.mapForPlot.setStyle(styleAndLayer.style);
     };
 
-    SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
+    SeismicityGraphsController.prototype.createSeismicityCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
         if ($("#seismicity-charts").hasClass("active")) {
-            // create mini map first so other charts can set their min and max axes values as appropriate
+        // create mini map first so other charts can set their min and max axes values as appropriate
             this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
             this.createChart(selectedColoring, "depth-vs-long-graph", optionalFeatures, optionalBounds);
             this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures, optionalBounds);
             this.createChart(selectedColoring, "cumulative-events-vs-date-graph", optionalFeatures, optionalBounds);
+        }
+    };
+
+    SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
+        if ($("#seismicity-charts").hasClass("active")) {
+            this.createSeismicityCharts(selectedColoring, optionalBounds, optionalFeatures);
             this.depthColorScale.initVisualScale();
             this.timeColorScale.initVisualScale();
             // we use visibility and not display for the contents because there seems to be a race
@@ -1467,7 +1505,7 @@ function setupSeismicityGraphsController() {
     SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, optionalFeatures, optionalBounds) {
         var features = optionalFeatures;
         if (!features) {
-            features = this.features;
+            features = this.getFeaturesWithinCurrentSliderRanges(this.features);
             if (!features) {
                 return;
             }
@@ -1661,6 +1699,16 @@ function setupCustomHighchartsSlider() {
         this.setNavigatorMax(this.chartContainer, max);
         this.manuallySetExtremes = false;
     };
+
+    CustomHighchartsSlider.prototype.setNewData = function(newData) {
+        var chart = $("#" + this.chartContainer).highcharts();
+
+        if (!chart) {
+            return;
+        }
+
+        chart.series[0].setData(newData, true)
+    };
 }
 
 function CustomSliderSeismicityController() {
@@ -1792,14 +1840,7 @@ function setupCustomSliderSeismicityController() {
         return this.getSeriesData(seriesFeatures);
     };
 
-    CustomSliderSeismicityController.prototype.createSeismicityCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
-        // create mini map first so other charts can set their min and max axes values as appropriate - we took care of this in super method
-        // call super method to not recreate sliders
-        SeismicityGraphsController.prototype.createAllCharts.call(this, selectedColoring, optionalBounds, optionalFeatures);
-    };
-
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
-
         if ($("#seismicity-charts").hasClass("active")) {
             this.createSeismicityCharts(selectedColoring, optionalBounds, optionalFeatures);
             this.depthColorScale.initVisualScale();
@@ -1812,7 +1853,7 @@ function setupCustomSliderSeismicityController() {
 
         var features = optionalFeatures;
         if (!features) {
-            features = this.features;
+            features = this.getFeaturesWithinCurrentSliderRanges(this.features);
             if (!features) {
                 return;
             }
@@ -1835,12 +1876,20 @@ function setupCustomSliderSeismicityController() {
             return depth1 - depth2;
         });
 
-        this.depthSlider = this.createSlider("depth-slider", depthData, "linear", null, function(e) {
-            this.depthSliderCallback(e, depthValues);
-        }.bind(this));
-        this.timeSlider = this.createSlider("time-slider", millisecondData, "datetime", null, function(e) {
-            this.timeSliderCallback(e, millisecondValues);
-        }.bind(this));
+        if (this.depthSlider) {
+            this.depthSlider.setNewData(depthData);
+        } else {
+            this.depthSlider = this.createSlider("depth-slider", depthData, "linear", null, function(e) {
+                this.depthSliderCallback(e, depthValues);
+            }.bind(this));
+        }
+        if (this.timeSlider) {
+            this.timeSlider.setNewData(millisecondData);
+        } else {
+            this.timeSlider = this.createSlider("time-slider", millisecondData, "datetime", null, function(e) {
+                this.timeSliderCallback(e, millisecondValues);
+            }.bind(this));
+        }
     };
     CustomSliderSeismicityController.prototype.createSlider = function(sliderContainer, data, dataType, title, afterSetExtremes) {
         var slider = new CustomHighchartsSlider();
@@ -1854,6 +1903,8 @@ function setupCustomSliderSeismicityController() {
         if (this.slidersVisible()) {
             $("#depth-slider").highcharts().destroy();
             $("#time-slider").highcharts().destroy();
+            this.timeSlider = null;
+            this.depthSlider = null;
         }
     };
 
@@ -1928,15 +1979,11 @@ function setupCustomSliderSeismicityController() {
 
             var maxDepth = depthValues[depthValues.length - 1];
             var minDepth = depthValues[0];
-            this.depthSlider = this.createSlider("depth-slider", depthData, "linear", null, function(e) {
-                this.depthSliderCallback(e, depthValues);
-            }.bind(this));
+            this.depthSlider.setNewData(depthData);
         } else if (sliderName === "time-slider") {
             var maxMilliseconds = millisecondValues[millisecondValues.length - 1];
             var minMilliseconds = millisecondValues[0];
-            this.timeSlider = this.createSlider("time-slider", millisecondData, "datetime", null, function(e) {
-                this.timeSliderCallback(e, millisecondValues);
-            }.bind(this));
+            this.timeSlider.setNewData(millisecondData);
         }
 
         // call super method to not recreate sliders
@@ -1965,9 +2012,7 @@ function setupCustomSliderSeismicityController() {
             });
             var maxDepth = depthValues[depthValues.length - 1];
             var minDepth = depthValues[0];
-            this.depthSlider = this.createSlider("depth-slider", depthData, "linear", null, function(e) {
-                this.depthSliderCallback(e, depthValues);
-            }.bind(this));
+            this.depthSlider.setNewData(depthData);
             if (!this.map.colorScale.inDateMode) {
                 this.map.colorScale.setMinMax(minDepth, maxDepth);
             }
@@ -1977,9 +2022,7 @@ function setupCustomSliderSeismicityController() {
         } else if (sliderName === "time-slider") {
             var maxMilliseconds = millisecondValues[millisecondValues.length - 1];
             var minMilliseconds = millisecondValues[0];
-            this.timeSlider = this.createSlider("time-slider", millisecondData, "datetime", null, function(e) {
-                this.timeSliderCallback(e, millisecondValues);
-            }.bind(this));
+            this.timeSlider.setNewData(millisecondData);
             if (this.map.colorScale.inDateMode) {
                 this.map.colorScale.setMinMax(minMilliseconds, maxMilliseconds);
             }

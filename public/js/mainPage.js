@@ -693,8 +693,6 @@ $(window).on("load", function() {
                 $(this).attr("data-original-title", "Color on displacement");
             }
         } else if (curMode === "seismicity") {
-            console.log(JSON.stringify(myMap.seismicityGraphsController.timeRange));
-            console.log(JSON.stringify(myMap.seismicityGraphsController.depthRange));
             $seismicityColoringButtons = $(".seismicity-chart-set-coloring-button");
             if (title === "Color seismicity on time") {
                 selectedColoring = "time";

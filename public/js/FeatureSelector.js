@@ -47,6 +47,7 @@ function setupFeatureSelector() {
 
     FeatureSelector.prototype.getAllRenderedSeismicityFeatures = function(bbox) {
         var seismicityLayers = this.map.getLayerIDsInCurrentMode();
+
         if (bbox) {
             var pixelBoundingBox = [this.map.map.project(bbox[0]), this.map.map.project(bbox[1])];
 
@@ -72,6 +73,7 @@ function setupFeatureSelector() {
             return;
         }
         features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
+
         this.map.seismicityGraphsController.setFeatures(features);
         this.map.seismicityGraphsController.setBbox(bbox);
         // show containers before creating as we have an optimization to not create
