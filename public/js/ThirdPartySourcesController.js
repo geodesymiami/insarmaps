@@ -895,6 +895,7 @@ function ThirdPartySourcesController(map) {
                 var mag = parseFloat(attributes[10]);
                 var coordinates = [long, lat];
                 var milliseconds = new Date(attributes[1]).getTime();
+                var location = attributes[12];
 
                 var feature = {
                     "type": "Feature",
@@ -905,7 +906,8 @@ function ThirdPartySourcesController(map) {
                     "properties": {
                         "depth": depth,
                         "mag": mag,
-                        "time": milliseconds
+                        "time": milliseconds,
+                        "location": location
                     }
                 };
 

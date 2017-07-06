@@ -91,6 +91,15 @@ function AbstractGraphsController() {
         chart.xAxis[0].setExtremes(curExtremes.min, max);
     };
 
+    this.setNavigatorMinMax = function(chartContainer, min, max) {
+        var chart = $("#" + chartContainer).highcharts();
+
+        if (!chart) {
+            return;
+        }
+        chart.xAxis[0].setExtremes(min, max);
+    };
+
     this.getBasicChartJSON = function() {
         var chartOpts = {
             title: {
@@ -881,12 +890,7 @@ function SeismicityGraphsController() {
         var graphsController = this.map.seismicityGraphsController;
         var thirdPartySourcesController = this.map.thirdPartySourcesController;
         if (thirdPartySourcesController.currentSeismicityColoring === "depth") {
-            graphsController.depthSlider.setMin(newMin);
-            graphsController.depthSlider.setMax(newMax);
-            if (!this.map.colorScale.inDateMode) {
-                this.map.colorScale.setMinMax(newMin, newMax);
-                thirdPartySourcesController.recolorSeismicities(thirdPartySourcesController.currentSeismicityColoring);
-            }
+            graphsController.depthSlider.setMinMax(newMin, newMax);
         }
     }.bind(this));
     this.timeColorScale = new ColorScale(new Date(0).getTime(), new Date(50).getTime(), "lat-vs-long-time-color-scale");
@@ -896,12 +900,7 @@ function SeismicityGraphsController() {
         var graphsController = this.map.seismicityGraphsController;
         var thirdPartySourcesController = this.map.thirdPartySourcesController;
         if (thirdPartySourcesController.currentSeismicityColoring === "time") {
-            graphsController.timeSlider.setMin(newMin);
-            graphsController.timeSlider.setMax(newMax);
-            if (this.map.colorScale.inDateMode) {
-                this.map.colorScale.setMinMax(newMin, newMax);
-                thirdPartySourcesController.recolorSeismicities(thirdPartySourcesController.currentSeismicityColoring);
-            }
+            graphsController.timeSlider.setMinMax(newMin, newMax);
         }
     }.bind(this));
     this.timeRange = null;
@@ -1469,7 +1468,7 @@ function setupSeismicityGraphsController() {
 
     SeismicityGraphsController.prototype.createSeismicityCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
         if ($("#seismicity-charts").hasClass("active")) {
-        // create mini map first so other charts can set their min and max axes values as appropriate
+            // create mini map first so other charts can set their min and max axes values as appropriate
             this.createChart(selectedColoring, "lat-vs-long-graph", optionalFeatures, optionalBounds);
             this.createChart(selectedColoring, "depth-vs-long-graph", optionalFeatures, optionalBounds);
             this.createChart(selectedColoring, "lat-vs-depth-graph", optionalFeatures, optionalBounds);
@@ -1700,6 +1699,12 @@ function setupCustomHighchartsSlider() {
         this.manuallySetExtremes = false;
     };
 
+    CustomHighchartsSlider.prototype.setMinMax = function(min, max) {
+        this.manuallySetExtremes = true;
+        this.setNavigatorMinMax(this.chartContainer, min, max);
+        this.manuallySetExtremes = false;
+    };
+
     CustomHighchartsSlider.prototype.setNewData = function(newData) {
         var chart = $("#" + this.chartContainer).highcharts();
 
@@ -1767,12 +1772,10 @@ function setupCustomSliderSeismicityController() {
         this.depthRange = { min: e.min, max: e.max };
 
         this.map.thirdPartySourcesController.filterSeismicities([this.depthRange], "depth");
-        if (!this.depthSlider.manuallySetExtremes) {
-            this.depthColorScale.setMinMax(e.min, e.max);
-            if (!this.map.colorScale.inDateMode) {
-                this.map.colorScale.setMinMax(e.min, e.max);
-                this.map.thirdPartySourcesController.recolorSeismicities("depth");
-            }
+        this.depthColorScale.setMinMax(e.min, e.max);
+        if (!this.map.colorScale.inDateMode) {
+            this.map.colorScale.setMinMax(e.min, e.max);
+            this.map.thirdPartySourcesController.recolorSeismicities("depth");
         }
         var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features);
         if (filteredFeatures.length > 0) {
@@ -1784,12 +1787,10 @@ function setupCustomSliderSeismicityController() {
     CustomSliderSeismicityController.prototype.timeSliderCallback = function(e, millisecondValues) {
         this.timeRange = { min: e.min, max: e.max };
         this.map.thirdPartySourcesController.filterSeismicities([this.timeRange], "time");
-        if (!this.depthSlider.manuallySetExtremes) {
-            this.timeColorScale.setMinMax(e.min, e.max);
-            if (this.map.colorScale.inDateMode) {
-                this.map.colorScale.setMinMax(e.min, e.max);
-                this.map.thirdPartySourcesController.recolorSeismicities("time");
-            }
+        this.timeColorScale.setMinMax(e.min, e.max);
+        if (this.map.colorScale.inDateMode) {
+            this.map.colorScale.setMinMax(e.min, e.max);
+            this.map.thirdPartySourcesController.recolorSeismicities("time");
         }
         var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features);
         if (filteredFeatures.length > 0) {
@@ -2013,22 +2014,12 @@ function setupCustomSliderSeismicityController() {
             var maxDepth = depthValues[depthValues.length - 1];
             var minDepth = depthValues[0];
             this.depthSlider.setNewData(depthData);
-            if (!this.map.colorScale.inDateMode) {
-                this.map.colorScale.setMinMax(minDepth, maxDepth);
-            }
-            this.depthRange = { min: minDepth, max: maxDepth };
-            this.depthColorScale.setMinMax(minDepth, maxDepth);
-            this.map.thirdPartySourcesController.filterSeismicities([this.depthRange], "depth");
+            this.depthSlider.setMinMax(minDepth, maxDepth);
         } else if (sliderName === "time-slider") {
             var maxMilliseconds = millisecondValues[millisecondValues.length - 1];
             var minMilliseconds = millisecondValues[0];
             this.timeSlider.setNewData(millisecondData);
-            if (this.map.colorScale.inDateMode) {
-                this.map.colorScale.setMinMax(minMilliseconds, maxMilliseconds);
-            }
-            this.timeRange = { min: minMilliseconds, max: maxMilliseconds };
-            this.timeColorScale.setMinMax(minMilliseconds, maxMilliseconds);
-            this.map.thirdPartySourcesController.filterSeismicities([this.timeRange], "time");
+            this.timeSlider.setMinMax(minMilliseconds, maxMilliseconds);
         }
 
         this.map.thirdPartySourcesController.recolorSeismicities(this.map.thirdPartySourcesController.currentSeismicityColoring);
