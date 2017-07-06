@@ -401,7 +401,7 @@ function ColorScale(min, max, divID) {
                 $input.datepicker({
                     changeMonth: true,
                     changeYear: true,
-                    dateFormat: "y-M-d"
+                    dateFormat: "yy-M-d"
                 });
             }).remove();
             $("#" + this.divID + " .scale-values").css("width", "150px");
@@ -508,16 +508,9 @@ function ColorScale(min, max, divID) {
                 var bottomValue = $("#" + this.divID + " .bottom-scale-value").val();
                 var topValue = $("#" + this.divID + " .top-scale-value").val();
                 if (this.inDateMode) {
-                    // yyyy-mm-dd is always the value we get (however the display depends)
-                    // on user locale: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/date
-                    // we need this incantation rather than just doing new Date(bottomValue) because
-                    // of how html5 vs js dates work: https://stackoverflow.com/questions/9509360/datepicker-date-off-by-one-day
-                    var splitTop = bottomValue.split("-");
-                    var splitBot = topValue.split("-");
-
                     // -1 because js date is 0 based.
-                    var minMilliseconds = new Date(splitBot[0], splitBot[1] - 1, splitBot[2]).getTime();
-                    var maxMilliseconds = new Date(splitTop[0], splitTop[1] - 1, splitTop[2]).getTime();
+                    var minMilliseconds = $.datepicker.parseDate("yy-M-d", bottomValue).getTime();
+                    var maxMilliseconds = $.datepicker.parseDate("yy-M-d", topValue).getTime();
                     this.setMinMax(minMilliseconds, maxMilliseconds);
                 } else {
                     this.setMinMax(parseFloat(bottomValue), parseFloat(topValue));

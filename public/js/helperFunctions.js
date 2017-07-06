@@ -99,15 +99,30 @@ function getRootUrl() {
 
 // see: https://stackoverflow.com/questions/1379553/how-might-i-find-the-largest-number-contained-in-a-javascript-array. this is fastest method of finding min and max in array
 // is faster than sorting or reduce, etc...
-function findMinMaxOfArray(array) {
+function findMinMaxOfArray(array, sortFunction) {
     var max = array[0];
     var min = array[0];
-    for (var i = 1; i < array.length; i++) {
-        var curValue = array[i];
-        if (curValue > max) {
-            max = curValue;
-        } else if (curValue < min) {
-            min = curValue;
+
+    // we could check for sortFunction inside loop, but best to have a couple more
+    // lines and not have unecessary if else. premature optimization? not sure but i want to do
+    // it this way
+    if (sortFunction) {
+        for (var i = 1; i < array.length; i++) {
+            var curValue = array[i];
+            if (sortFunction(curValue, max) > 0) {
+                max = curValue;
+            } else if (sortFunction(curValue, min) < 0) {
+                min = curValue;
+            }
+        }
+    } else {
+        for (var i = 1; i < array.length; i++) {
+            var curValue = array[i];
+            if (curValue > max) {
+                max = curValue;
+            } else if (curValue < min) {
+                min = curValue;
+            }
         }
     }
 

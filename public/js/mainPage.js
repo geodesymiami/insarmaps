@@ -693,19 +693,21 @@ $(window).on("load", function() {
                 $(this).attr("data-original-title", "Color on displacement");
             }
         } else if (curMode === "seismicity") {
+            console.log(JSON.stringify(myMap.seismicityGraphsController.timeRange));
+            console.log(JSON.stringify(myMap.seismicityGraphsController.depthRange));
             $seismicityColoringButtons = $(".seismicity-chart-set-coloring-button");
             if (title === "Color seismicity on time") {
                 selectedColoring = "time";
                 $(this).attr("data-original-title", "Color seismicity on depth");
                 myMap.colorScale.setInDateMode(true);
-                myMap.colorScale.setMinMax(myMap.seismicityGraphsController.minMilliseconds, myMap.seismicityGraphsController.maxMilliseconds);
+                myMap.colorScale.setMinMax(myMap.seismicityGraphsController.timeRange.min, myMap.seismicityGraphsController.timeRange.max);
                 $seismicityColoringButtons.attr("data-original-title", "Color on time")
                 $seismicityColoringButtons.click();
             } else if (title === "Color seismicity on depth") {
                 selectedColoring = "depth";
                 $(this).attr("data-original-title", "Color seismicity on time");
                 myMap.colorScale.setInDateMode(false);
-                myMap.colorScale.setMinMax(0, 50);
+                myMap.colorScale.setMinMax(myMap.seismicityGraphsController.depthRange.min, myMap.seismicityGraphsController.depthRange.max);
                 $seismicityColoringButtons.attr("data-original-title", "Color on depth")
                 $seismicityColoringButtons.click();
             }
@@ -1062,7 +1064,7 @@ $(window).on("load", function() {
     $(".date-input").datepicker({
         changeMonth: true,
         changeYear: true,
-        dateFormat: "y-M-d"
+        dateFormat: "yy-M-d"
     });
     // $("#search-form-results-table").tablesorter();
 });

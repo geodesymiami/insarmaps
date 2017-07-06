@@ -451,7 +451,7 @@ function ThirdPartySourcesController(map) {
     this.setupColorScaleForSeismicities = function() {
         this.map.colorScale.show();
         this.map.colorScale.setTitle("Depth (Km)");
-        this.map.colorScale.setMinMax(0, 50);
+        this.map.colorScale.setMinMax(0, 50); // not necessary, as set features will override it
     };
 
     this.loadUSGSEarthquakeFeed = function() {

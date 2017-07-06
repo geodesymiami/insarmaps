@@ -68,10 +68,8 @@ function MapController(loadJSONFunc) {
                     this.seismicityGraphsController.timeSlider.setMin(newMin);
                     this.seismicityGraphsController.timeSlider.setMax(newMax);
                 }
-                this.seismicityGraphsController.createSeismicityCharts(this.thirdPartySourcesController.currentSeismicityColoring, null, null);
                 this.thirdPartySourcesController.recolorSeismicities(this.thirdPartySourcesController.currentSeismicityColoring);
             }
-
         }
     }.bind(this));
     this.colorOnDisplacement = false;
