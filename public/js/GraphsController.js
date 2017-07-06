@@ -983,8 +983,8 @@ function setupSeismicityGraphsController() {
         var max = 0;
         var colorOnInputs = null;
         if (selectedColoring === "time") {
-            min = features[0].properties.time;
-            max = features[0].properties.time;
+            min = this.timeColorScale.min;
+            max = this.timeColorScale.max;
             features.forEach(function(feature) {
                 var html = this.map.thirdPartySourcesController.featureToViewOptions(feature);
                 var seriesFeature = {
@@ -1003,8 +1003,8 @@ function setupSeismicityGraphsController() {
                 seriesFeatures.push(seriesFeature);
             }.bind(this));
         } else { // anything else we assume is depth...
-            min = features[0].properties.depth;
-            max = features[0].properties.depth;
+            min = this.depthColorScale.min;
+            max = this.depthColorScale.max;
             features.forEach(function(feature) {
                 var html = this.map.thirdPartySourcesController.featureToViewOptions(feature);
                 var seriesFeature = {
@@ -1095,8 +1095,8 @@ function setupSeismicityGraphsController() {
         var max = 0;
         var colorOnInputs = null;
         if (selectedColoring === "time") {
-            min = features[0].properties.time;
-            max = features[0].properties.time;
+            min = this.timeColorScale.min;
+            max = this.timeColorScale.max;
             features.forEach(function(feature) {
                 var html = this.map.thirdPartySourcesController.featureToViewOptions(feature);
                 var seriesFeature = {
@@ -1115,8 +1115,8 @@ function setupSeismicityGraphsController() {
                 seriesFeatures.push(seriesFeature);
             }.bind(this));
         } else {
-            min = features[0].properties.depth;
-            max = features[0].properties.depth;
+            min = this.depthColorScale.min;
+            max = this.depthColorScale.max;
             features.forEach(function(feature) {
                 var html = this.map.thirdPartySourcesController.featureToViewOptions(feature);
                 var seriesFeature = {
@@ -1231,8 +1231,8 @@ function setupSeismicityGraphsController() {
         var max = 0;
         var colorOnInputs = null;
         if (selectedColoring === "time") {
-            min = features[0].properties.time;
-            max = features[0].properties.time;
+            min = this.timeColorScale.min;
+            max = this.timeColorScale.max;
             var numberOfEvents = 1;
             features.forEach(function(feature) {
                 var html = this.map.thirdPartySourcesController.featureToViewOptions(feature);
@@ -1253,8 +1253,8 @@ function setupSeismicityGraphsController() {
                 seriesFeatures.push(seriesFeature);
             }.bind(this));
         } else {
-            min = features[0].properties.depth;
-            max = features[0].properties.depth;
+            min = this.depthColorScale.min;
+            max = this.depthColorScale.max;
             var numberOfEvents = 1;
             features.forEach(function(feature) {
                 var html = this.map.thirdPartySourcesController.featureToViewOptions(feature);
