@@ -1917,23 +1917,23 @@ function setupCustomSliderSeismicityController() {
             millisecondValues.push(feature.properties.time);
         });
 
-        var maxMilliseconds = millisecondValues[millisecondValues.length - 1];
-        var minMilliseconds = millisecondValues[0];
 
-        // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
-        // also, callbacks depend on sorted arrays (for speed). no need to sort milliseconds as the features are already sorted by this
-        depthValues.sort(function(depth1, depth2) {
-            return depth1 - depth2;
-        });
-
-        var maxDepth = depthValues[depthValues.length - 1];
-        var minDepth = depthValues[0];
 
         if (sliderName === "depth-slider") {
+            // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
+            // also, callbacks depend on sorted arrays (for speed). no need to sort milliseconds as the features are already sorted by this
+            depthValues.sort(function(depth1, depth2) {
+                return depth1 - depth2;
+            });
+
+            var maxDepth = depthValues[depthValues.length - 1];
+            var minDepth = depthValues[0];
             this.depthSlider = this.createSlider("depth-slider", depthData, "linear", null, function(e) {
                 this.depthSliderCallback(e, depthValues);
             }.bind(this));
         } else if (sliderName === "time-slider") {
+            var maxMilliseconds = millisecondValues[millisecondValues.length - 1];
+            var minMilliseconds = millisecondValues[0];
             this.timeSlider = this.createSlider("time-slider", millisecondData, "datetime", null, function(e) {
                 this.timeSliderCallback(e, millisecondValues);
             }.bind(this));
@@ -1945,8 +1945,6 @@ function setupCustomSliderSeismicityController() {
 
     // TODO: this method, and the above, look like they can seriously be rafctored
     CustomSliderSeismicityController.prototype.resetSliderRange = function(sliderName) {
-        this.map.thirdPartySourcesController.removeSeismicityFilters();
-
         var features = this.features;
         var depthData = this.getDepthHistogram(features);
         var millisecondData = this.getEventsHistogram(features);
@@ -1959,18 +1957,14 @@ function setupCustomSliderSeismicityController() {
             millisecondValues.push(feature.properties.time);
         });
 
-        var maxMilliseconds = millisecondValues[millisecondValues.length - 1];
-        var minMilliseconds = millisecondValues[0];
-        // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
-        // also, callbacks depend on sorted arrays (for speed). no need to sort milliseconds as the features are already sorted by this
-        depthValues.sort(function(depth1, depth2) {
-            return depth1 - depth2;
-        });
-
-        var maxDepth = depthValues[depthValues.length - 1];
-        var minDepth = depthValues[0];
-
         if (sliderName === "depth-slider") {
+            // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
+            // also, callbacks depend on sorted arrays (for speed). no need to sort milliseconds as the features are already sorted by this
+            depthValues.sort(function(depth1, depth2) {
+                return depth1 - depth2;
+            });
+            var maxDepth = depthValues[depthValues.length - 1];
+            var minDepth = depthValues[0];
             this.depthSlider = this.createSlider("depth-slider", depthData, "linear", null, function(e) {
                 this.depthSliderCallback(e, depthValues);
             }.bind(this));
@@ -1979,7 +1973,10 @@ function setupCustomSliderSeismicityController() {
             }
             this.depthRange = { min: minDepth, max: maxDepth };
             this.depthColorScale.setMinMax(minDepth, maxDepth);
+            this.map.thirdPartySourcesController.filterSeismicities([this.depthRange], "depth");
         } else if (sliderName === "time-slider") {
+            var maxMilliseconds = millisecondValues[millisecondValues.length - 1];
+            var minMilliseconds = millisecondValues[0];
             this.timeSlider = this.createSlider("time-slider", millisecondData, "datetime", null, function(e) {
                 this.timeSliderCallback(e, millisecondValues);
             }.bind(this));
@@ -1988,14 +1985,19 @@ function setupCustomSliderSeismicityController() {
             }
             this.timeRange = { min: minMilliseconds, max: maxMilliseconds };
             this.timeColorScale.setMinMax(minMilliseconds, maxMilliseconds);
+            this.map.thirdPartySourcesController.filterSeismicities([this.timeRange], "time");
         }
+
+        this.map.thirdPartySourcesController.recolorSeismicities(this.map.thirdPartySourcesController.currentSeismicityColoring);
         // this avoids us having to keep all the features in memory for when we reset
         // we can use map queryRenderedFeatures instead once all features are rendered
         // after applying filter
         this.map.onDatasetRendered(function(callback) {
             this.map.map.off("render", callback);
+            // can't just remove all filters from main map features as sliders are independent of each other now
+            var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features);
             // call super method to not recreate sliders
-            SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, features);
+            SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
         }.bind(this));
     };
 }
