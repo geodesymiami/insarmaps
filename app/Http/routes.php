@@ -28,7 +28,7 @@ Route::get("/IGEPNEarthquakeFeed", "ThirdPartyDataNoCorsController@getIGEPNEarth
 Route::get("/HawaiiReloc", "ThirdPartyDataNoCorsController@getHawaiiReloc")->name("getHawaiiReloc");
 Route::get("/LongValleyReloc", "ThirdPartyDataNoCorsController@getLongValleyReloc")->name("getLongValleyReloc");
 Route::get("/USGSMonthlyFeed", "ThirdPartyDataNoCorsController@getUSGSMonthlyFeed")->name("getUSGSMonthlyFeed");
-Route::get("/IRISEarthquake/", "ThirdPartyDataNoCorsController@getIRISEarthquake")->name("IRISEarthquake");
+Route::get("/USGSEventsEarthquake/", "ThirdPartyDataNoCorsController@getUSGSEventsEarthquake")->name("USGSEventsEarthquake");
 
 Route::post("/points", "GeoJSONController@getPoints");
 Route::controllers([

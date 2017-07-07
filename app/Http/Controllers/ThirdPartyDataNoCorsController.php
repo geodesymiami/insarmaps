@@ -42,13 +42,14 @@ class ThirdPartyDataNoCorsController extends Controller {
 				]);
 	}
 
-	public function getIRISEarthquake(Request $request) {
+	public function getUSGSEventsEarthquake(Request $request) {
 		$url = $request->all()["url"];
 		$curlSession = curl_init();
 	    curl_setopt($curlSession, CURLOPT_URL, urldecode($url));
 	    curl_setopt($curlSession, CURLOPT_HEADER, true); 
 	    curl_setopt($curlSession, CURLOPT_BINARYTRANSFER, true);
 	    curl_setopt($curlSession, CURLOPT_RETURNTRANSFER, true);
+	    curl_setopt($curlSession, CURLOPT_ENCODING, "gzip");
 	    $data = curl_exec($curlSession);
 	    $responseCode = curl_getinfo($curlSession, CURLINFO_HTTP_CODE);
 	    $responseBody = NULL;

@@ -1,4 +1,4 @@
-function IrisOptionsController(divID) {
+function USGSEventsOptionsController(divID) {
     this.divID = divID;
 
     // populate view with start and end date

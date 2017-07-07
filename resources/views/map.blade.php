@@ -195,9 +195,9 @@
                 </div>
             </div>
         </div>
-        <div class="wrap wrap-transitions" id="iris-options">
+        <div class="wrap wrap-transitions" id="USGSEvents-options">
             <div class="top-right-buttons">
-                <button type="button" class="minimize-button" data-dismiss="modal" id="iris-options-minimize-button"></button>
+                <button type="button" class="minimize-button" data-dismiss="modal" id="USGSEvents-options-minimize-button"></button>
             </div>
             <div class="content">
                 <label>Start Date</label>
@@ -212,7 +212,7 @@
                 <input type="number" class="form-control min-depth" value="0" />
                 <label>Max Depth</label>
                 <input type="number" class="form-control max-depth" value="30" />
-                <button class="btn btn-info" id="iris-options-submit-button">Submit</button>
+                <button class="btn btn-info" id="USGSEvents-options-submit-button">Submit</button>
             </div>
         </div>
         <!-- by default, it is toggled, or minimized -->
@@ -524,7 +524,7 @@
     <script type="text/javascript" src="/js/SearchFile.js"></script>
     <script type="text/javascript" src="/js/Swath.js"></script>
     <script type="text/javascript" src="/js/Vector.js"></script>
-    <script type="text/javascript" src="/js/IrisOptionsController.js"></script>
+    <script type="text/javascript" src="/js/USGSEventsOptionsController.js"></script>
     <script type="text/javascript" src="/js/ThirdPartySourcesController.js"></script>
     <script type="text/javascript" src="/js/mainMap.js"></script>
     <script type="text/javascript" src="/js/SquareSelector.js"></script>

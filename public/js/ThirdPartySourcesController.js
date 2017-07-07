@@ -4,11 +4,11 @@ function ThirdPartySourcesController(map) {
     this.cancellableAjax = new CancellableAjax();
 
     // we should consider creating these next 3 arrays dynamically
-    this.layerOrder = ["IRISEarthquake", "LongValleyReloc", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake", "midas",
+    this.layerOrder = ["USGSEventsEarthquake", "LongValleyReloc", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake", "midas",
         "midas-arrows", "gpsStations"
     ];
 
-    this.seismicities = ["IRISEarthquake", "LongValleyReloc", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake"];
+    this.seismicities = ["USGSEventsEarthquake", "LongValleyReloc", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake"];
     this.gps = ["midas", "midas-arrows", "gpsStations"];
 
     this.stopsCalculator = new MapboxStopsCalculator();
@@ -18,7 +18,7 @@ function ThirdPartySourcesController(map) {
     this.midasArrows = null;
     this.referenceArrow = null;
     this.subtractedMidasArrows = null;
-    this.irisURL = null;
+    this.USGSEventsURL = null;
 
     // keep this around for when main map needs features to pass in to create
     // the seismicity sliders. notice (below) that we always set this before
@@ -26,9 +26,9 @@ function ThirdPartySourcesController(map) {
     // latest feature (seismicity or otherwise)
     this.currentFeatures = null;
 
-    this.irisOptionsController = new IrisOptionsController("iris-options");
-    this.irisOptionsController.onEnterKeyUp(function(url) {
-        this.irisURL = url;
+    this.USGSEventsOptionsController = new USGSEventsOptionsController("USGSEvents-options");
+    this.USGSEventsOptionsController.onEnterKeyUp(function(url) {
+        this.USGSEventsURL = url;
     }.bind(this));
 
     this.getLayerOnTopOf = function(layer) {
@@ -881,7 +881,7 @@ function ThirdPartySourcesController(map) {
         this.map.removeSourceAndLayer(name);
     };
 
-    this.parseIRISEarthquake = function(rawData) {
+    this.parseUSGSEventsEarthquake = function(rawData) {
         var lines = rawData.split("\n");
         var features = [];
 
@@ -918,21 +918,21 @@ function ThirdPartySourcesController(map) {
         return features;
     };
 
-    this.loadIRISEarthquake = function() {
+    this.loadUSGSEventsEarthquake = function() {
         var now = new Date();
         var startDate = new Date();
         startDate.setFullYear(now.getFullYear() - 2);
         var nowString = now.toISOString().split('T')[0];
         var startDateString = startDate.toISOString().split('T')[0];
 
-        showLoadingScreen("Getting IRIS Earthquake Data", "ESCAPE to interrupt");
+        showLoadingScreen("Getting USGS Events Earthquake Data", "ESCAPE to interrupt");
 
-        this.irisURL = this.irisOptionsController.getURL();
+        this.USGSEventsURL = this.USGSEventsOptionsController.getURL();
 
         this.cancellableAjax.ajax({
-            url: "/IRISEarthquake/?url=" + encodeURIComponent(this.irisURL),
+            url: "/USGSEventsEarthquake/?url=" + encodeURIComponent(this.USGSEventsURL),
             success: function(response) {
-                var features = this.parseIRISEarthquake(response);
+                var features = this.parseUSGSEventsEarthquake(response);
                 var mapboxStationFeatures = {
                     type: "geojson",
                     cluster: false,
@@ -949,7 +949,7 @@ function ThirdPartySourcesController(map) {
                 var magCircleSizes = this.defaultCircleSizes();
                 var magStops = this.stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
 
-                var layerID = "IRISEarthquake";
+                var layerID = "USGSEventsEarthquake";
                 this.map.addSource(layerID, mapboxStationFeatures);
                 this.map.addLayer({
                     "id": layerID,
@@ -976,18 +976,18 @@ function ThirdPartySourcesController(map) {
 
                 // don't do the below if error is due to pressing escape key
                 if (xhr.responseText) {
-                    irisEarthquakeToggleButton.click();
-                    window.alert("Bad IRIS parameters. Here's the server's response:\n" + xhr.responseText);
+                    USGSEventsEarthquakeToggleButton.click();
+                    window.alert("Bad USGSEvents parameters. Here's the server's response:\n" + xhr.responseText);
                 }
             }
         }, function() {
             hideLoadingScreen();
-            irisEarthquakeToggleButton.click();
+            USGSEventsEarthquakeToggleButton.click();
         });
     };
 
-    this.removeIRISEarthquake = function() {
-        var name = "IRISEarthquake";
+    this.removeUSGSEventsEarthquake = function() {
+        var name = "USGSEventsEarthquake";
 
         this.map.removeSourceAndLayer(name);
     };
@@ -1177,8 +1177,8 @@ function ThirdPartySourcesController(map) {
         if (HawaiiRelocToggleButton !== except) {
             HawaiiRelocToggleButton.set("off", true);
         }
-        if (irisEarthquakeToggleButton !== except) {
-            irisEarthquakeToggleButton.set("off", true);
+        if (USGSEventsEarthquakeToggleButton !== except) {
+            USGSEventsEarthquakeToggleButton.set("off", true);
         }
     };
 }

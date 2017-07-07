@@ -251,7 +251,7 @@ html[xmlns] .clearfix {
     display: none;
 }
 
-#iris-options {
+#USGSEvents-options {
     position: absolute;
     width: 70%;
     height: 80%;
@@ -263,7 +263,7 @@ html[xmlns] .clearfix {
     right: 0;
 }
 
-#iris-options .content {
+#USGSEvents-options .content {
     padding-top: 30px;
 }
 
