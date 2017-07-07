@@ -870,7 +870,6 @@ $(window).on("load", function() {
             $(this).html("Depth-colored");
             $(this).attr("data-original-title", "Color on time");
         }
-        myMap.seismicityGraphsController.seismicityColorings[targetGraph] = selectedColoring;
         myMap.seismicityGraphsController.createChart(selectedColoring, targetGraph, null, null);
     });
 

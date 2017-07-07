@@ -444,7 +444,7 @@ function ThirdPartySourcesController(map) {
         this.map.seismicityGraphsController.setFeatures(features);
         var mapboxBounds = this.map.map.getBounds();
         this.map.seismicityGraphsController.setBbox([mapboxBounds._sw, mapboxBounds._ne]);
-        this.map.seismicityGraphsController.createAllCharts(this.currentSeismicityColoring, null, null);
+        this.map.seismicityGraphsController.createOrUpdateSliders(features);
         this.map.seismicityGraphsController.showSliders();
     };
 

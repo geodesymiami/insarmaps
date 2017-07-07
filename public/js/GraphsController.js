@@ -906,7 +906,6 @@ function SeismicityGraphsController() {
         closeButton: false,
         closeOnClick: false
     });
-    this.seismicityColorings = {};
 }
 
 function setupSeismicityGraphsController() {
@@ -1448,7 +1447,7 @@ function setupSeismicityGraphsController() {
             this.map.selector.addSelectionPolygonFromMapBounds(bounds);
             var sanitizedBounds = [bounds._sw, bounds._ne];
 
-            var features = this.map.selector.getAllRenderedSeismicityFeatures(sanitizedBounds);
+            var features = this.getFeaturesWithinCurrentSliderRanges(this.features, sanitizedBounds);
             if (features.length == 0) {
                 return;
             }
@@ -1499,14 +1498,6 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, optionalFeatures, optionalBounds) {
-        var features = optionalFeatures;
-        if (!features) {
-            features = this.getFeaturesWithinCurrentSliderRanges(this.features);
-            if (!features || features.length == 0) {
-                return;
-            }
-        }
-
         var bounds = optionalBounds;
         if (!bounds) {
             bounds = this.bbox;
@@ -1515,9 +1506,12 @@ function setupSeismicityGraphsController() {
             }
         }
 
-        // used save coloring if none supplied
-        if (!selectedColoring) {
-            selectedColoring = this.seismicityColorings[chartType];
+        var features = optionalFeatures;
+        if (!features) {
+            features = this.getFeaturesWithinCurrentSliderRanges(this.features, bounds);
+            if (!features || features.length == 0) {
+                return;
+            }
         }
 
         var chartData = null;
@@ -1737,7 +1731,25 @@ function setupCustomSliderSeismicityController() {
 
         return this.getSeriesData(depthValues, depthValues, null, colorOnInputs, colorStops);
     };
-    CustomSliderSeismicityController.prototype.getFeaturesWithinCurrentSliderRanges = function(features) {
+    CustomSliderSeismicityController.prototype.getFeaturesWithinCurrentSliderRanges = function(features, optionalBounds) {
+        if (optionalBounds) {
+            var polygon = this.map.selector.squareBboxToMapboxPolygon(optionalBounds);
+            var searchWithin = {
+                "type": "FeatureCollection",
+                "features": [polygon]
+            };
+            var points = {
+                "type": "FeatureCollection",
+                "features": features
+            };
+            console.log("before " + features.length);
+
+            features = turf.within(points, searchWithin).features;
+            console.log("after " + features.length);
+        }
+        console.log(JSON.stringify(this.timeRange));
+        console.log(JSON.stringify(this.depthRange));
+
         var filteredFeatures = features.filter(function(feature) {
             var props = feature.properties;
             var time = props.time;
@@ -1769,9 +1781,6 @@ function setupCustomSliderSeismicityController() {
     // we could write our own filering code, but there is no point as mapbox filters for us and
     // these graphs are so intimately tied to the map features
     CustomSliderSeismicityController.prototype.depthSliderCallback = function(e, depthValues) {
-        if (this.depthSlider.settingData) {
-            return;
-        }
         this.depthRange = { min: e.min, max: e.max };
 
         this.map.thirdPartySourcesController.filterSeismicities([this.depthRange], "depth");
@@ -1780,7 +1789,12 @@ function setupCustomSliderSeismicityController() {
             this.map.colorScale.setMinMax(e.min, e.max);
             this.map.thirdPartySourcesController.recolorSeismicities("depth");
         }
-        var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features);
+
+        if (this.depthSlider.settingData) {
+            console.log("dfs");
+            return;
+        }
+        var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features, this.bbox);
         if (filteredFeatures.length > 0) {
             // call super method to not recreate sliders
             SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
@@ -1788,9 +1802,6 @@ function setupCustomSliderSeismicityController() {
     };
 
     CustomSliderSeismicityController.prototype.timeSliderCallback = function(e, millisecondValues) {
-        if (this.timeSlider.settingData) {
-            return;
-        }
         this.timeRange = { min: e.min, max: e.max };
         this.map.thirdPartySourcesController.filterSeismicities([this.timeRange], "time");
         this.timeColorScale.setMinMax(e.min, e.max);
@@ -1798,7 +1809,11 @@ function setupCustomSliderSeismicityController() {
             this.map.colorScale.setMinMax(e.min, e.max);
             this.map.thirdPartySourcesController.recolorSeismicities("time");
         }
-        var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features);
+        if (this.timeSlider.settingData) {
+            console.log("setting new data");
+            return;
+        }
+        var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features, this.bbox);
         if (filteredFeatures.length > 0) {
             // call super method to not recreate sliders
             SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
@@ -1847,17 +1862,7 @@ function setupCustomSliderSeismicityController() {
         return this.getSeriesData(seriesFeatures);
     };
 
-    CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
-        SeismicityGraphsController.prototype.createAllCharts.call(this, selectedColoring, optionalBounds, optionalFeatures);
-
-        var features = optionalFeatures;
-        if (!features) {
-            features = this.getFeaturesWithinCurrentSliderRanges(this.features);
-            if (!features || features.length == 0) {
-                return;
-            }
-        }
-
+    CustomSliderSeismicityController.prototype.createOrUpdateSliders = function(features) {
         var depthData = this.getDepthHistogram(features);
         var millisecondData = this.getEventsHistogram(features);
 
@@ -1889,6 +1894,20 @@ function setupCustomSliderSeismicityController() {
                 this.timeSliderCallback(e, millisecondValues);
             }.bind(this));
         }
+    };
+
+    CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
+        SeismicityGraphsController.prototype.createAllCharts.call(this, selectedColoring, optionalBounds, optionalFeatures);
+
+        var features = optionalFeatures;
+        if (!features) {
+            features = this.getFeaturesWithinCurrentSliderRanges(this.features, this.bbox);
+            if (!features || features.length == 0) {
+                return;
+            }
+        }
+
+        this.createOrUpdateSliders(features);
     };
     CustomSliderSeismicityController.prototype.createSlider = function(sliderContainer, data, dataType, title, afterSetExtremes) {
         var slider = new CustomHighchartsSlider();
@@ -2011,23 +2030,23 @@ function setupCustomSliderSeismicityController() {
             });
             var maxDepth = depthValues[depthValues.length - 1];
             var minDepth = depthValues[0];
+
             this.depthSlider.setNewData(depthData);
-            this.depthSlider.setMinMax(minDepth, maxDepth);
         } else if (sliderName === "time-slider") {
             var maxMilliseconds = millisecondValues[millisecondValues.length - 1];
             var minMilliseconds = millisecondValues[0];
+
             this.timeSlider.setNewData(millisecondData);
-            this.timeSlider.setMinMax(minMilliseconds, maxMilliseconds);
         }
 
         this.map.thirdPartySourcesController.recolorSeismicities(this.map.thirdPartySourcesController.currentSeismicityColoring);
         // this avoids us having to keep all the features in memory for when we reset
         // we can use map queryRenderedFeatures instead once all features are rendered
         // after applying filter
-        this.map.onDatasetRendered(function(callback) {
+        this.map.onRendered(function(callback) {
             this.map.map.off("render", callback);
             // can't just remove all filters from main map features as sliders are independent of each other now
-            var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features);
+            var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features, this.bbox);
             // call super method to not recreate sliders
             if (filteredFeatures.length > 0) {
                 SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
