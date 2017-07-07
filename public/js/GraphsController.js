@@ -1597,6 +1597,7 @@ function setupSeismicityGraphsController() {
 function CustomHighchartsSlider() {
     this.chartContainer = null;
     this.manuallySetExtremes = false;
+    this.settingData = false;
 }
 
 function setupCustomHighchartsSlider() {
@@ -1712,7 +1713,9 @@ function setupCustomHighchartsSlider() {
             return;
         }
 
+        this.settingData = true;
         chart.series[0].setData(newData, true, false, false)
+        this.settingData = false;
     };
 }
 
@@ -1769,6 +1772,9 @@ function setupCustomSliderSeismicityController() {
     // we could write our own filering code, but there is no point as mapbox filters for us and
     // these graphs are so intimately tied to the map features
     CustomSliderSeismicityController.prototype.depthSliderCallback = function(e, depthValues) {
+        if (this.depthSlider.settingData) {
+            return;
+        }
         this.depthRange = { min: e.min, max: e.max };
 
         this.map.thirdPartySourcesController.filterSeismicities([this.depthRange], "depth");
@@ -1785,6 +1791,9 @@ function setupCustomSliderSeismicityController() {
     };
 
     CustomSliderSeismicityController.prototype.timeSliderCallback = function(e, millisecondValues) {
+        if (this.timeSlider.settingData) {
+            return;
+        }
         this.timeRange = { min: e.min, max: e.max };
         this.map.thirdPartySourcesController.filterSeismicities([this.timeRange], "time");
         this.timeColorScale.setMinMax(e.min, e.max);
