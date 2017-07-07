@@ -889,9 +889,8 @@ function SeismicityGraphsController() {
     this.depthColorScale.onScaleChange(function(newMin, newMax) {
         var graphsController = this.map.seismicityGraphsController;
         var thirdPartySourcesController = this.map.thirdPartySourcesController;
-        if (thirdPartySourcesController.currentSeismicityColoring === "depth") {
-            graphsController.depthSlider.setMinMax(newMin, newMax);
-        }
+        graphsController.depthSlider.setMinMax(newMin, newMax);
+
     }.bind(this));
     this.timeColorScale = new ColorScale(new Date(0).getTime(), new Date(50).getTime(), "lat-vs-long-time-color-scale");
     this.timeColorScale.setTopAsMax(false);
@@ -899,9 +898,7 @@ function SeismicityGraphsController() {
     this.timeColorScale.onScaleChange(function(newMin, newMax) {
         var graphsController = this.map.seismicityGraphsController;
         var thirdPartySourcesController = this.map.thirdPartySourcesController;
-        if (thirdPartySourcesController.currentSeismicityColoring === "time") {
-            graphsController.timeSlider.setMinMax(newMin, newMax);
-        }
+        graphsController.timeSlider.setMinMax(newMin, newMax);
     }.bind(this));
     this.timeRange = null;
     this.depthRange = null;
@@ -1312,7 +1309,7 @@ function setupSeismicityGraphsController() {
         if (curChart) {
             curChart.series[0].update({ type: seriesType }, false);
             curChart.tooltip.options.formatter = formatterCallback;
-            curChart.yAxis[0].setTitle(null, { text: title }, false);
+            curChart.yAxis[0].setTitle({ text: title }, null, false);
             curChart.series[0].setData(data, true, false, false);
         } else {
             chartOpts.xAxis.type = "datetime";
@@ -1505,7 +1502,7 @@ function setupSeismicityGraphsController() {
         var features = optionalFeatures;
         if (!features) {
             features = this.getFeaturesWithinCurrentSliderRanges(this.features);
-            if (!features) {
+            if (!features || features.length == 0) {
                 return;
             }
         }
@@ -1856,7 +1853,7 @@ function setupCustomSliderSeismicityController() {
         var features = optionalFeatures;
         if (!features) {
             features = this.getFeaturesWithinCurrentSliderRanges(this.features);
-            if (!features) {
+            if (!features || features.length == 0) {
                 return;
             }
         }
@@ -2032,7 +2029,9 @@ function setupCustomSliderSeismicityController() {
             // can't just remove all filters from main map features as sliders are independent of each other now
             var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features);
             // call super method to not recreate sliders
-            SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
+            if (filteredFeatures.length > 0) {
+                SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
+            }
         }.bind(this));
     };
 }
