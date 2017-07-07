@@ -1061,8 +1061,8 @@ function setupSeismicityGraphsController() {
         var curChart = $("#" + chartContainer).highcharts();
         // chart already made, so we simply update it
         if (curChart) {
-            curChart.series[0].setData(depthVLongValues, true);
-            curChart.xAxis[0].update({ min: minLng, max: maxLng });
+            curChart.xAxis[0].update({ min: minLng, max: maxLng }, false);
+            curChart.series[0].setData(depthVLongValues, true, false, false);
         } else {
             var chartOpts = this.getBasicChartJSON();
             chartOpts.xAxis.title = { text: "Longitude" };
@@ -1166,8 +1166,8 @@ function setupSeismicityGraphsController() {
         }
         var curChart = $("#" + chartContainer).highcharts();
         if (curChart) {
-            curChart.series[0].setData(latVdepthValues, true);
-            curChart.yAxis[0].update({ min: minLat, max: maxLat });
+            curChart.yAxis[0].update({ min: minLat, max: maxLat }, false);
+            curChart.series[0].setData(latVdepthValues, true, false, false);
         } else {
             var chartOpts = this.getBasicChartJSON();
             chartOpts.tooltip.pointFormat = "{point.y:.1f} °";
@@ -1228,7 +1228,7 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.getCumulativeEventsVDayData = function(features, selectedColoring) {
-        if ($("#switch-to-distribution-button").attr("data-original-title") === "Switch To Cumulative") {
+        if ($("#switch-to-distribution-button").attr("data-original-title") === "Switch to cumulative") {
             var millisecondValues = features.map(function(feature) {
                 return feature.properties.time;
             });
@@ -1302,7 +1302,7 @@ function setupSeismicityGraphsController() {
         var formatterCallback = this.pointFormatterCallback;
         var title = "Cumulative Number of Events";
         var seriesType = "scatter";
-        if ($("#switch-to-distribution-button").attr("data-original-title") === "Switch To Cumulative") {
+        if ($("#switch-to-distribution-button").attr("data-original-title") === "Switch to cumulative") {
             title = "Distribution";
             formatterCallback = null;
             seriesType = "column";
@@ -1310,10 +1310,10 @@ function setupSeismicityGraphsController() {
 
         var curChart = $("#" + chartContainer).highcharts();
         if (curChart) {
-            curChart.series[0].update({ type: seriesType });
+            curChart.series[0].update({ type: seriesType }, false);
             curChart.tooltip.options.formatter = formatterCallback;
-            curChart.yAxis[0].setTitle(null, { text: title });
-            curChart.series[0].setData(data, true);
+            curChart.yAxis[0].setTitle(null, { text: title }, false);
+            curChart.series[0].setData(data, true, false, false);
         } else {
             chartOpts.xAxis.type = "datetime";
             chartOpts.xAxis.dateTimeLabelFormats = { month: '%b %Y', year: '%Y' };
@@ -1712,7 +1712,7 @@ function setupCustomHighchartsSlider() {
             return;
         }
 
-        chart.series[0].setData(newData, true)
+        chart.series[0].setData(newData, true, false, false)
     };
 }
 
@@ -1842,15 +1842,7 @@ function setupCustomSliderSeismicityController() {
     };
 
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
-        if ($("#seismicity-charts").hasClass("active")) {
-            this.createSeismicityCharts(selectedColoring, optionalBounds, optionalFeatures);
-            this.depthColorScale.initVisualScale();
-            this.timeColorScale.initVisualScale();
-        }
-
-        if ($("#cross-section-charts").hasClass("active")) {
-            this.createCrossSectionCharts(selectedColoring, optionalBounds, optionalFeatures);
-        }
+        SeismicityGraphsController.prototype.createAllCharts.call(this, selectedColoring, optionalBounds, optionalFeatures);
 
         var features = optionalFeatures;
         if (!features) {
