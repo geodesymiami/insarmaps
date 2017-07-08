@@ -910,6 +910,9 @@ function SeismicityGraphsController() {
 
 function setupSeismicityGraphsController() {
     SeismicityGraphsController.prototype.setFeatures = function(features) {
+        if (!features) {
+            return;
+        }
         // make sure they are sorted since datetimes have to be sorted for highcharts
         this.features = features.sort(function(feature1, feature2) {
             return feature1.properties.time - feature2.properties.time;
@@ -923,19 +926,6 @@ function setupSeismicityGraphsController() {
         });
         this.timeRange = { min: this.features[0].properties.time, max: this.features[this.features.length - 1].properties.time };
         this.depthRange = { min: minMax.min.properties.depth, max: minMax.max.properties.depth };
-
-        this.timeColorScale.setMinMax(this.timeRange.min, this.timeRange.max);
-        this.depthColorScale.setMinMax(this.depthRange.min, this.depthRange.max);
-        var selectedColoring = null;
-        if (this.map.colorScale.inDateMode) {
-            this.map.colorScale.setMinMax(this.timeRange.min, this.timeRange.max);
-            selectedColoring = "time";
-        } else {
-            this.map.colorScale.setMinMax(this.depthRange.min, this.depthRange.max);
-            selectedColoring = "depth";
-        }
-
-        this.map.thirdPartySourcesController.recolorSeismicities(selectedColoring);
     };
 
     SeismicityGraphsController.prototype.setBbox = function(bbox) {
@@ -1447,13 +1437,11 @@ function setupSeismicityGraphsController() {
             this.map.selector.addSelectionPolygonFromMapBounds(bounds);
             var sanitizedBounds = [bounds._sw, bounds._ne];
 
-            var features = this.getFeaturesWithinCurrentSliderRanges(this.features, sanitizedBounds);
+            var features = this.map.selector.getAllRenderedSeismicityFeatures(sanitizedBounds);
             if (features.length == 0) {
                 return;
             }
-            features = this.map.selector.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
             this.setBbox(sanitizedBounds);
-
             this.createSeismicityCharts(null, null, features);
         }.bind(this);
         this.mapForPlot.on("zoomend", onMoveend);
@@ -1473,8 +1461,22 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
+        var bounds = optionalBounds;
+        if (!bounds) {
+            bounds = this.bbox;
+            if (!bounds) {
+                return;
+            }
+        }
+        var features = optionalFeatures;
+        if (!features) {
+            features = this.map.selector.getAllRenderedSeismicityFeatures(this.bbox);
+            if (!features || features.length == 0) {
+                return;
+            }
+        }
         if ($("#seismicity-charts").hasClass("active")) {
-            this.createSeismicityCharts(selectedColoring, optionalBounds, optionalFeatures);
+            this.createSeismicityCharts(selectedColoring, bounds, features);
             this.depthColorScale.initVisualScale();
             this.timeColorScale.initVisualScale();
             // we use visibility and not display for the contents because there seems to be a race
@@ -1486,7 +1488,7 @@ function setupSeismicityGraphsController() {
         }
 
         if ($("#cross-section-charts").hasClass("active")) {
-            this.createCrossSectionCharts(selectedColoring, optionalBounds, optionalFeatures);
+            this.createCrossSectionCharts(selectedColoring, bounds, features);
         }
     };
 
@@ -1508,7 +1510,7 @@ function setupSeismicityGraphsController() {
 
         var features = optionalFeatures;
         if (!features) {
-            features = this.getFeaturesWithinCurrentSliderRanges(this.features, bounds);
+            features = this.map.selector.getAllRenderedSeismicityFeatures(this.bbox);
             if (!features || features.length == 0) {
                 return;
             }
@@ -1742,13 +1744,9 @@ function setupCustomSliderSeismicityController() {
                 "type": "FeatureCollection",
                 "features": features
             };
-            console.log("before " + features.length);
 
             features = turf.within(points, searchWithin).features;
-            console.log("after " + features.length);
         }
-        console.log(JSON.stringify(this.timeRange));
-        console.log(JSON.stringify(this.depthRange));
 
         var filteredFeatures = features.filter(function(feature) {
             var props = feature.properties;
@@ -1781,8 +1779,10 @@ function setupCustomSliderSeismicityController() {
     // we could write our own filering code, but there is no point as mapbox filters for us and
     // these graphs are so intimately tied to the map features
     CustomSliderSeismicityController.prototype.depthSliderCallback = function(e, depthValues) {
+        if (this.depthSlider.settingData) {
+            return;
+        }
         this.depthRange = { min: e.min, max: e.max };
-
         this.map.thirdPartySourcesController.filterSeismicities([this.depthRange], "depth");
         this.depthColorScale.setMinMax(e.min, e.max);
         if (!this.map.colorScale.inDateMode) {
@@ -1790,10 +1790,6 @@ function setupCustomSliderSeismicityController() {
             this.map.thirdPartySourcesController.recolorSeismicities("depth");
         }
 
-        if (this.depthSlider.settingData) {
-            console.log("dfs");
-            return;
-        }
         var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features, this.bbox);
         if (filteredFeatures.length > 0) {
             // call super method to not recreate sliders
@@ -1803,16 +1799,16 @@ function setupCustomSliderSeismicityController() {
 
     CustomSliderSeismicityController.prototype.timeSliderCallback = function(e, millisecondValues) {
         this.timeRange = { min: e.min, max: e.max };
+        if (this.timeSlider.settingData) {
+            return;
+        }
         this.map.thirdPartySourcesController.filterSeismicities([this.timeRange], "time");
         this.timeColorScale.setMinMax(e.min, e.max);
         if (this.map.colorScale.inDateMode) {
             this.map.colorScale.setMinMax(e.min, e.max);
             this.map.thirdPartySourcesController.recolorSeismicities("time");
         }
-        if (this.timeSlider.settingData) {
-            console.log("setting new data");
-            return;
-        }
+
         var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features, this.bbox);
         if (filteredFeatures.length > 0) {
             // call super method to not recreate sliders
@@ -1880,6 +1876,11 @@ function setupCustomSliderSeismicityController() {
             return depth1 - depth2;
         });
 
+        var maxDepth = depthValues[depthValues.length - 1];
+        var minDepth = depthValues[0];
+        var maxMilliseconds = millisecondValues[millisecondValues.length - 1];
+        var minMilliseconds = millisecondValues[0];
+
         if (this.depthSlider) {
             this.depthSlider.setNewData(depthData);
         } else {
@@ -1894,19 +1895,26 @@ function setupCustomSliderSeismicityController() {
                 this.timeSliderCallback(e, millisecondValues);
             }.bind(this));
         }
+        this.timeSlider.setMinMax(minMilliseconds, maxMilliseconds);
+        this.depthSlider.setMinMax(minDepth, maxDepth);
     };
 
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
-        SeismicityGraphsController.prototype.createAllCharts.call(this, selectedColoring, optionalBounds, optionalFeatures);
-
+        var bounds = optionalBounds;
+        if (!bounds) {
+            bounds = this.bbox;
+            if (!bounds) {
+                return;
+            }
+        }
         var features = optionalFeatures;
         if (!features) {
-            features = this.getFeaturesWithinCurrentSliderRanges(this.features, this.bbox);
+            features = this.map.selector.getAllRenderedSeismicityFeatures(this.bbox);
             if (!features || features.length == 0) {
                 return;
             }
         }
-
+        SeismicityGraphsController.prototype.createAllCharts.call(this, selectedColoring, optionalBounds, optionalFeatures);
         this.createOrUpdateSliders(features);
     };
     CustomSliderSeismicityController.prototype.createSlider = function(sliderContainer, data, dataType, title, afterSetExtremes) {
@@ -1986,8 +1994,6 @@ function setupCustomSliderSeismicityController() {
             millisecondValues.push(feature.properties.time);
         });
 
-
-
         if (sliderName === "depth-slider") {
             // need to sort depth values as highcharts requires charts with navigator to have sorted data (else get error 15).
             // also, callbacks depend on sorted arrays (for speed). no need to sort milliseconds as the features are already sorted by this
@@ -1998,10 +2004,12 @@ function setupCustomSliderSeismicityController() {
             var maxDepth = depthValues[depthValues.length - 1];
             var minDepth = depthValues[0];
             this.depthSlider.setNewData(depthData);
+            this.depthSlider.setMinMax(minDepth, maxDepth);
         } else if (sliderName === "time-slider") {
             var maxMilliseconds = millisecondValues[millisecondValues.length - 1];
             var minMilliseconds = millisecondValues[0];
             this.timeSlider.setNewData(millisecondData);
+            this.timeSlider.setMinMax(minMilliseconds, maxMilliseconds);
         }
 
         // call super method to not recreate sliders
@@ -2032,25 +2040,22 @@ function setupCustomSliderSeismicityController() {
             var minDepth = depthValues[0];
 
             this.depthSlider.setNewData(depthData);
+            this.depthSlider.setMinMax(minDepth, maxDepth);
         } else if (sliderName === "time-slider") {
             var maxMilliseconds = millisecondValues[millisecondValues.length - 1];
             var minMilliseconds = millisecondValues[0];
 
             this.timeSlider.setNewData(millisecondData);
+            this.timeSlider.setMinMax(minMilliseconds, maxMilliseconds);
         }
 
         this.map.thirdPartySourcesController.recolorSeismicities(this.map.thirdPartySourcesController.currentSeismicityColoring);
-        // this avoids us having to keep all the features in memory for when we reset
-        // we can use map queryRenderedFeatures instead once all features are rendered
-        // after applying filter
-        this.map.onRendered(function(callback) {
-            this.map.map.off("render", callback);
-            // can't just remove all filters from main map features as sliders are independent of each other now
-            var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features, this.bbox);
-            // call super method to not recreate sliders
-            if (filteredFeatures.length > 0) {
-                SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
-            }
-        }.bind(this));
+
+        // can't just remove all filters from main map features as sliders are independent of each other now
+        var filteredFeatures = this.getFeaturesWithinCurrentSliderRanges(this.features, this.bbox);
+        // call super method to not recreate sliders
+        if (filteredFeatures.length > 0) {
+            SeismicityGraphsController.prototype.createAllCharts.call(this, null, null, filteredFeatures);
+        }
     };
 }

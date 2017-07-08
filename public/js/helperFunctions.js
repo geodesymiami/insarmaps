@@ -142,3 +142,13 @@ function pysarSubsetToMapboxBounds(pysarSubset) {
 
     return bounds;
 }
+
+// courtesy: https://stackoverflow.com/questions/4156101/javascript-push-array-values-into-another-array
+// fastest and most compatible way... could just do it inline I suppose but this uses apply plus adds it
+// to array prototype which is nice
+Array.prototype.pushArray = function() {
+    var toPush = this.concat.apply([], arguments);
+    for (var i = 0, len = toPush.length; i < len; i++) {
+        this.push(toPush[i]);
+    }
+};

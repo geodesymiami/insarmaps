@@ -47,13 +47,19 @@ function setupFeatureSelector() {
 
     FeatureSelector.prototype.getAllRenderedSeismicityFeatures = function(bbox) {
         var seismicityLayers = this.map.getLayerIDsInCurrentMode();
-
+        var features = null;
         if (bbox) {
             var pixelBoundingBox = [this.map.map.project(bbox[0]), this.map.map.project(bbox[1])];
-
-            return this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: seismicityLayers });
+            features = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: seismicityLayers });
+        } else {
+            features = this.map.map.queryRenderedFeatures({ layers: seismicityLayers });
         }
-        return this.map.map.queryRenderedFeatures({ layers: seismicityLayers });
+
+        features.sort(function(feature1, feature2) {
+            return feature1.properties.time - feature2.properties.time;
+        });
+
+        return this.getUniqueFeatures(features);
     };
 
     FeatureSelector.prototype.createOnlyCrossSectionPlots = function(bbox) {
@@ -62,9 +68,7 @@ function setupFeatureSelector() {
             return;
         }
 
-        features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
-        this.map.seismicityGraphsController.setFeatures(features);
-        this.map.seismicityGraphsController.createCrossSectionCharts(null, null, null);
+        this.map.seismicityGraphsController.createCrossSectionCharts(null, null, features);
     };
 
     FeatureSelector.prototype.createSeismicityPlots = function(bbox) {
@@ -72,14 +76,12 @@ function setupFeatureSelector() {
         if (features.length == 0) {
             return;
         }
-        features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
 
-        this.map.seismicityGraphsController.setFeatures(features);
         this.map.seismicityGraphsController.setBbox(bbox);
         // show containers before creating as we have an optimization to not create
         // unless containers are shown
         this.map.seismicityGraphsController.showChartContainers();
-        this.map.seismicityGraphsController.createAllCharts(null, null, null);
+        this.map.seismicityGraphsController.createAllCharts(null, null, features);
     };
 
     FeatureSelector.prototype.finish = function(bbox) {

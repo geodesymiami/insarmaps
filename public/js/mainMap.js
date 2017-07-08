@@ -125,13 +125,15 @@ function MapController(loadJSONFunc) {
         if (this.lastMode === curMode) {
             var topMostSeismicitySource = this.getTopMostSeismicitySource();
             // if new seismicity source, update seismicity features
-            var itsANewSeismicitySource = this.lastSource !== topMostSeismicitySource;
+            var itsANewSeismicitySource = this.lastSource && this.lastSource !== topMostSeismicitySource;
             if (curMode === "seismicity" && itsANewSeismicitySource) {
-                this.onceRendered(function() {
-                    var features = this.selector.getAllRenderedSeismicityFeatures(null);
-                    console.log(features);
+                var features = this.thirdPartySourcesController.getAllSeismicityFeatures();
+                if (features.length > 0) {
+                    features.sort(function(feature1, feature2) {
+                        return feature1.properties.time - feature2.properties.time;
+                    });
                     this.thirdPartySourcesController.prepareForSeismicities(features);
-                }.bind(this));
+                }
             }
             this.lastSource = topMostSeismicitySource;
             return;

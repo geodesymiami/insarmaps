@@ -525,7 +525,7 @@ function ThirdPartySourcesController(map) {
     this.defaultCircleSizes = function() {
         var sizes = [];
 
-        for (var i = 1; i < 10; i ++) {
+        for (var i = 1; i < 10; i++) {
             sizes.push(i * i / 2);
         }
         return sizes;
@@ -993,18 +993,19 @@ function ThirdPartySourcesController(map) {
     };
 
     this.featureToViewOptions = function(feature) {
-        if (!feature.layer) {
-            return null;
-        }
         // this is begging to be refactored. maybe a hash map with callbacks?
-        var layerID = feature.layer.id;
-        var layerSource = feature.layer.source;
+        var layerID = null;
+        var layerSource = null;
+        if (feature.layer) {
+            layerID = feature.layer.id;
+            layerSource = feature.layer.source;
+        }
         var itsAPoint = (layerSource === "insar_vector_source" || layerSource === "onTheFlyJSON");
         var itsAGPSFeature = (layerID === "gpsStations");
         var itsAMidasGPSFeature = (layerID === "midas");
         var itsAMidasHorizontalArrow = (layerID === "midas-arrows");
         var itsAMiniMapFeature = (layerID === "LatVLongPlotPoints");
-        var itsASeismicityFeature = this.seismicities.includes(layerID);
+        var itsASeismicityFeature = this.seismicities.includes(layerID) || feature.properties.depth; // all seismicities have depth, right?
 
         var cursor = (itsAPoint || itsAGPSFeature || itsAMidasGPSFeature ||
             itsASeismicityFeature || itsAMidasHorizontalArrow || itsAMiniMapFeature) ? 'pointer' : 'auto';
@@ -1159,6 +1160,19 @@ function ThirdPartySourcesController(map) {
         this.currentSeismicityColorStops = stops;
         this.currentSeismicityColoring = selectedColoring;
         this.recolorSeismicitiesOn(selectedColoring, stops, type);
+    };
+
+    this.getAllSeismicityFeatures = function() {
+        var features = [];
+
+        this.seismicities.forEach(function(seismicityID) {
+            var source = this.map.map.getSource(seismicityID);
+            if (source) {
+                features.pushArray(source._data.features);
+            }
+        }.bind(this));
+
+        return features;
     };
 
     this.removeAll = function(except) {
