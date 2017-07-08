@@ -281,7 +281,7 @@ function ToggleButton(id, container, label) {
 
     this.setDescription = function(description) {
         if (this.container) {
-            var html = "<div class='circular-question-mark black-on-white-tooltip' data-toggle='tooltip'";
+            var html = "<div class='circular-question-mark black-on-white-tooltip' data-toggle='tooltip' data-placement='right'";
             html += " title='" + description + "'><b>?</b></div>";
             $(html).insertAfter($("#" + this.container + " input#" + this.id + ""));
         }
@@ -870,6 +870,7 @@ $(window).on("load", function() {
             $(this).html("Depth-colored");
             $(this).attr("data-original-title", "Color on time");
         }
+        myMap.seismicityGraphsController.seismicityColorings[targetGraph] = selectedColoring;
         myMap.seismicityGraphsController.createChart(selectedColoring, targetGraph, null, null);
     });
 

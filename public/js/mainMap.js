@@ -105,7 +105,6 @@ function MapController(loadJSONFunc) {
     this.previousZoom = this.startingZoom;
 
     this.lastMode = null;
-    this.lastSource = null;
 
     this.addSource = function(id, source) {
         this.sources.set(id, source);
@@ -119,14 +118,13 @@ function MapController(loadJSONFunc) {
 
     // determine which color scales to show, etc when a layer, and potentially
     // mode, changes
-    this.afterLayersChanged = function() {
+    this.afterLayersChanged = function(layerThatWasChanged) {
         var curMode = this.getCurrentMode();
         // small optimization
         if (this.lastMode === curMode) {
-            var topMostSeismicitySource = this.getTopMostSeismicitySource();
-            // if new seismicity source, update seismicity features
-            var itsANewSeismicitySource = this.lastSource && this.lastSource !== topMostSeismicitySource;
-            if (curMode === "seismicity" && itsANewSeismicitySource) {
+            // if changed layer is a seismicity layer, update sliders, etc.
+            var seismicityLayerChanged = this.thirdPartySourcesController.seismicities.includes(layerThatWasChanged);
+            if (curMode === "seismicity" && seismicityLayerChanged) {
                 var features = this.thirdPartySourcesController.getAllSeismicityFeatures();
                 if (features.length > 0) {
                     features.sort(function(feature1, feature2) {
@@ -135,7 +133,6 @@ function MapController(loadJSONFunc) {
                     this.thirdPartySourcesController.prepareForSeismicities(features);
                 }
             }
-            this.lastSource = topMostSeismicitySource;
             return;
         }
 
@@ -211,13 +208,13 @@ function MapController(loadJSONFunc) {
             this.layers_.set(newLayer.id, newLayer);
         }
         this.map.addLayer(newLayer, before);
-        this.afterLayersChanged();
+        this.afterLayersChanged(newLayer.id);
     };
 
     this.removeLayer = function(id) {
         this.layers_.delete(id);
         this.map.removeLayer(id);
-        this.afterLayersChanged();
+        this.afterLayersChanged(id);
     };
 
     this.getInsarLayers = function() {

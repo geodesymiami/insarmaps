@@ -906,6 +906,7 @@ function SeismicityGraphsController() {
         closeButton: false,
         closeOnClick: false
     });
+    this.seismicityColorings = {};
 }
 
 function setupSeismicityGraphsController() {
@@ -1514,6 +1515,11 @@ function setupSeismicityGraphsController() {
             if (!features || features.length == 0) {
                 return;
             }
+        }
+
+        // used save coloring if none supplied
+        if (!selectedColoring) {
+            selectedColoring = this.seismicityColorings[chartType];
         }
 
         var chartData = null;
