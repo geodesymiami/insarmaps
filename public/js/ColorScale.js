@@ -404,7 +404,7 @@ function ColorScale(min, max, divID) {
                     dateFormat: "yy-M-d"
                 });
             }).remove();
-            $("#" + this.divID + " .scale-values").css("width", "150px");
+            $("#" + this.divID + " .scale-values").css("width", "90px");
         } else {
             $("#" + this.divID + " .scale-values .form-group > input").each(function() {
                 $(this).datepicker("destroy");

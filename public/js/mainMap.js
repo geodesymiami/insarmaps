@@ -183,7 +183,7 @@ function MapController(loadJSONFunc) {
                 // remove swaths
                 this.removeAreaMarkers();
                 $("#square-selector-button").attr("data-original-title", "Select Seismicity");
-                $("#color-scale .color-scale-text-div").attr("data-original-title", "Color seismicity on time");
+                $("#color-scale .color-scale-text-div").attr("data-original-title", "Color on time");
                 this.colorScale.setTopAsMax(false);
                 $("#seismicity-maximize-buttons-container").addClass("active");
                 // handles setting up color scale for seismicity etc.

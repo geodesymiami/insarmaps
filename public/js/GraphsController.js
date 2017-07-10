@@ -1462,22 +1462,8 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
-        var bounds = optionalBounds;
-        if (!bounds) {
-            bounds = this.bbox;
-            if (!bounds) {
-                return;
-            }
-        }
-        var features = optionalFeatures;
-        if (!features) {
-            features = this.map.selector.getAllRenderedSeismicityFeatures(this.bbox);
-            if (!features || features.length == 0) {
-                return;
-            }
-        }
         if ($("#seismicity-charts").hasClass("active")) {
-            this.createSeismicityCharts(selectedColoring, bounds, features);
+            this.createSeismicityCharts(selectedColoring, optionalBounds, optionalFeatures);
             this.depthColorScale.initVisualScale();
             this.timeColorScale.initVisualScale();
             // we use visibility and not display for the contents because there seems to be a race
@@ -1489,7 +1475,7 @@ function setupSeismicityGraphsController() {
         }
 
         if ($("#cross-section-charts").hasClass("active")) {
-            this.createCrossSectionCharts(selectedColoring, bounds, features);
+            this.createCrossSectionCharts(selectedColoring, optionalBounds, optionalFeatures);
         }
     };
 
@@ -1502,11 +1488,11 @@ function setupSeismicityGraphsController() {
 
     SeismicityGraphsController.prototype.createChart = function(selectedColoring, chartType, optionalFeatures, optionalBounds) {
         var bounds = optionalBounds;
+        // no bounds passed in but, this.bbox can still be null
+        // here being null is okay, we just do this to give option of using outside bounds or
+        // saved class bounds... with features, null isn't okay
         if (!bounds) {
             bounds = this.bbox;
-            if (!bounds) {
-                return;
-            }
         }
 
         var features = optionalFeatures;
@@ -1566,6 +1552,19 @@ function setupSeismicityGraphsController() {
         }
     };
 
+    SeismicityGraphsController.prototype.hideCharts = function() {
+        var $chartContainer = $("#seismicity-charts");
+        if ($chartContainer.hasClass("active")) {
+            $("#seismicity-charts-minimize-button").click();
+        }
+    };
+
+    SeismicityGraphsController.prototype.hideCrossSectionCharts = function() {
+        var $sliderContainer = $("#cross-section-charts");
+        if ($sliderContainer.hasClass("active")) {
+            $("#cross-section-charts-minimize-button").click();
+        }
+    };
 
     SeismicityGraphsController.prototype.crossSectionChartsVisible = function() {
         return $("#cross-section-charts").hasClass("active");
@@ -1576,15 +1575,8 @@ function setupSeismicityGraphsController() {
     };
 
     SeismicityGraphsController.prototype.hideChartContainers = function() {
-        var $chartContainer = $("#seismicity-charts");
-        if ($chartContainer.hasClass("active")) {
-            $("#seismicity-charts-minimize-button").click();
-        }
-
-        var $sliderContainer = $("#cross-section-charts");
-        if ($sliderContainer.hasClass("active")) {
-            $("#cross-section-charts-minimize-button").click();
-        }
+        this.hideCharts();
+        this.hideCrossSectionCharts();
     };
 
     SeismicityGraphsController.prototype.recreateAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
@@ -1906,23 +1898,10 @@ function setupCustomSliderSeismicityController() {
     };
 
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
-        var bounds = optionalBounds;
-        if (!bounds) {
-            bounds = this.bbox;
-            if (!bounds) {
-                return;
-            }
-        }
-        var features = optionalFeatures;
-        if (!features) {
-            features = this.map.selector.getAllRenderedSeismicityFeatures(this.bbox);
-            if (!features || features.length == 0) {
-                return;
-            }
-        }
         SeismicityGraphsController.prototype.createAllCharts.call(this, selectedColoring, optionalBounds, optionalFeatures);
-        this.createOrUpdateSliders(features);
+        this.createOrUpdateSliders(optionalFeatures);
     };
+
     CustomSliderSeismicityController.prototype.createSlider = function(sliderContainer, data, dataType, title, afterSetExtremes) {
         var slider = new CustomHighchartsSlider();
         slider.init(null, afterSetExtremes.bind(this));
@@ -1957,6 +1936,13 @@ function setupCustomSliderSeismicityController() {
         }
     };
 
+    CustomSliderSeismicityController.prototype.hidesliders = function() {
+        var $sliderContainer = $("#seismicity-chart-sliders");
+        if ($sliderContainer.hasClass("active")) {
+            $("#seismicity-chart-sliders-minimize-button").click();
+        }
+    };
+
     CustomSliderSeismicityController.prototype.showChartContainers = function() {
         this.showSliders();
         this.showCharts();
@@ -1965,10 +1951,7 @@ function setupCustomSliderSeismicityController() {
     // overrride
     CustomSliderSeismicityController.prototype.hideChartContainers = function() {
         SeismicityGraphsController.prototype.hideChartContainers.call(this);
-        var $sliderContainer = $("#seismicity-chart-sliders");
-        if ($sliderContainer.hasClass("active")) {
-            $("#seismicity-chart-sliders-minimize-button").click();
-        }
+        this.hidesliders();
     };
 
     // an alternative would be to keep slider pointers with their associated data and just
@@ -1977,10 +1960,7 @@ function setupCustomSliderSeismicityController() {
     // and although they've now fixed it, we want to remain consistent with our other graph code.
     // In the future, someone can use the constructor functions to update graphs rather than creating anew every time.
     CustomSliderSeismicityController.prototype.zoomSliderToCurrentRange = function(sliderName) {
-        var pixelBoundingBox = [this.map.map.project(this.bbox[0]), this.map.map.project(this.bbox[1])];
-        var seismicityLayerIDs = this.map.getLayerIDsInCurrentMode();
-        var allFeatures = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: seismicityLayerIDs });
-        var features = this.map.selector.getUniqueFeatures(allFeatures);
+        var features = this.map.selector.getAllRenderedSeismicityFeatures(this.bbox);
         if (features.length == 0) {
             return;
         }

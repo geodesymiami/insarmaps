@@ -694,16 +694,16 @@ $(window).on("load", function() {
             }
         } else if (curMode === "seismicity") {
             $seismicityColoringButtons = $(".seismicity-chart-set-coloring-button");
-            if (title === "Color seismicity on time") {
+            if (title === "Color on time") {
                 selectedColoring = "time";
-                $(this).attr("data-original-title", "Color seismicity on depth");
+                $(this).attr("data-original-title", "Color on depth");
                 myMap.colorScale.setInDateMode(true);
                 myMap.colorScale.setMinMax(myMap.seismicityGraphsController.timeRange.min, myMap.seismicityGraphsController.timeRange.max);
                 $seismicityColoringButtons.attr("data-original-title", "Color on time")
                 $seismicityColoringButtons.click();
-            } else if (title === "Color seismicity on depth") {
+            } else if (title === "Color on depth") {
                 selectedColoring = "depth";
-                $(this).attr("data-original-title", "Color seismicity on time");
+                $(this).attr("data-original-title", "Color on time");
                 myMap.colorScale.setInDateMode(false);
                 myMap.colorScale.setMinMax(myMap.seismicityGraphsController.depthRange.min, myMap.seismicityGraphsController.depthRange.max);
                 $seismicityColoringButtons.attr("data-original-title", "Color on depth")
@@ -903,7 +903,7 @@ $(window).on("load", function() {
         if (!$container.hasClass("active") && !myMap.seismicityGraphsController.chartsVisible()) {
             $container.addClass("active");
             $(this).css("display", "none");
-            myMap.selector.createOnlyCrossSectionPlots();
+            myMap.selector.createOnlyCrossSectionPlots(null);
         }
     });
 

@@ -1146,11 +1146,11 @@ function ThirdPartySourcesController(map) {
         var max = this.map.colorScale.max;
         var type = "exponential";
         if (selectedColoring === "time") {
-            this.map.colorScale.setTitle("Time (years)")
+            this.map.colorScale.setTitle("Time-colored")
             stops = this.stopsCalculator.getTimeStops(min, max, colors);
             type = "interval"
         } else if (selectedColoring === "depth") {
-            this.map.colorScale.setTitle("Depth (Km)");
+            this.map.colorScale.setTitle("Depth-colored");
             stops = this.stopsCalculator.getDepthStops(min, max, colors);
             type = "interval";
         } else {

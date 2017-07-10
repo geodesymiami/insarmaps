@@ -252,7 +252,7 @@
             </div>
         </div>
         <div id="color-scale">
-            <div class="btn btn-primary color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color seismicity on time">
+            <div class="btn btn-primary color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color on time">
                 LOS Velocity [cm/yr]
             </div>
             <div class="color-scale-main-container">
