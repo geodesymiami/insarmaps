@@ -62,13 +62,11 @@ function MapController(loadJSONFunc) {
                 if (!this.colorScale.inDateMode) {
                     this.seismicityGraphsController.depthColorScale.setMinMax(newMin, newMax);
                     this.seismicityGraphsController.crossSectionDepthColorScale.setMinMax(newMin, newMax);
-                    this.seismicityGraphsController.depthSlider.setMin(newMin);
-                    this.seismicityGraphsController.depthSlider.setMax(newMax);
+                    this.seismicityGraphsController.depthSlider.setMinMax(newMin, newMax);
                 } else {
                     this.seismicityGraphsController.timeColorScale.setMinMax(newMin, newMax);
                     this.seismicityGraphsController.crossSectionTimeColorScale.setMinMax(newMin, newMax);
-                    this.seismicityGraphsController.timeSlider.setMin(newMin);
-                    this.seismicityGraphsController.timeSlider.setMax(newMax);
+                    this.seismicityGraphsController.timeSlider.setMinMax(newMin, newMax);
                 }
                 this.thirdPartySourcesController.recolorSeismicities(this.thirdPartySourcesController.currentSeismicityColoring);
             }
@@ -120,11 +118,21 @@ function MapController(loadJSONFunc) {
 
     // determine which color scales to show, etc when a layer, and potentially
     // mode, changes
-    this.afterLayersChanged = function() {
+    this.afterLayersChanged = function(layerThatWasChanged) {
         var curMode = this.getCurrentMode();
-
         // small optimization
         if (this.lastMode === curMode) {
+            // if changed layer is a seismicity layer, update sliders, etc.
+            var seismicityLayerChanged = this.thirdPartySourcesController.seismicities.includes(layerThatWasChanged);
+            if (curMode === "seismicity" && seismicityLayerChanged) {
+                var features = this.thirdPartySourcesController.getAllSeismicityFeatures();
+                if (features.length > 0) {
+                    features.sort(function(feature1, feature2) {
+                        return feature1.properties.time - feature2.properties.time;
+                    });
+                    this.thirdPartySourcesController.prepareForSeismicities(features);
+                }
+            }
             return;
         }
 
@@ -175,13 +183,11 @@ function MapController(loadJSONFunc) {
                 // remove swaths
                 this.removeAreaMarkers();
                 $("#square-selector-button").attr("data-original-title", "Select Seismicity");
-                $("#color-scale .color-scale-text-div").attr("data-original-title", "Color seismicity on time");
+                $("#color-scale .color-scale-text-div").attr("data-original-title", "Color on time");
                 this.colorScale.setTopAsMax(false);
                 $("#seismicity-maximize-buttons-container").addClass("active");
                 // handles setting up color scale for seismicity etc.
-                if (!(this.seismicityGraphsController.slidersVisible() || this.seismicityGraphsController.chartsVisible())) {
-                    this.thirdPartySourcesController.prepareForSeismicities(null);
-                }
+                this.thirdPartySourcesController.prepareForSeismicities(null);
             }
         }
     };
@@ -202,13 +208,13 @@ function MapController(loadJSONFunc) {
             this.layers_.set(newLayer.id, newLayer);
         }
         this.map.addLayer(newLayer, before);
-        this.afterLayersChanged();
+        this.afterLayersChanged(newLayer.id);
     };
 
     this.removeLayer = function(id) {
         this.layers_.delete(id);
         this.map.removeLayer(id);
-        this.afterLayersChanged();
+        this.afterLayersChanged(id);
     };
 
     this.getInsarLayers = function() {
@@ -224,20 +230,34 @@ function MapController(loadJSONFunc) {
         return null;
     };
 
+    this.getTopMostSeismicitySource = function() {
+        var allSources = Array.from(this.sources);
+
+        for (var i = allSources.length - 1; i >= 0; i--) {
+            var source = allSources[i][0];
+            if (this.thirdPartySourcesController.seismicities.includes(source)) {
+                return source;
+            }
+        }
+
+        // otherwise
+        return null;
+    };
+
     this.getCurrentMode = function() {
         var allSources = Array.from(this.sources);
 
         for (var i = allSources.length - 1; i >= 0; i--) {
-            var latestMode = allSources[i][0];
-            if (this.thirdPartySourcesController.seismicities.includes(latestMode)) {
+            var source = allSources[i][0];
+            if (this.thirdPartySourcesController.seismicities.includes(source)) {
                 return "seismicity";
             }
 
-            if (this.thirdPartySourcesController.gps.includes(latestMode)) {
+            if (this.thirdPartySourcesController.gps.includes(source)) {
                 return "gps";
             }
 
-            if (latestMode === "insar_vector_source") {
+            if (source === "insar_vector_source") {
                 return "insar";
             }
         }
@@ -897,10 +917,21 @@ function MapController(loadJSONFunc) {
 
     // until mapbox api gives us a way to determine when all points of mbtiles
     // have finished fully rendering.
-    this.onDatasetRendered = function(callback) {
+    this.onRendered = function(callback) {
         var renderHandler = function() {
             if (this.map.loaded()) {
                 callback(renderHandler);
+            }
+        }.bind(this);
+        this.map.on("render", renderHandler);
+    };
+
+    // can't just call mapbox once as when it first fires, map isn't guaranteed to be loaded
+    this.onceRendered = function(callback) {
+        var renderHandler = function() {
+            if (this.map.loaded()) {
+                callback();
+                this.map.off("render", renderHandler);
             }
         }.bind(this);
         this.map.on("render", renderHandler);
@@ -1017,8 +1048,7 @@ function MapController(loadJSONFunc) {
             var currentZoom = this.map.getZoom();
 
             var mode = this.getCurrentMode();
-            if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled")
-                && mode !== "seismicity") {
+            if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled") && mode !== "seismicity") {
                 this.loadSwathsInCurrentViewport(true);
             }
             // reshow area markers once we zoom out enough
@@ -1068,8 +1098,7 @@ function MapController(loadJSONFunc) {
             });
 
             var mode = this.getCurrentMode();
-            if (this.areas && !$("#dataset-frames-toggle-button").hasClass("toggled")
-                && mode !== "seismicity") {
+            if (this.areas && !$("#dataset-frames-toggle-button").hasClass("toggled") && mode !== "seismicity") {
                 this.loadSwathsInCurrentViewport(true);
             }
 
@@ -1381,7 +1410,7 @@ function MapController(loadJSONFunc) {
                     if (this.map.loaded()) {
                         after();
                     } else {
-                        this.onDatasetRendered(function(callback) {
+                        this.onRendered(function(callback) {
                             this.map.off("render", callback);
                             after();
                         }.bind(this));

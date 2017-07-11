@@ -404,7 +404,7 @@ function ColorScale(min, max, divID) {
                     dateFormat: "yy-M-d"
                 });
             }).remove();
-            $("#" + this.divID + " .scale-values").css("width", "150px");
+            $("#" + this.divID + " .scale-values").css("width", "90px");
         } else {
             $("#" + this.divID + " .scale-values .form-group > input").each(function() {
                 $(this).datepicker("destroy");
@@ -427,7 +427,7 @@ function ColorScale(min, max, divID) {
         this.setMinMax(this.min, this.max);
     };
 
-    this.dateToString = function(dateMilliseconds) {
+    this.millisecondsToString = function(dateMilliseconds) {
         var date = new Date(dateMilliseconds);
 
         return $.datepicker.formatDate("yy-M-d", date);
@@ -437,7 +437,7 @@ function ColorScale(min, max, divID) {
         this.min = min;
         var minString = this.min.toFixed(1);
         if (this.inDateMode) {
-            minString = this.dateToString(this.min);
+            minString = this.millisecondsToString(this.min);
         }
 
         if (this.topIsMax) {
@@ -451,7 +451,7 @@ function ColorScale(min, max, divID) {
         this.max = max;
         var maxString = this.max.toFixed(1);
         if (this.inDateMode) {
-            maxString = this.dateToString(this.max);
+            maxString = this.millisecondsToString(this.max);
         }
 
         if (this.topIsMax) {

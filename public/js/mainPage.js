@@ -14,7 +14,7 @@ var IGEPNEarthquakeToggleButton = null;
 var HawaiiRelocToggleButton = null;
 var LongValleyRelocToggleButton = null;
 var midasEastNorthStationsToggleButton = null;
-var irisEarthquakeToggleButton = null;
+var USGSEventsEarthquakeToggleButton = null;
 var myMap = null;
 
 function DivState() {
@@ -281,7 +281,7 @@ function ToggleButton(id, container, label) {
 
     this.setDescription = function(description) {
         if (this.container) {
-            var html = "<div class='circular-question-mark black-on-white-tooltip' data-toggle='tooltip'";
+            var html = "<div class='circular-question-mark black-on-white-tooltip' data-toggle='tooltip' data-placement='right'";
             html += " title='" + description + "'><b>?</b></div>";
             $(html).insertAfter($("#" + this.container + " input#" + this.id + ""));
         }
@@ -502,21 +502,21 @@ function setupToggleButtons() {
 
     LongValleyRelocToggleButton.setDescription("Relocated earthquakes provided by the University of Miami at http://www.rsmas.miami.edu/users/glin/Mammoth_Mountain.html");
 
-    irisEarthquakeToggleButton = new SeismicityToggleButton("IRIS-earthquake-toggle-button", "overlay-options-toggles", "USGS Events");
-    irisEarthquakeToggleButton.onclick(function() {
-        if (irisEarthquakeToggleButton.toggleState == ToggleStates.ON) {
-            irisEarthquakeToggleButton.set("off");
-            var $container = $(".wrap#iris-options");
+    USGSEventsEarthquakeToggleButton = new SeismicityToggleButton("USGSEvents-earthquake-toggle-button", "overlay-options-toggles", "USGS Events");
+    USGSEventsEarthquakeToggleButton.onclick(function() {
+        if (USGSEventsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
+            USGSEventsEarthquakeToggleButton.set("off");
+            var $container = $(".wrap#USGSEvents-options");
 
             if (!$container.hasClass("active")) {
                 $container.addClass("active");
             }
         } else {
-            myMap.thirdPartySourcesController.removeIRISEarthquake();
+            myMap.thirdPartySourcesController.removeUSGSEventsEarthquake();
         }
     });
 
-    irisEarthquakeToggleButton.setDescription("Full USGS events catalogs from http://earthquake.usgs.gov/fdsnws/event/1/");
+    USGSEventsEarthquakeToggleButton.setDescription("Full USGS events catalogs from http://earthquake.usgs.gov/fdsnws/event/1/");
 
     recentDatasetsToggleButton = new ToggleButton("recent-datasets-toggle-button")
     recentDatasetsToggleButton.onclick(null);
@@ -650,8 +650,8 @@ $(window).on("load", function() {
 
     setupToggleButtons();
 
-    $("#iris-options-minimize-button").on("click", function() {
-        var $container = $(".wrap#iris-options");
+    $("#USGSEvents-options-minimize-button").on("click", function() {
+        var $container = $(".wrap#USGSEvents-options");
 
         if ($container.hasClass("active")) {
             $container.removeClass("active");
@@ -659,11 +659,11 @@ $(window).on("load", function() {
 
     });
 
-    $("#iris-options-submit-button").on("click", function() {
-        myMap.thirdPartySourcesController.removeIRISEarthquake(); // in case it is enabled
-        myMap.thirdPartySourcesController.loadIRISEarthquake();
-        irisEarthquakeToggleButton.set("on");
-        $("#iris-options-minimize-button").click();
+    $("#USGSEvents-options-submit-button").on("click", function() {
+        myMap.thirdPartySourcesController.removeUSGSEventsEarthquake(); // in case it is enabled
+        myMap.thirdPartySourcesController.loadUSGSEventsEarthquake();
+        USGSEventsEarthquakeToggleButton.set("on");
+        $("#USGSEvents-options-minimize-button").click();
     });
 
     $("#color-scale .color-scale-text-div").on("click", function() {
@@ -694,16 +694,16 @@ $(window).on("load", function() {
             }
         } else if (curMode === "seismicity") {
             $seismicityColoringButtons = $(".seismicity-chart-set-coloring-button");
-            if (title === "Color seismicity on time") {
+            if (title === "Color on time") {
                 selectedColoring = "time";
-                $(this).attr("data-original-title", "Color seismicity on depth");
+                $(this).attr("data-original-title", "Color on depth");
                 myMap.colorScale.setInDateMode(true);
                 myMap.colorScale.setMinMax(myMap.seismicityGraphsController.timeRange.min, myMap.seismicityGraphsController.timeRange.max);
                 $seismicityColoringButtons.attr("data-original-title", "Color on time")
                 $seismicityColoringButtons.click();
-            } else if (title === "Color seismicity on depth") {
+            } else if (title === "Color on depth") {
                 selectedColoring = "depth";
-                $(this).attr("data-original-title", "Color seismicity on time");
+                $(this).attr("data-original-title", "Color on time");
                 myMap.colorScale.setInDateMode(false);
                 myMap.colorScale.setMinMax(myMap.seismicityGraphsController.depthRange.min, myMap.seismicityGraphsController.depthRange.max);
                 $seismicityColoringButtons.attr("data-original-title", "Color on depth")
@@ -889,7 +889,7 @@ $(window).on("load", function() {
         myMap.seismicityGraphsController.createChart(null, "cumulative-events-vs-date-graph", null, null);
     });
 
-    $(".wrap#seismicity-chart-sliders, .wrap#seismicity-charts, .wrap#cross-section-charts, .wrap#iris-options").draggable({
+    $(".wrap#seismicity-chart-sliders, .wrap#seismicity-charts, .wrap#cross-section-charts, .wrap#USGSEvents-options").draggable({
         start: function(event, ui) {
             $(this).addClass("disable-transitions");
         },
@@ -903,7 +903,7 @@ $(window).on("load", function() {
         if (!$container.hasClass("active") && !myMap.seismicityGraphsController.chartsVisible()) {
             $container.addClass("active");
             $(this).css("display", "none");
-            myMap.selector.createOnlyCrossSectionPlots();
+            myMap.selector.createOnlyCrossSectionPlots(null);
         }
     });
 

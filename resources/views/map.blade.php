@@ -160,12 +160,8 @@
                     <div id="overlay-slider"></div>
                 </div>
             </div>
-            <div id="reset-button">
-                <a href="/"><button class="btn btn-primary-outline">Reset</button></a>
-            </div>
-            <div id="information-button">
-                <button class="btn btn-primary-outline">About</button>
-            </div>
+            <a class="btn btn-primary-outline" id="reset-button" role="button" href="/">Reset</a>
+            <button class="btn btn-primary-outline" id="information-button">About</button>
             @if (Auth::check())
             <div class="logged-in" id="login-logout-button">
                 <button class="btn btn-primary-outline">Logout</button>
@@ -193,26 +189,26 @@
                         <label for='satellite'>Satellite</label>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="wrap wrap-transitions" id="iris-options">
-            <div class="top-right-buttons">
-                <button type="button" class="minimize-button" data-dismiss="modal" id="iris-options-minimize-button"></button>
-            </div>
-            <div class="content">
-                <label>Start Date</label>
-                <input type="text" class="form-control start-date date-input" />
-                <label>End Date</label>
-                <input type="text" class="form-control end-date date-input" />
-                <label>Min Magnitude</label>
-                <input type="number" class="form-control min-magnitude" value="4" />
-                <label>Max Magnitude</label>
-                <input type="number" class="form-control max-magnitude" value="10" />
-                <label>Min Depth</label>
-                <input type="number" class="form-control min-depth" value="0" />
-                <label>Max Depth</label>
-                <input type="number" class="form-control max-depth" value="30" />
-                <button class="btn btn-info" id="iris-options-submit-button">Submit</button>
+                <div class="wrap wrap-transitions" id="USGSEvents-options">
+                    <div class="top-right-buttons">
+                        <button type="button" class="minimize-button" data-dismiss="modal" id="USGSEvents-options-minimize-button"></button>
+                    </div>
+                    <div class="content">
+                        <label>Start Date</label>
+                        <input type="text" class="form-control start-date date-input" />
+                        <label>End Date</label>
+                        <input type="text" class="form-control end-date date-input" />
+                        <label>Min Magnitude</label>
+                        <input type="number" class="form-control min-magnitude" value="4" />
+                        <label>Max Magnitude</label>
+                        <input type="number" class="form-control max-magnitude" value="10" />
+                        <label>Min Depth</label>
+                        <input type="number" class="form-control min-depth" value="0" />
+                        <label>Max Depth</label>
+                        <input type="number" class="form-control max-depth" value="30" />
+                        <button class="btn btn-info" id="USGSEvents-options-submit-button">Submit</button>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- by default, it is toggled, or minimized -->
@@ -256,7 +252,7 @@
             </div>
         </div>
         <div id="color-scale">
-            <div class="btn btn-primary color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color seismicity on time">
+            <div class="btn btn-primary color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color on time">
                 LOS Velocity [cm/yr]
             </div>
             <div class="color-scale-main-container">
@@ -571,7 +567,7 @@
     <script type="text/javascript" src="/js/SearchFile.js"></script>
     <script type="text/javascript" src="/js/Swath.js"></script>
     <script type="text/javascript" src="/js/Vector.js"></script>
-    <script type="text/javascript" src="/js/IrisOptionsController.js"></script>
+    <script type="text/javascript" src="/js/USGSEventsOptionsController.js"></script>
     <script type="text/javascript" src="/js/ThirdPartySourcesController.js"></script>
     <script type="text/javascript" src="/js/mainMap.js"></script>
     <script type="text/javascript" src="/js/SquareSelector.js"></script>

@@ -251,19 +251,17 @@ html[xmlns] .clearfix {
     display: none;
 }
 
-#iris-options {
+#USGSEvents-options {
     position: absolute;
     width: 70%;
-    height: 80%;
     max-width: 330px;
     max-height: 445px;
     margin: 0 auto;
-    top: 5%;
-    left: 0;
-    right: 0;
+    top: 60%;
+    left: 96%;
 }
 
-#iris-options .content {
+#USGSEvents-options .content {
     padding-top: 30px;
 }
 
@@ -376,14 +374,14 @@ div.menu {
     height: 50px;
 }
 
-#top-map-buttons > div {
+#top-map-buttons > * {
     margin-left: 10px;
     border-radius: 5px;
     float: left;
     z-index: 99;
 }
 
-#top-map-buttons button {
+#top-map-buttons > .btn {
     background-color: white;
 }
 
@@ -610,9 +608,10 @@ div.menu {
 /* change jquery tooltip of toggle buttons to white on black */
 /* also, disable max-width to allow for long links in descriptions */
 .black-on-white-tooltip + .tooltip > .tooltip-inner {
-    max-width: none;
+    max-width: 300px;
     background-color: white;
     color: black;
+    word-wrap: break-word;
 }
 
 #overlay-options {

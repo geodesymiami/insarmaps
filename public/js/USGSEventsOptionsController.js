@@ -1,4 +1,4 @@
-function IrisOptionsController(divID) {
+function USGSEventsOptionsController(divID) {
     this.divID = divID;
 
     // populate view with start and end date
@@ -7,23 +7,27 @@ function IrisOptionsController(divID) {
     	var now = new Date();
         var startDate = new Date();
         startDate.setFullYear(now.getFullYear() - 2);
-        var nowString = now.toISOString().split('T')[0];
-        var startDateString = startDate.toISOString().split('T')[0];
+        var nowString = $.datepicker.formatDate("yy-M-d", now);
+        var startDateString = $.datepicker.formatDate("yy-M-d", startDate);
 
-        $("#" + divID + " .start-date").val(startDateString);
-        $("#" + divID + " .end-date").val(nowString);
+        $("#" + this.divID + " .start-date").val(startDateString);
+        $("#" + this.divID + " .end-date").val(nowString);
     };
 
     this.populateDateInputs();
 
     this.getOptions = function() {
         var opts = {};
-        opts.minDate = $("#" + divID + " .start-date").val();
-        opts.maxDate = $("#" + divID + " .end-date").val();
-        opts.minMagnitude = $("#" + divID + " .min-magnitude").val();
-        opts.maxMagnitude = $("#" + divID + " .max-magnitude").val();
-        opts.minDepth = $("#" + divID + " .min-depth").val();
-        opts.maxDepth = $("#" + divID + " .max-depth").val();
+        var minDate = $.datepicker.parseDate("yy-M-d",
+                        $("#" + this.divID + " .start-date").val());
+        var maxDate =  $.datepicker.parseDate("yy-M-d",
+                        $("#" + this.divID + " .end-date").val());
+        opts.minDate = $.datepicker.formatDate("yy-m-d", minDate);
+        opts.maxDate = $.datepicker.formatDate("yy-m-d", maxDate);
+        opts.minMagnitude = $("#" + this.divID + " .min-magnitude").val();
+        opts.maxMagnitude = $("#" + this.divID + " .max-magnitude").val();
+        opts.minDepth = $("#" + this.divID + " .min-depth").val();
+        opts.maxDepth = $("#" + this.divID + " .max-depth").val();
 
         // get map bounding box
         var bounds = myMap.map.getBounds();
