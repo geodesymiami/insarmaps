@@ -932,7 +932,6 @@ function setupSeismicityGraphsController() {
         });
         this.timeRange = { min: this.features[0].properties.time, max: this.features[this.features.length - 1].properties.time };
         this.depthRange = { min: minMax.min.properties.depth, max: minMax.max.properties.depth };
-<<<<<<< HEAD
 
         this.timeColorScale.setMinMax(this.timeRange.min, this.timeRange.max);
         this.depthColorScale.setMinMax(this.depthRange.min, this.depthRange.max);
@@ -948,8 +947,6 @@ function setupSeismicityGraphsController() {
         }
 
         this.map.thirdPartySourcesController.recolorSeismicities(selectedColoring);
-=======
->>>>>>> 2c5787a6a55154f28d649518bf262c66e32bb202
     };
 
     SeismicityGraphsController.prototype.setBbox = function(bbox) {
