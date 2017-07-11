@@ -904,6 +904,11 @@ function SeismicityGraphsController() {
             }
         }
     }.bind(this));
+    this.crossSectionDepthColorScale = new ColorScale(0, 50, "cross-section-depth-color-scale");
+    this.crossSectionDepthColorScale.setTopAsMax(false);
+    this.crossSectionTimeColorScale = new ColorScale(new Date(0).getTime(), new Date(50).getTime(), "cross-section-time-color-scale");
+    this.crossSectionTimeColorScale.setTopAsMax(false);
+    this.crossSectionTimeColorScale.setInDateMode(true);
     this.timeRange = null;
     this.depthRange = null;
     this.gpsStationNamePopup = new mapboxgl.Popup({
@@ -931,6 +936,8 @@ function setupSeismicityGraphsController() {
 
         this.timeColorScale.setMinMax(this.timeRange.min, this.timeRange.max);
         this.depthColorScale.setMinMax(this.depthRange.min, this.depthRange.max);
+        this.crossSectionTimeColorScale.setMinMax(this.timeRange.min, this.timeRange.max);
+        this.crossSectionDepthColorScale.setMinMax(this.depthRange.min, this.depthRange.max);
         var selectedColoring = null;
         if (this.map.colorScale.inDateMode) {
             this.map.colorScale.setMinMax(this.timeRange.min, this.timeRange.max);
@@ -1769,6 +1776,7 @@ function setupCustomSliderSeismicityController() {
         this.map.thirdPartySourcesController.filterSeismicities([this.depthRange], "depth");
         if (!this.depthSlider.manuallySetExtremes) {
             this.depthColorScale.setMinMax(e.min, e.max);
+            this.crossSectionDepthColorScale.setMinMax(e.min, e.max);
             if (!this.map.colorScale.inDateMode) {
                 this.map.colorScale.setMinMax(e.min, e.max);
                 this.map.thirdPartySourcesController.recolorSeismicities("depth");
@@ -1786,6 +1794,7 @@ function setupCustomSliderSeismicityController() {
         this.map.thirdPartySourcesController.filterSeismicities([this.timeRange], "time");
         if (!this.depthSlider.manuallySetExtremes) {
             this.timeColorScale.setMinMax(e.min, e.max);
+            this.crossSectionTimeColorScale.setMinMax(e.min, e.max);
             if (this.map.colorScale.inDateMode) {
                 this.map.colorScale.setMinMax(e.min, e.max);
                 this.map.thirdPartySourcesController.recolorSeismicities("time");

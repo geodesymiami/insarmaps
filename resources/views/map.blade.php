@@ -445,6 +445,53 @@
                         <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cross-section-depth-vs-long-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored</button>
                         <div class="chart" id="cross-section-depth-vs-long-graph"></div>
                     </div>
+                    <div class="cross-section-chart">
+                        <div class="minimap-color-scale" id="cross-section-depth-color-scale">
+                            <div class="color-scale-text-div" class="rotate">
+                                Depth (Km)
+                            </div>
+                            <div class="color-scale-main-container">
+                                <div class="color-scale-and-values-container clearfix">
+                                    <div class="scale-values">
+                                        <div class="left-scale-minimum">
+                                            <div class="form-group">
+                                                <input type="number" class="form-control bottom-scale-value" />
+                                            </div>
+                                        </div>
+                                        <div class="right-scale-maximum">
+                                            <div class="form-group">
+                                                <input type="number" class="form-control top-scale-value" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="minimap-color-scale" id="cross-section-time-color-scale">
+                            <div class="color-scale-text-div" class="rotate">
+                                Time
+                            </div>
+                            <div class="color-scale-main-container">
+                                <div class="color-scale-and-values-container clearfix">
+                                    <div class="color-scale-picture-div">
+                                        <img src="/img/jet_scale.PNG" alt="jet_scale.PNG">
+                                    </div>
+                                    <div class="scale-values">
+                                        <div class="left-scale-minimum">
+                                            <div class="form-group">
+                                                <input type="number" class="form-control bottom-scale-value" />
+                                            </div>
+                                        </div>
+                                        <div class="right-scale-maximum">
+                                            <div class="form-group">
+                                                <input type="number" class="form-control top-scale-value" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

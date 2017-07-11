@@ -61,10 +61,12 @@ function MapController(loadJSONFunc) {
             } else if (curMode === "seismicity") {
                 if (!this.colorScale.inDateMode) {
                     this.seismicityGraphsController.depthColorScale.setMinMax(newMin, newMax);
+                    this.seismicityGraphsController.crossSectionDepthColorScale.setMinMax(newMin, newMax);
                     this.seismicityGraphsController.depthSlider.setMin(newMin);
                     this.seismicityGraphsController.depthSlider.setMax(newMax);
                 } else {
                     this.seismicityGraphsController.timeColorScale.setMinMax(newMin, newMax);
+                    this.seismicityGraphsController.crossSectionTimeColorScale.setMinMax(newMin, newMax);
                     this.seismicityGraphsController.timeSlider.setMin(newMin);
                     this.seismicityGraphsController.timeSlider.setMax(newMax);
                 }

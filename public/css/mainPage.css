@@ -782,7 +782,7 @@ input[type=number] {
 #cross-section-charts {
     position: absolute;
     right: 0%;
-    height: 60%;
+    height: 100%;
     width: 50%;
 }
 
@@ -875,7 +875,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 .cross-section-chart {
     position: relative;
     width: 100%;
-    height: 50%;
+    height: 33%;
 }
 
 #cumulative-events-vs-date-container div {
