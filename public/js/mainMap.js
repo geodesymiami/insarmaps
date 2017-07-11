@@ -143,6 +143,7 @@ function MapController(loadJSONFunc) {
             $("#seismicity-maximize-buttons-container").removeClass("active");
             $("#insar-maximize-buttons-container").addClass("active");
             this.colorScale.remove();
+            this.loadAreaMarkersThroughButton();
         } else {
             if (curMode !== "insar") {
                 $("#insar-maximize-buttons-container").removeClass("active");
@@ -154,6 +155,7 @@ function MapController(loadJSONFunc) {
                 $("#seismicity-maximize-buttons-container").removeClass("active");
                 $("#square-selector-button").attr("data-original-title", "Select Points");
                 if (curMode === "insar") {
+                    this.loadAreaMarkersThroughButton();
                     $("#insar-maximize-buttons-container").addClass("active");
                     this.colorScale.setTopAsMax(true);
                     this.colorScale.setInDateMode(false);
@@ -167,6 +169,7 @@ function MapController(loadJSONFunc) {
                     $("#color-scale .color-scale-text-div").attr("data-original-title", "Color on displacement");
                 } else if (curMode === "gps") {
                     var layerIDs = this.getLayerIDsInCurrentMode();
+                    this.removeAreaMarkersThroughButton();
                     if (layerIDs.includes("midas")) {
                         this.colorScale.show();
                         this.colorScale.setTitle("Vertical Velocity cm/yr");
@@ -177,7 +180,7 @@ function MapController(loadJSONFunc) {
                 // seismicity
             } else {
                 // remove swaths
-                this.removeAreaMarkers();
+                this.removeAreaMarkersThroughButton();
                 $("#square-selector-button").attr("data-original-title", "Select Seismicity");
                 $("#color-scale .color-scale-text-div").attr("data-original-title", "Color on time");
                 this.colorScale.setTopAsMax(false);
@@ -909,6 +912,20 @@ function MapController(loadJSONFunc) {
     this.removeAreaMarkers = function() {
         this.areaMarkerLayer.emptyLayers();
         this.areaFeatures = [];
+    };
+
+    this.removeAreaMarkersThroughButton = function() {
+        $button = $("#dataset-frames-toggle-button");
+        if (!$button.hasClass("toggled")) {
+            $button.click();
+        }
+    };
+
+    this.loadAreaMarkersThroughButton = function(after) {
+        $button = $("#dataset-frames-toggle-button");
+        if ($button.hasClass("toggled")) {
+            $button.click();
+        }
     };
 
     // until mapbox api gives us a way to determine when all points of mbtiles

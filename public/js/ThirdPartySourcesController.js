@@ -48,7 +48,7 @@ function ThirdPartySourcesController(map) {
 
     this.addGPSStationMarkers = function(stations) {
         var features = [];
-        showLoadingScreen("Getting UNR GPS Data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/unr",
             success: function(response) {
@@ -343,7 +343,7 @@ function ThirdPartySourcesController(map) {
 
 
     this.loadmidasGpsStationMarkers = function(loadVelocityArrows) {
-        showLoadingScreen("Getting Midas GPS Data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/midas",
             success: function(response) {
@@ -455,7 +455,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadUSGSEarthquakeFeed = function() {
-        showLoadingScreen("Getting USGS Earthquake Data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/USGSMonthlyFeed",
             success: function(response) {
@@ -532,7 +532,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadIGEPNEarthquakeFeed = function() {
-        showLoadingScreen("Getting IGEPN Data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/IGEPNEarthquakeFeed",
             success: function(response) {
@@ -624,7 +624,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadHawaiiReloc = function() {
-        showLoadingScreen("Getting Hawaii Reloc Data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/HawaiiReloc",
             success: function(response) {
@@ -677,7 +677,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadHawaiiReloc = function() {
-        showLoadingScreen("Getting Hawaii Reloc Data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/HawaiiReloc",
             success: function(response) {
@@ -818,7 +818,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadLongValleyReloc = function() {
-        showLoadingScreen("Getting Long Valley Reloc Data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
             url: "/LongValleyReloc",
             success: function(response) {
@@ -925,7 +925,7 @@ function ThirdPartySourcesController(map) {
         var nowString = now.toISOString().split('T')[0];
         var startDateString = startDate.toISOString().split('T')[0];
 
-        showLoadingScreen("Getting USGS Events Earthquake Data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "ESCAPE to interrupt");
 
         this.USGSEventsURL = this.USGSEventsOptionsController.getURL();
 
