@@ -469,7 +469,23 @@ function setupToggleButtons() {
 
     usgsEarthquakeToggleButton.setDescription("Recent earthquakes from https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson");
 
-    IGEPNEarthquakeToggleButton = new SeismicityToggleButton("IGEPN-earthquake-toggle-button", "overlay-options-toggles", "IGEPN Earthquake Feed");
+    USGSEventsEarthquakeToggleButton = new SeismicityToggleButton("USGSEvents-earthquake-toggle-button", "overlay-options-toggles", "USGS Events");
+    USGSEventsEarthquakeToggleButton.onclick(function() {
+        if (USGSEventsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
+            USGSEventsEarthquakeToggleButton.set("off");
+            var $container = $(".wrap#USGSEvents-options");
+
+            if (!$container.hasClass("active")) {
+                $container.addClass("active");
+            }
+        } else {
+            myMap.thirdPartySourcesController.removeUSGSEventsEarthquake();
+        }
+    });
+
+    USGSEventsEarthquakeToggleButton.setDescription("Full USGS events catalogs from http://earthquake.usgs.gov/fdsnws/event/1/");
+
+    IGEPNEarthquakeToggleButton = new SeismicityToggleButton("IGEPN-earthquake-toggle-button", "overlay-options-toggles", "IGEPN 30 Day Earthquake Feed");
     IGEPNEarthquakeToggleButton.onclick(function() {
         if (IGEPNEarthquakeToggleButton.toggleState == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadIGEPNEarthquakeFeed();
@@ -501,22 +517,6 @@ function setupToggleButtons() {
     });
 
     LongValleyRelocToggleButton.setDescription("Relocated earthquakes provided by the University of Miami at http://www.rsmas.miami.edu/users/glin/Mammoth_Mountain.html");
-
-    USGSEventsEarthquakeToggleButton = new SeismicityToggleButton("USGSEvents-earthquake-toggle-button", "overlay-options-toggles", "USGS Events");
-    USGSEventsEarthquakeToggleButton.onclick(function() {
-        if (USGSEventsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
-            USGSEventsEarthquakeToggleButton.set("off");
-            var $container = $(".wrap#USGSEvents-options");
-
-            if (!$container.hasClass("active")) {
-                $container.addClass("active");
-            }
-        } else {
-            myMap.thirdPartySourcesController.removeUSGSEventsEarthquake();
-        }
-    });
-
-    USGSEventsEarthquakeToggleButton.setDescription("Full USGS events catalogs from http://earthquake.usgs.gov/fdsnws/event/1/");
 
     recentDatasetsToggleButton = new ToggleButton("recent-datasets-toggle-button")
     recentDatasetsToggleButton.onclick(null);

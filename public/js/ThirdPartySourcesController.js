@@ -4,11 +4,11 @@ function ThirdPartySourcesController(map) {
     this.cancellableAjax = new CancellableAjax();
 
     // we should consider creating these next 3 arrays dynamically
-    this.layerOrder = ["USGSEventsEarthquake", "LongValleyReloc", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake", "midas",
+    this.layerOrder = ["USGSEarthquake", "USGSEventsEarthquake", "IGEPNEarthquake", "HawaiiReloc", "LongValleyReloc", "midas",
         "midas-arrows", "gpsStations"
     ];
 
-    this.seismicities = ["USGSEventsEarthquake", "LongValleyReloc", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake"];
+    this.seismicities = ["USGSEarthquake", "USGSEventsEarthquake", "IGEPNEarthquake", "HawaiiReloc", "LongValleyReloc"];
     this.gps = ["midas", "midas-arrows", "gpsStations"];
 
     this.stopsCalculator = new MapboxStopsCalculator();
