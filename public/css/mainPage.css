@@ -640,20 +640,20 @@ div.menu {
     font-size: 15px;
 }
 
-#lat-vs-long-time-color-scale > .color-scale-text-div {
+#lat-vs-long-time-color-scale > .color-scale-text-div, #cross-section-time-color-scale > .color-scale-text-div {
     padding-left: 35px;
 }
 
-#lat-vs-long-depth-color-scale > .color-scale-text-div {
+#lat-vs-long-depth-color-scale > .color-scale-text-div, #cross-section-depth-color-scale > .color-scale-text-div {
     width: 100%;
     text-align: right;
 }
 
-#lat-vs-long-depth-color-scale {
+#lat-vs-long-depth-color-scale, #cross-section-depth-color-scale {
     width: 40%;
 }
 
-#lat-vs-long-time-color-scale {
+#lat-vs-long-time-color-scale, #cross-section-time-color-scale {
     width: 60%;
 }
 
@@ -719,7 +719,7 @@ div.menu {
     padding: 0;
 }
 
-#lat-vs-long-depth-color-scale .color-scale-and-values-container {
+#lat-vs-long-depth-color-scale .color-scale-and-values-container, #cross-section-depth-color-scale .color-scale-and-values-container {
     float: right;
 }
 

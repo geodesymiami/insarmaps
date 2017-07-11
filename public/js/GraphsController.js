@@ -888,16 +888,13 @@ function SeismicityGraphsController() {
     // just to be able to do this.createChart...)
     this.depthColorScale.onScaleChange(function(newMin, newMax) {
         var graphsController = this.map.seismicityGraphsController;
-        var thirdPartySourcesController = this.map.thirdPartySourcesController;
         graphsController.depthSlider.setMinMax(newMin, newMax);
-
     }.bind(this));
     this.timeColorScale = new ColorScale(new Date(0).getTime(), new Date(50).getTime(), "lat-vs-long-time-color-scale");
     this.timeColorScale.setTopAsMax(false);
     this.timeColorScale.setInDateMode(true);
     this.timeColorScale.onScaleChange(function(newMin, newMax) {
         var graphsController = this.map.seismicityGraphsController;
-        var thirdPartySourcesController = this.map.thirdPartySourcesController;
         graphsController.timeSlider.setMinMax(newMin, newMax);
     }.bind(this));
     this.crossSectionDepthColorScale = new ColorScale(0, 50, "cross-section-depth-color-scale");

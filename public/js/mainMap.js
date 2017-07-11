@@ -60,12 +60,8 @@ function MapController(loadJSONFunc) {
                 this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             } else if (curMode === "seismicity") {
                 if (!this.colorScale.inDateMode) {
-                    this.seismicityGraphsController.depthColorScale.setMinMax(newMin, newMax);
-                    this.seismicityGraphsController.crossSectionDepthColorScale.setMinMax(newMin, newMax);
                     this.seismicityGraphsController.depthSlider.setMinMax(newMin, newMax);
                 } else {
-                    this.seismicityGraphsController.timeColorScale.setMinMax(newMin, newMax);
-                    this.seismicityGraphsController.crossSectionTimeColorScale.setMinMax(newMin, newMax);
                     this.seismicityGraphsController.timeSlider.setMinMax(newMin, newMax);
                 }
                 this.thirdPartySourcesController.recolorSeismicities(this.thirdPartySourcesController.currentSeismicityColoring);
