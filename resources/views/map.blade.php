@@ -37,25 +37,6 @@
 </head>
 
 <body>
-    <div id="subset-swath-popup">
-        <table class="table" id="subset-swath-table">
-            <thead>
-                <tr>
-                    <th>
-                        Start Date
-                    </th>
-                    <th>
-                        End Date
-                    </th>
-                    <th>
-                        Unavco Name
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
     <div id="information-div" class="overlay-div">
         <div id="information-div-contents">
             <p>
@@ -421,7 +402,7 @@
                         <div class="chart" id="cumulative-events-vs-date-graph"></div>
                         <div id="cumulative-events-vs-date-chart-buttons-container">
                             <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cumulative-events-vs-date-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored</button>
-                            <button class="btn btn-primary-outline" id="switch-to-distribution-button" data-toggle="tooltip" title="Switch to distribution" name="overlayToggle" data-placement="bottom" >Cumulative</button>
+                            <button class="btn btn-primary-outline" id="switch-to-distribution-button" data-toggle="tooltip" title="Switch to distribution" name="overlayToggle" data-placement="bottom">Cumulative</button>
                         </div>
                     </div>
                 </div>
@@ -509,51 +490,69 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="wrap wrap-transitions minimized" id="area-attributes-div" title="Attributes">
-        <div class="top-right-buttons">
-            <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"></button>
-        </div>
-        <div class="content">
-            <ul class="tab">
-                <div id="area-attributes-areaname-div"></div>
-                <li><a href="#" id="details-tab-link" class="tablinks" onclick="goToTab(event, 'details-tab')">Details</a></li>
-                <li><a href="#" class="tablinks" onclick="goToTab(event, 'downloads-tab')">Downloads</a></li>
-                <li><a href="#" class="tablinks" onclick="goToTab(event, 'reference-tab')">Reference</a></li>
-                <li><a href="#" class="tablinks" onclick="goToTab(event, 'figures-tab')">Figures</a></li>
-                <li><a href="#" class="tablinks" onclick="goToTab(event, 'links-tab')">Links</a></li>
-            </ul>
-            <div id="details-tab" class="tabcontent">
-                <table class="table" id="area-attributes-table">
-                    <thead>
-                    </thead>
-                    <tbody id="area-attributes-table-body">
-                    </tbody>
-                </table>
+        <div class="wrap wrap-transitions minimized" id="area-attributes-div" title="Attributes">
+            <div class="top-right-buttons">
+                <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="area-attributes-div-minimize-button"></button>
             </div>
-            <div id="downloads-tab" class="tabcontent">
-                <p>Download to Unavco InSAR data products to be implemented.</p>
-            </div>
-            <div id="reference-tab" class="tabcontent">
-                <p>Reference to the papers to be added.</p>
-            </div>
-            <div id="figures-tab" class="tabcontent">
-                <p>Figures to be added.</p>
-            </div>
-            <!-- <div id="links-tab" class="tabcontent">
+            <div class="content">
+                <ul class="tab">
+                    <div id="area-attributes-areaname-div"></div>
+                    <li><a href="#" id="details-tab-link" class="tablinks" onclick="goToTab(event, 'details-tab')">Details</a></li>
+                    <li><a href="#" class="tablinks" onclick="goToTab(event, 'downloads-tab')">Downloads</a></li>
+                    <li><a href="#" class="tablinks" onclick="goToTab(event, 'reference-tab')">Reference</a></li>
+                    <li><a href="#" class="tablinks" onclick="goToTab(event, 'figures-tab')">Figures</a></li>
+                    <li><a href="#" class="tablinks" onclick="goToTab(event, 'links-tab')">Links</a></li>
+                </ul>
+                <div id="details-tab" class="tabcontent">
+                    <table class="table" id="area-attributes-table">
+                        <thead>
+                        </thead>
+                        <tbody id="area-attributes-table-body">
+                        </tbody>
+                    </table>
+                </div>
+                <div id="downloads-tab" class="tabcontent">
+                    <p>Download to Unavco InSAR data products to be implemented.</p>
+                </div>
+                <div id="reference-tab" class="tabcontent">
+                    <p>Reference to the papers to be added.</p>
+                </div>
+                <div id="figures-tab" class="tabcontent">
+                    <p>Figures to be added.</p>
+                </div>
+                <!-- <div id="links-tab" class="tabcontent">
           <p>Extra links to be added.</p>
           </div> -->
+            </div>
         </div>
-    </div>
-    </div>
-    <div class="wrap wrap-transitions" id="topography-wrap" title="Topography-Wrap">
-        <div class="top-right-buttons">
-            <button type="button" class="close close-button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <div class="wrap wrap-transitions" id="topography-wrap" title="Topography-Wrap">
+            <div class="top-right-buttons">
+                <button type="button" class="close close-button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="content"></div>
         </div>
-        <div class="content"></div>
+        <div id="subset-swath-popup">
+            <table class="table" id="subset-swath-table">
+                <thead>
+                    <tr>
+                        <th>
+                            Start Date
+                        </th>
+                        <th>
+                            End Date
+                        </th>
+                        <th>
+                            Unavco Name
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
     </div>
     <script type="text/javascript">
-    var urlOptions = {!!json_encode($urlOptions)!!};
+    var urlOptions = {!!json_encode($urlOptions) !!};
     </script>
     <script type="text/javascript" src="/js/fuse.js"></script>
     <script type="text/javascript" src="/js/helperFunctions.js"></script>
