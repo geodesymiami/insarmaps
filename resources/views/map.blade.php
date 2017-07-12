@@ -232,6 +232,12 @@
                 </div>
             </div>
         </div>
+        <div id="magnitude-and-arrow-scale-container">
+            <div class="custom-scale" id="magnitude-scale">
+            </div>
+            <!-- <div class="custom-scale" id="arrow-length-scale">
+            </div> -->
+        </div>
         <div id="color-scale">
             <div class="btn btn-primary color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color on time">
                 LOS Velocity [cm/yr]

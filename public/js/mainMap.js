@@ -116,26 +116,18 @@ function MapController(loadJSONFunc) {
     // mode, changes
     this.afterLayersChanged = function(layerThatWasChanged) {
         var curMode = this.getCurrentMode();
-        // small optimization
-        if (this.lastMode === curMode) {
-            // if changed layer is a seismicity layer, update sliders, etc.
-            var seismicityLayerChanged = this.thirdPartySourcesController.seismicities.includes(layerThatWasChanged);
-            if (curMode === "seismicity" && seismicityLayerChanged) {
-                var features = this.thirdPartySourcesController.getAllSeismicityFeatures();
-                if (features.length > 0) {
-                    features.sort(function(feature1, feature2) {
-                        return feature1.properties.time - feature2.properties.time;
-                    });
-                    this.thirdPartySourcesController.prepareForSeismicities(features);
-                }
-            }
+
+        // do nothing if it was a swath, regardless of mode, as swaths don't change our mode
+        if (layerThatWasChanged.includes("swath-area-")) {
             return;
         }
 
         this.lastMode = curMode;
 
-        // this is quick and dirty.
-        // TODO: it needs cleaning up
+        $("#magnitude-scale").removeClass("active");
+        $("#arrow-length-scale").removeClass("active");
+        // this is all quick and dirty.
+        // TODO: it needs cleaning up, as what started as an elegant solution has quickly turned into a behemoth
         if (!curMode) { // no mode (ie essentially empty map)
             this.seismicityGraphsController.destroyAllCharts();
             this.seismicityGraphsController.hideChartContainers();
@@ -170,6 +162,9 @@ function MapController(loadJSONFunc) {
                 } else if (curMode === "gps") {
                     var layerIDs = this.getLayerIDsInCurrentMode();
                     this.removeAreaMarkersThroughButton();
+                    if (layerIDs.includes("midas-arrows")) {
+                        $("#arrow-length-scale").addClass("active");
+                    }
                     if (layerIDs.includes("midas")) {
                         this.colorScale.show();
                         this.colorScale.setTitle("Vertical Velocity cm/yr");
@@ -179,14 +174,23 @@ function MapController(loadJSONFunc) {
                 }
                 // seismicity
             } else {
+                this.thirdPartySourcesController.populateSeismicityMagnitudeScale();
+                $("#magnitude-scale").addClass("active");
                 // remove swaths
                 this.removeAreaMarkersThroughButton();
                 $("#square-selector-button").attr("data-original-title", "Select Seismicity");
                 $("#color-scale .color-scale-text-div").attr("data-original-title", "Color on time");
                 this.colorScale.setTopAsMax(false);
                 $("#seismicity-maximize-buttons-container").addClass("active");
-                // handles setting up color scale for seismicity etc.
-                this.thirdPartySourcesController.prepareForSeismicities(null);
+
+                var features = this.thirdPartySourcesController.getAllSeismicityFeatures();
+                if (features.length > 0) {
+                    features.sort(function(feature1, feature2) {
+                        return feature1.properties.time - feature2.properties.time;
+                    });
+                    // handles setting up color scale for seismicity etc.
+                    this.thirdPartySourcesController.prepareForSeismicities(features);
+                }
             }
         }
     };
@@ -285,7 +289,7 @@ function MapController(loadJSONFunc) {
                     activeLayers.push(layerID);
                 }
             }.bind(this));
-            return this.thirdPartySourcesController.gps;
+            return activeLayers;
         }
 
         if (mode === "insar") {
@@ -806,8 +810,8 @@ function MapController(loadJSONFunc) {
 
             var properties = area.properties;
 
-            var id = "areas" + properties.unavco_name;
-            var polygonID = "areas" + properties.unavco_name + "fill"
+            var id = "swath-area-" + properties.unavco_name;
+            var polygonID = "swath-area-" + properties.unavco_name + "fill"
             var center = area.properties.centerOfDataset ?
                 area.properties.centerOfDataset : area.geometry.coordinates;
 
@@ -1144,7 +1148,7 @@ function MapController(loadJSONFunc) {
         // we always have areas0 at minimum if areas swaths loaded
         // how to avoid checking points loaded? remove area sources when
         // we click on a point
-        return !this.areaMarkerLayer.empty() && !this.pointsLoaded();
+        return !this.areaMarkerLayer.isEmpty() && !this.pointsLoaded();
     };
 
     this.anAreaWasPreviouslyLoaded = function() {

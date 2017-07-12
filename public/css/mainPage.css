@@ -622,6 +622,24 @@ div.menu {
     height: 100%;
 }
 
+#magnitude-and-arrow-scale-container {
+    position: absolute;
+    top: 30%;
+    z-index: 98;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.custom-scale {
+    display: none;
+    width: 50px;
+    height: 100px;
+}
+
+.magnitude-scale-circle {
+    display: inline-block;
+    border-radius: 100%;
+    border: 1px solid #000000;;
+}
 #color-scale {
     display: none;
     position: absolute;

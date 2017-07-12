@@ -31,6 +31,17 @@ function ThirdPartySourcesController(map) {
         this.USGSEventsURL = url;
     }.bind(this));
 
+    this.defaultCircleSizes = function() {
+        var sizes = [];
+
+        for (var i = 1; i < 10; i++) {
+            sizes.push(i * i / 2);
+        }
+        return sizes;
+    };
+
+    this.currentSeismicitySizeSteps = this.stopsCalculator.getMagnitudeStops(1, 10, this.defaultCircleSizes());
+
     this.getLayerOnTopOf = function(layer) {
         for (var i = this.layerOrder.length - 1; i >= 0; i--) {
             if (this.layerOrder[i] === layer) {
@@ -307,10 +318,6 @@ function ThirdPartySourcesController(map) {
                         resultant.angle += 360;
                     }
 
-                    // mapbox only allows clockwise rotations. this math
-                    // gives us the angle to rotate by to achieve same angle as unit
-                    // circle angle that vector math gives us
-                    var mapboxRotateBy = 360 + 90 - resultant.angle;
                     // column 14 according to Midas readme
                     var uncertainty = parseFloat(fields[13]);
                     var stationName = fields[0];
@@ -324,8 +331,6 @@ function ThirdPartySourcesController(map) {
                         "properties": {
                             "v": upVelocity,
                             "u": uncertainty,
-                            "mag": resultant.mag,
-                            "angle": mapboxRotateBy,
                             "stationName": stationName,
                             "popupHTML": popupHTML
                         }
@@ -333,6 +338,7 @@ function ThirdPartySourcesController(map) {
 
                     features.points.push(feature);
                     var arrowLength = resultant.mag * 500;
+                    // console.log(resultant.mag + " " + arrowLength);
                     features.arrows.push(this.getArrowGeoJSON(coordinates, resultant.angle, arrowLength, i));
                 }
             }
@@ -520,15 +526,6 @@ function ThirdPartySourcesController(map) {
         var name = "USGSEarthquake";
 
         this.map.removeSourceAndLayer(name);
-    };
-
-    this.defaultCircleSizes = function() {
-        var sizes = [];
-
-        for (var i = 1; i < 10; i++) {
-            sizes.push(i * i / 2);
-        }
-        return sizes;
     };
 
     this.loadIGEPNEarthquakeFeed = function() {
@@ -1118,7 +1115,10 @@ function ThirdPartySourcesController(map) {
         this.seismicities.forEach(function(layerID) {
             if (this.map.map.getLayer(layerID)) {
                 var curFilter = this.map.map.getFilter(layerID);
-                // we update so filter doesn't continually grow when we keep on setting
+                // we update so callers of this method don't have to worry about whether
+                // the seismicity has a filter or not. for example our seismcity sliders
+                // set their own filters independent of each other, and without having to check
+                // whether there is already a filter on a given layer
                 if (curFilter) {
                     this.updateFilter(curFilter, filter);
                     this.map.map.setFilter(layerID, curFilter);
@@ -1194,5 +1194,42 @@ function ThirdPartySourcesController(map) {
         if (USGSEventsEarthquakeToggleButton !== except) {
             USGSEventsEarthquakeToggleButton.set("off", true);
         }
+        if (midasEastNorthStationsToggleButton !== except) {
+            midasEastNorthStationsToggleButton.set("off", true);
+        }
+    };
+
+    this.populateSeismicityMagnitudeScale = function() {
+        var html = "";
+
+        this.currentSeismicitySizeSteps.forEach(function(curStop) {
+            var curMag = curStop[0];
+            var curSizeInPixels = curStop[1];
+
+            // the case numbers were chosen like so because mapbox interval coloring
+            // chooses the stop just less than the input
+            switch (curMag) {
+                case 3:
+                    html += "<3 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels
+                            + "px; width: " + curSizeInPixels + "px'></div><br>";
+                    break;
+                case 4:
+                    html += "3-4 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels
+                            + "px; width: " + curSizeInPixels + "px'></div><br>";
+                    break;
+                case 5:
+                    html += "4-5 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels
+                            + "px; width: " + curSizeInPixels + "px'></div><br>";
+                    break;
+                case 6:
+                    html += ">5 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels
+                            + "px; width: " + curSizeInPixels + "px'></div><br>";
+                    break;
+                default:
+                    break;
+            }
+        });
+
+        $("#magnitude-scale").html(html);
     };
 }

@@ -1622,7 +1622,7 @@ function setupCustomHighchartsSlider() {
             enabled: true,
             top: 1,
             xAxis: {
-                tickPixelInterval: 50
+                tickPixelInterval: 75
             }
         };
 

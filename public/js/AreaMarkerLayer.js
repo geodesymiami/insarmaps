@@ -1,5 +1,3 @@
-// abstract multiple area marker layers into one master layer object
-// TODO: work with swaths rather than id's
 function AreaMarkerLayer(map) {
     var that = this;
 
@@ -110,7 +108,7 @@ function AreaMarkerLayer(map) {
         this.modifiedLayers = [];
     };
 
-    this.empty = function() {
+    this.isEmpty = function() {
         return this.swaths.length == 0;
     };
 }

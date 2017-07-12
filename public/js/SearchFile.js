@@ -63,7 +63,7 @@ function searchTableHoverIn(jQueryThis) {
     $(jQueryThis).css({ "background-color": "rgba(0, 86, 173, 0.5)" });
     var className = $(jQueryThis).attr("class");
     if (className) {
-        var layerID = "areas" + className.split("-search")[0];
+        var layerID = "swath-area-" + className.split("-search")[0];
         myMap.areaMarkerLayer.setPolygonHighlighted(layerID, "rgba(0, 0, 255, 0.3)");
     }
 }
