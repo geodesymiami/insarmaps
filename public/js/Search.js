@@ -139,6 +139,7 @@ function SearchFormController(container) {
             }
 
             subsetFeatures.forEach(function(subsetFeature) {
+                attributesController.setArea(subsetFeature);
                 var rowClass = subsetFeature.properties.unavco_name + "-search-row";
                 var attributes = attributesController.getAllAttributes();
                 var html = "<tr class='" + rowClass + "'>";

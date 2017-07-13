@@ -122,8 +122,6 @@ function MapController(loadJSONFunc) {
             return;
         }
 
-        this.lastMode = curMode;
-
         $("#magnitude-scale").removeClass("active");
         $("#arrow-length-scale").removeClass("active");
         // this is all quick and dirty.
@@ -147,6 +145,9 @@ function MapController(loadJSONFunc) {
                 $("#seismicity-maximize-buttons-container").removeClass("active");
                 $("#square-selector-button").attr("data-original-title", "Select Points");
                 if (curMode === "insar") {
+                    if (this.lastMode == curMode) {
+                        return;
+                    }
                     this.loadAreaMarkersThroughButton();
                     $("#insar-maximize-buttons-container").addClass("active");
                     this.colorScale.setTopAsMax(true);
@@ -193,6 +194,8 @@ function MapController(loadJSONFunc) {
                 }
             }
         }
+
+        this.lastMode = curMode;
     };
 
     this.addLayer = function(newLayer, before) {

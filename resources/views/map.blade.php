@@ -569,7 +569,7 @@
     <script type="text/javascript" src="/js/AreaMarkerLayer.js"></script>
     <script type="text/javascript" src="/js/AreaAttributesController.js"></script>
     <script type="text/javascript" src="/js/mainPage.js"></script>
-    <script type="text/javascript" src="/js/SearchFile.js"></script>
+    <script type="text/javascript" src="/js/Search.js"></script>
     <script type="text/javascript" src="/js/Swath.js"></script>
     <script type="text/javascript" src="/js/Vector.js"></script>
     <script type="text/javascript" src="/js/USGSEventsOptionsController.js"></script>
