@@ -15,13 +15,13 @@
     return view('map');
 });*/
 
-Route::get('/', 'MyController@returnPage')->name('returnPage');
+Route::get('/', 'WebServicesController@processRequest')->name('showViewOrWebservices');
 Route::get('/start/{lat?}/{long?}/{zoom?}', 'MyController@returnPage')->name('returnPage');
 Route::post('/data', 'MyController@convertData')->name('convertData');
 Route::get("/file/{area}/{fileChunkNumber}", "GeoJSONController@getJSONFileChunk")->name("getJSONFileChunk");
 Route::get("/textFile/{area}/{point}", "GeoJSONController@pointDataToTextFile")->name("pointDataToTextFile");
 Route::get("/point/{area}/{point}", "GeoJSONController@getDataForPoint")->name("getDataForPoint");
-Route::get("/areas/", "GeoJSONController@getAreas")->name("getAreas");
+Route::get("/areas/", "GeoJSONController@getAreasJSON")->name("getAreasJSON");
 Route::get("/unr", "ThirdPartyDataNoCorsController@getUNR")->name("getUNR");
 Route::get("/midas", "ThirdPartyDataNoCorsController@getMidas")->name("getMidas");
 Route::get("/IGEPNEarthquakeFeed", "ThirdPartyDataNoCorsController@getIGEPNEarthquakeFeed")->name("getIGEPNEarthquakeFeed");

@@ -12,6 +12,50 @@ use CpChart\Factory\Factory;
 use Exception;
 use Illuminate\Support\Facades\Input;
 
+class WebServicesOptions {
+  private $dateFormatter = NULL;
+  public $latitude = 1000.0;
+  public $longitude = 1000.0;
+  public $satellite = NULL;
+  public $relativeOrbit = NULL;
+  public $firstFrame = NULL;
+  public $mode = NULL;
+  public $flightDirection = NULL;
+  public $startTime = NULL;  // if specified, returned datasets must occur during or after this time
+  public $endTime = NULL;  // if specified, returned datasets must occur during or before this time
+  public $box = NULL;  // string containing wkt geometry to get datasets bounded in a box
+  public $outputType = "json"; // default value is json, other option is dataset
+  public $attributeSearch = FALSE; // if user specifies any search parameter except latitude, longitude, or outputType, set to true and adjust SQL
+
+  public function __construct() {
+    $this->dateFormatter = new DateFormatter();
+  }
+
+  public function checkForErrors() {
+    $errors = [];
+    // check if startTime inputted by user is in in yyyy-mm-dd or yyyymmdd format
+    if ($this->startTime !== NULL && $this->dateFormatter->verifyDate($this->startTime) === NULL) {
+      array_push($errors, "please input startTime in format yyyy-mm-dd (ex: 1990-12-19)");
+    }
+  // check if inputted by user is in in yyyy-mm-dd or yyyymmdd format
+    if ($this->endTime !== NULL && $this->dateFormatter->verifyDate($this->endTime) === NULL) {
+      array_push($errors, "please input endTime in format yyyy-mm-dd (ex: 2020-12-19)");
+    }
+
+    // check if startTime is less than or equal to endTime
+    if ($this->startTime !== NULL && $this->endTime !== NULL) {
+      $startDate = $this->dateFormatter->verifyDate($this->startTime);
+      $endDate = $this->dateFormatter->verifyDate($this->endTime);
+      $interval = $startDate->diff($endDate);
+
+      if ($interval->format("%a") > 0 && $startDate > $endDate) {
+        array_push($errors, "please make sure startTime is a date earlier than endTime");
+      }
+    }
+    return $errors;
+  }
+}
+
 // NOTE: We currently use 3 date formats between various dependencies in SQL, Highcharts, etc. 
 // 1) yyyy-mm-dd / string (ex: 2010-12-20)
 // 2) decimal (ex: 2010.97)
@@ -268,10 +312,15 @@ class WebServicesController extends Controller
     }
 
     // convert csv array to csv string
-    public function csvArrayToString($csv_array) {
+    public function areasToCSV($areas) {
       $csv_string = "";
-      foreach ($csv_array as $csv) {
-        $csv_string = $csv_string . implode(",", $csv) . "\n";
+      foreach ($areas as $areaID => $area) {
+        $csv_string .= $area->unavco_name . ",";
+        $extraAttributes = $area->extra_attributes;
+        foreach ($extraAttributes as $key => $value) {
+          $csv_string .= $value . ",";
+        }
+        $csv_string[strlen($csv_string) - 1] = "\n";
       }
       return $csv_string;
     }
@@ -284,179 +333,216 @@ class WebServicesController extends Controller
     * @param Request $request - url containing parameters specified by user to search for a point in a dataset
     * @return array $json - contains decimaldates, stringdates, and displacement of point
     */
-    public function processRequest(Request $request) {
-      $json = [];
-
-      // Required request parameters: latitude, longitude
-      // default value for latitude and longitude is 1000.0 (impossible value)
-      $latitude = 1000.0; 
-      $longitude = 1000.0;
-      $satellite = NULL;
-      $relativeOrbit = NULL;
-      $firstFrame = NULL;
-      $mode = NULL;
-      $flightDirection = NULL;
-      $startTime = NULL;  // if specified, returned datasets must occur during or after this time
-      $endTime = NULL;  // if specified, returned datasets must occur during or before this time
-      $box = "";  // string containing wkt geometry to get datasets bounded in a box
-      $outputType = "json"; // default value is json, other option is dataset
-      $attributeSearch = FALSE; // if user specifies any search parameter except latitude, longitude, or outputType, set to true and adjust SQL
-      $csv_array = []; // final array containing dataset names and attributes
-      $csv_string = "";
-
-      // extract parameter values from Request url
+    private function getOptions(Request $request) {
       $requests = $request->all();
+
+      if (count($requests) == 0) {
+        return NULL;
+      }
+      $options = new WebServicesOptions();
       foreach ($requests as $key => $value) {
         switch ($key) {
           case 'latitude':
             if (strlen($value) > 0) {
-              $latitude = $value;
+              $options->latitude = $value;
             }
             break;
           case 'longitude':
             if (strlen($value) > 0) {
-              $longitude = $value;
+              $options->longitude = $value;
             }
             break;
           case 'satellite':
             if (strlen($value) > 0) {
-              $satellite = $value;
-              $attributeSearch = TRUE;
+              $options->satellite = $value;
+              $options->attributeSearch = TRUE;
             }
             break;
           case 'relativeOrbit':
             if (strlen($value) > 0) {
-              $relativeOrbit = $value;
-              $attributeSearch = TRUE;
+              $options->relativeOrbit = $value;
+              $options->attributeSearch = TRUE;
             }
             break;
           case 'firstFrame':
             if (strlen($value) > 0) {
-              $firstFrame = $value;
-              $attributeSearch = TRUE;
+              $options->firstFrame = $value;
+              $options->attributeSearch = TRUE;
             }
             break;
           case 'mode':
             if (strlen($value) > 0) {
-              $mode = $value;
-              $attributeSearch = TRUE;
+              $options->mode = $value;
+              $options->attributeSearch = TRUE;
             }
             break;
           case 'flightDirection':
             if (strlen($value) > 0) {
-              $flightDirection = $value;
-              $attributeSearch = TRUE;
+              $options->flightDirection = $value;
+              $options->attributeSearch = TRUE;
             }
             break;
           case 'startTime':
             if (strlen($value) > 0) {
-              $startTime = $value;
+              $options->startTime = $value;
             }
             break;
           case 'endTime':
             if (strlen($value) > 0) {
-              $endTime = $value;
+              $options->endTime = $value;
             }
             break;
           case 'box':
             if (strlen($value) > 0) {
-              $box = $value;
+              $options->box = $value;
             }
             break;
           case 'outputType':
             if (strlen($value) > 0) {
-              $outputType = $value;
+              $options->outputType = $value;
             }
             break;
           default:
             break;
         }
       }
-      
-      // check if startTime inputted by user is in in yyyy-mm-dd or yyyymmdd format
-      if ($startTime !== NULL && $this->dateFormatter->verifyDate($startTime) === NULL) {
-        $json["errors"] = "please input startTime in format yyyy-mm-dd (ex: 1990-12-19)";
+
+      return $options;
+    }
+
+    private function getAreasFromAttributes($attributes) {
+      $queryConditions = [];
+      $controller = new GeoJSONController();
+      $query = "SELECT id, unavco_name FROM area INNER JOIN (select t1" . ".area_id FROM ";
+
+      if (isset($attributes->satellite) && strlen($attributes->satellite) > 0) {
+        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='mission' AND attributevalue='" . $attributes->satellite . "')");
+      }
+
+      if (isset($attributes->mode) && strlen($attributes->mode) > 0) {
+        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='beam_mode' AND attributevalue='" . $attributes->mode . "')");
+      }
+
+      if (isset($attributes->relativeOrbit) && strlen($attributes->relativeOrbit) > 0) {
+        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='relative_orbit' AND attributevalue='" . $attributes->relativeOrbit . "')");
+      }
+
+      if (isset($attributes->firstFrame) && strlen($attributes->firstFrame) > 0) {
+        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='first_frame' AND attributevalue='" . $attributes->firstFrame . "')");
+      }
+
+      if (isset($attributes->flightDirection) && strlen($attributes->flightDirection) > 0) {
+        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='flight_direction' AND attributevalue='" . $attributes->flightDirection . "')");
+      }
+
+      // QUERY 2A: if user inputted bounding box option, check which datasets have points in the bounding box
+      if ($attributes->box) {
+        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='scene_footprint' AND ST_Intersects(ST_MakePolygon(ST_GeomFromText('" . $attributes->box . "', 4326)), ST_GeomFromText(attributevalue, 4326)))");
+      }
+
+      if (count($queryConditions) == 1) {
+        $query = $query . $queryConditions[0] . " t1";
+      }
+      else if (count($queryConditions) > 1) {
+        $query = $query . $queryConditions[0] . " t1";
+        $len_queryConditions = count($queryConditions);
+        for ($i = 1; $i < $len_queryConditions; $i++) {
+          $query = $query . " INNER JOIN " . $queryConditions[$i] . " t" . ($i+1) . " ON t" . $i . ".area_id = t" . ($i+1) . ".area_id";
+        }
+      }
+      $query = $query . ") result ON area.id = result.area_id;";
+      $areas = $controller->getPermittedAreasWithQuery($query);
+
+      return $areas;
+    }
+
+    private function getIndividualPointsFromAttributes($attributes) {
+      // calculate polygon encapsulating longitude and latitude specified by user
+      // delta = range of error for latitude and longitude values, can be changed as needed
+      $delta = 0.0005;
+      $p1_lat = $attributes->latitude - $delta;
+      $p1_long = $attributes->longitude - $delta;
+      $p2_lat = $attributes->latitude + $delta;
+      $p2_long = $attributes->longitude - $delta;
+      $p3_lat = $attributes->latitude + $delta;
+      $p3_long = $attributes->longitude + $delta;
+      $p4_lat = $attributes->latitude - $delta;
+      $p4_long = $attributes->longitude + $delta;
+      $p5_lat = $attributes->latitude - $delta;
+      $p5_long = $attributes->longitude - $delta;
+
+      // QUERY 2B: otherwise for each dataset name, if point exists in dataset then 
+      // return data of first point returned by polygon created by (longitude, latitude) and delta
+      // key = area id, value = dataset name
+      $controller = new GeoJSONController();
+      $areas = $controller->getPermittedAreasWithQuery("SELECT * FROM area");
+      $query = "";
+      foreach ($areas as $areaID => $area) {
+        // can also do a select from area like so: (SELECT (SELECT unavco_name FROM area WHERE unavco_name='" . $area->unavco_name . "') as unavco_name, p ..., etc. But, why go to area table if we have unavco_name already from previous query, so let's insert it by simple php concatenation
+        $query .= "(SELECT CAST ((SELECT '" . $area->unavco_name . "') as varchar) AS unavco_name, p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM \"" . $area->unavco_name . "\" WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry)) UNION ";
+      }
+      // take out last union ( and add )
+      $query = substr($query, 0, strlen($query) - 7);
+      $query[strlen($query) - 1] = ')';
+      $points = DB::select(DB::raw($query));
+
+      $groupedPoints = [];
+      // gather all points grouped by datasets
+      foreach ($points as $point) {
+        if (!isset($groupedPoints[$point->unavco_name])) {
+          $groupedPoints[$point->unavco_name] = [$point];
+        } else {
+          array_push($groupedPoints[$point->unavco_name], $point);
+        }
+      }
+
+      // if user specified outputType to be dataset names instead of json, return dataset names and their attributes
+      if (strcasecmp($attributes->outputType, "dataset") == 0) {
+        $csvArray = [];
+        foreach ($areas as $areaID => $area) {
+          // if we have a point from that area, append to csvArray
+          if (isset($groupedPoints[$area->unavco_name])) {
+            array_push($csvArray, $area);
+          }
+        }
+
+        // caller will know what to do with this
+        return $csvArray;
+      }
+
+      // now get the nearest point to URL long and lat
+      $json = [];
+      foreach ($groupedPoints as $unavco_name => $points) {
+        if (count($points) > 0) {
+          $json[$unavco_name] = $this->getNearestPoint($attributes->latitude, $attributes->longitude, $points);
+        }
+      }
+
+      // otherwise, return json - caller will know what to do
+      return $json;
+    }
+
+    public function processRequest(Request $request) {
+      $json = [];
+      // Required request parameters: latitude, longitude
+      // default value for latitude and longitude is 1000.0 (impossible value)
+      // extract parameter values from Request url
+      $options = $this->getOptions($request);
+      if (!$options) {
+        return view("map", ["urlOptions" => NULL]);
+      }
+      $errors = $options->checkForErrors();
+      if (count($errors) > 0) {
+        $json["errors"] = $errors;
         return response()->json($json);
-      }
-
-      // check if inputted by user is in in yyyy-mm-dd or yyyymmdd format
-      if ($endTime !== NULL && $this->dateFormatter->verifyDate($endTime) === NULL) {
-        $json["errors"] = "please input endTime in format yyyy-mm-dd (ex: 2020-12-19)";
-        return response()->json($json);
-      }
-
-      // check if startTime is less than or equal to endTime
-      if ($startTime !== NULL && $endTime !== NULL) {
-        $startDate = $this->dateFormatter->verifyDate($startTime);
-        $endDate = $this->dateFormatter->verifyDate($endTime);
-        $interval = $startDate->diff($endDate);
-
-        if ($interval->format("%a") > 0 && $startDate > $endDate) {
-          $json["errors"] = "please make sure startTime is a date earlier than endTime";
-          return response()->json($json);
-        }
-      }
-
-      // QUERY 1A: get names of all datasets
-      $query = "SELECT id, unavco_name FROM area;";
-      $unavcoNames = DB::select(DB::raw($query));
-      $datasets_id = [];
-      $datasets = []; // each dataset is identified by area id key
-
-      $data = []; // array of point data from all datasets that match closest to user query 
-      $queryConditions = []; // array of conditions to narrow query result based on webservice parameters
-
-      // format SQL result into a php array where each dataset is mapped to area_id
-      foreach ($unavcoNames as $unavcoName) {
-        $datasets[$unavcoName->id] = $unavcoName->unavco_name;
-        // array_push($datasets_id, $unavcoName->id);
-        // array_push($datasets, $unavcoName->unavco_name);
-      }
-
-      // QUERY 1B: get attributes for with all datasets
-      // for each dataset area id, get all attributes from it
-      $query = "WITH ids(id) AS (VALUES";
-      foreach ($datasets as $key => $value) {
-        $query = $query . "(" . $key . "),";
-      }
-
-      $query = rtrim($query, ",");
-      $query = $query . ")"; // add last )
-      $query = $query . "SELECT * from extra_attributes INNER JOIN ids curID ON (extra_attributes.area_id = curID.id)";
-      $attributes = DB::select(DB::raw($query));
-      $attributesDict = [];
-  
-      // get all attributes from attributes hashmap organized by dataset area_id
-      foreach ($attributes as $attribute) {
-        $key = $attribute->attributekey;
-        $value = $attribute->attributevalue;
-        $keyValue = [$key => $value];
-        
-        $attributesDict[$attribute->area_id][$key] = $value;
-      }
-
-      // sort keys from attributemap in alphabetical order of keys
-      // since not all datasets have all 27 attributes remove the ones lacking attributes
-      // finally add dataset name to beginning of sorted array
-      // TODO: insert all attributes to datasets lacking 27 attributes
-      foreach($datasets as $key => $value) {
-        if (count($attributesDict[$key]) == 27) {
-          ksort($attributesDict[$key]);
-        }
-        else {
-          unset($attributesDict[$key]);
-          unset($datasets[$key]);
-        }
       }
 
       // if user only specifies dataset and no other attribute, return all dataset names;
-      if ((strcasecmp($outputType, "dataset") == 0) && !$attributeSearch && $longitude == 1000.0 && $latitude == 1000.0) {
-        foreach ($datasets as $key => $value) {
-          array_unshift($attributesDict[$key], $value);
-          array_push($csv_array, array_values($attributesDict[$key]));
-        }
-        
-        $csv_string = $this->csvArrayToString($csv_array);
+      if ((strcasecmp($options->outputType, "dataset") == 0) && !$options->attributeSearch && $options->longitude == 1000.0 && $options->latitude == 1000.0) {
+        $controller = new GeoJSONController();
+        $areas = $controller->getPermittedAreasWithQuery("SELECT * FROM area");
+
+        $csv_string = $this->areasToCSV($areas);
         return response()->json($csv_string);
       }
 
@@ -464,135 +550,21 @@ class WebServicesController extends Controller
       /*
       Example url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&mission=Alos&startTime=2009-02-06&endTime=2011-04-03&outputType=json
 
-      Another url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&box=LINESTRING(%20130.9695%2032.2865,%20130.9695%2032.2875,%20130.9705%2032.2875,%20130.9705%2032.2865,%20130.9695%2032.2865)&mission=Alos&mode=SM&startTime=2009-02-06&endTime=2011-04-03&outputType=dataset
+      Another url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&box=LINESTRING(130.9695%2032.2865,%20130.9695%2032.2875,%20130.9705%2032.2875,%20130.9705%2032.2865,%20130.9695%2032.2865)&mission=Alos&mode=SM&startTime=2009-02-06&endTime=2011-04-03&outputType=dataset
       */
-      if ($attributeSearch) {
-        $query = "SELECT id, unavco_name FROM area INNER JOIN (select t1" . ".area_id FROM ";
-
-        if (isset($satellite) && strlen($satellite) > 0) {
-          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='mission' AND attributevalue='" . $satellite . "')");
-        }
-
-        if (isset($mode) && strlen($mode) > 0) {
-          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='beam_mode' AND attributevalue='" . $mode . "')");
-        }
-
-        if (isset($relativeOrbit) && strlen($relativeOrbit) > 0) {
-          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='relative_orbit' AND attributevalue='" . $relativeOrbit . "')");
-        }
-
-        if (isset($firstFrame) && strlen($firstFrame) > 0) {
-          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='first_frame' AND attributevalue='" . $firstFrame . "')");
-        }
-
-        if (isset($flightDirection) && strlen($flightDirection) > 0) {
-          array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='flight_direction' AND attributevalue='" . $flightDirection . "')");
-        }
-
-        if (count($queryConditions) == 1) {
-          $query = $query . $queryConditions[0] . " t1";
-        }
-        else if (count($queryConditions) > 1) {
-          $query = $query . $queryConditions[0] . " t1";
-          $len_queryConditions = count($queryConditions);
-          for ($i = 1; $i < $len_queryConditions; $i++) {
-            $query = $query . " INNER JOIN " . $queryConditions[$i] . " t" . ($i+1) . " ON t" . $i . ".area_id = t" . ($i+1) . ".area_id";
-          }
-        }
-        $query = $query . ") result ON area.id = result.area_id;";
-        $unavcoNames = DB::select(DB::raw($query));
-      }
-
-      $datasets = [];
-      foreach ($unavcoNames as $unavcoName) {
-        $datasets[$unavcoName->id] = $unavcoName->unavco_name;
-      }
-
-      // QUERY 2A: if user inputted bounding box option, check which datasets have points in the bounding box
-      if (strlen($box) > 0) {
-        $datasetsInBox = [];
-        $len = count($datasets);
-        // TODO: get polygon value from extra_attributes table in order to figure out if polygon intersects bounding box - replace the current method of checking all points
-        foreach ($datasets as $key => $value) {
-          $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM " . $value . " WHERE st_contains(ST_MakePolygon(ST_GeomFromText('". $box . "', 4326)), wkb_geometry);";
-          $points = DB::select(DB::raw($query));
-
-          // get dataset names paired by area id
-          if (count($points) > 0) {
-            $datasetsInBox[$key] = $value;
-          }
-        }
-        
-        // return datasets that exists in attributeDict and datasets in box
-        foreach ($datasetsInBox as $key => $value) {
-          if (array_key_exists($key, $attributesDict) && array_key_exists($key, $datasetsInBox)) {
-            array_unshift($attributesDict[$key], $datasets[$key]);
-            array_push($csv_array, array_values($attributesDict[$key]));
-          }
-        }
-        // TODO: tell zishi to construct area objects as in GeoJSONController, not just return dataset names
-        // return response()->json($csv_array);
-        $csv_string = $this->csvArrayToString($csv_array);
+      if ($options->attributeSearch) {
+        $areas = $this->getAreasFromAttributes($options);
+        $csv_string = $this->areasToCSV($areas);
         return response()->json($csv_string);
       }
 
-      // calculate polygon encapsulating longitude and latitude specified by user
-      // delta = range of error for latitude and longitude values, can be changed as needed
-      $delta = 0.0005;
-      $p1_lat = $latitude - $delta;
-      $p1_long = $longitude - $delta;
-      $p2_lat = $latitude + $delta;
-      $p2_long = $longitude - $delta;
-      $p3_lat = $latitude + $delta;
-      $p3_long = $longitude + $delta;
-      $p4_lat = $latitude - $delta;
-      $p4_long = $longitude + $delta;
-      $p5_lat = $latitude - $delta;
-      $p5_long = $longitude - $delta;
-
-      // QUERY 2B: otherwise for each dataset name, if point exists in dataset then 
-      // return data of first point returned by polygon created by (longitude, latitude) and delta
-      // key = area id, value = dataset name
-      foreach ($datasets as $key => $value) {
-        $query = " SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM \"" . $value . "\" WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry);";
-        $points = DB::select(DB::raw($query));
-
-        if (count($points) > 0) {
-          $nearest = $this->getNearestPoint($latitude, $longitude, $points);
-          $data[$key] = $nearest;
-        }
-      }
-
-      // $key = dataset name, $value = point object data returned by SQL
-      foreach ($data as $key => $value) {
-        $jsonForPoint = $this->createJsonArray($datasets[$key], $value, $startTime, $endTime);
-        $json[$key] = $jsonForPoint;
-      }
-
-      // if user specified outputType to be dataset names instead of json, return dataset names
-      // json array contains all the datasets filtered by search
-      // attributesDict contains all attributes with their dict, but removes datasets that do not have all attributes
-      // need to return all datasets in json array that have all attributes
-      if (strcasecmp($outputType, "dataset") == 0) {
-        foreach ($json as $key => $value) {
-          // if dataset exists in attributeDict and json array
-          if (array_key_exists($key, $attributesDict) && array_key_exists($key, $json)) {
-            array_unshift($attributesDict[$key], $datasets[$key]);
-            array_push($csv_array, array_values($attributesDict[$key]));
-          }
-        }
-        $csv_string = $this->csvArrayToString($csv_array);
+      // otherwise, return individual points in csv, else in json
+      $areas = $this->getIndividualPointsFromAttributes($options);
+      if (strcasecmp($options->outputType, "dataset") == 0) {
+        $csv_string = $this->areasToCSV($areas);
         return response()->json($csv_string);
       }
-
-      // TODO: check if error occured based on startTime and endTime; if so return json 
-      // by default we return json unless outputType = dataset
-      if (isset($json["errors"]) || strcasecmp($outputType, "json") == 0) {
-        return response()->json($json);
-      }
-
-      // TODO: return plot of first dataset in json array - this will a take a backburner
-      return $this->createPlotPicture($json["displacements"], $json["string_dates"]);
+      return response()->json($areas);
     }
 
 

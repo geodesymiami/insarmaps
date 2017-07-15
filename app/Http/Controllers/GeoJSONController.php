@@ -81,7 +81,7 @@ class GeoJSONController extends Controller {
       echo "Point Not found";
     }
   }  
-
+// TODO: add middlewear to protect against datasets to which user has no permissions. Extremely low priority at this point (7/14).
 public function getPoints() {
   $points = Input::get("points");
 
@@ -135,8 +135,17 @@ public function getPoints() {
 }
 }
 
-private function getAttributesForAreas($table) {
+private function getAttributesForAreas($areas, $table) {
   $sql = "SELECT * FROM " . $table;
+  if ($areas) {
+    $sql .= " WHERE area_id IN(";
+    foreach ($areas as $areaID => $area) {
+      $sql .= $areaID . ",";
+    }
+    // replace last comma with )
+    $sql[strlen($sql) - 1] = ')';
+  }
+
   $attributes = DB::select($sql);
   $attributesDict = [];
 
@@ -150,14 +159,9 @@ private function getAttributesForAreas($table) {
   return $attributesDict;
 }
 
-public function getAreas($bbox=NULL) {
-  $json = array();
-
+public function getPermittedAreasWithQuery($query) {
+  $areasArray = [];
   try {
-    $query = "SELECT * from area";
-    if ($bbox) {
-      $query = "SELECT * FROM area WHERE st_contains(ST_MakePolygon(ST_GeomFromText(" . $bbox . ", 4326)), ST_SetSRID(ST_MakePoint(area.longitude, area.latitude), 4326));";
-    }
     $areas = DB::select($query);
     $permissionController = new PermissionsController();
     $areasPermissions = $permissionController->getPermissions("area", "area_allowed_permissions", ["area.unavco_name = area_allowed_permissions.area_name"]);
@@ -171,19 +175,14 @@ public function getAreas($bbox=NULL) {
       $userPermissions = $permissionController->getUserPermissions(Auth::id(), "users", "user_permissions", ["users.id = user_permissions.user_id"]);
       array_push($userPermissions, "public"); // every user must have public permissions
     }
-    $extra_attributes = $this->getAttributesForAreas("extra_attributes");
-    $plot_attributes = $this->getAttributesForAreas("plot_attributes");
 
-    $json["areas"] = [];
+    if (count($areas) == 0) {
+      return $areas;
+    }
+
     foreach ($areas as $area) {
-      $unavco_name = $area->unavco_name;
-      $project_name = $area->project_name;
-
-      $currentArea = [];
-      $currentArea["properties"]["unavco_name"] = $unavco_name;
-      $currentArea["properties"]["project_name"] = $project_name;
-
       // do we have info for that area in the DB? if not, we assume it's public
+      $unavco_name = $area->unavco_name;
       $curAreaPermissions = NULL;
       if (isset($areasPermissions[$unavco_name])) {
         $curAreaPermissions = $areasPermissions[$unavco_name];
@@ -193,36 +192,73 @@ public function getAreas($bbox=NULL) {
 
       foreach ($curAreaPermissions as $curAreaPermission) {
         if (in_array($curAreaPermission, $userPermissions)) {
-          $currentArea["type"] = "Feature";
-          $currentArea["geometry"]["type"] = "Point";
-          $currentArea["geometry"]["coordinates"] = [floatval($area->longitude), floatval($area->latitude)];
-
-          $currentArea["properties"]["num_chunks"] = $area->numchunks;
-          $currentArea["properties"]["country"] = $area->country;
-          $currentArea["properties"]["attributekeys"] = $this->arrayFormatter->postgresToPHPArray($area->attributekeys);
-          $currentArea["properties"]["attributevalues"] = $this->arrayFormatter->postgresToPHPArray($area->attributevalues);
-          $currentArea["properties"]["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($area->decimaldates);
-          $currentArea["properties"]["string_dates"] = $this->arrayFormatter->postgresToPHPArray($area->stringdates);
-          $currentArea["properties"]["region"] = $area->region;
-
-          $bindings = [$area->id];
-
-          if (isset($extra_attributes[$area->id])) {
-            $currentArea["properties"]["extra_attributes"] = $extra_attributes[$area->id];
-          } else {
-            $currentArea["properties"]["extra_attributes"] = NULL;
-          }
-
-          if (isset($plot_attributes[$area->id])) {
-            $currentArea["properties"]["plot_attributes"] = $plot_attributes[$area->id]["plotAttributes"];
-          } else {
-            $currentArea["properties"]["plot_attributes"] = NULL;
-          }
-
-          array_push($json["areas"], $currentArea);
+          $areasArray[$area->id] = $area;
           continue;
         }
       }
+    }
+
+    // get all attributes for areas
+    $extraAttributes = $this->getAttributesForAreas($areasArray, "extra_attributes");
+    foreach ($extraAttributes as $areaId => $attributes) {
+      $areasArray[$areaId]->extra_attributes = $attributes;
+    }
+
+    return $areasArray;
+  } catch (\Illuminate\Database\QueryException $e) {
+    echo "error getting areas";
+  }
+}
+
+// TODO: the below bbox code should be changed to intersecting polygons
+// not crucial since no function passes in a non-null bbox anymore since
+// we do client side polygon intersections
+public function getAreasJSON($bbox=NULL) {
+  $json = array();
+
+  try {
+    $query = "SELECT * from area";
+    if ($bbox) {
+      $query = "SELECT * FROM area WHERE st_contains(ST_MakePolygon(ST_GeomFromText(" . $bbox . ", 4326)), ST_SetSRID(ST_MakePoint(area.longitude, area.latitude), 4326));";
+    }
+    $areas = $this->getPermittedAreasWithQuery($query);
+    $plot_attributes = $this->getAttributesForAreas($areas, "plot_attributes");
+
+    $json["areas"] = [];
+    foreach ($areas as $area) {
+      $unavco_name = $area->unavco_name;
+      $project_name = $area->project_name;
+
+      $currentArea = [];
+      $currentArea["properties"]["unavco_name"] = $unavco_name;
+      $currentArea["properties"]["project_name"] = $project_name;
+      $currentArea["type"] = "Feature";
+      $currentArea["geometry"]["type"] = "Point";
+      $currentArea["geometry"]["coordinates"] = [floatval($area->longitude), floatval($area->latitude)];
+
+      $currentArea["properties"]["num_chunks"] = $area->numchunks;
+      $currentArea["properties"]["country"] = $area->country;
+      $currentArea["properties"]["attributekeys"] = $this->arrayFormatter->postgresToPHPArray($area->attributekeys);
+      $currentArea["properties"]["attributevalues"] = $this->arrayFormatter->postgresToPHPArray($area->attributevalues);
+      $currentArea["properties"]["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($area->decimaldates);
+      $currentArea["properties"]["string_dates"] = $this->arrayFormatter->postgresToPHPArray($area->stringdates);
+      $currentArea["properties"]["region"] = $area->region;
+
+      $bindings = [$area->id];
+
+      if (isset($extra_attributes[$area->id])) {
+        $currentArea["properties"]["extra_attributes"] = $extra_attributes[$area->id];
+      } else {
+        $currentArea["properties"]["extra_attributes"] = NULL;
+      }
+
+      if (isset($plot_attributes[$area->id])) {
+        $currentArea["properties"]["plot_attributes"] = $plot_attributes[$area->id]["plotAttributes"];
+      } else {
+        $currentArea["properties"]["plot_attributes"] = NULL;
+      }
+
+      array_push($json["areas"], $currentArea);
     }
 
     return response()->json($json);

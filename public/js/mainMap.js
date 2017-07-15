@@ -965,7 +965,10 @@ function MapController(loadJSONFunc) {
     };
 
     this.addMapToPage = function(containerID) {
-        var startingOptions = urlOptions.startingView;
+        var startingOptions = null;
+        if (urlOptions) {
+            startingOptions = urlOptions.startingView;
+        }
         var startingCoords = this.startingCoords;
         var startingZoom = this.startingZoom;
         try {
@@ -991,6 +994,9 @@ function MapController(loadJSONFunc) {
             this.selector.prepareEventListeners();
             this.loadAreaMarkers(function(areaFeatures) {
                 this.allAreaFeatures = areaFeatures;
+                if (!urlOptions) {
+                    return;
+                }
                 var options = urlOptions.startingDatasetOptions;
                 if (options.startDataset) {
                     for (var i = 0; i < areaFeatures.length; i++) {
