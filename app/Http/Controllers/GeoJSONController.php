@@ -104,20 +104,19 @@ class GeoJSONController extends Controller {
             $json["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($decimal_dates);
             $json["string_dates"] = $this->arrayFormatter->postgresToPHPArray($string_dates);
             $query = "WITH points(point) AS (VALUES";
+            $preparedValues = [];
 
             for ($i = 0; $i < $pointsArrayLen - 1; $i++) {
                 $curPointNum = $pointsArray[$i];
-
-                $query = $query . "(" . $curPointNum . "),";
+                $query = $query . "(?),";
+                array_push($preparedValues, $curPointNum);
             }
 
             // add last ANY values without comma
             $curPointNum = $pointsArray[$i];
             $query = $query . '(' . $curPointNum . ')) SELECT *, st_astext(wkb_geometry) from "' . $area . '" INNER JOIN points p ON ("' . $area . '".p = p.point) ORDER BY p ASC';
 
-            // echo $fullQuery;
-            // echo $query;
-            $points = DB::select($query);
+            $points = DB::select(DB::raw($query), $preparedValues);
 
             foreach ($points as $point) {
                 $displacements = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
@@ -132,16 +131,18 @@ class GeoJSONController extends Controller {
 
     private function getAttributesForAreas($areas, $table) {
         $sql = "SELECT * FROM " . $table;
+        $preparedValues = [];
         if ($areas) {
             $sql .= " WHERE area_id IN(";
             foreach ($areas as $areaID => $area) {
-                $sql .= $areaID . ",";
+                $sql .= "?,";
+                array_push($preparedValues, $areaID);
             }
             // replace last comma with )
             $sql[strlen($sql) - 1] = ')';
         }
 
-        $attributes = DB::select($sql);
+        $attributes = DB::select(DB::raw($sql), $preparedValues);
         $attributesDict = [];
 
         foreach ($attributes as $attribute) {
@@ -250,8 +251,8 @@ class GeoJSONController extends Controller {
 
                 $bindings = [$area->id];
 
-                if (isset($extra_attributes[$area->id])) {
-                    $currentArea["properties"]["extra_attributes"] = $extra_attributes[$area->id];
+                if (isset($area->extra_attributes)) {
+                    $currentArea["properties"]["extra_attributes"] = $area->extra_attributes;
                 } else {
                     $currentArea["properties"]["extra_attributes"] = NULL;
                 }

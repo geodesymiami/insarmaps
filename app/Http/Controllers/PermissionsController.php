@@ -42,9 +42,9 @@ class PermissionsController extends Controller {
             $sql = $sql . " AND " . $joinConditions[i];
         }
 
-        $sql = $sql . ") WHERE " . $tableName . "." . "id=" . $userID;
-
-        $permissions = DB::select($sql);
+        $sql = $sql . ") WHERE " . $tableName . "." . "id=?";
+        $preparedValues = [$userID];
+        $permissions = DB::select(DB::raw($sql), $preparedValues);
 
         $userPermissions = [];
 

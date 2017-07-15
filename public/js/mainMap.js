@@ -431,7 +431,7 @@ function MapController(loadJSONFunc) {
         $("#search-form-and-results-minimize-button").click();
 
         // load displacements from server, and then show on graph
-        loadJSONFunc(query, "point", function(response) {
+        loadJSONFunc(query, "/point", function(response) {
             $("#graph-div-maximize-button").click();
 
             var json = JSON.parse(response);
