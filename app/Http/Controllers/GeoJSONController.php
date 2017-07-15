@@ -3,325 +3,320 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
-use App\Http\Requests;
-use DateTime;
+use Auth;
 use DB;
 use Illuminate\Support\Facades\Input;
-use Auth;
 
 class GeoJSONController extends Controller {
-  private $arrayFormatter;
+    private $arrayFormatter;
 
-  public function __construct() {
-    $this->arrayFormatter = new PostgresArrayFormatter();
-  }
-
-  /**
-  * Returns an array containing folder path as a string and number of json files
-  *
-  * @param string $jsonFolderPath
-  * @return array $data - data[0] = jsonFolderPath, data[1] = number of json files
-  */
-  public function getNumJSONFiles($jsonFolderPath) {
-
-    $num_files = 0;
-    $files = scandir($jsonFolderPath);
-    $len = count($files);
-    $pattern = ".json";  // pattern is chunk_<number>.json"
-    $data = [$jsonFolderPath];
-
-    for ($i = 0; $i < $len; $i++) {
-      if (strpos($files[$i], $pattern) !== false) {
-        $num_files++;
-      }
+    public function __construct() {
+        $this->arrayFormatter = new PostgresArrayFormatter();
     }
 
-    array_push($data, $num_files);
-    return $data;
-  }
+    /**
+     * Returns an array containing folder path as a string and number of json files
+     *
+     * @param string $jsonFolderPath
+     * @return array $data - data[0] = jsonFolderPath, data[1] = number of json files
+     */
+    public function getNumJSONFiles($jsonFolderPath) {
 
-  /** @throws Exception */
-  private function jsonDataForPoint($area, $pointNumber) {
-      $json = [];
-      // hard coded until zishi is back
-      $decimal_dates = NULL;
-      $string_dates = NULL;
+        $num_files = 0;
+        $files = scandir($jsonFolderPath);
+        $len = count($files);
+        $pattern = ".json"; // pattern is chunk_<number>.json"
+        $data = [$jsonFolderPath];
 
-      $query = "SELECT decimaldates, stringdates FROM area WHERE unavco_name=?";
-      $dateInfos = DB::select($query, [$area]);
-
-      foreach ($dateInfos as $dateInfo) {
-       $decimal_dates = $dateInfo->decimaldates;
-       $string_dates = $dateInfo->stringdates;
-     }
-
-     $json["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($decimal_dates);
-
-
-     $json["string_dates"] = $this->arrayFormatter->postgresToPHPArray($string_dates);
-
-     $query = 'SELECT *, st_astext(wkb_geometry) from "' . $area . '" where p = ?';
-
-     $points = DB::select($query, [$pointNumber]);
-     foreach ($points as $point) {
-      $json["displacements"] = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
-    }
-
-    return $json;
-  }
-
-  public function getDataForPoint($area, $pointNumber) {
-    try {
-      $json = $this->jsonDataForPoint($area, $pointNumber);
-
-      echo json_encode($json);
-    } catch (\Illuminate\Database\QueryException $e) {
-      echo "Point Not found";
-    }
-  }  
-// TODO: add middlewear to protect against datasets to which user has no permissions. Extremely low priority at this point (7/14).
-public function getPoints() {
-  $points = Input::get("points");
-
-  try {
-    $json = [];    
-
-    $json["displacements"] = [];
-    $decimal_dates = NULL;
-    $string_dates = NULL;
-
-    $parameters = explode("/", $points);
-    $area = $parameters[0];
-    $offset = count($parameters) - 2;
-    $pointsArray = array_slice($parameters, 1, $offset);
-
-    $pointsArrayLen = count($pointsArray);
-    $query = 'SELECT decimaldates, stringdates FROM area WHERE area.unavco_name like ?';
-    $dateInfos = DB::select($query, [$area]);
-
-    foreach ($dateInfos as $dateInfo) {
-     $decimal_dates = $dateInfo->decimaldates;
-     $string_dates = $dateInfo->stringdates;
-   }
-
-   $json["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($decimal_dates);
-   $json["string_dates"] = $this->arrayFormatter->postgresToPHPArray($string_dates);
-   $query = "WITH points(point) AS (VALUES";
-
-   for ($i = 0; $i < $pointsArrayLen - 1; $i++) {       
-    $curPointNum = $pointsArray[$i];
-
-    $query = $query . "(" . $curPointNum . "),"; 
-  }
-
-    // add last ANY values without comma
-  $curPointNum = $pointsArray[$i];
-  $query = $query . '(' . $curPointNum . ')) SELECT *, st_astext(wkb_geometry) from "' . $area . '" INNER JOIN points p ON ("' . $area . '".p = p.point) ORDER BY p ASC';
-
-    // echo $fullQuery;
-  // echo $query;
-  $points = DB::select($query);
-
-  foreach ($points as $point) {
-    $displacements = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
-    array_push($json["displacements"], $displacements);
-  }     
-
-  echo json_encode($json);
-} catch (\Illuminate\Database\QueryException $e) {
-  echo "Error Getting Points";
-}
-}
-
-private function getAttributesForAreas($areas, $table) {
-  $sql = "SELECT * FROM " . $table;
-  if ($areas) {
-    $sql .= " WHERE area_id IN(";
-    foreach ($areas as $areaID => $area) {
-      $sql .= $areaID . ",";
-    }
-    // replace last comma with )
-    $sql[strlen($sql) - 1] = ')';
-  }
-
-  $attributes = DB::select($sql);
-  $attributesDict = [];
-
-  foreach ($attributes as $attribute) {
-    $key = $attribute->attributekey;
-    $value = $attribute->attributevalue;
-
-    $attributesDict[$attribute->area_id][$key] = $value;
-  }
-
-  return $attributesDict;
-}
-
-public function getPermittedAreasWithQuery($query, $preparedValues=NULL) {
-  $areasArray = [];
-  try {
-    $areas = NULL;
-
-    if ($preparedValues) {
-      $areas = DB::select(DB::raw($query), $preparedValues);
-    } else {
-      $areas = DB::select($query);
-    }
-    $permissionController = new PermissionsController();
-    $areasPermissions = $permissionController->getPermissions("area", "area_allowed_permissions", ["area.unavco_name = area_allowed_permissions.area_name"]);
-
-    $userPermissions = NULL;
-
-    // if we aren't logged in, our permission is public
-    if (Auth::guest()) {
-      $userPermissions = ["public"];
-    } else {
-      $userPermissions = $permissionController->getUserPermissions(Auth::id(), "users", "user_permissions", ["users.id = user_permissions.user_id"]);
-      array_push($userPermissions, "public"); // every user must have public permissions
-    }
-
-    if (count($areas) == 0) {
-      return $areas;
-    }
-
-    foreach ($areas as $area) {
-      // do we have info for that area in the DB? if not, we assume it's public
-      $unavco_name = $area->unavco_name;
-      $curAreaPermissions = NULL;
-      if (isset($areasPermissions[$unavco_name])) {
-        $curAreaPermissions = $areasPermissions[$unavco_name];
-      } else {
-        $curAreaPermissions = ["public"];
-      }
-
-      foreach ($curAreaPermissions as $curAreaPermission) {
-        if (in_array($curAreaPermission, $userPermissions)) {
-          $areasArray[$area->id] = $area;
-          continue;
+        for ($i = 0; $i < $len; $i++) {
+            if (strpos($files[$i], $pattern) !== false) {
+                $num_files++;
+            }
         }
-      }
+
+        array_push($data, $num_files);
+        return $data;
     }
 
-    // get all attributes for areas
-    $extraAttributes = $this->getAttributesForAreas($areasArray, "extra_attributes");
-    foreach ($extraAttributes as $areaId => $attributes) {
-      $areasArray[$areaId]->extra_attributes = $attributes;
+    /** @throws Exception */
+    private function jsonDataForPoint($area, $pointNumber) {
+        $json = [];
+        // hard coded until zishi is back
+        $decimal_dates = NULL;
+        $string_dates = NULL;
+
+        $query = "SELECT decimaldates, stringdates FROM area WHERE unavco_name=?";
+        $dateInfos = DB::select($query, [$area]);
+
+        foreach ($dateInfos as $dateInfo) {
+            $decimal_dates = $dateInfo->decimaldates;
+            $string_dates = $dateInfo->stringdates;
+        }
+
+        $json["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($decimal_dates);
+
+        $json["string_dates"] = $this->arrayFormatter->postgresToPHPArray($string_dates);
+
+        $query = 'SELECT *, st_astext(wkb_geometry) from "' . $area . '" where p = ?';
+
+        $points = DB::select($query, [$pointNumber]);
+        foreach ($points as $point) {
+            $json["displacements"] = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
+        }
+
+        return $json;
     }
 
-    return $areasArray;
-  } catch (\Illuminate\Database\QueryException $e) {
-    echo "error getting areas";
-    dd($e);
-  }
-}
+    public function getDataForPoint($area, $pointNumber) {
+        try {
+            $json = $this->jsonDataForPoint($area, $pointNumber);
+
+            echo json_encode($json);
+        } catch (\Illuminate\Database\QueryException $e) {
+            echo "Point Not found";
+        }
+    }
+// TODO: add middlewear to protect against datasets to which user has no permissions. Extremely low priority at this point (7/14).
+    public function getPoints() {
+        $points = Input::get("points");
+
+        try {
+            $json = [];
+
+            $json["displacements"] = [];
+            $decimal_dates = NULL;
+            $string_dates = NULL;
+
+            $parameters = explode("/", $points);
+            $area = $parameters[0];
+            $offset = count($parameters) - 2;
+            $pointsArray = array_slice($parameters, 1, $offset);
+
+            $pointsArrayLen = count($pointsArray);
+            $query = 'SELECT decimaldates, stringdates FROM area WHERE area.unavco_name like ?';
+            $dateInfos = DB::select($query, [$area]);
+
+            foreach ($dateInfos as $dateInfo) {
+                $decimal_dates = $dateInfo->decimaldates;
+                $string_dates = $dateInfo->stringdates;
+            }
+
+            $json["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($decimal_dates);
+            $json["string_dates"] = $this->arrayFormatter->postgresToPHPArray($string_dates);
+            $query = "WITH points(point) AS (VALUES";
+
+            for ($i = 0; $i < $pointsArrayLen - 1; $i++) {
+                $curPointNum = $pointsArray[$i];
+
+                $query = $query . "(" . $curPointNum . "),";
+            }
+
+            // add last ANY values without comma
+            $curPointNum = $pointsArray[$i];
+            $query = $query . '(' . $curPointNum . ')) SELECT *, st_astext(wkb_geometry) from "' . $area . '" INNER JOIN points p ON ("' . $area . '".p = p.point) ORDER BY p ASC';
+
+            // echo $fullQuery;
+            // echo $query;
+            $points = DB::select($query);
+
+            foreach ($points as $point) {
+                $displacements = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
+                array_push($json["displacements"], $displacements);
+            }
+
+            echo json_encode($json);
+        } catch (\Illuminate\Database\QueryException $e) {
+            echo "Error Getting Points";
+        }
+    }
+
+    private function getAttributesForAreas($areas, $table) {
+        $sql = "SELECT * FROM " . $table;
+        if ($areas) {
+            $sql .= " WHERE area_id IN(";
+            foreach ($areas as $areaID => $area) {
+                $sql .= $areaID . ",";
+            }
+            // replace last comma with )
+            $sql[strlen($sql) - 1] = ')';
+        }
+
+        $attributes = DB::select($sql);
+        $attributesDict = [];
+
+        foreach ($attributes as $attribute) {
+            $key = $attribute->attributekey;
+            $value = $attribute->attributevalue;
+
+            $attributesDict[$attribute->area_id][$key] = $value;
+        }
+
+        return $attributesDict;
+    }
+
+    public function getPermittedAreasWithQuery($query, $preparedValues = NULL) {
+        $areasArray = [];
+        try {
+            $areas = NULL;
+
+            if ($preparedValues) {
+                $areas = DB::select(DB::raw($query), $preparedValues);
+            } else {
+                $areas = DB::select($query);
+            }
+            $permissionController = new PermissionsController();
+            $areasPermissions = $permissionController->getPermissions("area", "area_allowed_permissions", ["area.unavco_name = area_allowed_permissions.area_name"]);
+
+            $userPermissions = NULL;
+
+            // if we aren't logged in, our permission is public
+            if (Auth::guest()) {
+                $userPermissions = ["public"];
+            } else {
+                $userPermissions = $permissionController->getUserPermissions(Auth::id(), "users", "user_permissions", ["users.id = user_permissions.user_id"]);
+                array_push($userPermissions, "public"); // every user must have public permissions
+            }
+
+            if (count($areas) == 0) {
+                return $areas;
+            }
+
+            foreach ($areas as $area) {
+                // do we have info for that area in the DB? if not, we assume it's public
+                $unavco_name = $area->unavco_name;
+                $curAreaPermissions = NULL;
+                if (isset($areasPermissions[$unavco_name])) {
+                    $curAreaPermissions = $areasPermissions[$unavco_name];
+                } else {
+                    $curAreaPermissions = ["public"];
+                }
+
+                foreach ($curAreaPermissions as $curAreaPermission) {
+                    if (in_array($curAreaPermission, $userPermissions)) {
+                        $areasArray[$area->id] = $area;
+                        continue;
+                    }
+                }
+            }
+
+            // get all attributes for areas
+            $extraAttributes = $this->getAttributesForAreas($areasArray, "extra_attributes");
+            foreach ($extraAttributes as $areaId => $attributes) {
+                $areasArray[$areaId]->extra_attributes = $attributes;
+            }
+
+            return $areasArray;
+        } catch (\Illuminate\Database\QueryException $e) {
+            echo "error getting areas";
+            dd($e);
+        }
+    }
 
 // TODO: the below bbox code should be changed to intersecting polygons
-// not crucial since no function passes in a non-null bbox anymore since
-// we do client side polygon intersections
-public function getAreasJSON($bbox=NULL) {
-  $json = array();
+    // not crucial since no function passes in a non-null bbox anymore since
+    // we do client side polygon intersections
+    public function getAreasJSON($bbox = NULL) {
+        $json = array();
 
-  try {
-    $query = "SELECT * from area";
-    $preparedValues = NULL;
-    if ($bbox) {
-      $query = "SELECT * FROM area WHERE ST_Contains(ST_MakePolygon(ST_GeomFromText(:bbox, 4326)), ST_SetSRID(ST_MakePoint(area.longitude, area.latitude), 4326));";
-      $preparedValues = ["bbox" => $bbox];
+        try {
+            $query = "SELECT * from area";
+            $preparedValues = NULL;
+            if ($bbox) {
+                $query = "SELECT * FROM area WHERE ST_Contains(ST_MakePolygon(ST_GeomFromText(:bbox, 4326)), ST_SetSRID(ST_MakePoint(area.longitude, area.latitude), 4326));";
+                $preparedValues = ["bbox" => $bbox];
+            }
+            $areas = $this->getPermittedAreasWithQuery($query, $preparedValues);
+            $plot_attributes = $this->getAttributesForAreas($areas, "plot_attributes");
+
+            $json["areas"] = [];
+            foreach ($areas as $area) {
+                $unavco_name = $area->unavco_name;
+                $project_name = $area->project_name;
+
+                $currentArea = [];
+                $currentArea["properties"]["unavco_name"] = $unavco_name;
+                $currentArea["properties"]["project_name"] = $project_name;
+                $currentArea["type"] = "Feature";
+                $currentArea["geometry"]["type"] = "Point";
+                $currentArea["geometry"]["coordinates"] = [floatval($area->longitude), floatval($area->latitude)];
+
+                $currentArea["properties"]["num_chunks"] = $area->numchunks;
+                $currentArea["properties"]["country"] = $area->country;
+                $currentArea["properties"]["attributekeys"] = $this->arrayFormatter->postgresToPHPArray($area->attributekeys);
+                $currentArea["properties"]["attributevalues"] = $this->arrayFormatter->postgresToPHPArray($area->attributevalues);
+                $currentArea["properties"]["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($area->decimaldates);
+                $currentArea["properties"]["string_dates"] = $this->arrayFormatter->postgresToPHPArray($area->stringdates);
+                $currentArea["properties"]["region"] = $area->region;
+
+                $bindings = [$area->id];
+
+                if (isset($extra_attributes[$area->id])) {
+                    $currentArea["properties"]["extra_attributes"] = $extra_attributes[$area->id];
+                } else {
+                    $currentArea["properties"]["extra_attributes"] = NULL;
+                }
+
+                if (isset($plot_attributes[$area->id])) {
+                    $currentArea["properties"]["plot_attributes"] = $plot_attributes[$area->id]["plotAttributes"];
+                } else {
+                    $currentArea["properties"]["plot_attributes"] = NULL;
+                }
+
+                array_push($json["areas"], $currentArea);
+            }
+
+            return response()->json($json);
+        } catch (\Illuminate\Database\QueryException $e) {
+            echo "error getting areas";
+        }
     }
-    $areas = $this->getPermittedAreasWithQuery($query, $preparedValues);
-    $plot_attributes = $this->getAttributesForAreas($areas, "plot_attributes");
 
-    $json["areas"] = [];
-    foreach ($areas as $area) {
-      $unavco_name = $area->unavco_name;
-      $project_name = $area->project_name;
+    public function pointDataToTextFile($area, $pointNumber) {
+        try {
+            $json = $this->jsonDataForPoint($area, $pointNumber);
+            $filePath = storage_path() . "/" . $area . ".txt";
+            $textFile = fopen($filePath, "w") or die("failed");
 
-      $currentArea = [];
-      $currentArea["properties"]["unavco_name"] = $unavco_name;
-      $currentArea["properties"]["project_name"] = $project_name;
-      $currentArea["type"] = "Feature";
-      $currentArea["geometry"]["type"] = "Point";
-      $currentArea["geometry"]["coordinates"] = [floatval($area->longitude), floatval($area->latitude)];
+            $dates = $json["string_dates"];
+            $displacements = $json["displacements"];
+            $datesLen = count($dates);
 
-      $currentArea["properties"]["num_chunks"] = $area->numchunks;
-      $currentArea["properties"]["country"] = $area->country;
-      $currentArea["properties"]["attributekeys"] = $this->arrayFormatter->postgresToPHPArray($area->attributekeys);
-      $currentArea["properties"]["attributevalues"] = $this->arrayFormatter->postgresToPHPArray($area->attributevalues);
-      $currentArea["properties"]["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($area->decimaldates);
-      $currentArea["properties"]["string_dates"] = $this->arrayFormatter->postgresToPHPArray($area->stringdates);
-      $currentArea["properties"]["region"] = $area->region;
+            $lineToWrite = "";
 
-      $bindings = [$area->id];
+            for ($i = 0; $i < $datesLen; $i++) {
+                $lineToWrite .= $dates[$i] . "   " . $displacements[$i] . "\n";
+            }
 
-      if (isset($extra_attributes[$area->id])) {
-        $currentArea["properties"]["extra_attributes"] = $extra_attributes[$area->id];
-      } else {
-        $currentArea["properties"]["extra_attributes"] = NULL;
-      }
+            fwrite($textFile, $lineToWrite);
 
-      if (isset($plot_attributes[$area->id])) {
-        $currentArea["properties"]["plot_attributes"] = $plot_attributes[$area->id]["plotAttributes"];
-      } else {
-        $currentArea["properties"]["plot_attributes"] = NULL;
-      }
+            $response = response()->download($filePath)->deleteFileAfterSend(true);
 
-      array_push($json["areas"], $currentArea);
+            fclose($textFile);
+
+            return $response;
+        } catch (\Illuminate\Database\QueryException $e) {
+            echo "Error getting point data for text file";
+
+            return NULL;
+        }
     }
 
-    return response()->json($json);
-  } catch (\Illuminate\Database\QueryException $e) {
-    echo "error getting areas";
-  }
-}
+    // how to get points in polygon for webservices:
+    /*
+Assume we have lat, long; delta = 0.0001 but can be refined later
+Polygon we want: 131.20 33.43, 131.20 33.44, 131.21 33.44, 131.21 33.43, 131.20 33.43
 
-  public function pointDataToTextFile($area, $pointNumber) {
-    try {
-      $json = $this->jsonDataForPoint($area, $pointNumber);
-      $filePath = storage_path() . "/" . $area . ".txt";
-      $textFile = fopen($filePath, "w") or die("failed");
-
-      $dates = $json["string_dates"];
-      $displacements = $json["displacements"];
-      $datesLen = count($dates);
-
-      $lineToWrite = "";
-
-      for ($i = 0; $i < $datesLen; $i++) {
-        $lineToWrite .= $dates[$i] . "   " . $displacements[$i] . "\n";
-      }
-
-      fwrite($textFile, $lineToWrite);
-
-      $response = response()->download($filePath)->deleteFileAfterSend(true);
-
-      fclose($textFile);
-
-      return $response;
-    } catch (\Illuminate\Database\QueryException $e) {
-      echo "Error getting point data for text file";
-
-      return NULL;
-    }
-  }
-
-  // how to get points in polygon for webservices:
-  /*
-  Assume we have lat, long; delta = 0.0001 but can be refined later
-  Polygon we want: 131.20 33.43, 131.20 33.44, 131.21 33.44, 131.21 33.43, 131.20 33.43
-
-  Query with hardcoded lat and long and delta:
-  SELECT p, wkb_geometry AS lat, ST_Y(wkb_geometry) AS long
+Query with hardcoded lat and long and delta:
+SELECT p, wkb_geometry AS lat, ST_Y(wkb_geometry) AS long
 FROM alos_sm_422_650_20070106_20110117
 WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING(131.20 33.43, 131.20 33.44, 131.21 33.44, 131.21 33.43, 131.20 33.43)', 4326)), wkb_geometry);
 
-  Order of coordinates we need for general algorithm:
-  131.20 33.43, (lat - delta, long - delta)
-  131.20 33.44, (lat + delta, long - delta)
-  131.21 33.44, (lat + delta, long + delta)
-  131.21 33.43, (lat - delta, long + delta)
-  131.20 33.43  (lat - delta, long - delta)
+Order of coordinates we need for general algorithm:
+131.20 33.43, (lat - delta, long - delta)
+131.20 33.44, (lat + delta, long - delta)
+131.21 33.44, (lat + delta, long + delta)
+131.21 33.43, (lat - delta, long + delta)
+131.20 33.43  (lat - delta, long - delta)
 
-  */
+ */
 }
