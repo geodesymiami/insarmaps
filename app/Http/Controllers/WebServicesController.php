@@ -414,30 +414,38 @@ class WebServicesController extends Controller
       $queryConditions = [];
       $controller = new GeoJSONController();
       $query = "SELECT id, unavco_name FROM area INNER JOIN (select t1" . ".area_id FROM ";
+      $preparedValues = [];
 
       if (isset($attributes->satellite) && strlen($attributes->satellite) > 0) {
-        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='mission' AND attributevalue='" . $attributes->satellite . "')");
+        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='mission' AND attributevalue=?)");
+        array_push($preparedValues, $attributes->satellite);
       }
 
       if (isset($attributes->mode) && strlen($attributes->mode) > 0) {
-        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='beam_mode' AND attributevalue='" . $attributes->mode . "')");
+        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='beam_mode' AND attributevalue=?)");
+        array_push($preparedValues, $attributes->mode);
       }
 
       if (isset($attributes->relativeOrbit) && strlen($attributes->relativeOrbit) > 0) {
-        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='relative_orbit' AND attributevalue='" . $attributes->relativeOrbit . "')");
+        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='relative_orbit' AND attributevalue=?)");
+        array_push($preparedValues, $attributes->relativeOrbit);
       }
 
       if (isset($attributes->firstFrame) && strlen($attributes->firstFrame) > 0) {
-        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='first_frame' AND attributevalue='" . $attributes->firstFrame . "')");
+        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='first_frame' AND attributevalue=?)");
+        array_push($preparedValues, $attributes->firstFrame);
       }
 
       if (isset($attributes->flightDirection) && strlen($attributes->flightDirection) > 0) {
-        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='flight_direction' AND attributevalue='" . $attributes->flightDirection . "')");
+        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='flight_direction' AND attributevalue=?)");
+        array_push($preparedValues, $attributes->flightDirection);
       }
 
       // QUERY 2A: if user inputted bounding box option, check which datasets have points in the bounding box
       if ($attributes->box) {
-        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='scene_footprint' AND ST_Intersects(ST_MakePolygon(ST_GeomFromText('" . $attributes->box . "', 4326)), ST_GeomFromText(attributevalue, 4326)))");
+        array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='scene_footprint' AND ST_Intersects(ST_MakePolygon(ST_GeomFromText(?, 4326)), ST_GeomFromText(attributevalue, 4326)))");
+
+        array_push($preparedValues, $attributes->box);
       }
 
       if (count($queryConditions) == 1) {
@@ -451,7 +459,8 @@ class WebServicesController extends Controller
         }
       }
       $query = $query . ") result ON area.id = result.area_id;";
-      $areas = $controller->getPermittedAreasWithQuery($query);
+      // dd($query);
+      $areas = $controller->getPermittedAreasWithQuery($query, $preparedValues);
 
       return $areas;
     }
@@ -477,14 +486,17 @@ class WebServicesController extends Controller
       $controller = new GeoJSONController();
       $areas = $controller->getPermittedAreasWithQuery("SELECT * FROM area");
       $query = "";
+      $preparedValues = [];
       foreach ($areas as $areaID => $area) {
         // can also do a select from area like so: (SELECT (SELECT unavco_name FROM area WHERE unavco_name='" . $area->unavco_name . "') as unavco_name, p ..., etc. But, why go to area table if we have unavco_name already from previous query, so let's insert it by simple php concatenation
-        $query .= "(SELECT CAST ((SELECT '" . $area->unavco_name . "') as varchar) AS unavco_name, p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM \"" . $area->unavco_name . "\" WHERE st_contains(ST_MakePolygon(ST_GeomFromText('LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")', 4326)), wkb_geometry)) UNION ";
+        $query .= "(SELECT CAST ((SELECT '" . $area->unavco_name . "') as varchar) AS unavco_name, p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM \"" . $area->unavco_name . "\" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry)) UNION ";
+        $lineString = "LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")";
+        array_push($preparedValues, $lineString);
       }
       // take out last union ( and add )
       $query = substr($query, 0, strlen($query) - 7);
       $query[strlen($query) - 1] = ')';
-      $points = DB::select(DB::raw($query));
+      $points = DB::select(DB::raw($query), $preparedValues);
 
       $groupedPoints = [];
       // gather all points grouped by datasets

@@ -159,10 +159,16 @@ private function getAttributesForAreas($areas, $table) {
   return $attributesDict;
 }
 
-public function getPermittedAreasWithQuery($query) {
+public function getPermittedAreasWithQuery($query, $preparedValues=NULL) {
   $areasArray = [];
   try {
-    $areas = DB::select($query);
+    $areas = NULL;
+
+    if ($preparedValues) {
+      $areas = DB::select(DB::raw($query), $preparedValues);
+    } else {
+      $areas = DB::select($query);
+    }
     $permissionController = new PermissionsController();
     $areasPermissions = $permissionController->getPermissions("area", "area_allowed_permissions", ["area.unavco_name = area_allowed_permissions.area_name"]);
 
@@ -207,6 +213,7 @@ public function getPermittedAreasWithQuery($query) {
     return $areasArray;
   } catch (\Illuminate\Database\QueryException $e) {
     echo "error getting areas";
+    dd($e);
   }
 }
 
@@ -218,10 +225,12 @@ public function getAreasJSON($bbox=NULL) {
 
   try {
     $query = "SELECT * from area";
+    $preparedValues = NULL;
     if ($bbox) {
-      $query = "SELECT * FROM area WHERE st_contains(ST_MakePolygon(ST_GeomFromText(" . $bbox . ", 4326)), ST_SetSRID(ST_MakePoint(area.longitude, area.latitude), 4326));";
+      $query = "SELECT * FROM area WHERE ST_Contains(ST_MakePolygon(ST_GeomFromText(:bbox, 4326)), ST_SetSRID(ST_MakePoint(area.longitude, area.latitude), 4326));";
+      $preparedValues = ["bbox" => $bbox];
     }
-    $areas = $this->getPermittedAreasWithQuery($query);
+    $areas = $this->getPermittedAreasWithQuery($query, $preparedValues);
     $plot_attributes = $this->getAttributesForAreas($areas, "plot_attributes");
 
     $json["areas"] = [];
