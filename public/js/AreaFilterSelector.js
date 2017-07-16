@@ -34,7 +34,7 @@ function setUpAreaFilterSelector() {
 
                 myMap.removeAreaMarkers();
                 var exclude = currentArea ? [currentArea.properties.unavco_name] : null
-                myMap.addSwathsFromJSON(json, exclude, true);
+                myMap.addSwathsFromJSON(json, exclude, true, false);
                 this.lastAjaxRequest = null;
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -66,7 +66,7 @@ function setUpAreaFilterSelector() {
             };
             var filter = currentArea ? [currentArea.properties.unavco_name] : null;
 
-            this.map.addSwathsFromJSON(json, filter, populateTable);
+            this.map.addSwathsFromJSON(json, filter, populateTable, false);
             if (currentArea) {
                 this.map.areaMarkerLayer.setAreaRowHighlighted(currentArea.properties.unavco_name);
             }

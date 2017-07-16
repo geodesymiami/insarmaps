@@ -509,24 +509,29 @@ function MapController(loadJSONFunc) {
     };
 
     this.getSubsetFeatures = function(feature) {
-        var attributesController = new AreaAttributesController(this, feature);
-
-        // if we have data_footprint, then show all data footprints associated
-        // with this area's scene_footprint
-        var scene_footprint = attributesController.getAttribute("scene_footprint");
-        var subsetFeatures = this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint];
+        var subsetFeatures = this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[this.getAreaID(feature)];
 
         return subsetFeatures;
     };
 
+    this.getAreaID = function(area) {
+        var attributesController = new AreaAttributesController(this, area);
+        var attributes = attributesController.getAllAttributes();
+
+        var areaID = attributes.mission + attributes.relative_orbit + attributes.flight_direction + (attributes.first_frame ? attributes.first_frame : attributes.frame);
+
+        return areaID;
+    };
+
     this.addSubsetSwaths = function(feature, populateSearchTable) {
         var subsetFeatures = this.getSubsetFeatures(feature);
+
         if (subsetFeatures) {
             subsetFeatures = subsetFeatures.slice(0); // clone it to prevent infinite loop when we add to the hashmap
             var json = {
                 "areas": subsetFeatures
             };
-            this.addSwathsFromJSON(json, null, populateSearchTable);
+            this.addSwathsFromJSON(json, null, populateSearchTable, true);
         }
     };
 
@@ -782,7 +787,7 @@ function MapController(loadJSONFunc) {
         return lineStringGeoJSON;
     };
 
-    this.addSwathsFromJSON = function(json, toExclude, populateSearchTable) {
+    this.addSwathsFromJSON = function(json, toExclude, populateSearchTable, addAllSubsets) {
         var areaMarker = {
             type: "geojson",
             cluster: false,
@@ -796,7 +801,7 @@ function MapController(loadJSONFunc) {
 
         this.areaMarkerLayer.emptyLayers();
         // clear the map so we can add new keys and values to it
-        this.areaMarkerLayer.mapSceneAndDataFootprints = {};
+        this.areaMarkerLayer.mapAreaIDsWithFeatureObjects = {};
 
         for (var i = 0; i < json.areas.length; i++) {
             var area = json.areas[i];
@@ -840,6 +845,8 @@ function MapController(loadJSONFunc) {
             };
 
             var siblingAlreadyThere = false;
+            var areaID = this.getAreaID(area);
+
             if (attributesController.areaHasAttribute("data_footprint")) {
                 var data_footprint = attributesController.getAttribute("data_footprint");
                 // make the scene footprint the previous data_footprint and delete the data_footprint
@@ -847,15 +854,15 @@ function MapController(loadJSONFunc) {
                 featureClone.properties.extra_attributes.scene_footprint = data_footprint;
                 featureClone.properties.extra_attributes.data_footprint = null;
 
-                if (!this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint]) {
-                    this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint] = [featureClone];
+                if (!this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID]) {
+                    this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID] = [featureClone];
                 } else {
                     siblingAlreadyThere = true;
-                    this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint].push(featureClone);
+                    this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID].push(featureClone);
                 }
             }
 
-            if (!siblingAlreadyThere) {
+            if (!siblingAlreadyThere || addAllSubsets) {
                 features.push(feature);
 
                 var swathWidth = 3;
@@ -898,7 +905,7 @@ function MapController(loadJSONFunc) {
                     this.areas = json;
                 }
 
-                var features = this.addSwathsFromJSON(json, toExclude, true);
+                var features = this.addSwathsFromJSON(json, toExclude, true, false);
 
                 if (after) {
                     after(features);

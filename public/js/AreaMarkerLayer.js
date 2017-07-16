@@ -5,7 +5,7 @@ function AreaMarkerLayer(map) {
     this.modifiedLayers = [];
     this.map = map;
 
-    this.mapSceneAndDataFootprints = {};
+    this.mapAreaIDsWithFeatureObjects = {};
 
     this.addSwath = function(swath) {
         this.swaths.push(swath);
