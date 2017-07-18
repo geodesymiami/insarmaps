@@ -5,7 +5,6 @@ var regressionToggleButton = null;
 var detrendToggleButton = null;
 var topGraphToggleButton = null;
 var bottomGraphToggleButton = null;
-var contourToggleButton = null;
 var gpsStationsToggleButton = null;
 var midasStationsToggleButton = null;
 var recentDatasetsToggleButton = null;
@@ -339,7 +338,7 @@ function setupToggleButtons() {
     /*TOGGLE BUTTON*/
     // TODO: the onclick callbacks are screaming to have the toggle state
     // passed into them...
-    overlayToggleButton = new ToggleButton("overlay-toggle-button", "overlay-options-toggles", "Data overlay");
+    overlayToggleButton = new ToggleButton("overlay-toggle-button", "overlay-options-toggles", "Insar Timeseries");
     overlayToggleButton.onclick(function() {
         // on? add layers, otherwise remove them
         if (overlayToggleButton.toggleState == ToggleStates.ON) {
@@ -413,15 +412,6 @@ function setupToggleButtons() {
             topGraphToggleButton.set("off");
         } else {
             myMap.graphsController.selectedGraph = "Top Graph";
-        }
-    });
-
-    contourToggleButton = new ToggleButton("contour-toggle-button", "overlay-options-toggles", "Contour Lines");
-    contourToggleButton.onclick(function() {
-        if (contourToggleButton.toggleState == ToggleStates.ON) {
-            myMap.addContourLines();
-        } else {
-            myMap.removeContourLines();
         }
     });
 
@@ -980,6 +970,18 @@ $(window).on("load", function() {
         } else {
             myMap.removeAreaMarkers();
             $(this).attr("data-original-title", "Show swaths");
+            $(this).addClass("toggled");
+        }
+    });
+
+    $("#contour-toggle-button").on("click", function() {
+        if ($(this).hasClass("toggled")) {
+            myMap.removeContourLines();
+            $(this).attr("data-original-title", "Add contour lines");
+            $(this).removeClass("toggled");
+        } else {
+            myMap.addContourLines();
+            $(this).attr("data-original-title", "Remove contour lines");
             $(this).addClass("toggled");
         }
     });

@@ -371,7 +371,7 @@ div.menu {
     top: 10px;
     left: 0px;
     z-index: 99;
-    height: 50px;
+    max-width: 80%;
 }
 
 #top-map-buttons > * {

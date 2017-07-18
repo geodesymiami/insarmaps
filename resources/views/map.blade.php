@@ -128,6 +128,11 @@
                     <img src="/img/swathIcon.png" alt="swathIcon.png" style="width: 20px; height: 20px">
                 </button>
             </div>
+            <div>
+                <button class="btn btn-primary-outline map-button no-padding" data-toggle="tooltip" data-placement="right" title="Add contour lines" id="contour-toggle-button">
+                    <img src="/img/contourIcon.png" alt="contourIcon.png" style="width: 20px; height: 20px">
+                </button>
+            </div>
             <div id="select-layer-button-div">
                 <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="More options" id="select-layer-button">
                     <img src="/img/layerSwitchIcon.png" alt="layerSwitchIcon.png" style="width: 20px; height: 20px">
