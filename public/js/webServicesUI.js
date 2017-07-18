@@ -1,8 +1,39 @@
-function getRootUrl() {
-    return window.location.origin ? window.location.origin + '/' : window.location.protocol + '/' + window.location.host + '/';
+function populateInputsAutocomplete() {
+    $.ajax({
+        url: "/areas",
+        success: function(response) {
+            var features = response.areas;
+            populateAutocompleteFromFeatures("input-satellite", features, "mission");
+            populateAutocompleteFromFeatures("input-relativeOrbit", features, "relative_orbit");
+            populateAutocompleteFromFeatures("input-firstFrame", features, "frame");
+            populateAutocompleteFromFeatures("input-mode", features, "beam_mode");
+            populateAutocompleteFromFeatures("input-flightDirection", features, "flight_direction");
+            $("#input-outputType").autocomplete({
+                minLength: 0,
+                source: ["plot", "dataset", "json"]
+            });
+        }.bind(this),
+        error: function(xhr, ajaxOptions, thrownError) {
+            console.log("failed " + xhr.responseText);
+        }
+    });
+}
+
+function setupAutocompleteInteractivity() {
+    $(".custom-input-dropdown").on("click", function() {
+        if ($(this).hasClass("hide-dropdown")) {
+            $(this).prev("input").autocomplete("search", "");
+            $(this).removeClass("hide-dropdown").addClass("show-dropdown");
+        } else {
+            $(this).prev("input").autocomplete("close");
+            $(this).removeClass("show-dropdown").addClass("hide-dropdown");
+        }
+    });
 }
 
 $(window).on("load", function() {
+    populateInputsAutocomplete();
+    setupAutocompleteInteractivity();
     var outputURL = getRootUrl() + "WebServices?";
     var placeholderURL = outputURL + "longitude=131.67&latitude=32.53&dataset=Alos_SM_72_2970_2980_20070205_20110403&startTime=1990-12-20& endTime=2020-12-20&outputType=plot";
     var html = "Example webservice url: " + getRootUrl() + "WebServices?longitude=131.67&latitude=32.53&satellite=Alos&relativeOrbit=73&firstFrame=2950&mode=SM&flightDirection=D& endTime=2020-12-20&outputType=json"
@@ -32,7 +63,9 @@ $(window).on("load", function() {
             var query = outputURL;
 
             // check required parameters are not empty - if so construct webservice url
+            var isLink = false;
             if (longitude.length > 0 && latitude.length > 0) {
+                isLink = true;
                 query += "longitude=" + longitude + "&latitude=" + latitude;
 
                 // add optional parameters if they exist
@@ -71,7 +104,13 @@ $(window).on("load", function() {
                 query = "Error: please input all required parameters";
             }
 
-            $("#form-webservice-url").val(query);
+            var html = null;
+            if (isLink) {
+                html = "<a target='_blank' href='" + query + "'>" + query + "</a>"
+            } else {
+                html = query;
+            }
+            $("#form-webservice-url").html(html);
         }
     });
 

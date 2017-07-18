@@ -557,8 +557,6 @@ function MapController(loadJSONFunc) {
 
         currentArea = feature;
 
-        // make streets toggle button be only checked one
-        $("#streets").prop("checked", true);
         for (var i = 1; i <= feature.properties.num_chunks; i++) {
             var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
             tileJSON.vector_layers.push(layer);

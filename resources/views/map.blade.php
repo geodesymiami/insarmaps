@@ -3,37 +3,7 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <link rel="stylesheet" href="/css/mainPage.css" />
-    <link rel="stylesheet" href="/css/slideout.css" />
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.css' rel='stylesheet' />
-    <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
-    <script src="https://unpkg.com/terraformer@1.0.7"></script>
-    <script src="https://unpkg.com/terraformer-wkt-parser@1.1.2"></script>
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.3/css/theme.bootstrap.min.css" rel="stylesheet">
-    <script type="text/javascript" src="/js/regression.js"></script>
-    <script type="text/javascript" src="/js/canvasjs.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.3/js/jquery.tablesorter.min.js"></script>
-    <script src="http://code.highcharts.com/stock/highstock.js"></script>
-    <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <script type="text/javascript">
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-    </script>
-    <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js">
-    </script>
-    <!--boostrap-->
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -87,7 +57,7 @@
             <div id="search-form">
                 <!--search bar-->
                 <div id="search-bar">
-                    <div class="input-group custom-input">
+                    <div class="input-group custom-input-container">
                         <!-- <span class="input-group-btn">
                 <button class="btn btn-default" id="search-button" type="button">Search</button>
                 </span> -->
@@ -98,32 +68,32 @@
                     </div>
                 </div>
                 <div id="hidden-search-bars-container">
-                    <div class="form-group custom-input">
+                    <div class="form-group custom-input-container">
                         <input type="text" placeholder="Satellite" id="input-satellite" list="satellites-list" />
                         <div class="custom-input-dropdown hide-dropdown">
                             <div class="caret"></div>
                         </div>
                     </div>
-                    <div class="form-group custom-input">
+                    <div class="form-group custom-input-container">
                         <input type="text" placeholder="Relative Orbit" id="input-relative-orbit" />
                     </div>
-                    <div class="form-group custom-input">
+                    <div class="form-group custom-input-container">
                         <input type="text" placeholder="First Frame" id="input-first-frame" />
                     </div>
-                    <div class="form-group custom-input">
+                    <div class="form-group custom-input-container">
                         <input type="text" placeholder="Mode" id="input-mode" list="modes-list" />
                         <div class="custom-input-dropdown hide-dropdown">
                             <div class="caret"></div>
                         </div>
                         <!-- <datalist id="modes-list"></datalist> -->
                     </div>
-                    <div class="form-group custom-input">
+                    <div class="form-group custom-input-container">
                         <input type="text" placeholder="Flight Direction" id="input-flight-direction" list="flight-direction-list" />
                         <div class="custom-input-dropdown hide-dropdown">
                             <div class="caret"></div>
                         </div>
                     </div>
-                    <div class="form-group custom-input">
+                    <div class="form-group custom-input-container">
                         <div class="overlay-toggle">
                             <label>Last year data</label>
                             <input id="recent-datasets-toggle-button" type="checkbox" />
@@ -562,6 +532,37 @@
     <script type="text/javascript">
     var urlOptions = {!!json_encode($urlOptions) !!};
     </script>
+    <link rel="stylesheet" href="/css/mainPage.css" />
+    <link rel="stylesheet" href="/css/slideout.css" />
+    <link rel="stylesheet" href="/css/autocomplete.css" />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
+    <script src="https://unpkg.com/terraformer@1.0.7"></script>
+    <script src="https://unpkg.com/terraformer-wkt-parser@1.1.2"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet">
+    <script type="text/javascript">
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.3/css/theme.bootstrap.min.css" rel="stylesheet">
+    <script type="text/javascript" src="/js/regression.js"></script>
+    <script type="text/javascript" src="/js/canvasjs.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.3/js/jquery.tablesorter.min.js"></script>
+    <script src="http://code.highcharts.com/stock/highstock.js"></script>
+    <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js">
+    </script>
+    <!--boostrap-->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script type="text/javascript" src="/js/fuse.js"></script>
     <script type="text/javascript" src="/js/helperFunctions.js"></script>
     <script type="text/javascript" src="/js/GraphsController.js"></script>

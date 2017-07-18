@@ -1,0 +1,21 @@
+.input-and-label-container {
+	width: 50%;
+	float: left;
+}
+.custom-input-container {
+	border: none !important
+}
+
+.custom-input:empty:not(:focus):before{
+    content:attr(data-text)
+}
+
+#webservice-explanation-paragraph {
+	margin-bottom: 40px;
+}
+
+#webservice-explanation-paragraph > ul {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}

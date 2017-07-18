@@ -1,6 +1,6 @@
 // TODO: if these two functions too slow, keep a hash map when load area
 // of all possible attributes for speed. this is horribly inefficient now...
-function populateSearchDataList(inputID, areas, attribute) {
+function populateAutocompleteFromFeatures(inputID, areas, attribute) {
     var id = "#" + inputID;
     var $input = $(id);
 
@@ -11,13 +11,13 @@ function populateSearchDataList(inputID, areas, attribute) {
     // when user initially clicks but autocomplete hasn't been initialize. thus,
     // we initialize to empty list when areas is null (on initial page load)
     if (areas) {
-        var attributesController = new AreaAttributesController(myMap, areas[0]);
+        var attributesController = new AreaAttributesController(null, areas[0]);
         for (var i = 0; i < areas.length; i++) {
             attributesController.setArea(areas[i]);
             var fileAttributes = attributesController.getAllAttributes();
             var attributeValue = fileAttributes[attribute];
 
-            if (!attributesSeenAlready[attributeValue]) {
+            if (attributeValue && !attributesSeenAlready[attributeValue]) {
                 attributesSeenAlready[attributeValue] = true;
                 attributes.push(attributeValue);
             }
@@ -31,9 +31,9 @@ function populateSearchDataList(inputID, areas, attribute) {
 }
 
 function populateSearchAutocomplete() {
-    populateSearchDataList("input-satellite", myMap.areaFeatures, "mission");
-    populateSearchDataList("input-mode", myMap.areaFeatures, "beam_mode");
-    populateSearchDataList("input-flight-direction", myMap.areaFeatures, "flight_direction");
+    populateAutocompleteFromFeatures("input-satellite", myMap.areaFeatures, "mission");
+    populateAutocompleteFromFeatures("input-mode", myMap.areaFeatures, "beam_mode");
+    populateAutocompleteFromFeatures("input-flight-direction", myMap.areaFeatures, "flight_direction");
 }
 
 function hideAllAutomcompleteSuggestions() {
