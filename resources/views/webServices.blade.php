@@ -111,7 +111,7 @@
 @section('js-includes')
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
 <script type="text/javascript" src="/js/AreaAttributesController.js"></script>
-<script type="text/javascript" src="/js/search.js"></script>
+<script type="text/javascript" src="/js/Search.js"></script>
 <script type="text/javascript" src="/js/helperFunctions.js"></script>
 <script type="text/javascript" src="/js/webServicesUI.js"></script>
 @endsection @endsection
