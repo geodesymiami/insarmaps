@@ -1396,7 +1396,7 @@ function setupSeismicityGraphsController() {
             var stopsCalculator = new MapboxStopsCalculator();
             var coloringStops = stopsCalculator.getDepthStops(min, max, scaleColors);
 
-            var magCircleSizes = this.map.thirdPartySourcesController.defaultCircleSizes();
+            var magCircleSizes = this.map.thirdPartySourcesController.defaultCircleSizes;
             var stopsCalculator = new MapboxStopsCalculator();
             var magStops = stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
 

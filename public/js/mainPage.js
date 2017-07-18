@@ -1064,5 +1064,20 @@ $(window).on("load", function() {
         changeYear: true,
         dateFormat: "yy-M-d"
     });
+
+    $("#change-seismicity-size-button").on("click", function() {
+        if ($(this).attr("data-original-title") === "Shrink relative scale") {
+            $(this).attr("data-original-title", "Expand relative scale");
+            $(this).html("Expand");
+            myMap.thirdPartySourcesController.resizeSeismicities("shrink");
+        // everything else is expand
+        } else {
+            $(this).attr("data-original-title", "Shrink relative scale");
+            $(this).html("Shrink");
+            myMap.thirdPartySourcesController.resizeSeismicities("expand");
+        }
+
+        myMap.thirdPartySourcesController.populateSeismicityMagnitudeScale();
+    });
     // $("#search-form-results-table").tablesorter();
 });

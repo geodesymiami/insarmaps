@@ -31,7 +31,7 @@ function MapboxStopsCalculator() {
             stops.push(curStop);
         }
 
-        // for large output incremnets not a multiple of output array length, we can get
+        // for large output increments not a multiple of output array length, we can get
         // blue shift, especially for categorical scales. thus, always add the last value to
         // make sure even on these types of scales we get the full gamut of colors. if output
         // increment == 1 for example, it doesn't matter as we full red color at

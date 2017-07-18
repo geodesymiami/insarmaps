@@ -31,16 +31,10 @@ function ThirdPartySourcesController(map) {
         this.USGSEventsURL = url;
     }.bind(this));
 
-    this.defaultCircleSizes = function() {
-        var sizes = [];
+    this.defaultCircleSizes = [1, 2, 4.5, 8, 12.5, 18, 24.5, 32, 40.5, 48.5];
+    this.shrunkCircleSizes = [1.5, 2, 4, 6, 9, 12, 16, 20, 24, 28];
 
-        for (var i = 1; i < 10; i++) {
-            sizes.push(i * i / 2);
-        }
-        return sizes;
-    };
-
-    this.currentSeismicitySizeSteps = this.stopsCalculator.getMagnitudeStops(1, 10, this.defaultCircleSizes());
+    this.currentSeismicitySizeStops = this.stopsCalculator.getMagnitudeStops(1, 11, this.defaultCircleSizes);
 
     this.getLayerOnTopOf = function(layer) {
         for (var i = this.layerOrder.length - 1; i >= 0; i--) {
@@ -486,8 +480,7 @@ function ThirdPartySourcesController(map) {
 
                 var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
-                var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
+                var magStops = this.currentSeismicitySizeStops;
 
                 var layerID = "USGSEarthquake";
                 var before = this.getLayerOnTopOf(layerID);
@@ -579,8 +572,7 @@ function ThirdPartySourcesController(map) {
 
                 var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
-                var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
+                var magStops = this.currentSeismicitySizeStops;
 
                 var layerID = "IGEPNEarthquake";
                 var before = this.getLayerOnTopOf(layerID);
@@ -639,8 +631,7 @@ function ThirdPartySourcesController(map) {
 
                 var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
-                var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
+                var magStops = this.currentSeismicitySizeStops;
 
                 var layerID = "HawaiiReloc";
                 this.map.addSource(layerID, mapboxStationFeatures);
@@ -692,8 +683,7 @@ function ThirdPartySourcesController(map) {
 
                 var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
-                var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
+                var magStops = this.currentSeismicitySizeStops;
 
                 var layerID = "HawaiiReloc";
                 this.map.addSource(layerID, mapboxStationFeatures);
@@ -833,8 +823,7 @@ function ThirdPartySourcesController(map) {
 
                 var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
-                var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
+                var magStops = this.currentSeismicitySizeStops;
 
                 var layerID = "LongValleyReloc";
                 this.map.addSource(layerID, mapboxStationFeatures);
@@ -943,8 +932,7 @@ function ThirdPartySourcesController(map) {
 
                 var colors = this.map.colorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
-                var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(1, 10, magCircleSizes);
+                var magStops = this.currentSeismicitySizeStops;
 
                 var layerID = "USGSEventsEarthquake";
                 this.map.addSource(layerID, mapboxStationFeatures);
@@ -1049,18 +1037,26 @@ function ThirdPartySourcesController(map) {
         return featureViewOptions;
     };
 
-    this.recolorSeismicitiesOn = function(property, stops, type) {
-        this.currentSeismicityColorStops = stops;
-
+    this.modifySeismicitiesPaintProperty = function(paintAttribute, property, stops, type) {
         this.seismicities.forEach(function(layerID) {
             if (this.map.map.getLayer(layerID)) {
-                this.map.map.setPaintProperty(layerID, "circle-color", {
+                this.map.map.setPaintProperty(layerID, paintAttribute, {
                     "property": property,
                     "stops": stops,
                     "type": type
                 });
             }
         }.bind(this));
+    };
+
+    this.recolorSeismicitiesOn = function(property, stops, type) {
+        this.currentSeismicityColorStops = stops;
+        this.modifySeismicitiesPaintProperty("circle-color", property, stops, type);
+    };
+
+    this.resizeSeismicitiesOn = function(property, stops, type) {
+        this.currentSeismicitySizeStops = stops;
+        this.modifySeismicitiesPaintProperty("circle-radius", property, stops, type);
     };
 
     // updates conditions in filter with conditions in withFilter.
@@ -1144,15 +1140,13 @@ function ThirdPartySourcesController(map) {
         var colors = this.map.colorScale.jet_r;
         var min = this.map.colorScale.min;
         var max = this.map.colorScale.max;
-        var type = "exponential";
+        var type = "interval";
         if (selectedColoring === "time") {
             this.map.colorScale.setTitle("Time-colored")
             stops = this.stopsCalculator.getTimeStops(min, max, colors);
-            type = "interval"
         } else if (selectedColoring === "depth") {
             this.map.colorScale.setTitle("Depth-colored");
             stops = this.stopsCalculator.getDepthStops(min, max, colors);
-            type = "interval";
         } else {
             throw new Error("Invalid dropdown selection");
         }
@@ -1160,6 +1154,22 @@ function ThirdPartySourcesController(map) {
         this.currentSeismicityColorStops = stops;
         this.currentSeismicityColoring = selectedColoring;
         this.recolorSeismicitiesOn(selectedColoring, stops, type);
+    };
+
+    this.resizeSeismicities = function(operation) {
+        var magCircleSizes = null;
+        var magCircleSizes = null;
+
+        if (operation === "shrink") {
+            magCircleSizes = this.shrunkCircleSizes;
+        } else if (operation === "expand") {
+            magCircleSizes = this.defaultCircleSizes;
+        } else {
+            throw new Error("Invalid operation selected");
+        }
+
+        var magStops = this.stopsCalculator.getMagnitudeStops(1, 11, magCircleSizes);
+        this.resizeSeismicitiesOn("mag", magStops, "interval");
     };
 
     this.getAllSeismicityFeatures = function() {
@@ -1202,7 +1212,7 @@ function ThirdPartySourcesController(map) {
     this.populateSeismicityMagnitudeScale = function() {
         var html = "";
 
-        this.currentSeismicitySizeSteps.forEach(function(curStop) {
+        this.currentSeismicitySizeStops.forEach(function(curStop) {
             var curMag = curStop[0];
             var curSizeInPixels = curStop[1];
 
@@ -1210,26 +1220,26 @@ function ThirdPartySourcesController(map) {
             // chooses the stop just less than the input
             switch (curMag) {
                 case 3:
-                    html += "<3 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels
-                            + "px; width: " + curSizeInPixels + "px'></div><br>";
+                    html += "<3 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels +
+                        "px; width: " + curSizeInPixels + "px'></div><br>";
                     break;
                 case 4:
-                    html += "3-4 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels
-                            + "px; width: " + curSizeInPixels + "px'></div><br>";
+                    html += "3-4 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels +
+                        "px; width: " + curSizeInPixels + "px'></div><br>";
                     break;
                 case 5:
-                    html += "4-5 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels
-                            + "px; width: " + curSizeInPixels + "px'></div><br>";
+                    html += "4-5 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels +
+                        "px; width: " + curSizeInPixels + "px'></div><br>";
                     break;
                 case 6:
-                    html += ">5 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels
-                            + "px; width: " + curSizeInPixels + "px'></div><br>";
+                    html += ">5 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels +
+                        "px; width: " + curSizeInPixels + "px'></div><br>";
                     break;
                 default:
                     break;
             }
         });
 
-        $("#magnitude-scale").html(html);
+        $("#magnitude-scale-content").html(html);
     };
 }
