@@ -170,46 +170,24 @@ class GeoJSONController extends Controller {
     public function getPermittedAreasWithQuery($query, $preparedValues = NULL) {
         $areasArray = [];
         try {
-            $areas = NULL;
-
-            if ($preparedValues) {
-                $areas = DB::select(DB::raw($query), $preparedValues);
-            } else {
-                $areas = DB::select($query);
-            }
             $permissionController = new PermissionsController();
-            $areasPermissions = $permissionController->getPermissions("area", "area_allowed_permissions", ["area.id = area_allowed_permissions.area_id"]);
-
-            $userPermissions = NULL;
-
-            // if we aren't logged in, our permission is public
-            if (Auth::guest()) {
-                $userPermissions = ["public"];
-            } else {
-                $userPermissions = $permissionController->getUserPermissions(Auth::id(), "users", "user_permissions", ["users.id = user_permissions.user_id"]);
-                array_push($userPermissions, "public"); // every user must have public permissions
+            $areas = NULL;
+            $queryToFilterAreas = $permissionController->getQueryForFindingPermittedAreas(Auth::id());
+            $query .= " WHERE area.id IN " . $queryToFilterAreas["sql"];
+            $allPreparedValues = $queryToFilterAreas["preparedValues"];
+            if ($preparedValues) {
+                array_merge($preparedValues, $allPreparedValues);
             }
+
+            $areas = DB::select(DB::raw($query), $allPreparedValues);
+            dd($areas);
 
             if (count($areas) == 0) {
                 return $areas;
             }
 
             foreach ($areas as $area) {
-                // do we have info for that area in the DB? if not, we assume it's public
-                $areaID = $area->id;
-                $curAreaPermissions = NULL;
-                if (isset($areasPermissions[$areaID])) {
-                    $curAreaPermissions = $areasPermissions[$areaID];
-                } else {
-                    $curAreaPermissions = ["public"];
-                }
-
-                foreach ($curAreaPermissions as $curAreaPermission) {
-                    if (in_array($curAreaPermission, $userPermissions)) {
-                        $areasArray[$area->id] = $area;
-                        continue;
-                    }
-                }
+                $areasArray[$area->id] = $area;
             }
 
             // get all attributes for areas
