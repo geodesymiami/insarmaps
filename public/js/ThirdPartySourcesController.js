@@ -31,7 +31,7 @@ function ThirdPartySourcesController(map) {
         this.USGSEventsURL = url;
     }.bind(this));
 
-    this.defaultCircleSizes = [1, 2, 4.5, 8, 12.5, 18, 24.5, 32, 40.5, 48.5];
+    this.defaultCircleSizes = [1.25, 2, 4.5, 8, 12.5, 18, 24.5, 32, 40.5, 48.5];
     this.shrunkCircleSizes = [1.5, 2, 4, 6, 9, 12, 16, 20, 24, 28];
 
     this.currentSeismicitySizeStops = this.stopsCalculator.getMagnitudeStops(1, 11, this.defaultCircleSizes);

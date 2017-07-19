@@ -16,6 +16,7 @@ class PermissionsController extends Controller {
         }
 
         $sql = $sql . ")";
+        echo ($sql);
         $permissions = DB::select($sql);
         $permissionsDict = [];
 

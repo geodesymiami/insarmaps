@@ -152,7 +152,7 @@ function SearchFormController(container) {
                 $("." + rowClass).css({ cursor: "pointer" });
                 $("." + rowClass).click(function() {
                     if (!currentArea || (subsetFeature.properties.layerID != currentArea.properties.layerID) && !myMap.pointsLoaded()) {
-                        myMap.loadDataSetFromFeature(subsetFeature);
+                        myMap.loadDatasetFromFeature(subsetFeature);
                     }
                 });
             });
@@ -204,7 +204,7 @@ function SearchFormController(container) {
         $("." + rowClass).css({ cursor: "pointer" });
         $("." + rowClass).click(function() {
             if (!currentArea || (area.properties.layerID != currentArea.properties.layerID) && !myMap.pointsLoaded()) {
-                myMap.loadDataSetFromFeature(area);
+                myMap.loadDatasetFromFeature(area);
             }
         });
 

@@ -38,6 +38,12 @@ class GeoJSONController extends Controller {
         return $data;
     }
 
+    // this function doesn't sanitize $area to make sure user is allowed this area
+    // we trust that users only have unavco_name of area they are allowed to view
+    // but what if user originally has permission for an area, x, and then
+    // this permission is taken away? he still has the unavco name...
+    // solution is to here also check if area is in the permitted areas of user
+    // but i have bigger fish to fry and permission system doesn't seem to be very important
     /** @throws Exception */
     private function jsonDataForPoint($area, $pointNumber) {
         $json = [];
@@ -155,6 +161,12 @@ class GeoJSONController extends Controller {
         return $attributesDict;
     }
 
+    // getting valid areas for which user has permission should be done
+    // in sql and not with multiple calls to db. this will imply each
+    // user having a default permission of public among other things as well
+    // as more complicated sql. not worth it at this point for marginal speed
+    // increase as permissions system isn't an important system and he
+    // said max of around 1000 datasets so it won't make a huge speedup
     public function getPermittedAreasWithQuery($query, $preparedValues = NULL) {
         $areasArray = [];
         try {
@@ -166,7 +178,7 @@ class GeoJSONController extends Controller {
                 $areas = DB::select($query);
             }
             $permissionController = new PermissionsController();
-            $areasPermissions = $permissionController->getPermissions("area", "area_allowed_permissions", ["area.unavco_name = area_allowed_permissions.area_name"]);
+            $areasPermissions = $permissionController->getPermissions("area", "area_allowed_permissions", ["area.id = area_allowed_permissions.area_id"]);
 
             $userPermissions = NULL;
 

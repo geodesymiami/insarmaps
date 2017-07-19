@@ -41,10 +41,20 @@ class WebServicesOptions {
         if ($this->startTime !== NULL && $this->endTime !== NULL) {
             $startDate = $this->dateFormatter->verifyDate($this->startTime);
             $endDate = $this->dateFormatter->verifyDate($this->endTime);
-            $interval = $startDate->diff($endDate);
 
-            if ($interval->format("%a") > 0 && $startDate > $endDate) {
-                array_push($errors, "please make sure startTime is a date earlier than endTime");
+            if ($startDate && $endDate) {
+                $interval = $startDate->diff($endDate);
+
+                if ($interval->format("%a") > 0 && $startDate > $endDate) {
+                    array_push($errors, "please make sure startTime is a date earlier than endTime");
+                }
+            } else {
+                if (!$startDate) {
+                    array_push($errors, "startDate isn't a valid date");
+                }
+                if (!$endDate) {
+                    array_push($errors, "endDate isn't a valid date");
+                }
             }
         }
         return $errors;

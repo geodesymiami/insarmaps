@@ -987,15 +987,10 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     display: none;
 }
 
-#toggle-other-bars > div {
+#toggle-other-bars > .caret {
     position: absolute;
     display: block;
     bottom: 50%;
-    left: 50%;
-    -webkit-transform: translateX(-50%);
-    -moz-transform: translateX(-50%);
-    -ms-transform: translateX(-50%);
-    transform: translateX(-50%);
 }
 
 #search-form-and-results-container {

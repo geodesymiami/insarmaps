@@ -528,6 +528,23 @@ function MapController(loadJSONFunc) {
 
         if (subsetFeatures) {
             subsetFeatures = subsetFeatures.slice(0); // clone it to prevent infinite loop when we add to the hashmap
+            var minMax = findMinMaxOfArray(subsetFeatures, function(feature1, feature2) {
+                var unavcoNameFields1 = feature1.properties.unavco_name.split("_").length;
+                var unavcoNameFields2 = feature2.properties.unavco_name.split("_").length;
+
+                return unavcoNameFields1 - unavcoNameFields2;
+            });
+            subsetFeatures.forEach(function(feature) {
+                // ignore smallest, or "master", non-subset feature. this feature will use it's regular
+                // scene_footprint to be added to the map. the others will use their data_footprint. we put
+                // data_footprint of non-master features into scene_footprint since addSwathsFromJSON reads
+                // the scene_footprint.
+                if (feature.properties.unavco_name !== minMax.min.properties.unavco_name) {
+                    var dataFootprint = feature.properties.extra_attributes.data_footprint;
+                    feature.properties.extra_attributes.scene_footprint = dataFootprint;
+                }
+
+            });
             var json = {
                 "areas": subsetFeatures
             };
@@ -535,7 +552,7 @@ function MapController(loadJSONFunc) {
         }
     };
 
-    this.loadDataSetFromFeature = function(feature, initialZoom) {
+    this.loadDatasetFromFeature = function(feature, initialZoom) {
         var tileJSON = {
             "minzoom": 0,
             "maxzoom": 14,
@@ -663,7 +680,7 @@ function MapController(loadJSONFunc) {
 
                 var markerID = feature.properties.layerID;
 
-                this.loadDataSetFromFeature(feature);
+                this.loadDatasetFromFeature(feature);
             }
         }
     };
@@ -849,8 +866,8 @@ function MapController(loadJSONFunc) {
                 var data_footprint = attributesController.getAttribute("data_footprint");
                 // make the scene footprint the previous data_footprint and delete the data_footprint
                 var featureClone = JSON.parse(JSON.stringify(feature));
-                featureClone.properties.extra_attributes.scene_footprint = data_footprint;
-                featureClone.properties.extra_attributes.data_footprint = null;
+                // featureClone.properties.extra_attributes.scene_footprint = data_footprint;
+                // featureClone.properties.extra_attributes.data_footprint = null;
 
                 if (!this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID]) {
                     this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID] = [featureClone];
@@ -1007,7 +1024,7 @@ function MapController(loadJSONFunc) {
                     for (var i = 0; i < areaFeatures.length; i++) {
                         if (areaFeatures[i].properties.unavco_name === options.startDataset) {
                             showLoadingScreen("Loading requested dataset...", null);
-                            this.loadDataSetFromFeature(areaFeatures[i], options.zoom);
+                            this.loadDatasetFromFeature(areaFeatures[i], options.zoom);
                             break;
                         }
                     }

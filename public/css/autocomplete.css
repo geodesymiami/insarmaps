@@ -33,6 +33,20 @@
     cursor: pointer;
 }
 
+.custom-input-dropdown > .caret {
+    position: absolute;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -moz-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+
+.custom-input {
+    height: auto;
+    min-height: 34px;
+}
+
 #recent-datasets-toggle-button {
     width: 13px;
     height: 13px;

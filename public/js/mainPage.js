@@ -348,7 +348,7 @@ function setupToggleButtons() {
             }
 
             $("#overlay-slider").slider("value", 100);
-            myMap.addDataset(myMap.tileJSON);
+            myMap.loadDatasetFromFeature(currentArea);
         } else {
             if (myMap.pointsLoaded()) {
                 $("#overlay-slider").slider("value", 0);
