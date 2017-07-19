@@ -180,7 +180,6 @@ class GeoJSONController extends Controller {
             }
 
             $areas = DB::select(DB::raw($query), $allPreparedValues);
-            dd($areas);
 
             if (count($areas) == 0) {
                 return $areas;
