@@ -16,12 +16,11 @@ class PermissionsController extends Controller {
         }
 
         $sql = $sql . ")";
-        echo ($sql);
         $permissions = DB::select($sql);
         $permissionsDict = [];
 
         foreach ($permissions as $permission) {
-            $curPermissionArea = $permission->area_name;
+            $curPermissionArea = $permission->area_id;
             $curPermission = $permission->permission;
 
             if (empty($permissionsDict[$curPermissionArea])) {

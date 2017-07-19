@@ -196,10 +196,10 @@ class GeoJSONController extends Controller {
 
             foreach ($areas as $area) {
                 // do we have info for that area in the DB? if not, we assume it's public
-                $unavco_name = $area->unavco_name;
+                $areaID = $area->id;
                 $curAreaPermissions = NULL;
-                if (isset($areasPermissions[$unavco_name])) {
-                    $curAreaPermissions = $areasPermissions[$unavco_name];
+                if (isset($areasPermissions[$areaID])) {
+                    $curAreaPermissions = $areasPermissions[$areaID];
                 } else {
                     $curAreaPermissions = ["public"];
                 }
