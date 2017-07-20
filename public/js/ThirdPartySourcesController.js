@@ -1210,7 +1210,8 @@ function ThirdPartySourcesController(map) {
     };
 
     this.populateSeismicityMagnitudeScale = function() {
-        var html = "";
+        var circleHtml = "<ul>";
+        var valuesHtml = "<ul>";
 
         this.currentSeismicitySizeStops.forEach(function(curStop) {
             var curMag = curStop[0];
@@ -1219,27 +1220,39 @@ function ThirdPartySourcesController(map) {
             // the case numbers were chosen like so because mapbox interval coloring
             // chooses the stop just less than the input
             switch (curMag) {
+                case 2:
+                    valuesHtml += "<li><span class='magnitude-scale-value'><2</span></li>";
+                    circleHtml += "<li><div class='magnitude-scale-circle vertically-aligned' style='height: " + curSizeInPixels +
+                        "px; width: " + curSizeInPixels + "px'></div></li>";
+                    break;
                 case 3:
-                    html += "<3 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels +
-                        "px; width: " + curSizeInPixels + "px'></div><br>";
+                    valuesHtml += "<li><span class='magnitude-scale-value'>2-3</span></li>";
+                    circleHtml += "<li><div class='magnitude-scale-circle vertically-aligned' style='height: " + curSizeInPixels +
+                        "px; width: " + curSizeInPixels + "px'></div></li>";
                     break;
                 case 4:
-                    html += "3-4 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels +
-                        "px; width: " + curSizeInPixels + "px'></div><br>";
+                    valuesHtml += "<li><span class='magnitude-scale-value'>3-4</span></li>";
+                    circleHtml += "<li><div class='magnitude-scale-circle vertically-aligned' style='height: " + curSizeInPixels +
+                        "px; width: " + curSizeInPixels + "px'></div></li>";
                     break;
                 case 5:
-                    html += "4-5 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels +
-                        "px; width: " + curSizeInPixels + "px'></div><br>";
+                    valuesHtml += "<li><span class='magnitude-scale-value'>4-5</span></li>";
+                    circleHtml += "<li><div class='magnitude-scale-circle vertically-aligned' style='height: " + curSizeInPixels +
+                        "px; width: " + curSizeInPixels + "px'></div></li>";
                     break;
                 case 6:
-                    html += ">5 <div class='magnitude-scale-circle' style='height: " + curSizeInPixels +
-                        "px; width: " + curSizeInPixels + "px'></div><br>";
+                    valuesHtml += "<li><span class='magnitude-scale-value'>>5</span></li>";
+                    circleHtml += "<li><div class='magnitude-scale-circle vertically-aligned' style='height: " + curSizeInPixels +
+                        "px; width: " + curSizeInPixels + "px'></div></li>";
                     break;
                 default:
                     break;
             }
         });
 
-        $("#magnitude-scale-content").html(html);
+        circleHtml += "</ul>";
+        valuesHtml += "</ul>";
+        $("#magnitude-scale-circles").html(circleHtml);
+        $("#magnitude-scale-values").html(valuesHtml);
     };
 }

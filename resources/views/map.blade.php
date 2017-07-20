@@ -18,7 +18,7 @@
 
 <body>
     <div id="information-div" class="overlay-div">
-        <div id="information-div-contents">
+        <div class="vertically-aligned" id="information-div-contents">
             <p>
                 This website provides InSAR displacement time-series produced by the University of Miami Geodesy Laboratory, which is supported by NASA and the NSF. To identify data sets from published papers, please search for the author's names.
             </p>
@@ -67,7 +67,7 @@
             <div id="search-form">
                 <!--search bar-->
                 <div id="search-bar">
-                    <div class="input-group custom-input-container">
+                    <div class="form-group custom-input-container">
                         <!-- <span class="input-group-btn">
                 <button class="btn btn-default" id="search-button" type="button">Search</button>
                 </span> -->
@@ -77,7 +77,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="hidden-search-bars-container">
+                <div id="hidden-search-bars-container" class="active">
                     <div class="form-group custom-input-container">
                         <input type="text" placeholder="Satellite" id="input-satellite" list="satellites-list" />
                         <div class="custom-input-dropdown hide-dropdown">
@@ -117,9 +117,14 @@
             </div>
             <div id="overlay-options-wrapper">
                 <div id="overlay-options">
-                    Opacity:
+                    <label>Opacity:</label>
                     <div id="overlay-slider"></div>
                 </div>
+            </div>
+            <div>
+                <button class="btn btn-primary-outline map-button no-padding" data-toggle="tooltip" data-placement="right" title="Add contour lines" id="contour-toggle-button">
+                    <img src="/img/contourIcon.png" alt="contourIcon.png" style="width: 20px; height: 20px">
+                </button>
             </div>
             <a class="btn btn-primary-outline" id="reset-button" role="button" href="/">Reset</a>
             <button class="btn btn-primary-outline" id="information-button">About</button>
@@ -136,11 +141,6 @@
             <div>
                 <button class="btn btn-primary-outline map-button no-padding" data-toggle="tooltip" data-placement="right" title="Hide swaths" id="dataset-frames-toggle-button">
                     <img src="/img/swathIcon.png" alt="swathIcon.png" style="width: 20px; height: 20px">
-                </button>
-            </div>
-            <div>
-                <button class="btn btn-primary-outline map-button no-padding" data-toggle="tooltip" data-placement="right" title="Add contour lines" id="contour-toggle-button">
-                    <img src="/img/contourIcon.png" alt="contourIcon.png" style="width: 20px; height: 20px">
                 </button>
             </div>
             <div id="select-layer-button-div">
@@ -218,9 +218,10 @@
             </div>
         </div>
         <div id="magnitude-and-arrow-scale-container">
-            <div class="custom-scale" id="magnitude-scale">
-                <div id="magnitude-scale-content"></div>
-                <button type="button" class="btn btn-primary" data-toggle="tooltip" title="Shrink relative scale" id="change-seismicity-size-button">Shrink</button>
+            <div class="custom-scale" id="magnitude-scale" data-toggle="tooltip" title="Shrink relative scale">
+                <h5>Mag</h5>
+                <div id="magnitude-scale-circles"></div>
+                <div id="magnitude-scale-values"></div>
             </div>
             <!-- <div class="custom-scale" id="arrow-length-scale">
             </div> -->

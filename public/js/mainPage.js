@@ -338,7 +338,7 @@ function setupToggleButtons() {
     /*TOGGLE BUTTON*/
     // TODO: the onclick callbacks are screaming to have the toggle state
     // passed into them...
-    overlayToggleButton = new ToggleButton("overlay-toggle-button", "overlay-options-toggles", "Insar Timeseries");
+    overlayToggleButton = new ToggleButton("overlay-toggle-button", "overlay-options-toggles", "Insar");
     overlayToggleButton.onclick(function() {
         // on? add layers, otherwise remove them
         if (overlayToggleButton.toggleState == ToggleStates.ON) {
@@ -1067,15 +1067,13 @@ $(window).on("load", function() {
         dateFormat: "yy-M-d"
     });
 
-    $("#change-seismicity-size-button").on("click", function() {
+    $("#magnitude-scale").on("click", function() {
         if ($(this).attr("data-original-title") === "Shrink relative scale") {
             $(this).attr("data-original-title", "Expand relative scale");
-            $(this).html("Expand");
             myMap.thirdPartySourcesController.resizeSeismicities("shrink");
         // everything else is expand
         } else {
             $(this).attr("data-original-title", "Shrink relative scale");
-            $(this).html("Shrink");
             myMap.thirdPartySourcesController.resizeSeismicities("expand");
         }
 
