@@ -19,6 +19,7 @@
             <li>startTime should be in yyyy-mm-dd format. Ex: 1990-12-20.</li>
             <li>endTime should be in yyyy-mm-dd format. Ex: 2020-12-20.</li>
             <li>outputType should be json, dataset, or csv.</li>
+            <li>WKT Linestring box should be a valid, WKT Linestring></li>
         </ul>
     </div>
     <!-- TODO: delete webServicesDataset code - should be 4 of them in php, blade, js, and routes -->
@@ -100,8 +101,14 @@
             </div>
         </div>
     </div>
+    <div class="input-and-label-container" id="WKT-input-and-label-container">
+        <label for="input-latitude">WKT LineString Bbox (optional):</label>
+        <div class="input-group custom-input-container">
+            <input type="text" class="form-control" value="LINESTRING(128.49609375 39.436192999314095,129.375 29.075375179558346,149.326171875 29.993002284551075,146.07421875 41.244772343082076,128.49609375 39.436192999314095)" id="input-WKT-Bbox">
+        </div>
+    </div>
     <div class="form-group">
-        webservice url:
+        <label>webservice url:</label>
         <div class="form-control custom-input" id="form-webservice-url"></div>
     </div>
 </div>

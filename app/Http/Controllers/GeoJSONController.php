@@ -229,8 +229,7 @@ class GeoJSONController extends Controller {
 
             return $areasArray;
         } catch (\Illuminate\Database\QueryException $e) {
-            echo "error getting areas";
-            dd($e);
+            return NULL;
         }
     }
 
@@ -289,7 +288,7 @@ class GeoJSONController extends Controller {
 
             return response()->json($json);
         } catch (\Illuminate\Database\QueryException $e) {
-            echo "error getting areas";
+            return response()->json(["error getting areas"]);
         }
     }
 
@@ -317,9 +316,7 @@ class GeoJSONController extends Controller {
 
             return $response;
         } catch (\Illuminate\Database\QueryException $e) {
-            echo "Error getting point data for text file";
-
-            return NULL;
+            return response()->json(["Error getting point data for text file"]);
         }
     }
 

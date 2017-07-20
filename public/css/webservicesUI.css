@@ -2,6 +2,19 @@
 	width: 50%;
 	float: left;
 }
+
+.form-group {
+	float: left;
+}
+
+#WKT-input-and-label-container {
+	width: 100%;
+}
+
+#WKT-input-and-label-container input {
+	width: 100% !important;
+}
+
 .custom-input-container {
 	border: none !important
 }

@@ -51,6 +51,7 @@ function buildURL() {
     var startTime = $("#input-startTime").val();
     var endTime = $("#input-endTime").val();
     var outputType = $("#input-outputType").val();
+    var WKTBbox = $("#input-WKT-Bbox").val();
     var query = outputURL;
 
     // check required parameters are not empty - if so construct webservice url
@@ -90,6 +91,10 @@ function buildURL() {
 
         if (outputType.length > 0) {
             query += "&outputType=" + outputType;
+        }
+
+        if (WKTBbox.length > 0) {
+            query += "&box=" + WKTBbox;
         }
     } else {
         query = "Error: please input all required parameters";

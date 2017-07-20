@@ -591,6 +591,10 @@ class WebServicesController extends Controller {
             $returnValues = $this->getIndividualPointsFromAttributes($options);
         }
 
+        if (!$returnValues) {
+            return response()->json(["An error has occurred"]);
+        }
+
         if (strcasecmp($options->outputType, "json") == 0) {
             $json = [];
             foreach ($returnValues as $areaID => $area) {
