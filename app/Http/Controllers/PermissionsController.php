@@ -6,7 +6,7 @@ use DB;
 
 class PermissionsController extends Controller {
     public function getQueryForFindingPermittedAreas($userID) {
-        $sql = "(SELECT area.id FROM area WHERE not exists (SELECT area_id FROM area_allowed_permissions WHERE area_id = area.id) OR EXISTS (SELECT area_id FROM area_allowed_permissions WHERE area_id = area.id AND permission='public'))";
+        $sql = "(SELECT area.id FROM area WHERE NOT EXISTS (SELECT area_id FROM area_allowed_permissions WHERE area_id = area.id) OR EXISTS (SELECT area_id FROM area_allowed_permissions WHERE area_id = area.id AND permission='public'))";
         $preparedValues = [];
         if ($userID) {
             $sql .= " OR EXISTS (SELECT permission FROM user_permissions WHERE user_id = ? AND permission IN (SELECT permission FROM area_allowed_permissions WHERE area_id = area.id))";
@@ -14,6 +14,7 @@ class PermissionsController extends Controller {
         }
 
         $sql .= ";";
+
         return ["sql" => $sql, "preparedValues" => $preparedValues];
     }
     // get permissions by id

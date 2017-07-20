@@ -10,7 +10,7 @@ function populateInputsAutocomplete() {
             populateAutocompleteFromFeatures("input-flightDirection", features, "flight_direction");
             $("#input-outputType").autocomplete({
                 minLength: 0,
-                source: ["dataset", "json"]
+                source: ["dataset", "json", "csv"]
             });
             setupAutocompleteInteractivity();
         }.bind(this),

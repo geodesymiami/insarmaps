@@ -241,7 +241,7 @@ function setupFeatureSelector() {
                 }
                 console.log("Received points");
                 // console.log(response);
-                var json = JSON.parse(response);
+                var json = response;
                 // if (geoJSONData.features.length != json.displacements.length) {
                 //     console.log("not the same size json is " + json.displacements.length + " while features is " + geoJSONData.features.length);
                 // }

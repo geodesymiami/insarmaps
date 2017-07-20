@@ -38,21 +38,25 @@ class GeoJSONController extends Controller {
         return $data;
     }
 
-    // this function doesn't sanitize $area to make sure user is allowed this area
-    // we trust that users only have unavco_name of area they are allowed to view
-    // but what if user originally has permission for an area, x, and then
-    // this permission is taken away? he still has the unavco name...
-    // solution is to here also check if area is in the permitted areas of user
-    // but i have bigger fish to fry and permission system doesn't seem to be very important
     /** @throws Exception */
-    private function jsonDataForPoint($area, $pointNumber) {
+    public function jsonDataForPoint($area, $pointNumber) {
         $json = [];
         // hard coded until zishi is back
         $decimal_dates = NULL;
         $string_dates = NULL;
 
+        $permissionController = new PermissionsController();
+        $queryToFilterAreas = $permissionController->getQueryForFindingPermittedAreas(Auth::id());
         $query = "SELECT decimaldates, stringdates FROM area WHERE unavco_name=?";
-        $dateInfos = DB::select($query, [$area]);
+        $query .= " AND area.id IN " . $queryToFilterAreas["sql"];
+        $preparedValues = [$area];
+        $preparedValues = array_merge($preparedValues, $queryToFilterAreas["preparedValues"]);
+        $dateInfos = DB::select($query, $preparedValues);
+
+        // no dateinfos means either area wasn't found or user doesn't have permission for this area.
+        if (count($dateInfos) == 0) {
+            return ["Point not found"];
+        }
 
         foreach ($dateInfos as $dateInfo) {
             $decimal_dates = $dateInfo->decimaldates;
@@ -77,9 +81,9 @@ class GeoJSONController extends Controller {
         try {
             $json = $this->jsonDataForPoint($area, $pointNumber);
 
-            echo json_encode($json);
+            return response()->json($json);
         } catch (\Illuminate\Database\QueryException $e) {
-            echo "Point Not found";
+            return response()->json(["Point Not found"]);
         }
     }
 // TODO: add middlewear to protect against datasets to which user has no permissions. Extremely low priority at this point (7/14).
@@ -99,8 +103,18 @@ class GeoJSONController extends Controller {
             $pointsArray = array_slice($parameters, 1, $offset);
 
             $pointsArrayLen = count($pointsArray);
-            $query = 'SELECT decimaldates, stringdates FROM area WHERE area.unavco_name like ?';
-            $dateInfos = DB::select($query, [$area]);
+            $permissionController = new PermissionsController();
+            $queryToFilterAreas = $permissionController->getQueryForFindingPermittedAreas(Auth::id());
+            $query = 'SELECT decimaldates, stringdates FROM area WHERE area.unavco_name LIKE ?';
+            $query .= " AND area.id IN " . $queryToFilterAreas["sql"];
+            $preparedValues = [$area];
+            $preparedValues = array_merge($preparedValues, $queryToFilterAreas["preparedValues"]);
+            $dateInfos = DB::select($query, $preparedValues);
+
+            // no dateinfos means either area wasn't found or user doesn't have permission for this area.
+            if (count($dateInfos) == 0) {
+                return ["Error Getting Points"];
+            }
 
             foreach ($dateInfos as $dateInfo) {
                 $decimal_dates = $dateInfo->decimaldates;
@@ -129,9 +143,9 @@ class GeoJSONController extends Controller {
                 array_push($json["displacements"], $displacements);
             }
 
-            echo json_encode($json);
+            return response()->json($json);
         } catch (\Illuminate\Database\QueryException $e) {
-            echo "Error Getting Points";
+            response()->json(["Error Getting Points"]);
         }
     }
 
@@ -167,16 +181,33 @@ class GeoJSONController extends Controller {
     // as more complicated sql. not worth it at this point for marginal speed
     // increase as permissions system isn't an important system and he
     // said max of around 1000 datasets so it won't make a huge speedup
-    public function getPermittedAreasWithQuery($query, $preparedValues = NULL) {
+    public function getPermittedAreasWithQuery($query, $wheres = NULL, $preparedValues = NULL) {
         $areasArray = [];
+        $queryLen = strlen($query);
+
+        if ($query[$queryLen - 1] == ';') {
+            $query = substr($query, 0, -1);
+        }
         try {
             $permissionController = new PermissionsController();
             $areas = NULL;
             $queryToFilterAreas = $permissionController->getQueryForFindingPermittedAreas(Auth::id());
-            $query .= " WHERE area.id IN " . $queryToFilterAreas["sql"];
+            if ($wheres) {
+                $query .= " WHERE ";
+                foreach ($wheres as $where) {
+                    $query .= $where . " AND ";
+                }
+            }
+
+            if ($wheres && count($wheres) > 0) {
+                $query .= "area.id IN " . $queryToFilterAreas["sql"];
+            } else {
+                $query .= " WHERE area.id IN " . $queryToFilterAreas["sql"];
+            }
+
             $allPreparedValues = $queryToFilterAreas["preparedValues"];
             if ($preparedValues) {
-                array_merge($preparedValues, $allPreparedValues);
+                $allPreparedValues = array_merge($preparedValues, $allPreparedValues);
             }
 
             $areas = DB::select(DB::raw($query), $allPreparedValues);
@@ -191,6 +222,7 @@ class GeoJSONController extends Controller {
 
             // get all attributes for areas
             $extraAttributes = $this->getAttributesForAreas($areasArray, "extra_attributes");
+
             foreach ($extraAttributes as $areaId => $attributes) {
                 $areasArray[$areaId]->extra_attributes = $attributes;
             }
@@ -215,7 +247,7 @@ class GeoJSONController extends Controller {
                 $query = "SELECT * FROM area WHERE ST_Contains(ST_MakePolygon(ST_GeomFromText(:bbox, 4326)), ST_SetSRID(ST_MakePoint(area.longitude, area.latitude), 4326));";
                 $preparedValues = ["bbox" => $bbox];
             }
-            $areas = $this->getPermittedAreasWithQuery($query, $preparedValues);
+            $areas = $this->getPermittedAreasWithQuery($query, NULL, $preparedValues);
             $plot_attributes = $this->getAttributesForAreas($areas, "plot_attributes");
 
             $json["areas"] = [];

@@ -21,6 +21,8 @@ class WebServicesOptions {
     public $box = NULL; // string containing wkt geometry to get datasets bounded in a box
     public $outputType = "json"; // default value is json, other option is dataset
     public $attributeSearch = FALSE; // if user specifies any search parameter except latitude, longitude, or outputType, set to true and adjust SQL
+    public $datasetUnavcoName = NULL; // if user wants to find specific dataset
+    public $pointID = NULL; // if user wants a specific point within a dataset
 
     public function __construct() {
         $this->dateFormatter = new DateFormatter();
@@ -405,6 +407,16 @@ class WebServicesController extends Controller {
                     $options->outputType = $value;
                 }
                 break;
+            case 'dataset':
+                if (strlen($value) > 0) {
+                    $options->datasetUnavcoName = $value;
+                }
+                break;
+            case 'point':
+                if (strlen($value) > 0) {
+                    $options->pointID = $value;
+                }
+                break;
             default:
                 break;
             }
@@ -461,8 +473,8 @@ class WebServicesController extends Controller {
             }
         }
         $query = $query . ") result ON area.id = result.area_id;";
-        // dd($query);
-        $areas = $controller->getPermittedAreasWithQuery($query, $preparedValues);
+
+        $areas = $controller->getPermittedAreasWithQuery($query, NULL, $preparedValues);
 
         return $areas;
     }
@@ -486,6 +498,7 @@ class WebServicesController extends Controller {
         // return data of first point returned by polygon created by (longitude, latitude) and delta
         // key = area id, value = dataset name
         $controller = new GeoJSONController();
+        // can be made faster by doing one query
         $areas = $controller->getPermittedAreasWithQuery("SELECT * FROM area");
         $query = "";
         $preparedValues = [];
@@ -498,6 +511,7 @@ class WebServicesController extends Controller {
         // take out last union ( and add )
         $query = substr($query, 0, strlen($query) - 7);
         $query[strlen($query) - 1] = ')';
+
         $points = DB::select(DB::raw($query), $preparedValues);
 
         $groupedPoints = [];
@@ -511,7 +525,7 @@ class WebServicesController extends Controller {
         }
 
         // if user specified outputType to be dataset names instead of json, return dataset names and their attributes
-        if (strcasecmp($attributes->outputType, "dataset") == 0) {
+        if (strcasecmp($attributes->outputType, "dataset") == 0 || strcasecmp($attributes->outputType, "csv") == 0) {
             $csvArray = [];
             foreach ($areas as $areaID => $area) {
                 // if we have a point from that area, append to csvArray
@@ -552,33 +566,47 @@ class WebServicesController extends Controller {
         }
 
         // if user only specifies dataset and no other attribute, return all dataset names;
-        if ((strcasecmp($options->outputType, "dataset") == 0) && !$options->attributeSearch && $options->longitude == 1000.0 && $options->latitude == 1000.0) {
+        $returnValues = NULL;
+        if ($options->datasetUnavcoName) {
+            // search for point within dataset, otherwise search for info on dataset
             $controller = new GeoJSONController();
-            $areas = $controller->getPermittedAreasWithQuery("SELECT * FROM area");
+            if ($options->pointID) {
+                return $controller->getDataForPoint($options->datasetUnavcoName, $options->pointID);
+            }
+            $returnValues = $controller->getPermittedAreasWithQuery("SELECT * FROM area", ["area.unavco_name LIKE ?"], [$options->datasetUnavcoName]);
 
-            $csv_string = $this->areasToCSV($areas);
-            return response()->json($csv_string);
+        } else if ((strcasecmp($options->outputType, "dataset") == 0) && !$options->attributeSearch && $options->longitude == 1000.0 && $options->latitude == 1000.0) {
+            $controller = new GeoJSONController();
+            $returnValues = $controller->getPermittedAreasWithQuery("SELECT * FROM area");
+        } else if ($options->attributeSearch) {
+            // QUERY 1C: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
+            /*
+            Example url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&mission=Alos&startTime=2009-02-06&endTime=2011-04-03&outputType=json
+
+            Another url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&box=LINESTRING(130.9695%2032.2865,%20130.9695%2032.2875,%20130.9705%2032.2875,%20130.9705%2032.2865,%20130.9695%2032.2865)&mission=Alos&mode=SM&startTime=2009-02-06&endTime=2011-04-03&outputType=dataset
+             */
+            $returnValues = $this->getAreasFromAttributes($options);
+        } else {
+            // otherwise, return individual points
+            $returnValues = $this->getIndividualPointsFromAttributes($options);
         }
 
-        // QUERY 1C: if user inputted optional parameters to search datasets with, then create new query that searches for dataset names based on paramater
-        /*
-        Example url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&mission=Alos&startTime=2009-02-06&endTime=2011-04-03&outputType=json
-
-        Another url: http://homestead.app/WebServices?longitude=130.970&latitude=32.287&box=LINESTRING(130.9695%2032.2865,%20130.9695%2032.2875,%20130.9705%2032.2875,%20130.9705%2032.2865,%20130.9695%2032.2865)&mission=Alos&mode=SM&startTime=2009-02-06&endTime=2011-04-03&outputType=dataset
-         */
-        if ($options->attributeSearch) {
-            $areas = $this->getAreasFromAttributes($options);
-            $csv_string = $this->areasToCSV($areas);
-            return response()->json($csv_string);
+        if (strcasecmp($options->outputType, "json") == 0) {
+            $json = [];
+            foreach ($returnValues as $areaID => $area) {
+                $json[$area->unavco_name] = $area;
+            }
+            return response()->json($json);
         }
 
-        // otherwise, return individual points in csv, else in json
-        $areas = $this->getIndividualPointsFromAttributes($options);
-        if (strcasecmp($options->outputType, "dataset") == 0) {
-            $csv_string = $this->areasToCSV($areas);
-            return response()->json($csv_string);
+        if (strcasecmp($options->outputType, "dataset") == 0 || strcasecmp($options->outputType, "csv") == 0) {
+            $csv_string = $this->areasToCSV($returnValues);
+            return response()->make($csv_string, 200);
         }
-        return response()->json($areas);
+
+        // otherwise not recognized outputType;
+        $errors = ["Invalid outputType"];
+        return response()->json($errors);
     }
 
     // Thanks to Richard at: https://richardathome.wordpress.com/2006/01/25/a-php-linear-regression-function/

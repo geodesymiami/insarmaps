@@ -18,7 +18,7 @@
             <li>Flight Direction - ex: D</li>
             <li>startTime should be in yyyy-mm-dd format. Ex: 1990-12-20.</li>
             <li>endTime should be in yyyy-mm-dd format. Ex: 2020-12-20.</li>
-            <li>outputType should be json or dataset.</li>
+            <li>outputType should be json, dataset, or csv.</li>
         </ul>
     </div>
     <!-- TODO: delete webServicesDataset code - should be 4 of them in php, blade, js, and routes -->
