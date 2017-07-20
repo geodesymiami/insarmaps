@@ -390,11 +390,13 @@ class WebServicesController extends Controller {
             case 'startTime':
                 if (strlen($value) > 0) {
                     $options->startTime = $value;
+                    $options->attributeSearch = TRUE;
                 }
                 break;
             case 'endTime':
                 if (strlen($value) > 0) {
                     $options->endTime = $value;
+                    $options->attributeSearch = TRUE;
                 }
                 break;
             case 'box':
@@ -454,6 +456,16 @@ class WebServicesController extends Controller {
         if (isset($attributes->flightDirection) && strlen($attributes->flightDirection) > 0) {
             array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='flight_direction' AND attributevalue=?)");
             array_push($preparedValues, $attributes->flightDirection);
+        }
+
+        if (isset($attributes->startTime) && strlen($attributes->startTime) > 0) {
+            array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='first_date' AND attributevalue::date >= ?::date)");
+            array_push($preparedValues, $attributes->startTime);
+        }
+
+        if (isset($attributes->endTime) && strlen($attributes->endTime) > 0) {
+            array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='last_date' AND attributevalue::date <= ?::date)");
+            array_push($preparedValues, $attributes->endTime);
         }
 
         // QUERY 2A: if user inputted bounding box option, check which datasets have points in the bounding box
