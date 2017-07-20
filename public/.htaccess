@@ -18,4 +18,8 @@
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Redirect any sub url that isn't insarmaps.miami.edu to insarmaps.miami.edu
+    RewriteCond %{HTTP_HOST} !^insarmaps\.miami\.edu$ [NC]
+    RewriteRule ^(.*)$ http://insarmaps.miami.edu/$1 [R=301,L]
 </IfModule>
