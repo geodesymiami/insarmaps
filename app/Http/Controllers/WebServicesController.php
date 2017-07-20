@@ -591,7 +591,7 @@ class WebServicesController extends Controller {
             $returnValues = $this->getIndividualPointsFromAttributes($options);
         }
 
-        if (!$returnValues) {
+        if ($returnValues === NULL) {
             return response()->json(["An error has occurred"]);
         }
 
