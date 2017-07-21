@@ -263,16 +263,16 @@ html[xmlns] .clearfix {
 
 #USGSEvents-options {
     position: absolute;
-    width: 70%;
+    width: 155px;
     max-width: 330px;
     max-height: 445px;
     margin: 0 auto;
-    top: 60%;
-    left: 96%;
+    top: 29px;
+    left: 685px;
 }
 
 #USGSEvents-options .content {
-    padding-top: 30px;
+    padding-top: 20px;
 }
 
 #popupButton {
@@ -619,6 +619,7 @@ div.menu {
     background-color: white;
     color: black;
     word-wrap: break-word;
+    text-align: left;
 }
 
 #overlay-options {

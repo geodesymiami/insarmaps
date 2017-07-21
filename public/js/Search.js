@@ -255,7 +255,7 @@ function SearchFormController(container) {
             fileAttributes = attributesController.getAllAttributes();
             attributesMatch = true;
 
-            if (recentDatasetsToggleButton.toggleState == ToggleStates.ON) {
+            if ($("#recent-datasets-toggle-button").hasClass("toggled")) {
                 var areaDate = new Date(fileAttributes.last_date);
                 var millisecondsInYear = 1000 * 60 * 60 * 24 * 365;
                 var timeDifference = (new Date() - areaDate) / millisecondsInYear;

@@ -7,7 +7,6 @@ var topGraphToggleButton = null;
 var bottomGraphToggleButton = null;
 var gpsStationsToggleButton = null;
 var midasStationsToggleButton = null;
-var recentDatasetsToggleButton = null;
 var usgsEarthquakeToggleButton = null;
 var IGEPNEarthquakeToggleButton = null;
 var HawaiiRelocToggleButton = null;
@@ -280,8 +279,8 @@ function ToggleButton(id, container, label) {
 
     this.setDescription = function(description) {
         if (this.container) {
-            var html = "<div class='circular-question-mark black-on-white-tooltip' data-toggle='tooltip' data-placement='right'";
-            html += " title='" + description + "'><b>?</b></div>";
+            var html = "<div class='circular-question-mark black-on-white-tooltip' data-toggle='tooltip' data-html='true' data-placement='right'";
+            html += " title=\"" + description + "\"><b>?</b></div>";
             $(html).insertAfter($("#" + this.container + " input#" + this.id + ""));
         }
     };
@@ -424,7 +423,7 @@ function setupToggleButtons() {
             myMap.thirdPartySourcesController.removeGPSStationMarkers();
         }
     });
-    gpsStationsToggleButton.setDescription("GPS solutions provided by the University of Nevada Geodesy Lab at http://geodesy.unr.edu/");
+    gpsStationsToggleButton.setDescription("GPS solutions provided by the University of Nevada Geodesy Lab at <a target='_blank' href='http://geodesy.unr.edu'>http://geodesy.unr.edu/</a>");
 
     midasEastNorthStationsToggleButton = new ToggleButton("midas-east-north-stations-toggle-button", "overlay-options-toggles", "MIDAS IGS08 Horizontal (UNR)");
     midasEastNorthStationsToggleButton.onclick(function() {
@@ -435,7 +434,7 @@ function setupToggleButtons() {
         }
     });
 
-    midasEastNorthStationsToggleButton.setDescription("MIDAS horizontal velocity field provided by the University of Nevada Geodesy Lab at http://geodesy.unr.edu/");
+    midasEastNorthStationsToggleButton.setDescription("MIDAS horizontal velocity field provided by the University of Nevada Geodesy Lab at <a target='_blank' href='http://geodesy.unr.edu'>http://geodesy.unr.edu/</a>");
 
     midasStationsToggleButton = new ToggleButton("midas-stations-toggle-button", "overlay-options-toggles", "MIDAS IGS08 Vertical (UNR)");
     midasStationsToggleButton.onclick(function() {
@@ -446,7 +445,7 @@ function setupToggleButtons() {
         }
     });
 
-    midasStationsToggleButton.setDescription("MIDAS vertical velocity field provided by the University of Nevada Geodesy Lab at http://geodesy.unr.edu/");
+    midasStationsToggleButton.setDescription("MIDAS vertical velocity field provided by the University of Nevada Geodesy Lab at <a target='_blank' href='http://geodesy.unr.edu'>http://geodesy.unr.edu/</a>");
 
     usgsEarthquakeToggleButton = new SeismicityToggleButton("usgs-earthquake-toggle-button", "overlay-options-toggles", "USGS 30 Day Earthquake Feed");
     usgsEarthquakeToggleButton.onclick(function() {
@@ -457,7 +456,7 @@ function setupToggleButtons() {
         }
     });
 
-    usgsEarthquakeToggleButton.setDescription("Recent earthquakes from https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson");
+    usgsEarthquakeToggleButton.setDescription("Recent earthquakes from <a target='_blank' href='https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson'>https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson/</a>");
 
     USGSEventsEarthquakeToggleButton = new SeismicityToggleButton("USGSEvents-earthquake-toggle-button", "overlay-options-toggles", "USGS Events");
     USGSEventsEarthquakeToggleButton.onclick(function() {
@@ -473,7 +472,7 @@ function setupToggleButtons() {
         }
     });
 
-    USGSEventsEarthquakeToggleButton.setDescription("Full USGS events catalogs from http://earthquake.usgs.gov/fdsnws/event/1/");
+    USGSEventsEarthquakeToggleButton.setDescription("Full USGS events catalogs from <a target='_blank' href='http://earthquake.usgs.gov/fdsnws/event/1/'>http://earthquake.usgs.gov/fdsnws/event/1/</a>");
 
     IGEPNEarthquakeToggleButton = new SeismicityToggleButton("IGEPN-earthquake-toggle-button", "overlay-options-toggles", "IGEPN 30 Day Earthquake Feed");
     IGEPNEarthquakeToggleButton.onclick(function() {
@@ -484,7 +483,7 @@ function setupToggleButtons() {
         }
     });
 
-    IGEPNEarthquakeToggleButton.setDescription("Recent earthquakes provided by the Instituto Geofisico, Quito, Ecuador at http://www.igepn.edu.ec/portal/eventos/www/events.xml");
+    IGEPNEarthquakeToggleButton.setDescription("Recent earthquakes provided by the Instituto Geofisico, Quito, Ecuador at <a target='_blank' href='http://www.igepn.edu.ec/portal/eventos/www/events.xml'>http://www.igepn.edu.ec/portal/eventos/www/events.xml</a>");
 
     HawaiiRelocToggleButton = new SeismicityToggleButton("Hawaii-reloc-toggle-button", "overlay-options-toggles", "Hawaii 1992-2008 Relocations");
     HawaiiRelocToggleButton.onclick(function() {
@@ -495,7 +494,7 @@ function setupToggleButtons() {
         }
     });
 
-    HawaiiRelocToggleButton.setDescription("Relocated earthquakes provided by the University of Miami at http://www.rsmas.miami.edu/users/glin/Hawaii.html");
+    HawaiiRelocToggleButton.setDescription("Relocated earthquakes provided by the University of Miami at <a target='_blank' href='http://www.rsmas.miami.edu/users/glin/Hawaii.html'>http://www.rsmas.miami.edu/users/glin/Hawaii.html</a>");
 
     LongValleyRelocToggleButton = new SeismicityToggleButton("Long-Valley-reloc-toggle-button", "overlay-options-toggles", "Long Valley 1984-2014 Relocations.");
     LongValleyRelocToggleButton.onclick(function() {
@@ -506,10 +505,25 @@ function setupToggleButtons() {
         }
     });
 
-    LongValleyRelocToggleButton.setDescription("Relocated earthquakes provided by the University of Miami at http://www.rsmas.miami.edu/users/glin/Mammoth_Mountain.html");
+    LongValleyRelocToggleButton.setDescription("Relocated earthquakes provided by the University of Miami at <a target='_blank' href='http://www.rsmas.miami.edu/users/glin/Mammoth_Mountain.html'>http://www.rsmas.miami.edu/users/glin/Mammoth_Mountain.html/</a>");
 
-    recentDatasetsToggleButton = new ToggleButton("recent-datasets-toggle-button")
-    recentDatasetsToggleButton.onclick(null);
+    // we really need a generic toggable base class :c. too much work for now
+    // for little gain
+    $("#recent-datasets-toggle-button").on("click", function() {
+        if (!$(this).hasClass("toggled")) {
+            $(this).animate({
+                backgroundColor: "#dcdee2",
+                opacity: 0.7
+            }, 200);
+            $(this).addClass("toggled");
+        } else {
+            $(this).animate({
+                backgroundColor: "white",
+                opacity: 1.0
+            }, 200);
+            $(this).removeClass("toggled");
+        }
+    });
 }
 
 function CountryGeocoder(mapboxAccessToken) {
@@ -952,8 +966,24 @@ $(window).on("load", function() {
         $("#information-div.overlay-div").toggleClass("active");
     });
 
-    $(function() {
-        $('[data-toggle="tooltip"]').tooltip({ trigger: "hover" });
+    // setup tooltips
+    $("[data-toggle='tooltip']").not($(".circular-question-mark")).tooltip({ trigger: "hover" });
+
+    // for question mark seismicity tooltips, allow hovering over them in case
+    // there is a link
+    $(".circular-question-mark").tooltip({ trigger: "manual" }).hover(function() {
+        var that = this;
+        $(this).tooltip("show");
+        $(".tooltip").on("mouseleave", function() {
+            $(that).tooltip('hide');
+        });
+    }, function() {
+        var that = this;
+        setTimeout(function() {
+            if (!$(".tooltip:hover").length) {
+                $(that).tooltip("hide");
+            }
+        }, 300);
     });
 
     $("#square-selector-button").on("click", function() {
@@ -1071,7 +1101,7 @@ $(window).on("load", function() {
         if ($(this).attr("data-original-title") === "Shrink relative scale") {
             $(this).attr("data-original-title", "Expand relative scale");
             myMap.thirdPartySourcesController.resizeSeismicities("shrink");
-        // everything else is expand
+            // everything else is expand
         } else {
             $(this).attr("data-original-title", "Shrink relative scale");
             myMap.thirdPartySourcesController.resizeSeismicities("expand");

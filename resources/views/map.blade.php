@@ -77,7 +77,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="hidden-search-bars-container" class="active">
+                <div id="hidden-search-bars-container">
                     <div class="form-group custom-input-container">
                         <input type="text" placeholder="Satellite" id="input-satellite" list="satellites-list" />
                         <div class="custom-input-dropdown hide-dropdown">
@@ -103,12 +103,7 @@
                             <div class="caret"></div>
                         </div>
                     </div>
-                    <div class="form-group custom-input-container">
-                        <div class="overlay-toggle">
-                            <label>Last year data</label>
-                            <input id="recent-datasets-toggle-button" type="checkbox" />
-                        </div>
-                    </div>
+                    <button class="form-group custom-input-container" id="recent-datasets-toggle-button" data-toggle="tooltip" title="Filter search results by time">Filter Time</button>
                     <!-- enter button to search for files with attributes matching above input -->
                     <!-- <div id="enter-button-search-attributes">
               <button class="btn btn-primary btn-block">Enter</button>
@@ -147,7 +142,7 @@
                 <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="More options" id="select-layer-button">
                     <img src="/img/layerSwitchIcon.png" alt="layerSwitchIcon.png" style="width: 20px; height: 20px">
                 </button>
-                <div id="overlay-options-toggles" class="clearfix">
+                <div id="overlay-options-toggles">
                     <div id="map-type-menu">
                         <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked" />
                         <label for='streets'>Streets</label>
@@ -155,25 +150,26 @@
                         <label for='satellite'>Satellite</label>
                     </div>
                 </div>
-                <div class="wrap wrap-transitions" id="USGSEvents-options">
-                    <div class="top-right-buttons">
-                        <button type="button" class="minimize-button" data-dismiss="modal" id="USGSEvents-options-minimize-button"></button>
-                    </div>
-                    <div class="content">
-                        <label>Start Date</label>
-                        <input type="text" class="form-control start-date date-input" />
-                        <label>End Date</label>
-                        <input type="text" class="form-control end-date date-input" />
-                        <label>Min Magnitude</label>
-                        <input type="number" class="form-control min-magnitude" value="4" />
-                        <label>Max Magnitude</label>
-                        <input type="number" class="form-control max-magnitude" value="10" />
-                        <label>Min Depth</label>
-                        <input type="number" class="form-control min-depth" value="0" />
-                        <label>Max Depth</label>
-                        <input type="number" class="form-control max-depth" value="30" />
-                        <button class="btn btn-info" id="USGSEvents-options-submit-button">Submit</button>
-                    </div>
+            </div>
+            <div class="wrap wrap-transitions" id="USGSEvents-options">
+                <div class="top-right-buttons">
+                    <button type="button" class="minimize-button" data-dismiss="modal" id="USGSEvents-options-minimize-button"></button>
+                </div>
+                <div class="content">
+                    <div id="usgs-events-current-viewport"></div>
+                    <label>Start Date</label>
+                    <input type="text" class="form-control start-date date-input" />
+                    <label>End Date</label>
+                    <input type="text" class="form-control end-date date-input" />
+                    <label>Min Magnitude</label>
+                    <input type="number" class="form-control min-magnitude" value="4" />
+                    <label>Max Magnitude</label>
+                    <input type="number" class="form-control max-magnitude" value="10" />
+                    <label>Min Depth</label>
+                    <input type="number" class="form-control min-depth" value="0" />
+                    <label>Max Depth</label>
+                    <input type="number" class="form-control max-depth" value="30" />
+                    <button class="btn btn-info" id="USGSEvents-options-submit-button">Submit</button>
                 </div>
             </div>
         </div>
@@ -546,7 +542,7 @@
         </div>
     </div>
     <script type="text/javascript">
-    var urlOptions = {!!json_encode($urlOptions) !!};
+    var urlOptions = {!! json_encode($urlOptions) !!};
     </script>
     <link rel="stylesheet" href="/css/slideout.css" />
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.js'></script>

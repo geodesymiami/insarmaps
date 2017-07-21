@@ -47,13 +47,6 @@
     min-height: 34px;
 }
 
-#recent-datasets-toggle-button {
-    width: 13px;
-    height: 13px;
-    margin: 4px 0 0 0 !important;
-}
-
-
 /* jquery autocomplete */
 .ui-autocomplete {
     font-family: "Helvetica";
