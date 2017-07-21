@@ -76,7 +76,6 @@ function setupFeatureSelector() {
         if (features.length == 0) {
             return;
         }
-
         this.map.seismicityGraphsController.setBbox(bbox);
         // show containers before creating as we have an optimization to not create
         // unless containers are shown. also, we want to hide cross section charts and show other charts

@@ -950,23 +950,28 @@ function setupSeismicityGraphsController() {
         this.bbox = bbox;
     };
 
-    SeismicityGraphsController.prototype.getSeriesData = function(features, colorStops) {
+    SeismicityGraphsController.prototype.getSeriesData = function(features, colorStops, sizeStops) {
         var seriesData = [];
 
         // we do x, y values if no stops provided to avoid highcharts turbothreshold
-        if (features[0].colorOnInput) {
+        if (features[0].colorOnInput && features[0].sizeOnInput) {
             var stopsCalculator = new MapboxStopsCalculator();
 
             for (var i = 0; i < features.length; i++) {
                 var feature = features[i];
-                var index = stopsCalculator.getOutputIndexFromInputStop(colorStops, feature.colorOnInput);
+                var colorIndex = stopsCalculator.getOutputIndexFromInputStop(colorStops, feature.colorOnInput);
+                var sizeIndex = stopsCalculator.getOutputIndexFromInputStop(sizeStops, feature.sizeOnInput);
 
-                var color = colorStops[index][1];
+                var color = colorStops[colorIndex][1];
+                var size = sizeStops[sizeIndex][1];
                 seriesData.push({
                     x: feature.x,
                     y: feature.y,
                     name: "Point2",
-                    color: color
+                    color: color,
+                    marker: {
+                        radius: size
+                    }
                 });
 
                 if (feature.extraFeatureData) {
@@ -998,6 +1003,7 @@ function setupSeismicityGraphsController() {
                     x: feature.geometry.coordinates[0],
                     y: feature.properties.depth,
                     colorOnInput: feature.properties.time,
+                    sizeOnInput: feature.properties.mag,
                     extraFeatureData: html
                 };
                 // could use custom findMinMaxOfArray function to get min and max
@@ -1018,6 +1024,7 @@ function setupSeismicityGraphsController() {
                     x: feature.geometry.coordinates[0],
                     y: feature.properties.depth,
                     colorOnInput: feature.properties.depth,
+                    sizeOnInput: feature.properties.mag,
                     extraFeatureData: html
                 };
 
@@ -1031,8 +1038,9 @@ function setupSeismicityGraphsController() {
         }
         var stopsCalculator = new MapboxStopsCalculator();
         var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet_r);
+        var sizeStops = this.map.thirdPartySourcesController.currentSeismicitySizeStops;
 
-        return this.getSeriesData(seriesFeatures, colorStops);
+        return this.getSeriesData(seriesFeatures, colorStops, sizeStops);
     };
 
     SeismicityGraphsController.prototype.getMinimapBounds = function() {
@@ -1117,6 +1125,7 @@ function setupSeismicityGraphsController() {
                     x: feature.properties.depth,
                     y: feature.geometry.coordinates[1],
                     colorOnInput: feature.properties.time,
+                    sizeOnInput: feature.properties.mag,
                     extraFeatureData: html
                 };
                 // could use custom findMinMaxOfArray function to get min and max
@@ -1137,6 +1146,7 @@ function setupSeismicityGraphsController() {
                     x: feature.properties.depth,
                     y: feature.geometry.coordinates[1],
                     colorOnInput: feature.properties.depth,
+                    sizeOnInput: feature.properties.mag,
                     extraFeatureData: html
                 };
 
@@ -1150,8 +1160,9 @@ function setupSeismicityGraphsController() {
         }
         var stopsCalculator = new MapboxStopsCalculator();
         var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet_r);
+        var sizeStops = this.map.thirdPartySourcesController.currentSeismicitySizeStops;
 
-        return this.getSeriesData(seriesFeatures, colorStops);
+        return this.getSeriesData(seriesFeatures, colorStops, sizeStops);
     };
     SeismicityGraphsController.prototype.createLatVDepthGraph = function(features, chartContainer, selectedColoring) {
         var latVdepthValues = this.getLatVDepthData(features, selectedColoring);
@@ -1260,6 +1271,7 @@ function setupSeismicityGraphsController() {
                     x: feature.properties.time,
                     y: numberOfEvents,
                     colorOnInput: feature.properties.time,
+                    sizeOnInput: feature.properties.mag,
                     extraFeatureData: html
                 };
                 numberOfEvents++;
@@ -1282,6 +1294,7 @@ function setupSeismicityGraphsController() {
                     x: feature.properties.time,
                     y: numberOfEvents,
                     colorOnInput: feature.properties.depth,
+                    sizeOnInput: feature.properties.mag,
                     extraFeatureData: html
                 };
                 numberOfEvents++;
@@ -1296,8 +1309,9 @@ function setupSeismicityGraphsController() {
         }
         var stopsCalculator = new MapboxStopsCalculator();
         var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet_r);
+        var sizeStops = this.map.thirdPartySourcesController.currentSeismicitySizeStops;
 
-        return this.getSeriesData(seriesFeatures, colorStops);
+        return this.getSeriesData(seriesFeatures, colorStops, sizeStops);
     };
 
     SeismicityGraphsController.prototype.createCumulativeEventsVDayGraph = function(features, chartContainer, selectedColoring) {
@@ -1733,21 +1747,6 @@ function CustomSliderSeismicityController() {
 }
 
 function setupCustomSliderSeismicityController() {
-    CustomSliderSeismicityController.prototype.getDepthVDepthData = function(features, selectedColoring) {
-        var depthValues = features.map(function(feature) {
-            return feature.properties.depth;
-        });
-
-        var min = depthValues[0];
-        var max = depthValues[depthValues.length - 1];
-
-        var colorOnInputs = depthValues;
-        var stopsCalculator = new MapboxStopsCalculator();
-
-        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet_r);
-
-        return this.getSeriesData(depthValues, depthValues, null, colorOnInputs, colorStops);
-    };
     CustomSliderSeismicityController.prototype.getFeaturesWithinCurrentSliderRanges = function(features, optionalBounds) {
         if (optionalBounds) {
             var polygon = this.map.selector.squareBboxToMapboxPolygon(optionalBounds);

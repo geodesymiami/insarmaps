@@ -36,9 +36,8 @@
             <p>
                 For accessing the data products via web services click here:
             </p>
-            <div id="webservices-ui-button">
-                <button class="btn btn-primary-outline">Web Services</button>
-            </div>
+            <button class="btn btn-primary-outline" id="webservices-ui-button">Web Services</button>
+            <span id="current-point-webservices-link"></span>
             <p>
                 This website relies on Mapbox GL JS, which in turn relies on WebGL. As it stands, Google Chrome offers the best compatibility when browsing this site.
             </p>

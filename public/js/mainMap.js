@@ -177,20 +177,22 @@ function MapController(loadJSONFunc) {
             } else {
                 this.thirdPartySourcesController.populateSeismicityMagnitudeScale();
                 $("#magnitude-scale").addClass("active");
-                // remove swaths
-                this.removeAreaMarkersThroughButton();
-                $("#square-selector-button").attr("data-original-title", "Select Seismicity");
-                $("#color-scale .color-scale-text-div").attr("data-original-title", "Color on time");
-                this.colorScale.setTopAsMax(false);
-                $("#seismicity-maximize-buttons-container").addClass("active");
+                if (layerThatWasChanged !== "seismicitySelectedArea") {
+                    // remove swaths
+                    this.removeAreaMarkersThroughButton();
+                    $("#square-selector-button").attr("data-original-title", "Select Seismicity");
+                    $("#color-scale .color-scale-text-div").attr("data-original-title", "Color on time");
+                    this.colorScale.setTopAsMax(false);
+                    $("#seismicity-maximize-buttons-container").addClass("active");
 
-                var features = this.thirdPartySourcesController.getAllSeismicityFeatures();
-                if (features.length > 0) {
-                    features.sort(function(feature1, feature2) {
-                        return feature1.properties.time - feature2.properties.time;
-                    });
-                    // handles setting up color scale for seismicity etc.
-                    this.thirdPartySourcesController.prepareForSeismicities(features);
+                    var features = this.thirdPartySourcesController.getAllSeismicityFeatures();
+                    if (features.length > 0) {
+                        features.sort(function(feature1, feature2) {
+                            return feature1.properties.time - feature2.properties.time;
+                        });
+                        // handles setting up color scale for seismicity etc.
+                        this.thirdPartySourcesController.prepareForSeismicities(features);
+                    }
                 }
             }
         }
@@ -376,10 +378,14 @@ function MapController(loadJSONFunc) {
         if (pointNumber === undefined || pointNumber === null || feature.layer.id == "contours" || feature.layer.id == "contour_label") {
             return;
         }
+        var areaName = currentArea.properties.unavco_name;
 
-        var title = pointNumber.toString();
+        // show link to current clicked point in webservices
+        var html = "<a target='_blank' href='" + getRootUrl() + "WebServices?dataset=" + areaName + "&point=" + pointNumber + "'>View JSON for current clicked point</a>";
+        $("#current-point-webservices-link").html(html);
+
         var query = {
-            "area": currentArea.properties.unavco_name,
+            "area": areaName,
             "pointNumber": pointNumber
         };
 
@@ -686,16 +692,14 @@ function MapController(loadJSONFunc) {
     };
 
     this.getMapBaseStyle = function(tileset) {
-        var layers = [];
-        var layer = {
+        var layers = [{
             "id": "simple-tiles",
             "type": "raster",
             "source": "raster-tiles",
             "minzoom": 0,
             "maxzoom": 22
-        };
+        }];
 
-        layers.push(layer);
         var style = {
             version: 8,
             sprite: getRootUrl() + "maki/makiIcons",
@@ -1159,9 +1163,6 @@ function MapController(loadJSONFunc) {
             });
 
             var mode = this.getCurrentMode();
-            if (this.areas && !$("#dataset-frames-toggle-button").hasClass("toggled") && mode !== "seismicity") {
-                this.loadSwathsInCurrentViewport(true);
-            }
 
             if (mode === "seismicity") {
                 this.seismicityGraphsController.createCrossSectionCharts(null, null, null);
