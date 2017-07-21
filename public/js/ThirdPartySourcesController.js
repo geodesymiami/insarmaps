@@ -1007,7 +1007,7 @@ function ThirdPartySourcesController(map) {
                 velocityInCMYR + " +- " + uncertainty + " cm/yr"; // we work in cm. convert m to cm
         } else if (itsAMidasHorizontalArrow && feature.properties.isReference) {
             coordinates = feature.geometry.coordinates[0];
-            html = "Reference station. This velocity shown red has been subtracted from the others.";
+            html = "<p>Pseudo-reference station.</p><p>This velocity shown red has been subtracted from the others.</p>";
         } else if (itsASeismicityFeature || itsAMiniMapFeature) {
             html = "";
             var props = feature.properties;

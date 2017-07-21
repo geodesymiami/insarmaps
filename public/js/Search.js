@@ -121,6 +121,20 @@ function SearchFormController(container) {
         $(".show-children-button#" + mainFeature.properties.unavco_name).hover(function(e) {
             e.stopPropagation(); // don't trigger hover event of parent
 
+            // zoom to area
+            var centerOfDataset = mainFeature.properties.centerOfDataset;
+
+            if (typeof centerOfDataset === "string") {
+                centerOfDataset = JSON.parse(centerOfDataset);
+            }
+            var long = centerOfDataset[0];
+            var lat = centerOfDataset[1];
+
+            myMap.map.flyTo({
+                center: [long, lat],
+                zoom: 8
+            });
+
             $subsetSwathTableBody = $("#subset-swath-table > tbody").empty();
             var attributesController = new AreaAttributesController(myMap, mainFeature);
             var $subsetSwathPopup = $("#subset-swath-popup");
@@ -307,8 +321,7 @@ $(window).on("load", function() {
         const ENTER_KEY = 13;
 
         // enter key, and focus on one of the inputs, and main top search input isn't empty
-        if (e.keyCode === ENTER_KEY && ($("#search-form input").is(":focus"))
-            && (!$("#search-input").val())) {
+        if (e.keyCode === ENTER_KEY && ($("#search-form input").is(":focus")) && (!$("#search-input").val())) {
             if (myMap.areaFeatures) {
                 searcher.search();
                 $("#search-form-and-results-maximize-button").click();

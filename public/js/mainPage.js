@@ -750,6 +750,7 @@ $(window).on("load", function() {
             container.removeClass("active");
             container.removeClass("maximized");
             container.addClass("minimized");
+            myMap.removeTouchLocationMarkers();
         }
     });
 
@@ -803,6 +804,11 @@ $(window).on("load", function() {
         }
 
         myMap.map.resize();
+    });
+
+    // hide subset swath popup after we aren't hovering over it
+    $("#subset-swath-popup").mouseleave(function() {
+        $(this).removeClass("active");
     });
 
     $("#search-form-and-results-maximize-button").on("click", function() {

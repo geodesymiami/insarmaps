@@ -608,7 +608,7 @@ function MapController(loadJSONFunc) {
         this.addDataset(tileJSON);
 
         this.map.once("data", function(event) {
-            this.removeAreaMarkers();
+            this.removeAreaMarkersThroughButton();
 
             overlayToggleButton.set("on");
 
@@ -870,14 +870,19 @@ function MapController(loadJSONFunc) {
                 var data_footprint = attributesController.getAttribute("data_footprint");
                 // make the scene footprint the previous data_footprint and delete the data_footprint
                 var featureClone = JSON.parse(JSON.stringify(feature));
-                // featureClone.properties.extra_attributes.scene_footprint = data_footprint;
-                // featureClone.properties.extra_attributes.data_footprint = null;
 
-                if (!this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID]) {
-                    this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID] = [featureClone];
-                } else {
-                    siblingAlreadyThere = true;
-                    this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID].push(featureClone);
+                // we are adding the subsets, there is no need to know anymore whether a feature has subsets
+                // so the map will be empty (since we empty on entering this method). not having this if causes us
+                // to never be able click on a subset and load an area with the new way we determine subsets.
+                // there were other alternatives such as checking if a feature has subsets AND the current feature
+                // in question is the "master" subset swath but this was a quicker solution.
+                if (!addAllSubsets) {
+                    if (!this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID]) {
+                        this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID] = [featureClone];
+                    } else {
+                        siblingAlreadyThere = true;
+                        this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID].push(featureClone);
+                    }
                 }
             }
 
