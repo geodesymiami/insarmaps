@@ -67,6 +67,9 @@ function AreaAttributesController(map, area) {
     };
 
     this.processDatesAndColoring = function(plotAttributes) {
+        if (!plotAttributes || plotAttributes.length == 0) {
+            return;
+        }
         var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
         var min = colorScaleOpts[0];
         var max = colorScaleOpts[1];
@@ -99,7 +102,7 @@ function AreaAttributesController(map, area) {
 
     this.processPresetFigureAttributes = function() {
         var plotAttributes = this.attributes.plotAttributes;
-        if (plotAttributes) {
+        if (plotAttributes && plotAttributes.length > 0) {
             if (this.areaHasPlotAttribute("plot.colorscale")) {
                 var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
                 var min = parseInt(colorScaleOpts[0]);
@@ -124,7 +127,7 @@ function AreaAttributesController(map, area) {
 
     this.processAttributes = function() {
         var plotAttributes = this.attributes.plotAttributes;
-        if (plotAttributes) {
+        if (plotAttributes && plotAttributes.length > 0) {
             if (plotAttributes[0]["plot.colorscale"]) {
                 var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
                 var min = parseInt(colorScaleOpts[0]);
@@ -150,7 +153,7 @@ function AreaAttributesController(map, area) {
     };
 
     this.areaHasPlotAttribute = function(plotAttribute) {
-        if (!this.attributes.plotAttributes) {
+        if (!this.attributes.plotAttributes || this.attributes.plotAttributes.length == 0) {
             return null;
         }
 
