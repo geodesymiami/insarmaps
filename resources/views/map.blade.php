@@ -218,8 +218,10 @@
                 <div id="magnitude-scale-circles"></div>
                 <div id="magnitude-scale-values"></div>
             </div>
-            <!-- <div class="custom-scale" id="arrow-length-scale">
-            </div> -->
+            <div class="custom-scale" id="arrow-length-scale">
+                <h5 id="arrow-length-value"></h5>
+                <img id="arrow-image" src="/img/arrow.PNG">
+            </div>
         </div>
         <div id="color-scale">
             <div class="btn btn-primary color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color on time">

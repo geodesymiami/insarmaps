@@ -448,10 +448,10 @@ div.menu {
     top: 50%;
     bottom: 50%;
     left: 50%;
-    -webkit-transform: translateX(-50%);
-    -moz-transform: translateX(-50%);
-    -ms-transform: translateX(-50%);
-    transform: translateX(-50%);
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
     background-color: rgba(255, 255, 255, 0.5);
 }
 
@@ -639,7 +639,6 @@ div.menu {
 
 .custom-scale {
     display: none;
-    height: 115px;
 }
 
 .magnitude-scale-circle, .magnitude-scale-value {

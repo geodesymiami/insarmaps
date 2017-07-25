@@ -19,6 +19,7 @@ function ThirdPartySourcesController(map) {
     this.referenceArrow = null;
     this.subtractedMidasArrows = null;
     this.USGSEventsURL = null;
+    this.midasArrowPixelsPerMeter = 500;
 
     // keep this around for when main map needs features to pass in to create
     // the seismicity sliders. notice (below) that we always set this before
@@ -331,7 +332,7 @@ function ThirdPartySourcesController(map) {
                     };
 
                     features.points.push(feature);
-                    var arrowLength = resultant.mag * 500;
+                    var arrowLength = resultant.mag * this.midasArrowPixelsPerMeter;
                     // console.log(resultant.mag + " " + arrowLength);
                     features.arrows.push(this.getArrowGeoJSON(coordinates, resultant.angle, arrowLength, i));
                 }
@@ -610,58 +611,6 @@ function ThirdPartySourcesController(map) {
         var name = "IGEPNEarthquake";
 
         this.map.removeSourceAndLayer(name);
-    };
-
-    this.loadHawaiiReloc = function() {
-        showLoadingScreen("Loading data", "ESCAPE to interrupt");
-        this.cancellableAjax.ajax({
-            url: "/HawaiiReloc",
-            success: function(response) {
-                var features = this.parseHawaiiReloc(response);
-                var mapboxStationFeatures = {
-                    type: "geojson",
-                    cluster: false,
-                    data: {
-                        "type": "FeatureCollection",
-                        "features": features
-                    }
-                };
-
-                this.currentFeatures = features;
-
-                var colors = this.map.colorScale.jet_r;
-                var depthStops = this.currentSeismicityColorStops;
-                var magStops = this.currentSeismicitySizeStops;
-
-                var layerID = "HawaiiReloc";
-                this.map.addSource(layerID, mapboxStationFeatures);
-                this.map.addLayer({
-                    "id": layerID,
-                    "type": "circle",
-                    "source": layerID,
-                    "paint": {
-                        "circle-color": {
-                            "property": "depth",
-                            "stops": depthStops,
-                            "type": "interval"
-                        },
-                        "circle-radius": {
-                            "property": "mag",
-                            "stops": magStops,
-                            "type": "interval"
-                        }
-                    }
-                });
-                hideLoadingScreen();
-            }.bind(this),
-            error: function(xhr, ajaxOptions, thrownError) {
-                hideLoadingScreen();
-                console.log("failed " + xhr.responseText);
-            }
-        }, function() {
-            hideLoadingScreen();
-            HawaiiRelocToggleButton.click();
-        });
     };
 
     this.loadHawaiiReloc = function() {
@@ -1254,5 +1203,13 @@ function ThirdPartySourcesController(map) {
         valuesHtml += "</ul>";
         $("#magnitude-scale-circles").html(circleHtml);
         $("#magnitude-scale-values").html(valuesHtml);
+    };
+
+    this.populateMidasHorizontalArrowScale = function() {
+        const DESIRED_PIXELS = 10;
+        const METERS = DESIRED_PIXELS / this.midasArrowPixelsPerMeter;
+
+        $("#arrow-length-value").html(METERS + " m");
+        $("#arrow-image").css("width", DESIRED_PIXELS);
     };
 }

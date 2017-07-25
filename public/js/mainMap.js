@@ -165,6 +165,7 @@ function MapController(loadJSONFunc) {
                     this.removeAreaMarkersThroughButton();
                     if (layerIDs.includes("midas-arrows")) {
                         $("#arrow-length-scale").addClass("active");
+                        this.thirdPartySourcesController.populateMidasHorizontalArrowScale();
                     }
                     if (layerIDs.includes("midas")) {
                         this.colorScale.show();
