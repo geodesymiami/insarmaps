@@ -949,6 +949,12 @@ function MapController(loadJSONFunc) {
 
     // TODO: might want to rename this since they are now swaths...
     this.removeAreaMarkers = function() {
+        // avoid race condition if there is an ajax request currently in progress and we are on a SLOW internet
+        // connection
+        if (this.lastAreasRequest) {
+            this.lastAreasRequest.abort();
+            this.lastAreasRequest = null;
+        }
         this.areaMarkerLayer.emptyLayers();
         this.areaFeatures = [];
     };
@@ -1112,9 +1118,7 @@ function MapController(loadJSONFunc) {
             var currentZoom = this.map.getZoom();
 
             var mode = this.getCurrentMode();
-            if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled") && mode !== "seismicity") {
-                this.loadSwathsInCurrentViewport(true);
-            }
+
             // reshow area markers once we zoom out enough
             if (currentZoom < this.zoomOutZoom) {
                 if (this.pointsLoaded()) {
@@ -1125,6 +1129,10 @@ function MapController(loadJSONFunc) {
                     this.loadAreaMarkers(null);
                     this.map.off("click", this.leftClickOnAPoint);
                 }
+            }
+
+            if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled") && mode !== "seismicity") {
+                this.loadSwathsInCurrentViewport(true);
             }
 
             if (!this.selector.recoloring()) {

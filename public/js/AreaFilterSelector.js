@@ -64,6 +64,7 @@ function setUpAreaFilterSelector() {
             var json = {
                 "areas": ptsWithin.features
             };
+
             var filter = currentArea ? [currentArea.properties.unavco_name] : null;
 
             this.map.addSwathsFromJSON(json, filter, populateTable, false);
