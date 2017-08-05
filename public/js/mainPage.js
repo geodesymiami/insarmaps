@@ -461,7 +461,6 @@ function setupToggleButtons() {
     USGSEventsEarthquakeToggleButton = new SeismicityToggleButton("USGSEvents-earthquake-toggle-button", "overlay-options-toggles", "USGS Events");
     USGSEventsEarthquakeToggleButton.onclick(function() {
         if (USGSEventsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
-            USGSEventsEarthquakeToggleButton.set("off");
             var $container = $(".wrap#USGSEvents-options");
 
             if (!$container.hasClass("active")) {
@@ -516,6 +515,8 @@ function setupToggleButtons() {
                 opacity: 0.7
             }, 200);
             $(this).addClass("toggled");
+            new SearchFormController("search-form").search();
+            $("#search-form-and-results-maximize-button").click();
         } else {
             $(this).animate({
                 backgroundColor: "white",
@@ -608,6 +609,19 @@ $(window).on("load", function() {
 
     setupToggleButtons();
 
+    $("#hide-show-seismicities-button").on("click", function() {
+        if (myMap.getCurrentMode() !== "seismicity") {
+            return;
+        }
+        if ($(this).html() === "Hide seismicities") {
+            myMap.thirdPartySourcesController.hideAllSeismicities();
+            $(this).html("Show seismicities");
+        } else {
+            myMap.thirdPartySourcesController.showAllSeismicities();
+            $(this).html("Hide seismicities");
+        }
+    });
+
     $("#USGSEvents-options-minimize-button").on("click", function() {
         var $container = $(".wrap#USGSEvents-options");
 
@@ -615,13 +629,14 @@ $(window).on("load", function() {
             $container.removeClass("active");
         }
 
+        if (!myMap.map.getLayer("USGSEventsEarthquake")) {
+            USGSEventsEarthquakeToggleButton.set("off");
+        }
     });
 
     $("#USGSEvents-options-submit-button").on("click", function() {
         myMap.thirdPartySourcesController.removeUSGSEventsEarthquake(); // in case it is enabled
         myMap.thirdPartySourcesController.loadUSGSEventsEarthquake();
-        USGSEventsEarthquakeToggleButton.set("on");
-        $("#USGSEvents-options-minimize-button").click();
     });
 
     $("#color-scale .color-scale-text-div").on("click", function() {

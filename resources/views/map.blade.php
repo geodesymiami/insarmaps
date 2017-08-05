@@ -148,27 +148,28 @@
                         <input id='satellite' type='radio' name='rtoggle' value='satellite' />
                         <label for='satellite'>Satellite</label>
                     </div>
-                </div>
-            </div>
-            <div class="wrap wrap-transitions" id="USGSEvents-options">
-                <div class="top-right-buttons">
-                    <button type="button" class="minimize-button" data-dismiss="modal" id="USGSEvents-options-minimize-button"></button>
-                </div>
-                <div class="content">
-                    <div id="usgs-events-current-viewport"></div>
-                    <label>Start Date</label>
-                    <input type="text" class="form-control start-date date-input" />
-                    <label>End Date</label>
-                    <input type="text" class="form-control end-date date-input" />
-                    <label>Min Magnitude</label>
-                    <input type="number" class="form-control min-magnitude" value="4" />
-                    <label>Max Magnitude</label>
-                    <input type="number" class="form-control max-magnitude" value="10" />
-                    <label>Min Depth</label>
-                    <input type="number" class="form-control min-depth" value="0" />
-                    <label>Max Depth</label>
-                    <input type="number" class="form-control max-depth" value="30" />
-                    <button class="btn btn-info" id="USGSEvents-options-submit-button">Submit</button>
+                    <button class="btn btn-info" id="hide-show-seismicities-button">Hide seismicities</button>
+                    <div class="wrap wrap-transitions" id="USGSEvents-options">
+                        <div class="top-right-buttons">
+                            <button type="button" class="minimize-button" data-dismiss="modal" id="USGSEvents-options-minimize-button"></button>
+                        </div>
+                        <div class="content">
+                            <div id="usgs-events-current-viewport"></div>
+                            <label>Start Date</label>
+                            <input type="text" class="form-control start-date date-input" />
+                            <label>End Date</label>
+                            <input type="text" class="form-control end-date date-input" />
+                            <label>Min Magnitude</label>
+                            <input type="number" class="form-control min-magnitude" value="4" />
+                            <label>Max Magnitude</label>
+                            <input type="number" class="form-control max-magnitude" value="10" />
+                            <label>Min Depth</label>
+                            <input type="number" class="form-control min-depth" value="0" />
+                            <label>Max Depth</label>
+                            <input type="number" class="form-control max-depth" value="30" />
+                            <button class="btn btn-info" id="USGSEvents-options-submit-button">Submit</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

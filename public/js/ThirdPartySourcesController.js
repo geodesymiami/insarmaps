@@ -1134,6 +1134,23 @@ function ThirdPartySourcesController(map) {
         return features;
     };
 
+    this.setVisibilityForSeismicityLayers = function(visibility) {
+        this.seismicities.forEach(function(layerID) {
+            var layer = this.map.map.getLayer(layerID);
+            if (layer) {
+                this.map.map.setLayoutProperty(layerID, "visibility", visibility);
+            }
+        }.bind(this));
+    };
+
+    this.hideAllSeismicities = function() {
+        this.setVisibilityForSeismicityLayers("none");
+    };
+
+    this.showAllSeismicities = function() {
+        this.setVisibilityForSeismicityLayers("visible");
+    };
+
     this.removeAll = function(except) {
         if (gpsStationsToggleButton !== except) {
             gpsStationsToggleButton.set("off", true);

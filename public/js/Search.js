@@ -283,17 +283,32 @@ function SearchFormController(container) {
         $("#search-form-results-table").trigger("update");
     };
 
+    this.getDatasetsMoreRecentThan = function(datasets, years) {
+        var attributesController = new AreaAttributesController(myMap, datasets[0]);
+        var fileAttributes = null;
+        var filteredDatasets = [];
+
+        for (var i = 0; i < datasets.length; i++) {
+            attributesController.setArea(datasets[i]);
+            fileAttributes = attributesController.getAllAttributes();
+            var areaDate = new Date(fileAttributes.last_date);
+            var millisecondsInYear = 1000 * 60 * 60 * 24 * 365;
+            var timeDifference = (new Date() - areaDate) / millisecondsInYear;
+            // dataset last_date older than a year, don't include it (i.e., don't even search it)
+            if (timeDifference <= years) {
+                filteredDatasets.push(datasets[i]);
+            }
+        }
+
+        return filteredDatasets;
+    };
+
     this.search = function() {
         $("#search-form-results-table tbody").empty();
         var matchingAreas = [];
 
         // special case if user inputs no attributes to search by, we get null instead of a dictionary
         var searchAttributes = this.getSearchAttributes();
-        if (searchAttributes == null) {
-            alert("Please enter parameters before searching for a dataset");
-            return;
-        }
-
         // get array of all areas on map
         var areas = myMap.allAreas;
         var attributesController = new AreaAttributesController(myMap, areas[0]);
@@ -301,20 +316,10 @@ function SearchFormController(container) {
         var attributesMatch = true;
 
         // for each area, get attributes
-        for (var i = 0; i < areas.length; i++) {
-            attributesController.setArea(areas[i]);
+        areas.forEach(function(area) {
+            attributesController.setArea(area);
             fileAttributes = attributesController.getAllAttributes();
             attributesMatch = true;
-
-            if ($("#recent-datasets-toggle-button").hasClass("toggled")) {
-                var areaDate = new Date(fileAttributes.last_date);
-                var millisecondsInYear = 1000 * 60 * 60 * 24 * 365;
-                var timeDifference = (new Date() - areaDate) / millisecondsInYear;
-                // dataset last_date older than a year, don't include it (i.e., don't even search it)
-                if (timeDifference > 1.0) {
-                    continue;
-                }
-            }
 
             // for each attribute inputted by user, compare to attribute of same name in area
             // if attribute values do not match, break
@@ -326,19 +331,29 @@ function SearchFormController(container) {
                 }
             }
             // if all attributes match, add area to array matchingAreas and generate HTML row displaying that area's attributes
-            if (attributesMatch) {
-                matchingAreas.push(areas[i]);
-                this.generateMatchingAreaHTML(areas[i]);
+            if (attributesMatch || !searchAttributes) {
+                matchingAreas.push(area);
             }
-        }
-        // update current map areas
-        myMap.areas = matchingAreas;
-        var json = {
-            "areas": matchingAreas
-        };
-        myMap.addSwathsFromJSON(json, null, true, false);
+        });
 
-        this.makeTableRowsInteractive();
+        if ($("#recent-datasets-toggle-button").hasClass("toggled")) {
+            matchingAreas = this.getDatasetsMoreRecentThan(matchingAreas, 1.0);
+        }
+
+        matchingAreas.forEach(function(area) {
+            this.generateMatchingAreaHTML(area);
+        }.bind(this));
+
+        if (matchingAreas.length > 0) {
+            // update current map areas
+            myMap.areas = matchingAreas;
+            var json = {
+                "areas": matchingAreas
+            };
+            myMap.addSwathsFromJSON(json, null, true, false);
+
+            this.makeTableRowsInteractive();
+        }
 
         return matchingAreas;
     };
