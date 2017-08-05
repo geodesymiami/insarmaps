@@ -1059,11 +1059,11 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 }
 
 #subset-swath-popup {
-    position: fixed;
+    position: absolute;
     display: none;
     height: 30%;
     width: 50%;
-    float: left;
+    bottom: 0;
     overflow-y: auto;
     z-index: 99;
     background-color: white;
@@ -1104,7 +1104,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 
 .minimize-button,
 .maximize-button {
-    display: block !important;
+    display: block;
     padding: 0 !important;
     border: 0 !important;
     width: 16px;

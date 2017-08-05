@@ -697,6 +697,10 @@ $(window).on("load", function() {
     // $(".wrap#charts").tooltip("disable");
     // $(".wrap#area-attributes-div").tooltip("disable");
 
+    $(".maximize-button").on("click", function() {
+        $(this).css("display", "none");
+    });
+
     $("#graph-div-minimize-button").on("click", function() {
         var container = $(".wrap#charts");
         if (container.hasClass("maximized")) {

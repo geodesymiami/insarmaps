@@ -588,6 +588,7 @@ function MapController(loadJSONFunc) {
         areaAttributesPopup.show(feature);
 
         this.colorScale.show();
+        $("#search-form-and-results-minimize-button").click();
 
         // when we click, we don't reset the highlight of modified markers one final time
         this.areaMarkerLayer.resetHighlightsOfAllMarkers();

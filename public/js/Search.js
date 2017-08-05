@@ -69,8 +69,9 @@ function searchTableHoverIn(jQueryThis) {
 }
 
 function searchTableHoverOut(jQueryThis) {
-    if (!currentArea || $(jQueryThis).attr("id") != currentArea.properties.layerID + "-search-row") {
+    if (!currentArea || $(jQueryThis).attr("class").split(" highlighted")[0] != currentArea.properties.unavco_name + "-search-row") {
         $(jQueryThis).css({ "background-color": "white" });
+        $(jQueryThis).removeClass("highlighted");
     }
     myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
 }
@@ -169,14 +170,6 @@ function SearchFormController(container) {
         $(".show-children-button#" + mainFeature.properties.unavco_name).hover(function(e) {
             e.stopPropagation(); // don't trigger hover event of parent
 
-            // zoom to area
-            var centerOfDataset = mainFeature.geometry.coordinates;
-
-            myMap.map.flyTo({
-                center: centerOfDataset,
-                zoom: 8
-            });
-
             $subsetSwathTableBody = $("#subset-swath-table > tbody").empty();
             var attributesController = new AreaAttributesController(myMap, mainFeature);
             var $subsetSwathPopup = $("#subset-swath-popup");
@@ -191,6 +184,8 @@ function SearchFormController(container) {
                 if ((subsetTop + $subsetSwathPopup.height()) > mapBottom) {
                     subsetTop = subsetTop - $subsetSwathPopup.height() + $(this).height();
                 }
+                // only add left but leave subsetTop calculation in case he wants the top to change in accordance
+                // with hoverd rows position again
                 $subsetSwathPopup.css({ top: subsetTop, left: subsetLeft });
             }
 
