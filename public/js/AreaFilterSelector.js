@@ -54,9 +54,10 @@ function setUpAreaFilterSelector() {
             "type": "FeatureCollection",
             "features": [polygon]
         };
+
         var points = {
             "type": "FeatureCollection",
-            "features": this.map.areas.areas
+            "features": this.map.allAreas
         };
 
         var ptsWithin = turf.within(points, searchWithin);

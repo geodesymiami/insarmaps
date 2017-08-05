@@ -47,8 +47,7 @@ function MapController(loadJSONFunc) {
     this.zoomOutZoom = 7.0;
     this.graphsController = new GraphsController(this);
     this.areas = null;
-    this.areaFeatures = null;
-    this.allAreaFeatures = null;
+    this.allAreas = null;
     this.colorScale = new ColorScale(-2.00, 2.00, "color-scale");
     this.colorScale.onScaleChange(function(newMin, newMax) {
         var curMode = this.getCurrentMode();
@@ -630,17 +629,10 @@ function MapController(loadJSONFunc) {
                 // first time a dataset is selected
                 this.tileJSON = tileJSON;
 
-                var centerOfDataset = feature.properties.centerOfDataset;
-
-                if (typeof centerOfDataset === "string") {
-                    centerOfDataset = JSON.parse(centerOfDataset);
-                }
-
-                var long = centerOfDataset[0];
-                var lat = centerOfDataset[1];
+                var centerOfDataset = feature.geometry.coordinates;
 
                 this.map.flyTo({
-                    center: [long, lat],
+                    center: centerOfDataset,
                     zoom: zoom
                 });
 
@@ -684,8 +676,8 @@ function MapController(loadJSONFunc) {
                 var num_chunks = feature.properties.num_chunks;
                 var attributeKeys = feature.properties.attributekeys;
                 var attributeValues = feature.properties.attributevalues;
-
-                var markerID = feature.properties.layerID;
+                // set coordinates to center of dataset
+                feature.geometry.coordinates = JSON.parse(feature.properties.centerOfDataset);
 
                 this.loadDatasetFromFeature(feature);
             }
@@ -808,12 +800,6 @@ function MapController(loadJSONFunc) {
     };
 
     this.addSwathsFromJSON = function(json, toExclude, populateSearchTable, addAllSubsets) {
-        var areaMarker = {
-            type: "geojson",
-            cluster: false,
-            clusterRadius: 10,
-            data: {}
-        };
         var features = [];
 
         var attributesController = new AreaAttributesController(this, json.areas[0]);
@@ -870,7 +856,7 @@ function MapController(loadJSONFunc) {
             if (attributesController.areaHasAttribute("data_footprint")) {
                 var data_footprint = attributesController.getAttribute("data_footprint");
                 // make the scene footprint the previous data_footprint and delete the data_footprint
-                var featureClone = JSON.parse(JSON.stringify(feature));
+                var areaClone = JSON.parse(JSON.stringify(area));
 
                 // we are adding the subsets, there is no need to know anymore whether a feature has subsets
                 // so the map will be empty (since we empty on entering this method). not having this if causes us
@@ -879,16 +865,16 @@ function MapController(loadJSONFunc) {
                 // in question is the "master" subset swath but this was a quicker solution.
                 if (!addAllSubsets) {
                     if (!this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID]) {
-                        this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID] = [featureClone];
+                        this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID] = [areaClone];
                     } else {
                         siblingAlreadyThere = true;
-                        this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID].push(featureClone);
+                        this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID].push(areaClone);
                     }
                 }
             }
 
             if (!siblingAlreadyThere || addAllSubsets) {
-                features.push(feature);
+                features.push(area);
 
                 var swathWidth = 3;
                 var swath = new Swath(this, attributes.mission, swathWidth, feature, id);
@@ -904,14 +890,10 @@ function MapController(loadJSONFunc) {
         if (populateSearchTable) {
             searchFormController.populateSearchResultsTable(features);
         }
-        this.areaFeatures = features;
-        populateSearchAutocomplete();
 
-        // add the markers representing the available areas
-        areaMarker.data = {
-            "type": "FeatureCollection",
-            "features": features
-        };
+        // update current map areas
+        this.areas = features;
+        populateSearchAutocomplete();
 
         return features;
     };
@@ -926,8 +908,8 @@ function MapController(loadJSONFunc) {
             url: "/areas",
             success: function(response) {
                 var json = response;
-                if (!this.areas) {
-                    this.areas = json;
+                if (!this.allAreas) {
+                    this.allAreas = json.areas;
                 }
 
                 var features = this.addSwathsFromJSON(json, toExclude, true, false);
@@ -956,7 +938,6 @@ function MapController(loadJSONFunc) {
             this.lastAreasRequest = null;
         }
         this.areaMarkerLayer.emptyLayers();
-        this.areaFeatures = [];
     };
 
     this.removeAreaMarkersThroughButton = function() {
@@ -999,7 +980,6 @@ function MapController(loadJSONFunc) {
         var bounds = this.map.getBounds();
         var bbox = [bounds._ne, bounds._sw];
         this.areaFilterSelector.filterAreasInBrowser(bbox, populateTable);
-
     };
 
     this.addMapToPage = function(containerID) {
@@ -1036,8 +1016,8 @@ function MapController(loadJSONFunc) {
             this.selector.map = this;
             this.selector.associatedButton = $("#square-selector-button");
             this.selector.prepareEventListeners();
-            this.loadAreaMarkers(function(areaFeatures) {
-                this.allAreaFeatures = areaFeatures;
+            this.loadAreaMarkers(function(areas) {
+                this.areas = areas;
                 if (!urlOptions) {
                     return;
                 }
@@ -1180,6 +1160,8 @@ function MapController(loadJSONFunc) {
 
             if (mode === "seismicity") {
                 this.seismicityGraphsController.createCrossSectionCharts(null, null, null);
+            } else if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
+                this.loadSwathsInCurrentViewport(true);
             }
         }.bind(this));
     };
@@ -1269,6 +1251,7 @@ function MapController(loadJSONFunc) {
     };
 
     this.reset = function() {
+        this.areas = this.allAreas;
         this.removePoints();
         currentArea = null;
         this.removeTouchLocationMarkers();

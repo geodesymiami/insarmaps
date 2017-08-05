@@ -548,52 +548,6 @@ function CountryGeocoder(mapboxAccessToken) {
     }
 }
 
-function search() {
-    var areas = myMap.allAreaFeatures;
-
-    if (!$('.wrap#select-area-wrap').hasClass('active')) {
-        $('.wrap#select-area-wrap').toggleClass('active');
-    }
-    if (areas != null) {
-        // TODO: dummy search for paper, add actual paper later on when we get attribute    
-        query = $("#search-input").val();
-        var geocoder = new CountryGeocoder(mapboxgl.accessToken);
-        geocoder.geocode(query, function(features) {
-            if (features.length > 0) {
-                var firstCountry = features[0];
-                var swCorner = [firstCountry.bbox[0], firstCountry.bbox[1]];
-                var neCorner = [firstCountry.bbox[2], firstCountry.bbox[3]];
-                var bbox = [swCorner, neCorner];
-                myMap.map.fitBounds(bbox);
-            }
-        });
-
-        // TODO: remove, this is placeholder
-        for (var i = 0; i < areas.length; i++) {
-            areas[i].properties.reference =
-                "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288";
-            // add mission so it's fuse searchable
-            areas[i].properties.mission = areas[i].properties.attributevalues[0];
-        }
-        // new sublist of areas that match query
-        var match_areas = [];
-
-        var fuse = new Fuse(areas, {
-            keys: ["properties.country",
-                "properties.unavco_name", "properties.region",
-                "properties.mission", "properties.reference"
-            ]
-        });
-        var countries = fuse.search(query);
-        if (countries.length === 0) {
-            return;
-        }
-
-        var searcher = new SearchFormController("search-form");
-        searcher.populateSearchResultsTable(countries);
-    }
-}
-
 function slideFunction(event, ui) {
     // start at 1 to avoid base map layer
     for (var i = 1; i <= currentArea.properties.num_chunks; i++) {

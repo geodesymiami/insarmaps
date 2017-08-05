@@ -31,9 +31,9 @@ function populateAutocompleteFromFeatures(inputID, areas, attribute) {
 }
 
 function populateSearchAutocomplete() {
-    populateAutocompleteFromFeatures("input-satellite", myMap.areaFeatures, "mission");
-    populateAutocompleteFromFeatures("input-mode", myMap.areaFeatures, "beam_mode");
-    populateAutocompleteFromFeatures("input-flight-direction", myMap.areaFeatures, "flight_direction");
+    populateAutocompleteFromFeatures("input-satellite", myMap.areas, "mission");
+    populateAutocompleteFromFeatures("input-mode", myMap.areas, "beam_mode");
+    populateAutocompleteFromFeatures("input-flight-direction", myMap.areas, "flight_direction");
 }
 
 function hideAllAutomcompleteSuggestions() {
@@ -73,6 +73,54 @@ function searchTableHoverOut(jQueryThis) {
         $(jQueryThis).css({ "background-color": "white" });
     }
     myMap.areaMarkerLayer.resetHighlightsOfAllMarkers();
+}
+
+// function which handles fuzzy search of main search input(the one always visible). it also is smart enough
+// to recognize countries, etc. not sure why it is a singular function and not in the class
+function search() {
+    var areas = myMap.allAreas;
+
+    if (!$('.wrap#select-area-wrap').hasClass('active')) {
+        $('.wrap#select-area-wrap').toggleClass('active');
+    }
+    if (areas != null) {
+        // TODO: dummy search for paper, add actual paper later on when we get attribute
+        query = $("#search-input").val();
+        var geocoder = new CountryGeocoder(mapboxgl.accessToken);
+        geocoder.geocode(query, function(features) {
+            if (features.length > 0) {
+                var firstCountry = features[0];
+                var swCorner = [firstCountry.bbox[0], firstCountry.bbox[1]];
+                var neCorner = [firstCountry.bbox[2], firstCountry.bbox[3]];
+                var bbox = [swCorner, neCorner];
+                myMap.map.fitBounds(bbox);
+            }
+        });
+        console.log(areas);
+        for (var i = 0; i < areas.length; i++) {
+            // add mission so it's fuse searchable
+            areas[i].properties.mission = areas[i].properties.attributevalues[0];
+        }
+        // new sublist of areas that match query
+        var match_areas = [];
+
+        var fuse = new Fuse(areas, {
+            keys: ["properties.country",
+                "properties.unavco_name", "properties.region",
+                "properties.mission", "properties.reference"
+            ]
+        });
+        var matchingAreas = fuse.search(query);
+        if (matchingAreas.length === 0) {
+            return;
+        }
+        // update current map areas
+        myMap.areas = matchingAreas;
+        var json = {
+            "areas": matchingAreas
+        };
+        myMap.addSwathsFromJSON(json, null, true, false);
+    }
 }
 
 function SearchFormController(container) {
@@ -122,16 +170,10 @@ function SearchFormController(container) {
             e.stopPropagation(); // don't trigger hover event of parent
 
             // zoom to area
-            var centerOfDataset = mainFeature.properties.centerOfDataset;
-
-            if (typeof centerOfDataset === "string") {
-                centerOfDataset = JSON.parse(centerOfDataset);
-            }
-            var long = centerOfDataset[0];
-            var lat = centerOfDataset[1];
+            var centerOfDataset = mainFeature.geometry.coordinates;
 
             myMap.map.flyTo({
-                center: [long, lat],
+                center: centerOfDataset,
                 zoom: 8
             });
 
@@ -258,7 +300,7 @@ function SearchFormController(container) {
         }
 
         // get array of all areas on map
-        var areas = myMap.allAreaFeatures;
+        var areas = myMap.allAreas;
         var attributesController = new AreaAttributesController(myMap, areas[0]);
         var fileAttributes = null;
         var attributesMatch = true;
@@ -294,6 +336,12 @@ function SearchFormController(container) {
                 this.generateMatchingAreaHTML(areas[i]);
             }
         }
+        // update current map areas
+        myMap.areas = matchingAreas;
+        var json = {
+            "areas": matchingAreas
+        };
+        myMap.addSwathsFromJSON(json, null, true, false);
 
         this.makeTableRowsInteractive();
 
@@ -322,7 +370,7 @@ $(window).on("load", function() {
 
         // enter key, and focus on one of the inputs, and main top search input isn't empty
         if (e.keyCode === ENTER_KEY && ($("#search-form input").is(":focus")) && (!$("#search-input").val())) {
-            if (myMap.areaFeatures) {
+            if (myMap.areas) {
                 searcher.search();
                 $("#search-form-and-results-maximize-button").click();
                 fullyHideSearchBars();
