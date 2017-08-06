@@ -908,6 +908,20 @@ $(window).on("load", function() {
         myMap.seismicityGraphsController.resetSliderRange(sliderName);
     });
 
+    $("#set-insar-time-range-to-seismicity-button").on("click", function() {
+        if (myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
+            var insarDates = myMap.graphsController.graphSettings["chartContainer"].navigatorEvent;
+            var seismicityDates = myMap.seismicityGraphsController.timeRange;
+            // make sure insardates are within seismicity dates
+            if (insarDates.min >= seismicityDates.min
+                && insarDates.max <= seismicityDates.max) {
+                myMap.seismicityGraphsController.timeSlider.setMinMax(insarDates.min, insarDates.max);
+            } else {
+                window.alert("No overlap in time.");
+            }
+        }
+    });
+
     // chart div resizable
     $(".wrap#charts").resizable({
         animateDuration: "fast",

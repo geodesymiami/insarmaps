@@ -474,6 +474,7 @@
                     <div class="seismicity-chart-slider" id="time-slider"></div>
                     <button class="btn btn-primary-outline slider-range-button" data-slider-type="time-slider">Set Range</button>
                     <button class="btn btn-primary-outline slider-reset-button" data-slider-type="time-slider">Reset</button>
+                    <button class="btn btn-primary-outline" id="set-insar-time-range-to-seismicity-button">Set insar time range</button>
                     <br>
                     <h7>Depth (Distribution)</h7>
                     <div class="seismicity-chart-slider" id="depth-slider"></div>
