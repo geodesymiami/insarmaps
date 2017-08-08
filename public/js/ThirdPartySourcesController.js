@@ -3,9 +3,11 @@ function ThirdPartySourcesController(map) {
     this.map = map;
     this.cancellableAjax = new CancellableAjax();
 
+    // old datasets have more than one, new ones should only have one, so consider renaming insar layer eventually.
+    const FIRST_INSAR_CHUNK = "chunk_1";
     // we should consider creating these next 3 arrays dynamically
     this.layerOrder = ["USGSEarthquake", "USGSEventsEarthquake", "IGEPNEarthquake", "HawaiiReloc", "LongValleyReloc", "midas",
-        "midas-arrows", "gpsStations"
+        "midas-arrows", "gpsStations", FIRST_INSAR_CHUNK
     ];
 
     this.seismicities = ["USGSEarthquake", "USGSEventsEarthquake", "IGEPNEarthquake", "HawaiiReloc", "LongValleyReloc"];
@@ -1223,10 +1225,10 @@ function ThirdPartySourcesController(map) {
     };
 
     this.populateMidasHorizontalArrowScale = function() {
-        const DESIRED_PIXELS = 10;
-        const METERS = DESIRED_PIXELS / this.midasArrowPixelsPerMeter;
+        const DESIRED_PIXELS = 100;
+        const CENTIMETERS = DESIRED_PIXELS / this.midasArrowPixelsPerMeter * 100;
 
-        $("#arrow-length-value").html(METERS + " m");
-        $("#arrow-image").css("width", DESIRED_PIXELS);
+        $("#arrow-length-value").html(CENTIMETERS + " cm/yr");
+        $("#arrow-image").css({ "width": DESIRED_PIXELS + "px", "height": "10px" });
     };
 }

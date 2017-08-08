@@ -679,7 +679,6 @@ function MapController(loadJSONFunc) {
                 var attributeValues = feature.properties.attributevalues;
                 // set coordinates to center of dataset
                 feature.geometry.coordinates = JSON.parse(feature.properties.centerOfDataset);
-
                 this.loadDatasetFromFeature(feature);
             }
         }
@@ -756,6 +755,7 @@ function MapController(loadJSONFunc) {
             bounds: data['bounds']
         });
 
+        var before = this.thirdPartySourcesController.getLayerOnTopOf("chunk_1");
         data['vector_layers'].forEach(function(el) {
             var layer = {
                 id: el['id'],
@@ -783,7 +783,8 @@ function MapController(loadJSONFunc) {
                     }
                 }
             }
-            this.addLayer(layer);
+
+            this.addLayer(layer, before);
         }.bind(this));
     };
 

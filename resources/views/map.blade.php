@@ -102,7 +102,7 @@
                             <div class="caret"></div>
                         </div>
                     </div>
-                    <button class="form-group custom-input-container" id="recent-datasets-toggle-button" data-toggle="tooltip" title="Filter search results by time">Filter Time</button>
+                    <button class="form-group custom-input-container" id="recent-datasets-toggle-button" data-toggle="tooltip" title="Filter search results by time">Last year data</button>
                     <!-- enter button to search for files with attributes matching above input -->
                     <!-- <div id="enter-button-search-attributes">
               <button class="btn btn-primary btn-block">Enter</button>
@@ -148,7 +148,7 @@
                         <input id='satellite' type='radio' name='rtoggle' value='satellite' />
                         <label for='satellite'>Satellite</label>
                     </div>
-                    <button class="btn btn-info" id="hide-show-seismicities-button">Hide seismicities</button>
+                    <button class="btn btn-primary-outline" id="hide-show-seismicities-button">Hide seismicity</button>
                     <div class="wrap wrap-transitions" id="USGSEvents-options">
                         <div class="top-right-buttons">
                             <button type="button" class="minimize-button" data-dismiss="modal" id="USGSEvents-options-minimize-button"></button>

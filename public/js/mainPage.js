@@ -509,21 +509,16 @@ function setupToggleButtons() {
     // we really need a generic toggable base class :c. too much work for now
     // for little gain
     $("#recent-datasets-toggle-button").on("click", function() {
-        if (!$(this).hasClass("toggled")) {
-            $(this).animate({
-                backgroundColor: "#dcdee2",
-                opacity: 0.7
-            }, 200);
+        if ($(this).html() === "Last year data") {
+            $(this).html("All data");
             $(this).addClass("toggled");
-            new SearchFormController("search-form").search();
-            $("#search-form-and-results-maximize-button").click();
         } else {
-            $(this).animate({
-                backgroundColor: "white",
-                opacity: 1.0
-            }, 200);
+            $(this).html("Last year data");
             $(this).removeClass("toggled");
         }
+
+        new SearchFormController("search-form").search();
+        $("#search-form-and-results-maximize-button").click();
     });
 }
 
@@ -613,12 +608,12 @@ $(window).on("load", function() {
         if (myMap.getCurrentMode() !== "seismicity") {
             return;
         }
-        if ($(this).html() === "Hide seismicities") {
+        if ($(this).html() === "Hide seismicity") {
             myMap.thirdPartySourcesController.hideAllSeismicities();
-            $(this).html("Show seismicities");
+            $(this).html("Show seismicity");
         } else {
             myMap.thirdPartySourcesController.showAllSeismicities();
-            $(this).html("Hide seismicities");
+            $(this).html("Hide seismicity");
         }
     });
 
@@ -637,6 +632,12 @@ $(window).on("load", function() {
     $("#USGSEvents-options-submit-button").on("click", function() {
         myMap.thirdPartySourcesController.removeUSGSEventsEarthquake(); // in case it is enabled
         myMap.thirdPartySourcesController.loadUSGSEventsEarthquake();
+
+        // minimize the window after submit
+        var $container = $(".wrap#USGSEvents-options");
+        if ($container.hasClass("active")) {
+            $container.removeClass("active");
+        }
     });
 
     $("#color-scale .color-scale-text-div").on("click", function() {
@@ -912,13 +913,17 @@ $(window).on("load", function() {
         if (myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
             var insarDates = myMap.graphsController.graphSettings["chartContainer"].navigatorEvent;
             var seismicityDates = myMap.seismicityGraphsController.timeRange;
-            // make sure insardates are within seismicity dates
-            if (insarDates.min >= seismicityDates.min
-                && insarDates.max <= seismicityDates.max) {
-                myMap.seismicityGraphsController.timeSlider.setMinMax(insarDates.min, insarDates.max);
-            } else {
-                window.alert("No overlap in time.");
+            // make sure insardates are within seismicity dates, capping them at seismicity extremes otherwise
+            var minMilliSeconds = seismicityDates.min;
+            var maxMilliseconds = seismicityDates.max;
+            if (insarDates.max < maxMilliseconds && insarDates.max > minMilliSeconds) {
+                maxMilliseconds = insarDates.max;
             }
+            if (insarDates.min > minMilliSeconds && insarDates.min < maxMilliseconds) {
+                minMilliSeconds = insarDates.min;
+            }
+
+            myMap.seismicityGraphsController.timeSlider.setMinMax(minMilliSeconds, maxMilliseconds);
         }
     });
 
