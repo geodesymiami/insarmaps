@@ -511,10 +511,10 @@ function setupToggleButtons() {
     $("#recent-datasets-toggle-button").on("click", function() {
         if ($(this).html() === "Last year data") {
             $(this).html("All data");
-            $(this).addClass("toggled");
+            $(this).removeClass("toggled");
         } else {
             $(this).html("Last year data");
-            $(this).removeClass("toggled");
+            $(this).addClass("toggled");
         }
 
         new SearchFormController("search-form").search();

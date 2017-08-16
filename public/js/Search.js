@@ -56,7 +56,7 @@ function fullyHideSearchBars() {
 }
 
 function searchTableHoverIn(jQueryThis) {
-    if (myMap.pointsLoaded()) {
+    if ($("#dataset-frames-toggle-button").hasClass("toggled")) {
         return;
     }
 
@@ -97,7 +97,7 @@ function search() {
                 myMap.map.fitBounds(bbox);
             }
         });
-        console.log(areas);
+
         for (var i = 0; i < areas.length; i++) {
             // add mission so it's fuse searchable
             areas[i].properties.mission = areas[i].properties.attributevalues[0];
@@ -179,14 +179,15 @@ function SearchFormController(container) {
                 var subsetLeft = rowCoords.left + $(this).width();
                 var $map = $("#map-container");
                 var mapBottom = $map.offset().top + $map.height();
-                var subsetTop = rowCoords.top - $(this).position().top;
+                // var subsetTop = rowCoords.top - $(this).position().top;
 
-                if ((subsetTop + $subsetSwathPopup.height()) > mapBottom) {
-                    subsetTop = subsetTop - $subsetSwathPopup.height() + $(this).height();
-                }
+                // if ((subsetTop + $subsetSwathPopup.height()) > mapBottom) {
+                //     subsetTop = subsetTop - $subsetSwathPopup.height() + $(this).height();
+                // }
                 // only add left but leave subsetTop calculation in case he wants the top to change in accordance
                 // with hoverd rows position again
-                $subsetSwathPopup.css({ top: subsetTop, left: subsetLeft });
+                // $subsetSwathPopup.css({ top: subsetTop, left: subsetLeft });
+                $subsetSwathPopup.css({ left: subsetLeft });
             }
 
             subsetFeatures.forEach(function(subsetFeature) {
@@ -254,7 +255,8 @@ function SearchFormController(container) {
         $("#search-form-results-table tbody").append(html);
         $("." + rowClass).css({ cursor: "pointer" });
         $("." + rowClass).click(function() {
-            if (!currentArea || (area.properties.layerID != currentArea.properties.layerID) && !myMap.pointsLoaded()) {
+            if (!currentArea || (area.properties.layerID != currentArea.properties.layerID)
+                && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
                 myMap.loadDatasetFromFeature(area);
             }
         });
