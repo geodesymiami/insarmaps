@@ -1025,14 +1025,33 @@ function MapController(loadJSONFunc) {
                 }
                 var options = urlOptions.startingDatasetOptions;
                 if (options.startDataset) {
-                    for (var i = 0; i < areaFeatures.length; i++) {
-                        if (areaFeatures[i].properties.unavco_name === options.startDataset) {
+                    for (var i = 0; i < this.allAreas.length; i++) {
+                        if (this.allAreas[i].properties.unavco_name === options.startDataset) {
                             showLoadingScreen("Loading requested dataset...", null);
-                            this.loadDatasetFromFeature(areaFeatures[i], options.zoom);
+                            this.loadDatasetFromFeature(this.allAreas[i], options.zoom);
                             break;
                         }
                     }
+                } else if (options.onlyShowDatasets) {
+                    var datasetsToShow = options.onlyShowDatasets.split(",");
+                    var areasToShow = [];
+                    this.allAreas.forEach(function(area) {
+                        if (datasetsToShow.includes(area.properties.unavco_name)) {
+                            areasToShow.push(area);
+                        }
+                    });
+                    // i suppose it's not elegant to just re-add them and we could do something
+                    // like tell server to only return some areas, or something else, but this is quick, and it works.
+                    // and to be honest, changing it, while more elegant, seems like micro optimzation since this was so quick
+                    // to implement.
+                    this.allAreas = areasToShow;
+                    this.areas = areasToShow
+                    var json = {
+                        "areas": areasToShow
+                    };
+                    this.addSwathsFromJSON(json, null, true, false);
                 }
+
             }.bind(this));
             this.areaFilterSelector = new AreaFilterSelector();
             this.areaFilterSelector.map = this;
@@ -1267,7 +1286,10 @@ function MapController(loadJSONFunc) {
 
         this.colorDatasetOnVelocity();
 
-        this.loadAreaMarkers(null);
+        var json = {
+            "areas": this.allAreas
+        };
+        this.addSwathsFromJSON(json, null, true, false);
 
         this.removeAreaPopups();
         $("#search-form-and-results-minimize-button").click();

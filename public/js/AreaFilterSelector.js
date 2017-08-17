@@ -57,7 +57,7 @@ function setUpAreaFilterSelector() {
 
         var featuresToSearch = this.map.allAreas;
         // if we are displaying only data a year old or less
-        if ($("#recent-datasets-toggle-button").hasClass("toggled")) {
+        if (!$("#recent-datasets-toggle-button").hasClass("toggled")) {
             featuresToSearch = new SearchFormController("search-form").getDatasetsMoreRecentThan(featuresToSearch, 1.0);;
         }
         var points = {

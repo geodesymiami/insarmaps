@@ -29,15 +29,15 @@
             <p>
                 To identify data sets from published papers, please search for the author's names. To access data sets which are not yet finalized, please login here:
             </p>
-            <div id="login-logout-button">
-                <button class="btn btn-primary-outline">Login</button>
-            </div>
+            <a href="/auth/login" class="btn btn-primary-outline">Login</a>
             @endif
             <p>
                 For accessing the data products via web services click here:
             </p>
-            <button class="btn btn-primary-outline" id="webservices-ui-button">Web Services</button>
+            <a href="/WebServicesUI" class="btn btn-primary-outline">Web Services</a>
             <span id="current-point-webservices-link"></span>
+            <p>To see examples of how to embed maps into your own site, see: (Examples from Ecuador and Hawaii):</p>
+            <a href="/examples" class="btn btn-primary-outline">Examples</a>
             <p>
                 This website relies on Mapbox GL JS, which in turn relies on WebGL. As it stands, Google Chrome offers the best compatibility when browsing this site.
             </p>
@@ -123,9 +123,7 @@
             <a class="btn btn-primary-outline" id="reset-button" role="button" href="/">Reset</a>
             <button class="btn btn-primary-outline" id="information-button">About</button>
             @if (Auth::check())
-            <div class="logged-in" id="login-logout-button">
-                <button class="btn btn-primary-outline">Logout</button>
-            </div>
+            <a href="/auth/logout" class="btn btn-primary-outline">Logout</a>
             @endif
             <div id="square-selector-button-div">
                 <button class="btn btn-primary-outline map-button no-padding clickable-button" data-toggle="tooltip" data-placement="right" title="Select points" id="square-selector-button">

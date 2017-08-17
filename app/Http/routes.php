@@ -9,10 +9,10 @@
 | It's a breeze. Simply tell Laravel the URIs it should respond to
 | and give it the controller to call when that URI is requested.
 |
-*/
+ */
 
 /*Route::get('/', function () {
-    return view('map');
+return view('map');
 });*/
 
 Route::get('/', 'WebServicesController@processRequest')->name('showViewOrWebservices');
@@ -32,7 +32,7 @@ Route::get("/USGSEventsEarthquake/", "ThirdPartyDataNoCorsController@getUSGSEven
 
 Route::post("/points", "GeoJSONController@getPoints");
 Route::controllers([
-    'auth' => 'Auth\AuthController',    
+    'auth' => 'Auth\AuthController',
     // 'password' => 'Auth\PasswordController',
 ]);
 Route::get("/adminPanel", "AdminPanelController@getAdminPanel");
@@ -42,6 +42,9 @@ Route::get("/test/{table}/{table2}", "PermissionsController@getAllUserPermission
 // web services for querying points
 Route::get("/WebServices/", "WebServicesController@processRequest");
 Route::get("/WebServicesUI/", "WebServicesController@renderView");
+Route::get("/examples/", function () {
+    return view("examples");
+});
 
 // web services for querying datasets
 Route::get("/WebServicesDataset/", "WebServicesDatasetController@processRequest");

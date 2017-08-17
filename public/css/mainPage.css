@@ -64,6 +64,10 @@ html[xmlns] .clearfix {
     height: 1%;
 }
 
+a.btn {
+    background-color: buttonface;
+    color: #333;
+}
 .vertically-aligned {
     position: relative;
     top: 50%;

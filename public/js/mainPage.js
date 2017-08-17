@@ -1071,18 +1071,6 @@ $(window).on("load", function() {
         }
     });
 
-    $("#login-logout-button").on('click', function() {
-        if ($("#login-logout-button").hasClass("logged-in")) {
-            window.location = "/auth/logout";
-        } else {
-            window.location = "/auth/login";
-        }
-    });
-
-    $("#webservices-ui-button").on("click", function() {
-        window.location = "/WebServicesUI";
-    });
-
     $("#download-as-text-button").click(function() {
         window.open("/textFile/" + currentArea.properties.unavco_name +
             "/" + currentPoint);
