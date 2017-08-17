@@ -19,7 +19,7 @@
             <li>startTime should be in yyyy-mm-dd format. Ex: 1990-12-20.</li>
             <li>endTime should be in yyyy-mm-dd format. Ex: 2020-12-20.</li>
             <li>outputType should be json, dataset, or csv.</li>
-            <li>WKT Linestring Box should be a valid, WKT Linestring></li>
+            <li>WKT Linestring Box should be a valid, WKT Linestring</li>
         </ul>
     </div>
     <!-- TODO: delete webServicesDataset code - should be 4 of them in php, blade, js, and routes -->

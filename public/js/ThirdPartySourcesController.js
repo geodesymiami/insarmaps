@@ -19,9 +19,10 @@ function ThirdPartySourcesController(map) {
     this.currentSeismicityColoring = "depth";
     this.midasArrows = null;
     this.referenceArrow = null;
+    this.lastClickedArrow = null;
     this.subtractedMidasArrows = null;
     this.USGSEventsURL = null;
-    this.midasArrowPixelsPerMeter = 500;
+    this.midasArrowPixelsPerMeter = 2500;
 
     // keep this around for when main map needs features to pass in to create
     // the seismicity sliders. notice (below) that we always set this before
@@ -260,22 +261,19 @@ function ThirdPartySourcesController(map) {
             this.referenceArrow = arrow;
             this.subtractedMidasArrows = null;
             this.subtractedMidasArrows = [];
-            var arrowVector = Vector.newVectorFromMagAndAngle(arrow.properties.length, arrow.properties.orientation);
 
             for (var i = 0; i < this.midasArrows.length; i++) {
                 var curArrow = this.midasArrows[i];
-                var orientation = curArrow.properties.orientation;
-                var startCoordinate = curArrow.geometry.coordinates[0];
-                var length = curArrow.properties.length;
-                var curArrowVector = Vector.newVectorFromMagAndAngle(length, orientation);
-                var resultVector = curArrowVector.subtract(arrowVector);
-
-                var arrowGeoJSON = this.getArrowGeoJSON(startCoordinate, resultVector.angle, resultVector.mag, i);
                 if (curArrow.properties.id == arrow.properties.id) {
                     curArrow.properties.color = "red";
                     curArrow.properties.isReference = true;
                     this.subtractedMidasArrows.push(curArrow);
                 } else {
+                    var arrowVector = Vector.newVectorFromMagAndAngle(arrow.properties.length, arrow.properties.orientation);
+                    var curArrowVector = this.arrowGeoJSONToVector(curArrow);
+                    var resultVector = curArrowVector.subtract(arrowVector);
+                    var startCoordinate = curArrow.geometry.coordinates[0];
+                    var arrowGeoJSON = this.getArrowGeoJSON(startCoordinate, resultVector.angle, resultVector.mag, i);
                     this.subtractedMidasArrows.push(arrowGeoJSON);
                 }
             }
@@ -285,6 +283,31 @@ function ThirdPartySourcesController(map) {
                 "features": this.subtractedMidasArrows
             });
         }
+    };
+
+    this.arrowGeoJSONToVector = function(arrowGeoJSON) {
+        var orientation = arrowGeoJSON.properties.orientation;
+        var startCoordinate = arrowGeoJSON.geometry.coordinates[0];
+        var length = arrowGeoJSON.properties.length;
+        var vector = Vector.newVectorFromMagAndAngle(length, orientation);
+
+        return vector;
+    };
+
+    this.handleClickOnArrowFeature = function(arrow) {
+        // we add the last clicked arrow before subtracting, to undo the
+        // effects of the last clicked arrow
+        if (this.lastClickedArrow) {
+            var lastClickedArrowVector = this.arrowGeoJSONToVector(this.lastClickedArrow);
+            var arrowVector = this.arrowGeoJSONToVector(arrow);
+            var resultVector = lastClickedArrowVector.add(arrowVector);
+
+            arrow.properties.orientation = resultVector.angle;
+            arrow.properties.length = resultVector.mag;
+        }
+
+        this.lastClickedArrow = arrow;
+        this.subtractArrowMagnitudeFromArrows(arrow);
     };
 
     this.parseMidasJSON = function(midasJSON) {
@@ -1225,8 +1248,8 @@ function ThirdPartySourcesController(map) {
     };
 
     this.populateMidasHorizontalArrowScale = function() {
-        const DESIRED_PIXELS = 100;
-        const CENTIMETERS = DESIRED_PIXELS / this.midasArrowPixelsPerMeter * 100;
+        const CENTIMETERS = 5;
+        const DESIRED_PIXELS = CENTIMETERS / 100 * this.midasArrowPixelsPerMeter;
 
         $("#arrow-length-value").html(CENTIMETERS + " cm/yr");
         $("#arrow-image").css({ "width": DESIRED_PIXELS + "px", "height": "10px" });

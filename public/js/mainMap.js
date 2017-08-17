@@ -356,7 +356,7 @@ function MapController(loadJSONFunc) {
         }
 
         if (this.getCurrentMode() === "gps" && id === "midas-arrows") {
-            this.thirdPartySourcesController.subtractArrowMagnitudeFromArrows(feature);
+            this.thirdPartySourcesController.handleClickOnArrowFeature(feature);
         }
 
         // clicked on area marker, reload a new area.

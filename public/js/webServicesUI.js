@@ -117,7 +117,9 @@ $(window).on("load", function() {
         dateFormat: "yy-m-dd"
     });
 
-    buildURL();
+    var url = getRootUrl() + "WebServices?longitude=131.67&latitude=32.53";
+    var html = "<a target='_blank' href='" + url + "'>" + url + "</a>";
+    $("#form-webservice-url").html(html);
 
     /**
      * Given user inputted parameters, dispay a url needed for webservice querying of a point from a dataset
