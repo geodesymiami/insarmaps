@@ -154,9 +154,9 @@
                         <div class="content">
                             <div id="usgs-events-current-viewport"></div>
                             <label>Start Date</label>
-                            <input type="text" class="form-control start-date date-input" />
+                            <input type="text" class="form-control start-date" />
                             <label>End Date</label>
-                            <input type="text" class="form-control end-date date-input" />
+                            <input type="text" class="form-control end-date" />
                             <label>Min Magnitude</label>
                             <input type="number" class="form-control min-magnitude" value="4" />
                             <label>Max Magnitude</label>

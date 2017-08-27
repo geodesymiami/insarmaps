@@ -22,6 +22,7 @@ function MapController(loadJSONFunc) {
     // my mapbox api key
     mapboxgl.accessToken = "pk.eyJ1Ijoia2pqajExMjIzMzQ0IiwiYSI6ImNpbDJqYXZ6czNjdWd2eW0zMTA2aW1tNXUifQ.cPofQqq5jqm6l4zix7k6vw";
     this.startingZoom = 1.6;
+    this.datasetZoom = 8.0;
     this.startingCoords = [0, 30];
     // the map
     this.map = null;
@@ -616,7 +617,7 @@ function MapController(loadJSONFunc) {
             // in case it's up
             this.gpsStationPopup.remove();
             window.setTimeout(function() {
-                var zoom = 8.0;
+                var zoom = this.datasetZoom;
 
                 // quickly switching between areas? don't reset zoom
                 if (this.anAreaWasPreviouslyLoaded()) {
@@ -986,6 +987,7 @@ function MapController(loadJSONFunc) {
 
     this.addMapToPage = function(containerID) {
         var startingOptions = null;
+        var minZoom = 0; // default as per gl js api
         if (urlOptions) {
             startingOptions = urlOptions.startingView;
         }
@@ -994,12 +996,19 @@ function MapController(loadJSONFunc) {
         try {
             startingCoords = new mapboxgl.LngLat(startingOptions.lng, startingOptions.lat);
             startingZoom = parseFloat(startingOptions.zoom);
+            // use the dataset zoom as the starting zoom if it was specified
+            this.datasetZoom = startingZoom;
+            // prevent zoom out if specified
+            if (urlOptions.startingDatasetOptions.zoomOut === "false") {
+                minZoom = startingZoom;
+            }
         } catch (error) {}
 
         this.map = new mapboxgl.Map({
             container: containerID, // container id
             center: startingCoords, // this.starting position
             zoom: startingZoom, // this.starting zoom
+            minZoom: minZoom,
             attributionControl: false
         }).addControl(new mapboxgl.AttributionControl({
             compact: true

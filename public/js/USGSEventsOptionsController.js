@@ -18,10 +18,22 @@ function USGSEventsOptionsController(divID) {
 
     this.getOptions = function() {
         var opts = {};
-        var minDate = $.datepicker.parseDate("yy-M-d",
+        var minDate = null;
+        var maxDate = null;
+
+        try {
+            minDate = $.datepicker.parseDate("yy-M-d",
                         $("#" + this.divID + " .start-date").val());
-        var maxDate =  $.datepicker.parseDate("yy-M-d",
+        } catch (exception) {
+            window.alert("Invalid start date.");
+        }
+
+        try {
+            maxDate =  $.datepicker.parseDate("yy-M-d",
                         $("#" + this.divID + " .end-date").val());
+        } catch (exception) {
+            window.alert("Invalid end date.");
+        }
         opts.minDate = $.datepicker.formatDate("yy-m-d", minDate);
         opts.maxDate = $.datepicker.formatDate("yy-m-d", maxDate);
         opts.minMagnitude = $("#" + this.divID + " .min-magnitude").val();

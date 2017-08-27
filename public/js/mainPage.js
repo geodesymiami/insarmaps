@@ -460,14 +460,16 @@ function setupToggleButtons() {
 
     USGSEventsEarthquakeToggleButton = new SeismicityToggleButton("USGSEvents-earthquake-toggle-button", "overlay-options-toggles", "USGS Events");
     USGSEventsEarthquakeToggleButton.onclick(function() {
+        var $container = $(".wrap#USGSEvents-options");
         if (USGSEventsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
-            var $container = $(".wrap#USGSEvents-options");
-
             if (!$container.hasClass("active")) {
                 $container.addClass("active");
             }
         } else {
             myMap.thirdPartySourcesController.removeUSGSEventsEarthquake();
+            if ($container.hasClass("active")) {
+                $container.removeClass("active");
+            }
         }
     });
 
