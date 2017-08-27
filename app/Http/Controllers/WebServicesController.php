@@ -390,13 +390,11 @@ class WebServicesController extends Controller {
             case 'startTime':
                 if (strlen($value) > 0) {
                     $options->startTime = $value;
-                    $options->attributeSearch = TRUE;
                 }
                 break;
             case 'endTime':
                 if (strlen($value) > 0) {
                     $options->endTime = $value;
-                    $options->attributeSearch = TRUE;
                 }
                 break;
             case 'box':
@@ -514,12 +512,15 @@ class WebServicesController extends Controller {
         $areas = $controller->getPermittedAreasWithQuery("SELECT * FROM area");
         $query = "";
         $preparedValues = [];
+        $areasMap = [];
         foreach ($areas as $areaID => $area) {
+            $areasMap[$area->unavco_name] = $area;
             // can also do a select from area like so: (SELECT (SELECT unavco_name FROM area WHERE unavco_name='" . $area->unavco_name . "') as unavco_name, p ..., etc. But, why go to area table if we have unavco_name already from previous query, so let's insert it by simple php concatenation
             $query .= "(SELECT CAST ((SELECT '" . $area->unavco_name . "') as varchar) AS unavco_name, p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM \"" . $area->unavco_name . "\" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry)) UNION ";
             $lineString = "LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")";
             array_push($preparedValues, $lineString);
         }
+
         // take out last union ( and add )
         $query = substr($query, 0, strlen($query) - 7);
         $query[strlen($query) - 1] = ')';
@@ -536,7 +537,7 @@ class WebServicesController extends Controller {
             }
         }
 
-        // if user specified outputType to be dataset names instead of json, return dataset names and their attributes
+        // if user specified outputType to be dataset names instead of json, return dataset names of the points found and their attributes
         if (strcasecmp($attributes->outputType, "dataset") == 0 || strcasecmp($attributes->outputType, "csv") == 0) {
             $csvArray = [];
             foreach ($areas as $areaID => $area) {
@@ -552,14 +553,36 @@ class WebServicesController extends Controller {
 
         // now get the nearest point to URL long and lat
         $json = [];
+        $startDate = $attributes->startTime;
+        $endDate = $attributes->endTime;
         foreach ($groupedPoints as $unavco_name => $points) {
             if (count($points) > 0) {
-                $json[$unavco_name] = $this->getNearestPoint($attributes->latitude, $attributes->longitude, $points);
+                $point = $this->getNearestPoint($attributes->latitude, $attributes->longitude, $points);
+                $stringDates = $this->arrayFormatter->postgresToPHPArray($areasMap[$unavco_name]->stringdates);
+                $decimalDates = $this->arrayFormatter->postgresToPHPFloatArray($areasMap[$unavco_name]->decimaldates);
+                $point->string_dates = $stringDates;
+                $point->decimal_dates = $decimalDates;
+                $point->d = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
+                $json[$unavco_name] = $this->constrainPointToDates($startDate, $endDate, $point);
             }
         }
 
         // otherwise, return json - caller will know what to do
         return $json;
+    }
+
+    private function constrainPointToDates($startDate, $endDate, $point) {
+        $decimalsArray = $this->dateFormatter->stringDateArrayToDecimalArray($point->string_dates);
+        $startDecimal = $this->dateFormatter->stringDateToDecimal($startDate);
+        $endDecimal = $this->dateFormatter->stringDateToDecimal($endDate);
+        $minMaxIndeces = $this->dateFormatter->getDateIndices($startDecimal, $endDecimal, $decimalsArray);
+        $length = $minMaxIndeces[1] - $minMaxIndeces[0];
+
+        $point->d = array_slice($point->d, $minMaxIndeces[0], $length);
+        $point->decimal_dates = array_slice($point->decimal_dates, $minMaxIndeces[0], $length);
+        $point->string_dates = array_slice($point->string_dates, $minMaxIndeces[0], $length);
+
+        return $point;
     }
 
     public function processRequest(Request $request) {

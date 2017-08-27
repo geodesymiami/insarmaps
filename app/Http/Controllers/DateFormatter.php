@@ -138,8 +138,9 @@ class DateFormatter {
         $maxIndex = 0;
         $currentDate = 0;
         $startAndEndTimeIndices = [];
+        $len = count($decimalDates);
 
-        for ($i = 0; $i < count($decimalDates); $i++) {
+        for ($i = 0; $i < $len; $i++) {
             $currentDate = $decimalDates[$i];
             if ($currentDate >= $startTime) {
                 $minIndex = $i;
@@ -147,11 +148,19 @@ class DateFormatter {
             }
         }
 
-        for ($i = 0; $i < count($decimalDates); $i++) {
+        if ($minIndex < 0) {
+            $minIndex = 0;
+        }
+
+        for ($i = 0; $i < $len; $i++) {
             $currentDate = $decimalDates[$i];
             if ($currentDate < $endTime) {
                 $maxIndex = $i + 1;
             }
+        }
+
+        if ($maxIndex > ($len - 1)) {
+            $maxIndex = ($len - 1);
         }
 
         array_push($startAndEndTimeIndices, $minIndex);
