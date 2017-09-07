@@ -38,6 +38,14 @@ class GeoJSONController extends Controller {
         return $data;
     }
 
+    public function dbPointToJSON($point, $decimalDates, $stringDates) {
+        $json["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($decimalDates);
+        $json["string_dates"] = $this->arrayFormatter->postgresToPHPArray($stringDates);
+        $json["displacements"] = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
+
+        return $json;
+    }
+
     /** @throws Exception */
     public function jsonDataForPoint($area, $pointNumber) {
         $json = [];
@@ -58,20 +66,19 @@ class GeoJSONController extends Controller {
             return ["Point not found"];
         }
 
+        $decimal_dates = NULL;
+        $string_dates = NULL;
         foreach ($dateInfos as $dateInfo) {
             $decimal_dates = $dateInfo->decimaldates;
             $string_dates = $dateInfo->stringdates;
         }
 
-        $json["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($decimal_dates);
-
-        $json["string_dates"] = $this->arrayFormatter->postgresToPHPArray($string_dates);
-
         $query = 'SELECT *, st_astext(wkb_geometry) from "' . $area . '" where p = ?';
 
         $points = DB::select($query, [$pointNumber]);
+        $json = NULL;
         foreach ($points as $point) {
-            $json["displacements"] = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
+            $json = $this->dbPointToJSON($point, $decimal_dates, $string_dates);
         }
 
         return $json;

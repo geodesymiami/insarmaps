@@ -19,6 +19,7 @@ class WebServicesOptions {
     public $startTime = NULL; // if specified, returned datasets must occur during or after this time
     public $endTime = NULL; // if specified, returned datasets must occur during or before this time
     public $box = NULL; // string containing wkt geometry to get datasets bounded in a box
+    public $downsampleFactor = 1;
     public $outputType = "json"; // default value is json, other option is dataset
     public $attributeSearch = FALSE; // if user specifies any search parameter except latitude, longitude, or outputType, set to true and adjust SQL
     public $datasetUnavcoName = NULL; // if user wants to find specific dataset
@@ -417,6 +418,11 @@ class WebServicesController extends Controller {
                     $options->pointID = $value;
                 }
                 break;
+            case 'downsampleFactor':
+                if (strlen($value) > 0) {
+                    $options->downsampleFactor = $value;
+                }
+                break;
             default:
                 break;
             }
@@ -489,21 +495,25 @@ class WebServicesController extends Controller {
         return $areas;
     }
 
-    private function getIndividualPointsFromAttributes($attributes) {
+    private function latLongToSmallWKTPolygonLineString($lat, $long) {
         // calculate polygon encapsulating longitude and latitude specified by user
         // delta = range of error for latitude and longitude values, can be changed as needed
         $delta = 0.0005;
-        $p1_lat = $attributes->latitude - $delta;
-        $p1_long = $attributes->longitude - $delta;
-        $p2_lat = $attributes->latitude + $delta;
-        $p2_long = $attributes->longitude - $delta;
-        $p3_lat = $attributes->latitude + $delta;
-        $p3_long = $attributes->longitude + $delta;
-        $p4_lat = $attributes->latitude - $delta;
-        $p4_long = $attributes->longitude + $delta;
-        $p5_lat = $attributes->latitude - $delta;
-        $p5_long = $attributes->longitude - $delta;
+        $p1_lat = $lat - $delta;
+        $p1_long = $long - $delta;
+        $p2_lat = $lat + $delta;
+        $p2_long = $long - $delta;
+        $p3_lat = $lat + $delta;
+        $p3_long = $long + $delta;
+        $p4_lat = $lat - $delta;
+        $p4_long = $long + $delta;
+        $p5_lat = $lat - $delta;
+        $p5_long = $long - $delta;
 
+        return "LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")";
+    }
+
+    private function getIndividualPointsFromAttributes($attributes) {
         // QUERY 2B: otherwise for each dataset name, if point exists in dataset then
         // return data of first point returned by polygon created by (longitude, latitude) and delta
         // key = area id, value = dataset name
@@ -517,7 +527,7 @@ class WebServicesController extends Controller {
             $areasMap[$area->unavco_name] = $area;
             // can also do a select from area like so: (SELECT (SELECT unavco_name FROM area WHERE unavco_name='" . $area->unavco_name . "') as unavco_name, p ..., etc. But, why go to area table if we have unavco_name already from previous query, so let's insert it by simple php concatenation
             $query .= "(SELECT CAST ((SELECT '" . $area->unavco_name . "') as varchar) AS unavco_name, p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM \"" . $area->unavco_name . "\" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry)) UNION ";
-            $lineString = "LINESTRING( " . $p1_long . " " . $p1_lat . ", " . $p2_long . " " . $p2_lat . ", " . $p3_long . " " . $p3_lat . ", " . $p4_long . " " . $p4_lat . ", " . $p5_long . " " . $p5_lat . ")";
+            $lineString = $this->latLongToSmallWKTPolygonLineString($attributes->latitude, $attributes->longitude);
             array_push($preparedValues, $lineString);
         }
 
@@ -563,7 +573,11 @@ class WebServicesController extends Controller {
                 $point->string_dates = $stringDates;
                 $point->decimal_dates = $decimalDates;
                 $point->d = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
-                $json[$unavco_name] = $this->constrainPointToDates($startDate, $endDate, $point);
+                if ($startDate || $endDate) {
+                    $json[$unavco_name] = $this->constrainPointToDates($startDate, $endDate, $point);
+                } else {
+                    $json[$unavco_name] = $point;
+                }
             }
         }
 
@@ -585,6 +599,83 @@ class WebServicesController extends Controller {
         return $point;
     }
 
+    private function findPointInDataset($datasetName, $lat, $long) {
+        // make sure we have that datasetName in our available datasets. this seems like it can be refactored since it seems repeated among the methods
+        $controller = new GeoJSONController();
+        // can be made faster by doing one query
+        $areas = $controller->getPermittedAreasWithQuery("SELECT * FROM area");
+
+        $point = NULL;
+        foreach ($areas as $areaID => $area) {
+            if ($area->unavco_name === $datasetName) {
+                $query = 'SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM "' . $datasetName . '" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry)';
+
+                $lineString = $this->latLongToSmallWKTPolygonLineString($lat, $long);
+                $preparedValues = [$lineString];
+                $dbPoints = NULL;
+                try {
+                    $dbPoints = DB::select($query, $preparedValues);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    return NULL;
+                }
+
+                if ($dbPoints) {
+                    $dbPoint = $this->getNearestPoint($lat, $long, $dbPoints);
+                    $point = $controller->dbPointToJSON($dbPoint, $area->decimaldates, $area->stringdates);
+                }
+                break;
+            }
+        }
+
+        return $point;
+    }
+
+    private function getPointsInBbox($datasetName, $lineStringBbox, $downsampleFactor) {
+        // the below areas thing really needs refactoring...
+        // make sure we have that datasetName in our available datasets. this seems like it can be refactored since it seems repeated among the methods
+        $controller = new GeoJSONController();
+        // can be made faster by doing one query
+        $areas = $controller->getPermittedAreasWithQuery("SELECT * FROM area");
+        $points = [];
+        $MAX_POINTS = 155;
+        foreach ($areas as $areaID => $area) {
+            if ($area->unavco_name === $datasetName) {
+                $query = 'SELECT COUNT(*) FROM "' . $datasetName . '" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry) AND p % ? = 0';
+                $preparedValues = [$lineStringBbox, $downsampleFactor];
+
+                $numPoints = $MAX_POINTS;
+                try {
+                    $numPointsStdClassArray = DB::select($query, $preparedValues);
+                    foreach ($numPointsStdClassArray as $countObj) {
+                        $numPoints = $countObj->count;
+                    }
+                } catch (\Illuminate\Database\QueryException $e) {
+                    return NULL;
+                }
+
+                if ($numPoints < $MAX_POINTS) {
+                    $query = 'SELECT p, d FROM "' . $datasetName . '" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry) AND p % ? = 0';
+                    $dbPoints = NULL;
+                    try {
+                        $dbPoints = DB::select($query, $preparedValues);
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        dd($e);
+                        return NULL;
+                    }
+
+                    $controller = new GeoJSONController();
+                    foreach ($dbPoints as $point) {
+                        array_push($points, $controller->dbPointToJSON($point, $area->decimaldates, $area->stringdates));
+                    }
+                } else {
+                    $points["error"] = "Too many points, increase down sampling or decrease bounding area";
+                }
+            }
+        }
+
+        return $points;
+    }
+
     public function processRequest(Request $request) {
         $json = [];
         // Required request parameters: latitude, longitude
@@ -600,17 +691,29 @@ class WebServicesController extends Controller {
             return response()->json($json);
         }
 
-        // if user only specifies dataset and no other attribute, return all dataset names;
         $returnValues = NULL;
         if ($options->datasetUnavcoName) {
             // search for point within dataset, otherwise search for info on dataset
             $controller = new GeoJSONController();
+            // pointID specified
             if ($options->pointID) {
                 return $controller->getDataForPoint($options->datasetUnavcoName, $options->pointID);
             }
+            // bounding box specified
+            // return all points in a box, possibly down sampled.
+            if ($options->box) {
+                return $this->getPointsInBbox($options->datasetUnavcoName, $options->box, $options->downsampleFactor);
+            }
+
+            // lat and long specified
+            if ($options->longitude != 1000.0 && $options->longitude != 1000.0) {
+                return $this->findPointInDataset($options->datasetUnavcoName, $options->latitude, $options->longitude);
+            }
+            // otherwise, get this area's info
             $returnValues = $controller->getPermittedAreasWithQuery("SELECT * FROM area", ["area.unavco_name LIKE ?"], [$options->datasetUnavcoName]);
 
         } else if ((strcasecmp($options->outputType, "dataset") == 0) && !$options->attributeSearch && $options->longitude == 1000.0 && $options->latitude == 1000.0) {
+            // if user only specifies dataset and no other attribute, return all dataset names;
             $controller = new GeoJSONController();
             $returnValues = $controller->getPermittedAreasWithQuery("SELECT * FROM area");
         } else if ($options->attributeSearch) {
