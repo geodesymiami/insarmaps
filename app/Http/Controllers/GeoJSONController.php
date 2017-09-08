@@ -50,7 +50,7 @@ class GeoJSONController extends Controller {
             $json["displacements"] = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
         }
 
-        if ($point->st_x && $point->st_y) {
+        if (property_exists($point, "st_x") && property_exists($point, "st_y")) {
             $long = floatval($point->st_x);
             $lat = floatval($point->st_y);
             $json["geometry"]["type"] = "Point";
