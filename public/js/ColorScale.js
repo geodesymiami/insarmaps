@@ -2,9 +2,10 @@ function MapboxStopsCalculator() {
     this.inputsFromMinAndMax = function(min, max, increment) {
         var currentValue = min;
         var output = [];
+        var incrementTooSmallForJS = (min + increment) == min;
 
         // prevent endless loop if min == max or increment == 0
-        if (min == max || increment <= 0) {
+        if (min == max || increment <= 0 || incrementTooSmallForJS) {
             output.push(min);
             return output;
         }

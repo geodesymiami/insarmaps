@@ -561,7 +561,10 @@ function showBrowserAlert() {
     var isChrome = !!window.chrome && !!window.chrome.webstore
     if (!isChrome && !localStorage.getItem("showedBrowserAlert")) {
         alert("Warning: This website relies on Mapbox GL JS, which in turn relies on WebGL. As it stands," + " Google Chrome offers the best compatibility when browsing this site.");
-        localStorage.setItem("showedBrowserAlert", "true");
+        // if can't set item due to private browsing, don't just crash the whole page
+        try {
+            localStorage.setItem("showedBrowserAlert", "true");
+        } catch (e) {}
     }
 }
 // when site loads, turn toggle on

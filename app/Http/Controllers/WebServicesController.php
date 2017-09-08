@@ -654,7 +654,7 @@ class WebServicesController extends Controller {
                 }
 
                 if ($numPoints < $MAX_POINTS) {
-                    $query = 'SELECT p, d FROM "' . $datasetName . '" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry) AND p % ? = 0';
+                    $query = 'SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM "' . $datasetName . '" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry) AND p % ? = 0';
                     $dbPoints = NULL;
                     try {
                         $dbPoints = DB::select($query, $preparedValues);
@@ -663,9 +663,13 @@ class WebServicesController extends Controller {
                         return NULL;
                     }
 
+                    $points["dates"]["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($area->decimaldates);
+                    $points["dates"]["string_dates"] = $this->arrayFormatter->postgresToPHPArray($area->stringdates);
+                    $points["points"] = [];
+
                     $controller = new GeoJSONController();
                     foreach ($dbPoints as $point) {
-                        array_push($points, $controller->dbPointToJSON($point, $area->decimaldates, $area->stringdates));
+                        array_push($points["points"], $controller->dbPointToJSON($point, NULL, NULL));
                     }
                 } else {
                     $points["error"] = "Too many points, increase down sampling or decrease bounding area";

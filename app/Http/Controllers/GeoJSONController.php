@@ -39,9 +39,23 @@ class GeoJSONController extends Controller {
     }
 
     public function dbPointToJSON($point, $decimalDates, $stringDates) {
-        $json["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($decimalDates);
-        $json["string_dates"] = $this->arrayFormatter->postgresToPHPArray($stringDates);
-        $json["displacements"] = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
+        $json = [];
+        if ($decimalDates) {
+            $json["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($decimalDates);
+        }
+        if ($stringDates) {
+            $json["string_dates"] = $this->arrayFormatter->postgresToPHPArray($stringDates);
+        }
+        if ($point->d) {
+            $json["displacements"] = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
+        }
+
+        if ($point->st_x && $point->st_y) {
+            $long = floatval($point->st_x);
+            $lat = floatval($point->st_y);
+            $json["geometry"]["type"] = "Point";
+            $json["geometry"]["coordinates"] = [$long, $lat];
+        }
 
         return $json;
     }

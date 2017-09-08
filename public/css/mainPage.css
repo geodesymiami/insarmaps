@@ -1311,4 +1311,10 @@ section.fixed-header-table.positioned {
 }
 
 
-/* -------------------------------------------------- */
+@media handheld,
+screen and (max-width:880px) {
+    #USGSEvents-options {
+        top: 100px;
+        left: 50%;
+    }
+}
