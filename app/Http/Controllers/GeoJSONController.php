@@ -155,7 +155,7 @@ class GeoJSONController extends Controller {
 
             // add last ANY values without comma
             $curPointNum = $pointsArray[$i];
-            $query = $query . '(' . $curPointNum . ')) SELECT *, st_astext(wkb_geometry) from "' . $area . '" INNER JOIN points p ON ("' . $area . '".p = p.point) ORDER BY p ASC';
+            $query = $query . '(' . $curPointNum . ')) SELECT d from "' . $area . '" INNER JOIN points p ON ("' . $area . '".p = p.point) ORDER BY p ASC';
 
             $points = DB::select(DB::raw($query), $preparedValues);
 
