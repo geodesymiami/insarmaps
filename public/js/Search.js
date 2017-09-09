@@ -14,8 +14,8 @@ function populateAutocompleteFromFeatures(inputID, areas, attribute) {
         var attributesController = new AreaAttributesController(null, areas[0]);
         for (var i = 0; i < areas.length; i++) {
             attributesController.setArea(areas[i]);
-            var fileAttributes = attributesController.getAllAttributes();
-            var attributeValue = fileAttributes[attribute];
+            var areaAttributes = attributesController.getAllAttributes();
+            var attributeValue = areaAttributes[attribute];
 
             if (attributeValue && !attributesSeenAlready[attributeValue]) {
                 attributesSeenAlready[attributeValue] = true;
@@ -227,18 +227,18 @@ function SearchFormController(container) {
 
     /**
      * Given dictionary of attributes, generate HTML row displaying dataset with those attributes
-     * @param {Array} fileAttributes - if user inputs at least one search criteria, null otherwise
+     * @param {Array} areaAttributes - if user inputs at least one search criteria, null otherwise
      */
     this.generateMatchingAreaHTML = function(area) {
 
         var attributesController = new AreaAttributesController(myMap, area);
-        fileAttributes = attributesController.getAllAttributes();
-        var satellite = fileAttributes.mission;
-        var relative_orbit = fileAttributes.relative_orbit;
-        var first_frame = fileAttributes.first_frame ? fileAttributes.first_frame : fileAttributes.frame;
+        areaAttributes = attributesController.getAllAttributes();
+        var satellite = areaAttributes.mission;
+        var relative_orbit = areaAttributes.relative_orbit;
+        var first_frame = areaAttributes.first_frame ? areaAttributes.first_frame : areaAttributes.frame;
         first_frame = first_frame.toString() != "0" ? first_frame : "N/A";
-        var mode = fileAttributes.beam_mode;
-        var flight_direction = fileAttributes.flight_direction;
+        var mode = areaAttributes.beam_mode;
+        var flight_direction = areaAttributes.flight_direction;
         var unavco_name = area.properties.unavco_name;
         var rowClass = unavco_name + "-search-row";
         var html = "<tr class='" + rowClass + "'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
@@ -287,13 +287,13 @@ function SearchFormController(container) {
 
     this.getDatasetsMoreRecentThan = function(datasets, years) {
         var attributesController = new AreaAttributesController(myMap, datasets[0]);
-        var fileAttributes = null;
+        var areaAttributes = null;
         var filteredDatasets = [];
 
         for (var i = 0; i < datasets.length; i++) {
             attributesController.setArea(datasets[i]);
-            fileAttributes = attributesController.getAllAttributes();
-            var areaDate = new Date(fileAttributes.last_date);
+            areaAttributes = attributesController.getAllAttributes();
+            var areaDate = new Date(areaAttributes.last_date);
             var millisecondsInYear = 1000 * 60 * 60 * 24 * 365;
             var timeDifference = (new Date() - areaDate) / millisecondsInYear;
             // dataset last_date older than a year, don't include it (i.e., don't even search it)
@@ -314,19 +314,19 @@ function SearchFormController(container) {
         // get array of all areas on map
         var areas = myMap.allAreas;
         var attributesController = new AreaAttributesController(myMap, areas[0]);
-        var fileAttributes = null;
+        var areaAttributes = null;
         var attributesMatch = true;
 
         // for each area, get attributes
         areas.forEach(function(area) {
             attributesController.setArea(area);
-            fileAttributes = attributesController.getAllAttributes();
+            areaAttributes = attributesController.getAllAttributes();
             attributesMatch = true;
 
             // for each attribute inputted by user, compare to attribute of same name in area
             // if attribute values do not match, break
             for (var key in searchAttributes) {
-                var attribute = fileAttributes[key];
+                var attribute = areaAttributes[key];
                 if (attribute && attribute.toLowerCase() != searchAttributes[key].toLowerCase()) {
                     attributesMatch = false;
                     break;

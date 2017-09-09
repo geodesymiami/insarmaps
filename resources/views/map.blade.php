@@ -102,7 +102,7 @@
                             <div class="caret"></div>
                         </div>
                     </div>
-                    <button class="form-group custom-input-container toggled" id="recent-datasets-toggle-button" data-toggle="tooltip" title="Filter search results by time">All data</button>
+                    <button class="form-group custom-input-container" id="recent-datasets-toggle-button" data-toggle="tooltip" title="Filter search results by time">All data</button>
                     <!-- enter button to search for files with attributes matching above input -->
                     <!-- <div id="enter-button-search-attributes">
               <button class="btn btn-primary btn-block">Enter</button>
