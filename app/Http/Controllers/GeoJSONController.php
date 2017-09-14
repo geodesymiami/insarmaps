@@ -171,8 +171,9 @@ class GeoJSONController extends Controller {
             foreach ($slopes as $slope) {
                 array_push($json, $slope->regr_slope);
             }
+            $binary = pack("d*", ...$json);
 
-            return response()->json($json);
+            return $binary;
         } catch (\Illuminate\Database\QueryException $e) {
             response()->json(["Error Getting Points"]);
         }

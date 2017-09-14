@@ -226,7 +226,7 @@ function setupFeatureSelector() {
         //console.log(query);
         this.recoloringInProgress = true;
 
-        this.cancellableAjax.ajax({
+        this.cancellableAjax.xmlHTTPRequestAjax({
             url: "/points",
             type: "post",
             async: true,
@@ -236,55 +236,63 @@ function setupFeatureSelector() {
                 arrayMaxIndex: this.maxIndex
             },
             success: function(response) {
-                if (this.cancelRecoloring) {
-                    this.cancelRecoloring = false;
-                    return;
-                }
-                console.log("Received points");
-                var json = response;
+                var arrayBuffer = response;
 
-                for (var i = 0; i < geoJSONData.features.length; i++) {
-                    var curFeature = geoJSONData.features[i];
-                    curFeature.properties.m = parseFloat(json[i]) * multiplier; // useful to get other derivatives such as position instead of velocity
-                }
-                if (this.map.map.getSource("onTheFlyJSON")) {
-                    this.map.removeSource("onTheFlyJSON");
-                    this.map.removeLayer("onTheFlyJSON");
-                }
-                this.map.addSource("onTheFlyJSON", {
-                    "type": "geojson",
-                    "data": geoJSONData
-                });
-
-                this.map.addLayer({
-                    "id": "onTheFlyJSON",
-                    "type": "circle",
-                    "source": "onTheFlyJSON",
-                    "paint": {
-                        'circle-color': {
-                            property: 'm',
-                            stops: this.map.colorScale.getMapboxStops()
-                        },
-                        'circle-radius': {
-                            // for an explanation of this array see here:
-                            // https://www.mapbox.com/blog/data-driven-styling/
-                            stops: [
-                                [5, 2],
-                                [8, 2],
-                                [13, 8],
-                                [21, 16],
-                                [34, 32]
-                            ]
-                        }
+                if (arrayBuffer) {
+                    var json = new Float64Array(arrayBuffer);
+                    if (this.cancelRecoloring) {
+                        this.cancelRecoloring = false;
+                        return;
                     }
-                });
-                this.recoloringInProgress = false;
-                hideLoadingScreen();
+                    console.log("Received points");
+
+                    for (var i = 0; i < geoJSONData.features.length; i++) {
+                        var curFeature = geoJSONData.features[i];
+                        curFeature.properties.m = parseFloat(json[i]) * multiplier; // useful to get other derivatives such as position instead of velocity
+                    }
+                    if (this.map.map.getSource("onTheFlyJSON")) {
+                        this.map.removeSource("onTheFlyJSON");
+                        this.map.removeLayer("onTheFlyJSON");
+                    }
+                    this.map.addSource("onTheFlyJSON", {
+                        "type": "geojson",
+                        "data": geoJSONData
+                    });
+
+                    this.map.addLayer({
+                        "id": "onTheFlyJSON",
+                        "type": "circle",
+                        "source": "onTheFlyJSON",
+                        "paint": {
+                            'circle-color': {
+                                property: 'm',
+                                stops: this.map.colorScale.getMapboxStops()
+                            },
+                            'circle-radius': {
+                                // for an explanation of this array see here:
+                                // https://www.mapbox.com/blog/data-driven-styling/
+                                stops: [
+                                    [5, 2],
+                                    [8, 2],
+                                    [13, 8],
+                                    [21, 16],
+                                    [34, 32]
+                                ]
+                            }
+                        }
+                    });
+                    this.recoloringInProgress = false;
+                    hideLoadingScreen();
+                }
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed " + xhr.responseText);
                 hideLoadingScreen();
-            }
+            },
+            requestHeader: {
+                'Content-type': 'application/x-www-form-urlencoded'
+            },
+            responseType: "arraybuffer"
         }, function() {
             this.cancelRecoloring = true;
             hideLoadingScreen();
