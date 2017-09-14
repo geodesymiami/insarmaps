@@ -107,9 +107,11 @@ class GeoJSONController extends Controller {
             return response()->json(["Point Not found"]);
         }
     }
-// TODO: add middlewear to protect against datasets to which user has no permissions. Extremely low priority at this point (7/14).
+
     public function getPoints() {
         $points = Input::get("points");
+        $minIndex = Input::get("arrayMinIndex");
+        $maxIndex = Input::get("arrayMaxIndex");
 
         try {
             $json = [];
@@ -139,12 +141,15 @@ class GeoJSONController extends Controller {
 
             foreach ($dateInfos as $dateInfo) {
                 $decimal_dates = $dateInfo->decimaldates;
-                $string_dates = $dateInfo->stringdates;
             }
 
-            $json["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($decimal_dates);
-            $json["string_dates"] = $this->arrayFormatter->postgresToPHPArray($string_dates);
-            $query = "WITH points(point) AS (VALUES";
+            $phpDecimalDates = $this->arrayFormatter->postgresToPHPFloatArray($decimal_dates);
+            $length = $maxIndex - $minIndex + 1;
+            $phpDecimalDates = array_slice($phpDecimalDates, $minIndex, $length);
+            $decimal_dates = $this->arrayFormatter->PHPToPostgresArrayString($phpDecimalDates);
+
+            $query = "SELECT regr_slope(displacements, dates) FROM (SELECT unnest(d) AS displacements,        unnest('" . $decimal_dates . "'::double precision[]) AS dates, groupNumber FROM (";
+            $query .= "WITH points(point) AS (VALUES";
             $preparedValues = [];
 
             for ($i = 0; $i < $pointsArrayLen - 1; $i++) {
@@ -153,15 +158,18 @@ class GeoJSONController extends Controller {
                 array_push($preparedValues, $curPointNum);
             }
 
-            // add last ANY values without comma
+            // postgres doesn't used 0 based indexing...sigh
+            $minIndex++;
+            $maxIndex++;
+            // add last ANY values without comma. it fails when this last value is a ? prepared value... something about not being able to compare to text... investigate but i have no idea.
             $curPointNum = $pointsArray[$i];
-            $query = $query . '(' . $curPointNum . ')) SELECT d from "' . $area . '" INNER JOIN points p ON ("' . $area . '".p = p.point) ORDER BY p ASC';
+            $query = $query . '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], ROW_NUMBER() OVER() AS groupNumber FROM "' . $area . '" INNER JOIN points p ON ("' . $area . '".p = p.point) ORDER BY p ASC) AS displacements) AS z GROUP BY groupNumber ORDER BY groupNumber ASC';
 
-            $points = DB::select(DB::raw($query), $preparedValues);
+            $slopes = DB::select(DB::raw($query), $preparedValues);
+            $json = [];
 
-            foreach ($points as $point) {
-                $displacements = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
-                array_push($json["displacements"], $displacements);
+            foreach ($slopes as $slope) {
+                array_push($json, $slope->regr_slope);
             }
 
             return response()->json($json);

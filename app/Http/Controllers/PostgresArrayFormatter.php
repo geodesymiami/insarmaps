@@ -56,4 +56,8 @@ class PostgresArrayFormatter {
         $stringArray = $this->postgresToPHPArray($pgArray);
         return $this->stringArrayToFloatArray($stringArray);
     }
+
+    public function PHPToPostgresArrayString($array) {
+        return "{" . join(",", $array) ."}";
+    }
 }

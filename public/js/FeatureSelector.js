@@ -231,7 +231,9 @@ function setupFeatureSelector() {
             type: "post",
             async: true,
             data: {
-                points: query
+                points: query,
+                arrayMinIndex: this.minIndex,
+                arrayMaxIndex: this.maxIndex
             },
             success: function(response) {
                 if (this.cancelRecoloring) {
@@ -239,34 +241,11 @@ function setupFeatureSelector() {
                     return;
                 }
                 console.log("Received points");
-                // console.log(response);
                 var json = response;
-                // if (geoJSONData.features.length != json.displacements.length) {
-                //     console.log("not the same size json is " + json.displacements.length + " while features is " + geoJSONData.features.length);
-                // }
+
                 for (var i = 0; i < geoJSONData.features.length; i++) {
                     var curFeature = geoJSONData.features[i];
-
-                    var date_string_array = json.string_dates;
-                    var date_array = convertStringsToDateArray(date_string_array);
-                    var decimal_dates = json.decimal_dates;
-                    var displacement_array = json.displacements[i];
-                    var sub_displacements = displacement_array.slice(this.minIndex, this.maxIndex + 1);
-                    var sub_decimal_dates = decimal_dates.slice(this.minIndex, this.maxIndex + 1);
-
-                    // // returns array for displacement on chart
-                    // chart_data = getDisplacementChartData(displacement_array, date_string_array);
-
-                    // calculate and render a linear regression of those dates and displacements
-                    var result = calcLinearRegression(sub_displacements, sub_decimal_dates);
-                    var slope = result["equation"][0] * multiplier; // useful to get other derivatives such as position instead of velocity
-                    var y = result["equation"][1];
-                    // console.log("before " + curFeature.properties.m)
-                    // console.log("slope is " + slope);
-                    // console.log(curFeature);
-                    curFeature.properties.m = slope;
-                    // console.log("after " + curFeature.properties.m);
-                    // console.log(curFeature);
+                    curFeature.properties.m = parseFloat(json[i]) * multiplier; // useful to get other derivatives such as position instead of velocity
                 }
                 if (this.map.map.getSource("onTheFlyJSON")) {
                     this.map.removeSource("onTheFlyJSON");
