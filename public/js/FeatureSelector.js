@@ -281,9 +281,12 @@ function setupFeatureSelector() {
                             }
                         }
                     });
-                    this.recoloringInProgress = false;
-                    hideLoadingScreen();
+                } else {
+                    window.alert("Server encountered an error");
                 }
+
+                this.recoloringInProgress = false;
+                hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed " + xhr.responseText);

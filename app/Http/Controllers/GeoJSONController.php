@@ -136,7 +136,7 @@ class GeoJSONController extends Controller {
 
             // no dateinfos means either area wasn't found or user doesn't have permission for this area.
             if (count($dateInfos) == 0) {
-                return ["Error Getting Points"];
+                return response()->json(["Error Getting Points"]);
             }
 
             foreach ($dateInfos as $dateInfo) {
@@ -173,9 +173,11 @@ class GeoJSONController extends Controller {
             }
             $binary = pack("d*", ...$json);
 
-            return $binary;
+            return response()->make($binary, 200, [
+                "Content-Type" => "application/octet-stream",
+            ]);;
         } catch (\Illuminate\Database\QueryException $e) {
-            response()->json(["Error Getting Points"]);
+            return response()->json(["Error Getting Points"]);
         }
     }
 
