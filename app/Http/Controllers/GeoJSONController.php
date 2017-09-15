@@ -108,6 +108,16 @@ class GeoJSONController extends Controller {
         }
     }
 
+    private function arrayAllInts($array) {
+        foreach ($array as $potentialNumber) {
+            if (!is_numeric($potentialNumber)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function getPoints() {
         $points = Input::get("points");
         $minIndex = Input::get("arrayMinIndex");
@@ -135,7 +145,7 @@ class GeoJSONController extends Controller {
             $dateInfos = DB::select($query, $preparedValues);
 
             // no dateinfos means either area wasn't found or user doesn't have permission for this area.
-            if (count($dateInfos) == 0) {
+            if (count($dateInfos) == 0 || !$this->arrayAllInts($pointsArray)) {
                 return response()->json(["Error Getting Points"]);
             }
 
@@ -150,12 +160,10 @@ class GeoJSONController extends Controller {
 
             $query = "SELECT regr_slope(displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest('" . $decimal_dates . "'::double precision[]) AS dates, groupNumber FROM (";
             $query .= "WITH points(point) AS (VALUES";
-            $preparedValues = [];
 
             for ($i = 0; $i < $pointsArrayLen - 1; $i++) {
                 $curPointNum = $pointsArray[$i];
-                $query = $query . "(?),";
-                array_push($preparedValues, $curPointNum);
+                $query = $query . "(" . $curPointNum . "),";
             }
 
             // postgres doesn't used 0 based indexing...sigh
@@ -165,7 +173,7 @@ class GeoJSONController extends Controller {
             $curPointNum = $pointsArray[$i];
             $query = $query . '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], ROW_NUMBER() OVER() AS groupNumber FROM "' . $area . '" INNER JOIN points p ON ("' . $area . '".p = p.point) ORDER BY p ASC) AS displacements) AS z GROUP BY groupNumber ORDER BY groupNumber ASC';
 
-            $slopes = DB::select(DB::raw($query), $preparedValues);
+            $slopes = DB::select(DB::raw($query));
             $json = [];
 
             foreach ($slopes as $slope) {
