@@ -148,7 +148,7 @@ class GeoJSONController extends Controller {
             $phpDecimalDates = array_slice($phpDecimalDates, $minIndex, $length);
             $decimal_dates = $this->arrayFormatter->PHPToPostgresArrayString($phpDecimalDates);
 
-            $query = "SELECT regr_slope(displacements, dates) FROM (SELECT unnest(d) AS displacements,        unnest('" . $decimal_dates . "'::double precision[]) AS dates, groupNumber FROM (";
+            $query = "SELECT regr_slope(displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest('" . $decimal_dates . "'::double precision[]) AS dates, groupNumber FROM (";
             $query .= "WITH points(point) AS (VALUES";
             $preparedValues = [];
 
