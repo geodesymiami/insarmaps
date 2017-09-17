@@ -126,7 +126,7 @@
             <a href="/auth/logout" class="btn btn-primary-outline">Logout</a>
             @endif
             <div id="square-selector-button-div">
-                <button class="btn btn-primary-outline map-button no-padding clickable-button" data-toggle="tooltip" data-placement="right" title="Select points" id="square-selector-button">
+                <button class="btn btn-primary-outline map-button no-padding clickable-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="square-selector-button">
                     <img src="/img/polygon.svg" alt="polygon.svg">
                 </button>
             </div>
@@ -146,7 +146,8 @@
                         <input id='satellite' type='radio' name='rtoggle' value='satellite' />
                         <label for='satellite'>Satellite</label>
                     </div>
-                    <button class="btn btn-primary-outline" id="hide-show-seismicities-button">Hide seismicity</button>
+                    <button class="btn btn-primary-outline" id="hide-show-seismicities-button" data-toggle="tooltip" title="Show seismicity">Show seismicity</button>
+                    <button class="btn btn-primary-outline" id="hide-show-insar-button" data-toggle="tooltip" title="Show InSAR">Show InSAR</button>
                     <div class="wrap wrap-transitions" id="USGSEvents-options">
                         <div class="top-right-buttons">
                             <button type="button" class="minimize-button" data-dismiss="modal" id="USGSEvents-options-minimize-button"></button>

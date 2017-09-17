@@ -259,6 +259,7 @@ function setupFeatureSelector() {
                         "data": geoJSONData
                     });
 
+                    var before = this.map.getLayerOnTopOf("onTheFlyJSON");
                     this.map.addLayer({
                         "id": "onTheFlyJSON",
                         "type": "circle",
@@ -280,7 +281,7 @@ function setupFeatureSelector() {
                                 ]
                             }
                         }
-                    });
+                    }, before);
                 } else {
                     window.alert("Server encountered an error");
                 }

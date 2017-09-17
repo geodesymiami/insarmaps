@@ -112,6 +112,35 @@ function MapController(loadJSONFunc) {
         this.map.removeSource(id);
     };
 
+    // old datasets have more than one, new ones should only have one, so consider renaming insar layer eventually.
+    // higher index layerID's come below lower indexed ones
+    this.layerOrders = (function() {
+        const FIRST_INSAR_CHUNK = "chunk_1";
+        var allLayers = [this.thirdPartySourcesController.layerOrder, ["onTheFlyJSON", FIRST_INSAR_CHUNK]];
+
+        var layerOrders = [];
+        allLayers.forEach(function(layersArray) {
+            layerOrders = layerOrders.concat(layersArray);
+        });
+
+        return layerOrders;
+    }).bind(this)();
+
+    this.getLayerOnTopOf = function(layer) {
+        for (var i = this.layerOrders.length - 1; i >= 0; i--) {
+            if (this.layerOrders[i] === layer) {
+                var j = i - 1;
+                while (!this.map.getLayer(this.layerOrders[j]) && j > -1) {
+                    j--;
+                }
+
+                return j == -1 ? null : this.layerOrders[j];
+            }
+        }
+
+        return null;
+    };
+
     // determine which color scales to show, etc when a layer, and potentially
     // mode, changes
     this.afterLayersChanged = function(layerThatWasChanged) {
@@ -147,6 +176,12 @@ function MapController(loadJSONFunc) {
                 if (curMode === "insar") {
                     if (this.lastMode == curMode) {
                         return;
+                    }
+                    $hideShowInsarButton = $("#hide-show-insar-button");
+                    if ($hideShowInsarButton.html() === "Show InSAR") {
+                        $hideShowInsarButton.html("Hide InSAR");
+                        $hideShowInsarButton.attr("data-original-title", "Hide InSAR");
+                        $hideShowInsarButton.css("opacity", 0.7);
                     }
                     this.loadAreaMarkersThroughButton();
                     $("#insar-maximize-buttons-container").addClass("active");
@@ -188,6 +223,11 @@ function MapController(loadJSONFunc) {
 
                     var features = this.thirdPartySourcesController.getAllSeismicityFeatures();
                     if (features.length > 0) {
+                        $hideShowSeismicitiesButton = $("#hide-show-seismicities-button");
+                        if ($hideShowSeismicitiesButton.html("Show seismicity")) {
+                            $hideShowSeismicitiesButton.click();
+                        }
+
                         features.sort(function(feature1, feature2) {
                             return feature1.properties.time - feature2.properties.time;
                         });
@@ -607,12 +647,10 @@ function MapController(loadJSONFunc) {
         this.selector.reset(currentArea);
         this.colorScale.setTitle("LOS Velocity [cm/yr]");
 
-        this.addDataset(tileJSON);
+        this.addDataset(tileJSON, feature);
 
         this.map.once("data", function(event) {
             this.removeAreaMarkersThroughButton();
-
-            overlayToggleButton.set("on");
 
             // in case it's up
             this.gpsStationPopup.remove();
@@ -743,7 +781,7 @@ function MapController(loadJSONFunc) {
     };
 
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
-    this.addDataset = function(data) {
+    this.addDataset = function(data, feature) {
         this.colorScale.setTopAsMax(true);
         this.colorOnDisplacement = false;
         var stops = this.colorScale.getMapboxStops();
@@ -756,7 +794,7 @@ function MapController(loadJSONFunc) {
             bounds: data['bounds']
         });
 
-        var before = this.thirdPartySourcesController.getLayerOnTopOf("chunk_1");
+        var before = this.getLayerOnTopOf("chunk_1");
         data['vector_layers'].forEach(function(el) {
             var layer = {
                 id: el['id'],
@@ -787,6 +825,10 @@ function MapController(loadJSONFunc) {
 
             this.addLayer(layer, before);
         }.bind(this));
+
+        // add reference point... TODO
+        // var attributesController = new AreaAttributesController(this, feature);
+        // var longRef = attributesController.getAttribute()
     };
 
     this.polygonToLineString = function(polygonGeoJSON) {

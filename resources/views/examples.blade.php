@@ -70,6 +70,21 @@
 			}
 		</div>
 	</div>
+	<div class="row">
+		<div class="col-xs-12">
+			<p>This is how to the points from every dataset at a latitude and longitude point via the webservices API:</p>
+			@php
+			$urlMultiPoints = URL::to("/") . "/WebServices?longitude=130.78262&latitude=31.78947";
+			$urlSinglePoint = $urlMultiPoints . "&dataset=ALOS_SM_073_2950_20070107-20110420_0000_00000";
+			$urlBboxWithSample = URL::to("/") . "/WebServices?" . "dataset=ALOS_SM_422_0050_20070220-20110116_0000_00000&box=LINESTRING(98.66392135620117 3.5807975550005735,98.66392135620117 3.5776708456874085,98.66782665252686 3.577499518841305,98.66782665252686 3.5807118918739365,98.66392135620117 3.5807975550005735)&downsampleFactor=2";
+			@endphp
+			<pre><code class="html">{!! $urlMultiPoints !!}</code></pre>
+			<p>Specifying &amp;dataset specifies which dataset to search for a point in:</p>
+			<pre><code class="html">{!! $urlSinglePoint !!}</code></pre>
+			<p>To search for multiple points within a bounding box in a dataset, along with a sampling factor, use:</p>
+			<pre><code class="html">{!! $urlBboxWithSample !!}</code></pre>
+		</div>
+	</div>
 </div>
 @section('js-includes')
 @endsection @endsection

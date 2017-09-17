@@ -339,22 +339,7 @@ function setupToggleButtons() {
     // passed into them...
     overlayToggleButton = new ToggleButton("overlay-toggle-button", "overlay-options-toggles", "Insar");
     overlayToggleButton.onclick(function() {
-        // on? add layers, otherwise remove them
-        if (overlayToggleButton.toggleState == ToggleStates.ON) {
-            if (!myMap.anAreaWasPreviouslyLoaded()) {
-                overlayToggleButton.set("off");
-                return;
-            }
 
-            $("#overlay-slider").slider("value", 100);
-            myMap.loadDatasetFromFeature(currentArea);
-        } else {
-            if (myMap.pointsLoaded()) {
-                $("#overlay-slider").slider("value", 0);
-                myMap.removePoints();
-                myMap.removeTouchLocationMarkers();
-            }
-        }
     });
     // line connecting dots in chart on/off
     dotToggleButton = new ToggleButton("dot-toggle-button");
@@ -610,15 +595,40 @@ $(window).on("load", function() {
     setupToggleButtons();
 
     $("#hide-show-seismicities-button").on("click", function() {
-        if (myMap.getCurrentMode() !== "seismicity") {
-            return;
-        }
         if ($(this).html() === "Hide seismicity") {
             myMap.thirdPartySourcesController.hideAllSeismicities();
             $(this).html("Show seismicity");
+            $(this).attr("data-original-title", "Show seismicity");
+            $(this).css("opacity", 1.0);
         } else {
             myMap.thirdPartySourcesController.showAllSeismicities();
             $(this).html("Hide seismicity");
+            $(this).attr("data-original-title", "Hide seismicity");
+            $(this).css("opacity", 0.7);
+        }
+    });
+
+    $("#hide-show-insar-button").on("click", function() {
+        if ($(this).html() === "Show InSAR") {
+            if (!myMap.anAreaWasPreviouslyLoaded()) {
+                overlayToggleButton.set("off");
+                return;
+            }
+
+            $("#overlay-slider").slider("value", 100);
+            myMap.loadDatasetFromFeature(currentArea);
+            $(this).html("Hide InSAR");
+            $(this).attr("data-original-title", "Hide InSAR");
+            $(this).css("opacity", 0.7);
+        } else {
+            if (myMap.pointsLoaded()) {
+                $("#overlay-slider").slider("value", 0);
+                myMap.removePoints();
+                myMap.removeTouchLocationMarkers();
+                $(this).html("Show InSAR");
+                $(this).attr("data-original-title", "Show InSAR");
+                $(this).css("opacity", 1.0);
+            }
         }
     });
 

@@ -3,11 +3,8 @@ function ThirdPartySourcesController(map) {
     this.map = map;
     this.cancellableAjax = new CancellableAjax();
 
-    // old datasets have more than one, new ones should only have one, so consider renaming insar layer eventually.
-    const FIRST_INSAR_CHUNK = "chunk_1";
-    // we should consider creating these next 3 arrays dynamically
     this.layerOrder = ["USGSEarthquake", "USGSEventsEarthquake", "IGEPNEarthquake", "HawaiiReloc", "LongValleyReloc", "midas",
-        "midas-arrows", "gpsStations", FIRST_INSAR_CHUNK
+        "midas-arrows", "gpsStations"
     ];
 
     this.seismicities = ["USGSEarthquake", "USGSEventsEarthquake", "IGEPNEarthquake", "HawaiiReloc", "LongValleyReloc"];
@@ -40,21 +37,6 @@ function ThirdPartySourcesController(map) {
 
     this.currentSeismicitySizeStops = this.stopsCalculator.getMagnitudeStops(1, 11, this.defaultCircleSizes);
 
-    this.getLayerOnTopOf = function(layer) {
-        for (var i = this.layerOrder.length - 1; i >= 0; i--) {
-            if (this.layerOrder[i] === layer) {
-                var j = i - 1;
-                while (!this.map.map.getLayer(this.layerOrder[j]) && j > -1) {
-                    j--;
-                }
-
-                return j == -1 ? null : this.layerOrder[j];
-            }
-        }
-
-        return null;
-    };
-
     this.addGPSStationMarkers = function(stations) {
         var features = [];
         showLoadingScreen("Loading data", "ESCAPE to interrupt");
@@ -72,7 +54,7 @@ function ThirdPartySourcesController(map) {
                 };
 
                 var layerID = "gpsStations";
-                var before = this.getLayerOnTopOf(layerID);
+                var before = this.map.getLayerOnTopOf(layerID);
                 this.map.addSource(layerID, mapboxStationFeatures);
                 this.map.addLayer({
                     "id": layerID,
@@ -389,7 +371,7 @@ function ThirdPartySourcesController(map) {
                     this.midasArrows = features.arrows;
                     mapboxStationFeatures.data.features = features.arrows;
                     this.map.addSource(layerID, mapboxStationFeatures);
-                    var before = this.getLayerOnTopOf(layerID);
+                    var before = this.map.getLayerOnTopOf(layerID);
                     this.map.addLayer({
                         "id": layerID,
                         "type": "line",
@@ -412,7 +394,7 @@ function ThirdPartySourcesController(map) {
                     mapboxStationFeatures.data.features = features.points;
                     this.map.addSource(layerID, mapboxStationFeatures);
                     var stops = this.map.colorScale.getMapboxStops();
-                    var before = this.getLayerOnTopOf(layerID);
+                    var before = this.map.getLayerOnTopOf(layerID);
                     this.map.addLayer({
                         "id": layerID,
                         "type": "circle",
@@ -509,7 +491,7 @@ function ThirdPartySourcesController(map) {
                 var magStops = this.currentSeismicitySizeStops;
 
                 var layerID = "USGSEarthquake";
-                var before = this.getLayerOnTopOf(layerID);
+                var before = this.map.getLayerOnTopOf(layerID);
                 this.map.addSource(layerID, mapboxStationFeatures);
                 this.map.addLayer({
                     "id": layerID,
@@ -601,7 +583,7 @@ function ThirdPartySourcesController(map) {
                 var magStops = this.currentSeismicitySizeStops;
 
                 var layerID = "IGEPNEarthquake";
-                var before = this.getLayerOnTopOf(layerID);
+                var before = this.map.getLayerOnTopOf(layerID);
                 this.map.addSource(layerID, mapboxStationFeatures);
                 this.map.addLayer({
                     "id": layerID,
