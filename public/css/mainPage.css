@@ -410,6 +410,10 @@ div.menu {
     min-height: 34px;
 }
 
+#hide-show-seismicities-button, #hide-show-insar-button {
+    opacity: 0.7
+}
+
 #overlay-slider {
     height: 10px;
     width: 50px;
@@ -992,7 +996,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     max-height: 40px;
 }
 
-#download-as-text-button > button {
+#download-as-text-button {
     border: solid;
     background-color: white;
     border-width: 1px;
@@ -1019,6 +1023,11 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 
 #hidden-search-bars-container {
     display: none;
+}
+
+#recent-datasets-toggle-button {
+    color: rgb(125, 124, 122);
+    font-size: 15px;
 }
 
 #toggle-other-bars > .caret {

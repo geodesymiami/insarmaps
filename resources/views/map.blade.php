@@ -102,7 +102,7 @@
                             <div class="caret"></div>
                         </div>
                     </div>
-                    <button class="form-group custom-input-container" id="recent-datasets-toggle-button" data-toggle="tooltip" title="Filter search results by time">All data</button>
+                    <button class="form-group custom-input-container" id="recent-datasets-toggle-button" data-toggle="tooltip" title="Filter search results by time">All items</button>
                     <!-- enter button to search for files with attributes matching above input -->
                     <!-- <div id="enter-button-search-attributes">
               <button class="btn btn-primary btn-block">Enter</button>
@@ -146,8 +146,8 @@
                         <input id='satellite' type='radio' name='rtoggle' value='satellite' />
                         <label for='satellite'>Satellite</label>
                     </div>
-                    <button class="btn btn-primary-outline" id="hide-show-seismicities-button" data-toggle="tooltip" title="Show seismicity">Show seismicity</button>
-                    <button class="btn btn-primary-outline" id="hide-show-insar-button" data-toggle="tooltip" title="Show InSAR">Show InSAR</button>
+                    <button class="btn btn-primary-outline" id="hide-show-seismicities-button" data-toggle="tooltip" title="Show">Seismicity</button>
+                    <button class="btn btn-primary-outline" id="hide-show-insar-button" data-toggle="tooltip" title="Show">InSAR</button>
                     <div class="wrap wrap-transitions" id="USGSEvents-options">
                         <div class="top-right-buttons">
                             <button type="button" class="minimize-button" data-dismiss="modal" id="USGSEvents-options-minimize-button"></button>
@@ -313,9 +313,11 @@
                         <label>Detrend</label>
                         <input id="detrend-toggle-button" type="checkbox" name="overlayToggle" />
                     </div>
-                    <div id="download-as-text-button">
-                        <button class="btn btn-primary-outline">Download as TXT</button>
-                    </div>
+                    <!-- <div class="overlay_toggle">
+                        <label>Sync</label>
+                        <input id="sync-toggle-button" type="checkbox" name="overlayToggle" />
+                    </div> -->
+                    <button class="btn btn-primary-outline">Download as TXT</button>
                 </div>
             </div>
         </div>
@@ -473,7 +475,7 @@
                     <div class="seismicity-chart-slider" id="time-slider"></div>
                     <button class="btn btn-primary-outline slider-range-button" data-slider-type="time-slider">Set Range</button>
                     <button class="btn btn-primary-outline slider-reset-button" data-slider-type="time-slider">Reset</button>
-                    <button class="btn btn-primary-outline" id="set-insar-time-range-to-seismicity-button">Set insar time range</button>
+                    <button class="btn btn-primary-outline" id="set-insar-time-range-to-seismicity-button">Sync</button>
                     <br>
                     <h7>Depth (Distribution)</h7>
                     <div class="seismicity-chart-slider" id="depth-slider"></div>

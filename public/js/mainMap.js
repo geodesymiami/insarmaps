@@ -178,10 +178,9 @@ function MapController(loadJSONFunc) {
                         return;
                     }
                     $hideShowInsarButton = $("#hide-show-insar-button");
-                    if ($hideShowInsarButton.html() === "Show InSAR") {
-                        $hideShowInsarButton.html("Hide InSAR");
-                        $hideShowInsarButton.attr("data-original-title", "Hide InSAR");
-                        $hideShowInsarButton.css("opacity", 0.7);
+                    if ($hideShowInsarButton.attr("data-original-title") === "Show") {
+                        $hideShowInsarButton.attr("data-original-title", "Hide");
+                        $hideShowInsarButton.css("opacity", 1.0);
                     }
                     this.loadAreaMarkersThroughButton();
                     $("#insar-maximize-buttons-container").addClass("active");
@@ -224,7 +223,7 @@ function MapController(loadJSONFunc) {
                     var features = this.thirdPartySourcesController.getAllSeismicityFeatures();
                     if (features.length > 0) {
                         $hideShowSeismicitiesButton = $("#hide-show-seismicities-button");
-                        if ($hideShowSeismicitiesButton.html("Show seismicity")) {
+                        if ($hideShowSeismicitiesButton.attr("data-original-title") === "Show") {
                             $hideShowSeismicitiesButton.click();
                         }
 

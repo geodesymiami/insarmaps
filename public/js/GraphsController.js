@@ -794,9 +794,9 @@ function setupGraphsController() {
         var y = result["equation"][1];
 
         graphSettings.detrend_displacement_array = getlinearDetrend(
-                graphSettings.displacement_array, graphSettings.decimal_dates,
-                slope)
-            // calculate and render a linear regression of those dates and displacements
+            graphSettings.displacement_array, graphSettings.decimal_dates,
+            slope)
+        // calculate and render a linear regression of those dates and displacements
         result = calcLinearRegression(graphSettings.detrend_displacement_array,
             graphSettings.decimal_dates);
         slope = result["equation"][0];
@@ -1817,6 +1817,24 @@ function setupCustomSliderSeismicityController() {
         this.timeRange = { min: e.min, max: e.max };
         if (this.timeSlider.settingData) {
             return;
+        }
+
+        // if insar is up, recolor insar
+        if (this.map.pointsLoaded() && currentArea) {
+            var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.decimal_dates));
+            var startDate = dates[0];
+            var endDate = dates[dates.length - 1];
+            var seismicityDates = this.timeRange;
+            // make sure seismicity dates are within insar dates, capping them at insar extremes otherwise
+            var minMilliseconds = startDate.getTime();
+            var maxMilliseconds = endDate.getTime();
+            if (seismicityDates.max < maxMilliseconds && seismicityDates.max > minMilliseconds) {
+                maxMilliseconds = seismicityDates.max;
+            }
+            if (seismicityDates.min > minMilliseconds && seismicityDates.min < maxMilliseconds) {
+                minMilliseconds = seismicityDates.min;
+            }
+            this.map.graphsController.setNavigatorMinMax("chartContainer", minMilliseconds, maxMilliseconds);
         }
         this.map.thirdPartySourcesController.filterSeismicities([this.timeRange], "time");
 

@@ -496,11 +496,11 @@ function setupToggleButtons() {
     // we really need a generic toggable base class :c. too much work for now
     // for little gain
     $("#recent-datasets-toggle-button").on("click", function() {
-        if ($(this).html() === "Last year data") {
-            $(this).html("All data");
+        if ($(this).html() === "Last year") {
+            $(this).html("All items");
             $(this).removeClass("toggled");
         } else {
-            $(this).html("Last year data");
+            $(this).html("Last year");
             $(this).addClass("toggled");
         }
 
@@ -595,21 +595,19 @@ $(window).on("load", function() {
     setupToggleButtons();
 
     $("#hide-show-seismicities-button").on("click", function() {
-        if ($(this).html() === "Hide seismicity") {
+        if ($(this).attr("data-original-title") === "Hide") {
             myMap.thirdPartySourcesController.hideAllSeismicities();
-            $(this).html("Show seismicity");
-            $(this).attr("data-original-title", "Show seismicity");
-            $(this).css("opacity", 1.0);
+            $(this).attr("data-original-title", "Show");
+            $(this).css("opacity", 0.7);
         } else {
             myMap.thirdPartySourcesController.showAllSeismicities();
-            $(this).html("Hide seismicity");
-            $(this).attr("data-original-title", "Hide seismicity");
-            $(this).css("opacity", 0.7);
+            $(this).attr("data-original-title", "Hide");
+            $(this).css("opacity", 1.0);
         }
     });
 
     $("#hide-show-insar-button").on("click", function() {
-        if ($(this).html() === "Show InSAR") {
+        if ($(this).attr("data-original-title") === "Show") {
             if (!myMap.anAreaWasPreviouslyLoaded()) {
                 overlayToggleButton.set("off");
                 return;
@@ -617,17 +615,15 @@ $(window).on("load", function() {
 
             $("#overlay-slider").slider("value", 100);
             myMap.loadDatasetFromFeature(currentArea);
-            $(this).html("Hide InSAR");
-            $(this).attr("data-original-title", "Hide InSAR");
-            $(this).css("opacity", 0.7);
+            $(this).attr("data-original-title", "Hide");
+            $(this).css("opacity", 1.0);
         } else {
             if (myMap.pointsLoaded()) {
                 $("#overlay-slider").slider("value", 0);
                 myMap.removePoints();
                 myMap.removeTouchLocationMarkers();
-                $(this).html("Show InSAR");
-                $(this).attr("data-original-title", "Show InSAR");
-                $(this).css("opacity", 1.0);
+                $(this).attr("data-original-title", "Show");
+                $(this).css("opacity", 0.7);
             }
         }
     });
@@ -929,16 +925,16 @@ $(window).on("load", function() {
             var insarDates = myMap.graphsController.graphSettings["chartContainer"].navigatorEvent;
             var seismicityDates = myMap.seismicityGraphsController.timeRange;
             // make sure insardates are within seismicity dates, capping them at seismicity extremes otherwise
-            var minMilliSeconds = seismicityDates.min;
+            var minMilliseconds = seismicityDates.min;
             var maxMilliseconds = seismicityDates.max;
-            if (insarDates.max < maxMilliseconds && insarDates.max > minMilliSeconds) {
+            if (insarDates.max < maxMilliseconds && insarDates.max > minMilliseconds) {
                 maxMilliseconds = insarDates.max;
             }
-            if (insarDates.min > minMilliSeconds && insarDates.min < maxMilliseconds) {
-                minMilliSeconds = insarDates.min;
+            if (insarDates.min > minMilliseconds && insarDates.min < maxMilliseconds) {
+                minMilliseconds = insarDates.min;
             }
 
-            myMap.seismicityGraphsController.timeSlider.setMinMax(minMilliSeconds, maxMilliseconds);
+            myMap.seismicityGraphsController.timeSlider.setMinMax(minMilliseconds, maxMilliseconds);
         }
     });
 
