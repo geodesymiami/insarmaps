@@ -72,7 +72,7 @@
 	</div>
 	<div class="row">
 		<div class="col-xs-12">
-			<p>This is how to the points from every dataset at a latitude and longitude point via the webservices API:</p>
+			<p>This is how to obtain the points from every dataset at a latitude and longitude point via the webservices API:</p>
 			@php
 			$urlMultiPoints = URL::to("/") . "/WebServices?longitude=130.78262&latitude=31.78947";
 			$urlSinglePoint = $urlMultiPoints . "&dataset=ALOS_SM_073_2950_20070107-20110420_0000_00000";
