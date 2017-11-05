@@ -729,6 +729,10 @@ div.menu {
     border: none;
 }
 
+#color-scale .color-scale-picture-div {
+    cursor: pointer;
+}
+
 .color-scale-main-container {
     height: 90%;
 }

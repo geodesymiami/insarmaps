@@ -3,8 +3,10 @@ var dotToggleButton = null;
 var secondGraphToggleButton = null;
 var regressionToggleButton = null;
 var detrendToggleButton = null;
+var insarGraphSyncToggleButton = null;
 var topGraphToggleButton = null;
 var bottomGraphToggleButton = null;
+var seismicityGraphSyncToggleButton = null;
 var gpsStationsToggleButton = null;
 var midasStationsToggleButton = null;
 var usgsEarthquakeToggleButton = null;
@@ -379,6 +381,12 @@ function setupToggleButtons() {
         }
     });
 
+    insarGraphSyncToggleButton = new ToggleButton("insar-sync-toggle-button");
+    insarGraphSyncToggleButton.onclick(null);
+
+    seismicityGraphSyncToggleButton = new ToggleButton("seismicity-sync-toggle-button");
+    seismicityGraphSyncToggleButton.onclick(null);
+
     topGraphToggleButton = new ToggleButton("top-graph-toggle-button");
     topGraphToggleButton.onclick(function() {
         if (topGraphToggleButton.toggleState == ToggleStates.ON) {
@@ -697,6 +705,22 @@ $(window).on("load", function() {
 
             myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
         }
+    });
+
+    $("#color-scale .color-scale-picture-div").on("click", function() {
+        var min = myMap.colorScale.min;
+        var max = myMap.colorScale.max;
+        var selectedColoring = $("#color-scale .color-scale-text-div").attr("data-original-title") === "Color on time"
+                                ? "depth" : "time";
+        if ($(this).attr("data-original-title") === "Halve scale") {
+            $(this).attr("data-original-title", "Double scale");
+            myMap.colorScale.setMinMax(min / 2, max / 2);
+        } else {
+            $(this).attr("data-original-title", "Halve scale");
+            myMap.colorScale.setMinMax(min * 2, max * 2);
+        }
+
+        myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {

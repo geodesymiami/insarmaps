@@ -260,6 +260,10 @@ function setupFeatureSelector() {
                     });
 
                     var before = this.map.getLayerOnTopOf("onTheFlyJSON");
+                    // always use the insar color scale values for coloring on the fly...
+                    var min = this.map.insarColorScaleValues.min;
+                    var max = this.map.insarColorScaleValues.max;
+                    var stops = this.map.colorScale.stopsCalculator.colorsToMapboxStops(min, max, this.map.colorScale.currentScale);
                     this.map.addLayer({
                         "id": "onTheFlyJSON",
                         "type": "circle",
@@ -267,7 +271,7 @@ function setupFeatureSelector() {
                         "paint": {
                             'circle-color': {
                                 property: 'm',
-                                stops: this.map.colorScale.getMapboxStops()
+                                stops: stops
                             },
                             'circle-radius': {
                                 // for an explanation of this array see here:

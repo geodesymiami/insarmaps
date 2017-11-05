@@ -49,6 +49,7 @@ function MapController(loadJSONFunc) {
     this.graphsController = new GraphsController(this);
     this.areas = null;
     this.allAreas = null;
+    this.insarColorScaleValues = { min: -2.00, max: 2.00 };
     this.colorScale = new ColorScale(-2.00, 2.00, "color-scale");
     this.colorScale.onScaleChange(function(newMin, newMax) {
         var curMode = this.getCurrentMode();
@@ -56,6 +57,8 @@ function MapController(loadJSONFunc) {
         if (curMode) { // no mode (ie essentially empty map)
             if (curMode === "insar" && this.pointsLoaded()) {
                 this.refreshDataset();
+                this.insarColorScaleValues.min = newMin;
+                this.insarColorScaleValues.max = newMax;
             } else if (curMode === "gps") {
                 this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             } else if (curMode === "seismicity") {
@@ -221,7 +224,11 @@ function MapController(loadJSONFunc) {
                     $("#seismicity-maximize-buttons-container").addClass("active");
 
                     var features = this.thirdPartySourcesController.getAllSeismicityFeatures();
-                    if (features.length > 0) {
+                    // don't prepare for seismicities if layer that was changed was on the fly as it means
+                    // that we simply received new on the fly json, possibly from a call from the seismicity sliders...
+                    // if we prepareforseismicities and the call was from a slider, the slider's start and end ranges
+                    // get overriden
+                    if (features.length > 0 && layerThatWasChanged !== "onTheFlyJSON") {
                         $hideShowSeismicitiesButton = $("#hide-show-seismicities-button");
                         if ($hideShowSeismicitiesButton.attr("data-original-title") === "Show") {
                             $hideShowSeismicitiesButton.click();

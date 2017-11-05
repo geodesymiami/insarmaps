@@ -229,7 +229,7 @@
             </div>
             <div class="color-scale-main-container">
                 <div class="color-scale-and-values-container" class="clearfix">
-                    <div class="color-scale-picture-div">
+                    <div class="color-scale-picture-div" data-toggle="tooltip" title="Halve scale">
                         <img src="/img/jet_scale.PNG" alt="jet_scale.PNG">
                     </div>
                     <div class="scale-values">
@@ -313,11 +313,11 @@
                         <label>Detrend</label>
                         <input id="detrend-toggle-button" type="checkbox" name="overlayToggle" />
                     </div>
-                    <!-- <div class="overlay_toggle">
+                    <div class="overlay_toggle">
                         <label>Sync</label>
-                        <input id="sync-toggle-button" type="checkbox" name="overlayToggle" />
-                    </div> -->
-                    <button class="btn btn-primary-outline">Download as TXT</button>
+                        <input id="insar-sync-toggle-button" type="checkbox" name="overlayToggle" />
+                    </div>
+                    <button class="btn btn-primary-outline" id="download-as-text-button">Download as TXT</button>
                 </div>
             </div>
         </div>
@@ -476,6 +476,8 @@
                     <button class="btn btn-primary-outline slider-range-button" data-slider-type="time-slider">Set Range</button>
                     <button class="btn btn-primary-outline slider-reset-button" data-slider-type="time-slider">Reset</button>
                     <button class="btn btn-primary-outline" id="set-insar-time-range-to-seismicity-button">Sync</button>
+                    <label>Sync</label>
+                    <input id="seismicity-sync-toggle-button" type="checkbox" name="overlayToggle">
                     <br>
                     <h7>Depth (Distribution)</h7>
                     <div class="seismicity-chart-slider" id="depth-slider"></div>

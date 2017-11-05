@@ -348,6 +348,10 @@ function setupGraphsController() {
                                 this.map.selector.recolorDataset();
                             }
                         }
+
+                        if (insarGraphSyncToggleButton.toggleState == ToggleStates.ON) {
+                            this.map.seismicityGraphsController.timeSlider.setMinMax(e.min, e.max);
+                        }
                     }.bind(this)
                 },
                 dateTimeLabelFormats: {
@@ -1820,7 +1824,7 @@ function setupCustomSliderSeismicityController() {
         }
 
         // if insar is up, recolor insar
-        if (this.map.pointsLoaded() && currentArea) {
+        if (seismicityGraphSyncToggleButton.toggleState == ToggleStates.ON && currentArea) {
             var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.decimal_dates));
             var startDate = dates[0];
             var endDate = dates[dates.length - 1];
