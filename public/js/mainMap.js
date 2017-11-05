@@ -1117,6 +1117,12 @@ function MapController(loadJSONFunc) {
         this.setBaseMapLayer("streets");
 
         this.map.addControl(new mapboxgl.NavigationControl());
+        this.map.addControl(new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            trackUserLocation: true
+        }));
 
         // disable rotation gesture
         this.map.dragRotate.disable();
