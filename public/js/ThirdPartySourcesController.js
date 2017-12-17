@@ -7,6 +7,8 @@ function ThirdPartySourcesController(map) {
         "midas-arrows", "gpsStations"
     ];
 
+    this.layerOrderToCallbackMap = null;
+
     this.seismicities = ["USGSEarthquake", "USGSEventsEarthquake", "IGEPNEarthquake", "HawaiiReloc", "LongValleyReloc"];
     this.gps = ["midas", "midas-arrows", "gpsStations"];
 
@@ -946,10 +948,12 @@ function ThirdPartySourcesController(map) {
         var itsAMidasGPSFeature = (layerID === "midas");
         var itsAMidasHorizontalArrow = (layerID === "midas-arrows");
         var itsAMiniMapFeature = (layerID === "LatVLongPlotPoints");
+        var itsTheReferencePoint = (layerID === "ReferencePoint");
         var itsASeismicityFeature = this.seismicities.includes(layerID) || feature.properties.depth; // all seismicities have depth, right?
 
         var cursor = (itsAPoint || itsAGPSFeature || itsAMidasGPSFeature ||
-            itsASeismicityFeature || itsAMidasHorizontalArrow || itsAMiniMapFeature) ? 'pointer' : 'auto';
+            itsASeismicityFeature || itsAMidasHorizontalArrow || itsAMiniMapFeature
+            || itsTheReferencePoint) ? 'pointer' : 'auto';
 
         var html = null;
         var coordinates = feature.geometry.coordinates;
@@ -964,6 +968,8 @@ function ThirdPartySourcesController(map) {
         } else if (itsAMidasHorizontalArrow && feature.properties.isReference) {
             coordinates = feature.geometry.coordinates[0];
             html = "<p>Pseudo-reference station.</p><p>This velocity shown red has been subtracted from the others.</p>";
+        } else if (itsTheReferencePoint) {
+            html = "Reference Point";
         } else if (itsASeismicityFeature || itsAMiniMapFeature) {
             html = "";
             var props = feature.properties;
@@ -1180,6 +1186,29 @@ function ThirdPartySourcesController(map) {
         if (midasEastNorthStationsToggleButton !== except) {
             midasEastNorthStationsToggleButton.set("off", true);
         }
+    };
+
+    this.layerOrderToCallbackMap =  {
+        "USGSEarthquake": this.loadUSGSEarthquakeFeed,
+        "USGSEventsEarthquake": this.loadUSGSEventsEarthquake,
+        "IGEPNEarthquake": this.loadIGEPNEarthquakeFeed,
+        "HawaiiReloc": this.loadHawaiiReloc,
+        "LongValleyReloc": this.loadLongValleyReloc,
+        "midas": this.loadmidasGpsStationMarkers,
+        "midas-arrows": this.loadmidasGpsStationMarkers,
+        "gpsStations": this.addGPSStationMarkers
+    };
+
+    this.loadSourceFromString = function(sourceName) {
+        var callback = this.layerOrderToCallbackMap[sourceName];
+
+        if (!callback) {
+            throw new Error("Can't find that third party source (" + sourceName + ")");
+        }
+
+        callback = callback.bind(this);
+
+        callback();
     };
 
     this.populateSeismicityMagnitudeScale = function() {

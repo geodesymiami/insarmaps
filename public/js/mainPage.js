@@ -382,7 +382,18 @@ function setupToggleButtons() {
     });
 
     insarGraphSyncToggleButton = new ToggleButton("insar-sync-toggle-button");
-    insarGraphSyncToggleButton.onclick(null);
+    insarGraphSyncToggleButton.onclick(function() {
+        if (insarGraphSyncToggleButton.toggleState == ToggleStates.ON) {
+            if (!myMap.seismicityGraphsController.timeSlider) {
+                var features = myMap.thirdPartySourcesController.getAllSeismicityFeatures();
+                myMap.seismicityGraphsController.createOrUpdateSliders(features);
+            }
+        } else {
+            if (myMap.seismicityGraphsController.timeSlider) {
+                myMap.seismicityGraphsController.destroyAllSliders();
+            }
+        }
+    });
 
     seismicityGraphSyncToggleButton = new ToggleButton("seismicity-sync-toggle-button");
     seismicityGraphSyncToggleButton.onclick(null);

@@ -119,7 +119,7 @@ function MapController(loadJSONFunc) {
     // higher index layerID's come below lower indexed ones
     this.layerOrders = (function() {
         const FIRST_INSAR_CHUNK = "chunk_1";
-        var allLayers = [this.thirdPartySourcesController.layerOrder, ["onTheFlyJSON", FIRST_INSAR_CHUNK]];
+        var allLayers = [this.thirdPartySourcesController.layerOrder, ["onTheFlyJSON", "ReferencePoint", FIRST_INSAR_CHUNK]];
 
         var layerOrders = [];
         allLayers.forEach(function(layersArray) {
@@ -223,28 +223,38 @@ function MapController(loadJSONFunc) {
                     this.colorScale.setTopAsMax(false);
                     $("#seismicity-maximize-buttons-container").addClass("active");
 
-                    var features = this.thirdPartySourcesController.getAllSeismicityFeatures();
                     // don't prepare for seismicities if layer that was changed was on the fly as it means
                     // that we simply received new on the fly json, possibly from a call from the seismicity sliders...
                     // if we prepareforseismicities and the call was from a slider, the slider's start and end ranges
                     // get overriden
-                    if (features.length > 0 && layerThatWasChanged !== "onTheFlyJSON") {
-                        $hideShowSeismicitiesButton = $("#hide-show-seismicities-button");
-                        if ($hideShowSeismicitiesButton.attr("data-original-title") === "Show") {
-                            $hideShowSeismicitiesButton.click();
-                        }
-
-                        features.sort(function(feature1, feature2) {
-                            return feature1.properties.time - feature2.properties.time;
-                        });
-                        // handles setting up color scale for seismicity etc.
-                        this.thirdPartySourcesController.prepareForSeismicities(features);
+                    if (layerThatWasChanged !== "onTheFlyJSON") {
+                        this.prepareForSeismicities();
                     }
                 }
             }
         }
 
         this.lastMode = curMode;
+    };
+
+    this.prepareForSeismicities = function() {
+        var features = this.thirdPartySourcesController.getAllSeismicityFeatures();
+        // don't prepare for seismicities if layer that was changed was on the fly as it means
+        // that we simply received new on the fly json, possibly from a call from the seismicity sliders...
+        // if we prepareforseismicities and the call was from a slider, the slider's start and end ranges
+        // get overriden
+        if (features.length) {
+            $hideShowSeismicitiesButton = $("#hide-show-seismicities-button");
+            if ($hideShowSeismicitiesButton.attr("data-original-title") === "Show") {
+                $hideShowSeismicitiesButton.click();
+            }
+
+            features.sort(function(feature1, feature2) {
+                return feature1.properties.time - feature2.properties.time;
+            });
+            // handles setting up color scale for seismicity etc.
+            this.thirdPartySourcesController.prepareForSeismicities(features);
+        }
     };
 
     this.addLayer = function(newLayer, before) {
@@ -790,7 +800,14 @@ function MapController(loadJSONFunc) {
     this.addDataset = function(data, feature) {
         this.colorScale.setTopAsMax(true);
         this.colorOnDisplacement = false;
-        var stops = this.colorScale.getMapboxStops();
+        var colorStops = this.colorScale.getMapboxStops();
+        var radiusStops = [
+            [5, 2],
+            [8, 2],
+            [13, 8],
+            [21, 16],
+            [34, 32]
+        ];
 
         this.addSource('insar_vector_source', {
             type: 'vector',
@@ -813,18 +830,12 @@ function MapController(loadJSONFunc) {
                 paint: {
                     'circle-color': {
                         property: 'm',
-                        stops: stops
+                        stops: colorStops
                     },
                     'circle-radius': {
                         // for an explanation of this array see here:
                         // https://www.mapbox.com/blog/data-driven-styling/
-                        stops: [
-                            [5, 2],
-                            [8, 2],
-                            [13, 8],
-                            [21, 16],
-                            [34, 32]
-                        ]
+                        stops: radiusStops
                     }
                 }
             }
@@ -833,8 +844,42 @@ function MapController(loadJSONFunc) {
         }.bind(this));
 
         // add reference point... TODO
-        // var attributesController = new AreaAttributesController(this, feature);
-        // var longRef = attributesController.getAttribute()
+        var attributesController = new AreaAttributesController(this, feature);
+        if (attributesController.areaHasAttribute("ref_lon") && attributesController.areaHasAttribute("ref_lat")) {
+            var refLon = attributesController.getAttribute("ref_lon");
+            var refLat = attributesController.getAttribute("ref_lat");
+
+            var referencePointSource = {
+                type: "geojson",
+                cluster: false,
+                data: {
+                    "type": "FeatureCollection",
+                    "features": [{
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [refLon, refLat]
+                        },
+                    }]
+                }
+            };
+            var layerID = "ReferencePoint";
+            var sourceID = "ReferencePointSource";
+            var before = this.getLayerOnTopOf(layerID);
+
+            this.addSource(sourceID, referencePointSource);
+            this.addLayer({
+                "id": layerID,
+                "type": "circle",
+                "source": sourceID,
+                "paint": {
+                    "circle-color": "black",
+                    "circle-radius": {
+                        stops: radiusStops
+                    }
+                }
+            }, before);
+        }
     };
 
     this.polygonToLineString = function(polygonGeoJSON) {
@@ -1033,6 +1078,48 @@ function MapController(loadJSONFunc) {
         this.areaFilterSelector.filterAreasInBrowser(bbox, populateTable);
     };
 
+    this.processURLOptions = function() {
+        if (!urlOptions) {
+            return;
+        }
+        var options = urlOptions.startingDatasetOptions;
+
+        if (options.startDataset) {
+            for (var i = 0; i < this.allAreas.length; i++) {
+                if (this.allAreas[i].properties.unavco_name === options.startDataset) {
+                    showLoadingScreen("Loading requested dataset...", null);
+                    this.loadDatasetFromFeature(this.allAreas[i], options.zoom);
+                    break;
+                }
+            }
+        } else if (options.onlyShowDatasets) {
+            var datasetsToShow = options.onlyShowDatasets.split(",");
+            var areasToShow = [];
+            this.allAreas.forEach(function(area) {
+                if (datasetsToShow.includes(area.properties.unavco_name)) {
+                    areasToShow.push(area);
+                }
+            });
+            // i suppose it's not elegant to just re-add them and we could do something
+            // like tell server to only return some areas, or something else, but this is quick, and it works.
+            // and to be honest, changing it, while more elegant, seems like micro optimzation since this was so quick
+            // to implement.
+            this.allAreas = areasToShow;
+            this.areas = areasToShow
+            var json = {
+                "areas": areasToShow
+            };
+            this.addSwathsFromJSON(json, null, true, false);
+        }
+
+        if (options.loadSeismicities) {
+            var sourceNames = options.loadSeismicities.split(",");
+            sourceNames.forEach(function(sourceName) {
+                this.thirdPartySourcesController.loadSourceFromString(sourceName);
+            }.bind(this));
+        }
+    };
+
     this.addMapToPage = function(containerID) {
         var startingOptions = null;
         var minZoom = 0; // default as per gl js api
@@ -1080,34 +1167,7 @@ function MapController(loadJSONFunc) {
                 if (!urlOptions) {
                     return;
                 }
-                var options = urlOptions.startingDatasetOptions;
-                if (options.startDataset) {
-                    for (var i = 0; i < this.allAreas.length; i++) {
-                        if (this.allAreas[i].properties.unavco_name === options.startDataset) {
-                            showLoadingScreen("Loading requested dataset...", null);
-                            this.loadDatasetFromFeature(this.allAreas[i], options.zoom);
-                            break;
-                        }
-                    }
-                } else if (options.onlyShowDatasets) {
-                    var datasetsToShow = options.onlyShowDatasets.split(",");
-                    var areasToShow = [];
-                    this.allAreas.forEach(function(area) {
-                        if (datasetsToShow.includes(area.properties.unavco_name)) {
-                            areasToShow.push(area);
-                        }
-                    });
-                    // i suppose it's not elegant to just re-add them and we could do something
-                    // like tell server to only return some areas, or something else, but this is quick, and it works.
-                    // and to be honest, changing it, while more elegant, seems like micro optimzation since this was so quick
-                    // to implement.
-                    this.allAreas = areasToShow;
-                    this.areas = areasToShow
-                    var json = {
-                        "areas": areasToShow
-                    };
-                    this.addSwathsFromJSON(json, null, true, false);
-                }
+                this.processURLOptions();
 
             }.bind(this));
             this.areaFilterSelector = new AreaFilterSelector();

@@ -20,19 +20,19 @@
     <div id="information-div" class="overlay-div">
         <div class="vertically-aligned" id="information-div-contents">
             <p>
-                This website provides InSAR displacement time-series produced by the University of Miami Geodesy Laboratory, which is supported by NASA and the NSF. To identify data sets from published papers, please search for the author's names.
+                This website provides InSAR displacement time-series produced by the University of Miami Geodesy Laboratory, which is supported by NASA and the NSF. For InSAR processing JPL's ISCE software and the Fattahi et al.’s (2017) stack processor is used for Sentinel-1 and for most other sensors a combination of ROI_PAC and the GAMMA software. Time series processing uses the University of Miami-developed PySAR software.
             </p>
             <p>
                 This website was created by University of Miami Computer Science students Alfredo Terrero and Zishi Wu. It started as a class project of CSC 431, taught by Chris Mader and Julio Perez of the University of Miami’s Center for Computational Sciences (CCS). The data processing is conducted using the University of Miami’s High Performance Computing systems.
             </p>
             @if (Auth::guest())
             <p>
-                To identify data sets from published papers, please search for the author's names. To access data sets which are not yet finalized, please login here:
+                To access data sets which are not yet finalized, please login here:
             </p>
             <a href="/auth/login" class="btn btn-primary-outline">Login</a>
             @endif
             <p>
-                For accessing the data products via web services click here:
+                For accessing the data products via web services, click here:
             </p>
             <a href="/WebServicesUI" class="btn btn-primary-outline">Web Services</a>
             <span id="current-point-webservices-link"></span>

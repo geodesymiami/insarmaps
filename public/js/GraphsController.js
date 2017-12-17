@@ -1956,9 +1956,10 @@ function setupCustomSliderSeismicityController() {
         if (this.slidersVisible()) {
             $("#depth-slider").highcharts().destroy();
             $("#time-slider").highcharts().destroy();
-            this.timeSlider = null;
-            this.depthSlider = null;
         }
+
+        this.timeSlider = null;
+        this.depthSlider = null;
     };
 
     // override
