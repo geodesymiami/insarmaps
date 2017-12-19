@@ -65,7 +65,7 @@ class WebServicesOptions {
         }
 
         // check volcanoID is a number
-        if (!is_numeric($this->volcanoID)) {
+        if ($this->volcanoID && !is_numeric($this->volcanoID)) {
             array_push($errors, "volcanoID must be a valid integer");
         } else {
             $this->volcanoID = (int) $this->volcanoID;
