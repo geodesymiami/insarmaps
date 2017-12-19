@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use DB;
+use Excel;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 
+// why didn't i just use a dictionary? php is dynamic and can dictionaries from anyType => anyType...
 class WebServicesOptions {
     private $dateFormatter = NULL;
     public $latitude = 1000.0;
@@ -24,6 +26,7 @@ class WebServicesOptions {
     public $attributeSearch = FALSE; // if user specifies any search parameter except latitude, longitude, or outputType, set to true and adjust SQL
     public $datasetUnavcoName = NULL; // if user wants to find specific dataset
     public $pointID = NULL; // if user wants a specific point within a dataset
+    public $volcanoID = NULL;
 
     public function __construct() {
         $this->dateFormatter = new DateFormatter();
@@ -59,6 +62,13 @@ class WebServicesOptions {
                     array_push($errors, "endDate isn't a valid date");
                 }
             }
+        }
+
+        // check volcanoID is a number
+        if (!is_numeric($this->volcanoID)) {
+            array_push($errors, "volcanoID must be a valid integer");
+        } else {
+            $this->volcanoID = (int) $this->volcanoID;
         }
         return $errors;
     }
@@ -423,6 +433,10 @@ class WebServicesController extends Controller {
                     $options->downsampleFactor = $value;
                 }
                 break;
+            case 'volcanoID':
+                if (strlen($value) > 0) {
+                    $options->volcanoID = $value;
+                }
             default:
                 break;
             }
@@ -693,6 +707,21 @@ class WebServicesController extends Controller {
         if (count($errors) > 0) {
             $json["errors"] = $errors;
             return response()->json($json);
+        }
+
+        if ($options->volcanoID) {
+            Excel::load(storage_path() . '/GVP_Volcano_List.xlsx', function ($reader) use ($options) {
+                $array = $reader->toArray();
+
+                $volcanoInformation = binary_search($array, $options->volcanoID, function ($row1, $id) {
+                    return (int) ($id - $row1["volcano_number"]);
+                });
+
+                // TODO: call him and ask what we do here...
+                if ($volcanoInformation) {
+                }
+            });
+            return;
         }
 
         $returnValues = NULL;
