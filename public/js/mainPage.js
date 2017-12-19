@@ -15,6 +15,7 @@ var HawaiiRelocToggleButton = null;
 var LongValleyRelocToggleButton = null;
 var midasEastNorthStationsToggleButton = null;
 var USGSEventsEarthquakeToggleButton = null;
+var referencePointToggleButton = null;
 var myMap = null;
 
 function DivState() {
@@ -269,8 +270,8 @@ function ToggleButton(id, container, label) {
             this.toggle();
 
             if (clickFunction) {
-                this.clickFunction = clickFunction;
-                clickFunction(e);
+                this.clickFunction = clickFunction.bind(this);
+                this.clickFunction(this.toggleState);
             }
         }.bind(this));
     };
@@ -310,13 +311,13 @@ function setupSeismicityToggleButton() {
             this.toggle();
 
             if (clickFunction) {
-                this.clickFunction = clickFunction;
+                this.clickFunction = clickFunction.bind(this);
 
                 // allow multiple selection only if ctrl key is pressed
                 if (this.toggleState == ToggleStates.ON && !e.ctrlKey) {
                     myMap.thirdPartySourcesController.removeAll(this);
                 }
-                clickFunction(e);
+                this.clickFunction(this.toggleState);
             }
         }.bind(this));
     };
@@ -340,13 +341,13 @@ function setupToggleButtons() {
     // TODO: the onclick callbacks are screaming to have the toggle state
     // passed into them...
     overlayToggleButton = new ToggleButton("overlay-toggle-button", "overlay-options-toggles", "Insar");
-    overlayToggleButton.onclick(function() {
+    overlayToggleButton.onclick(function(state) {
 
     });
     // line connecting dots in chart on/off
     dotToggleButton = new ToggleButton("dot-toggle-button");
-    dotToggleButton.onclick(function() {
-        if (dotToggleButton.toggleState == ToggleStates.ON) {
+    dotToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
             myMap.graphsController.connectDots();
         } else {
             myMap.graphsController.disconnectDots();
@@ -355,7 +356,7 @@ function setupToggleButtons() {
 
     secondGraphToggleButton = new ToggleButton(
         "second-graph-toggle-button");
-    secondGraphToggleButton.onclick(function() {
+    secondGraphToggleButton.onclick(function(state) {
         if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
             myMap.graphsController.prepareForSecondGraph();
         } else {
@@ -364,8 +365,8 @@ function setupToggleButtons() {
     });
 
     regressionToggleButton = new ToggleButton("regression-toggle-button");
-    regressionToggleButton.onclick(function() {
-        if (regressionToggleButton.toggleState == ToggleStates.ON) {
+    regressionToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
             myMap.graphsController.addRegressionLines();
         } else {
             myMap.graphsController.removeRegressionLines();
@@ -373,7 +374,7 @@ function setupToggleButtons() {
     });
 
     detrendToggleButton = new ToggleButton("detrend-toggle-button");
-    detrendToggleButton.onclick(function() {
+    detrendToggleButton.onclick(function(state) {
         if (detrendToggleButton.toggleState == ToggleStates.ON) {
             myMap.graphsController.detrendData();
         } else {
@@ -382,8 +383,8 @@ function setupToggleButtons() {
     });
 
     insarGraphSyncToggleButton = new ToggleButton("insar-sync-toggle-button");
-    insarGraphSyncToggleButton.onclick(function() {
-        if (insarGraphSyncToggleButton.toggleState == ToggleStates.ON) {
+    insarGraphSyncToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
             if (!myMap.seismicityGraphsController.timeSlider) {
                 var features = myMap.thirdPartySourcesController.getAllSeismicityFeatures();
                 myMap.seismicityGraphsController.createOrUpdateSliders(features);
@@ -399,7 +400,7 @@ function setupToggleButtons() {
     seismicityGraphSyncToggleButton.onclick(null);
 
     topGraphToggleButton = new ToggleButton("top-graph-toggle-button");
-    topGraphToggleButton.onclick(function() {
+    topGraphToggleButton.onclick(function(state) {
         if (topGraphToggleButton.toggleState == ToggleStates.ON) {
             myMap.graphsController.selectedGraph = "Top Graph";
             bottomGraphToggleButton.set("off");
@@ -409,8 +410,8 @@ function setupToggleButtons() {
     });
     bottomGraphToggleButton = new ToggleButton(
         "bottom-graph-toggle-button");
-    bottomGraphToggleButton.onclick(function() {
-        if (bottomGraphToggleButton.toggleState == ToggleStates.ON) {
+    bottomGraphToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
             myMap.graphsController.selectedGraph = "Bottom Graph";
             topGraphToggleButton.set("off");
         } else {
@@ -418,9 +419,18 @@ function setupToggleButtons() {
         }
     });
 
+    referencePointToggleButton = new ToggleButton("reference-point-toggle-button", "overlay-options-toggles", "Reference Point");
+    referencePointToggleButton.onclick(function(state) {
+        if (this.toggleState == ToggleStates.ON && myMap.pointsLoaded()) {
+            myMap.addReferencePoint(currentArea);
+        } else {
+            myMap.removeReferencePoint();
+        }
+    });
+
     gpsStationsToggleButton = new ToggleButton("gps-stations-toggle-button", "overlay-options-toggles", "GPS Stations (UNR)");
-    gpsStationsToggleButton.onclick(function() {
-        if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
+    gpsStationsToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
             // gpsStations global variable from gpsStations.js
             myMap.thirdPartySourcesController.addGPSStationMarkers(gpsStations);
         } else {
@@ -430,7 +440,7 @@ function setupToggleButtons() {
     gpsStationsToggleButton.setDescription("GPS solutions provided by the University of Nevada Geodesy Lab at <a target='_blank' href='http://geodesy.unr.edu'>http://geodesy.unr.edu/</a>");
 
     midasEastNorthStationsToggleButton = new ToggleButton("midas-east-north-stations-toggle-button", "overlay-options-toggles", "MIDAS IGS08 Horizontal (UNR)");
-    midasEastNorthStationsToggleButton.onclick(function() {
+    midasEastNorthStationsToggleButton.onclick(function(state) {
         if (midasEastNorthStationsToggleButton.toggleState == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadmidasGpsStationMarkers(true);
         } else {
@@ -441,8 +451,8 @@ function setupToggleButtons() {
     midasEastNorthStationsToggleButton.setDescription("MIDAS horizontal velocity field provided by the University of Nevada Geodesy Lab at <a target='_blank' href='http://geodesy.unr.edu'>http://geodesy.unr.edu/</a>");
 
     midasStationsToggleButton = new ToggleButton("midas-stations-toggle-button", "overlay-options-toggles", "MIDAS IGS08 Vertical (UNR)");
-    midasStationsToggleButton.onclick(function() {
-        if (midasStationsToggleButton.toggleState == ToggleStates.ON) {
+    midasStationsToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadmidasGpsStationMarkers(false);
         } else {
             myMap.thirdPartySourcesController.removemidasGpsStationMarkers(false);
@@ -452,7 +462,7 @@ function setupToggleButtons() {
     midasStationsToggleButton.setDescription("MIDAS vertical velocity field provided by the University of Nevada Geodesy Lab at <a target='_blank' href='http://geodesy.unr.edu'>http://geodesy.unr.edu/</a>");
 
     usgsEarthquakeToggleButton = new SeismicityToggleButton("usgs-earthquake-toggle-button", "overlay-options-toggles", "USGS 30 Day Earthquake Feed");
-    usgsEarthquakeToggleButton.onclick(function() {
+    usgsEarthquakeToggleButton.onclick(function(state) {
         if (usgsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadUSGSEarthquakeFeed();
         } else {
@@ -463,9 +473,9 @@ function setupToggleButtons() {
     usgsEarthquakeToggleButton.setDescription("Recent earthquakes from <a target='_blank' href='https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson'>https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson/</a>");
 
     USGSEventsEarthquakeToggleButton = new SeismicityToggleButton("USGSEvents-earthquake-toggle-button", "overlay-options-toggles", "USGS Events");
-    USGSEventsEarthquakeToggleButton.onclick(function() {
+    USGSEventsEarthquakeToggleButton.onclick(function(state) {
         var $container = $(".wrap#USGSEvents-options");
-        if (USGSEventsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
+        if (state == ToggleStates.ON) {
             if (!$container.hasClass("active")) {
                 $container.addClass("active");
             }
@@ -480,7 +490,7 @@ function setupToggleButtons() {
     USGSEventsEarthquakeToggleButton.setDescription("Full USGS events catalogs from <a target='_blank' href='http://earthquake.usgs.gov/fdsnws/event/1/'>http://earthquake.usgs.gov/fdsnws/event/1/</a>");
 
     IGEPNEarthquakeToggleButton = new SeismicityToggleButton("IGEPN-earthquake-toggle-button", "overlay-options-toggles", "IGEPN 30 Day Earthquake Feed");
-    IGEPNEarthquakeToggleButton.onclick(function() {
+    IGEPNEarthquakeToggleButton.onclick(function(state) {
         if (IGEPNEarthquakeToggleButton.toggleState == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadIGEPNEarthquakeFeed();
         } else {
@@ -491,8 +501,8 @@ function setupToggleButtons() {
     IGEPNEarthquakeToggleButton.setDescription("Recent earthquakes provided by the Instituto Geofisico, Quito, Ecuador at <a target='_blank' href='http://www.igepn.edu.ec/portal/eventos/www/events.xml'>http://www.igepn.edu.ec/portal/eventos/www/events.xml</a>");
 
     HawaiiRelocToggleButton = new SeismicityToggleButton("Hawaii-reloc-toggle-button", "overlay-options-toggles", "Hawaii 1992-2008 Relocations");
-    HawaiiRelocToggleButton.onclick(function() {
-        if (HawaiiRelocToggleButton.toggleState == ToggleStates.ON) {
+    HawaiiRelocToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadHawaiiReloc();
         } else {
             myMap.thirdPartySourcesController.removeHawaiiReloc();
@@ -502,8 +512,8 @@ function setupToggleButtons() {
     HawaiiRelocToggleButton.setDescription("Relocated earthquakes provided by the University of Miami at <a target='_blank' href='http://www.rsmas.miami.edu/users/glin/Hawaii.html'>http://www.rsmas.miami.edu/users/glin/Hawaii.html</a>");
 
     LongValleyRelocToggleButton = new SeismicityToggleButton("Long-Valley-reloc-toggle-button", "overlay-options-toggles", "Long Valley 1984-2014 Relocations.");
-    LongValleyRelocToggleButton.onclick(function() {
-        if (LongValleyRelocToggleButton.toggleState == ToggleStates.ON) {
+    LongValleyRelocToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadLongValleyReloc();
         } else {
             myMap.thirdPartySourcesController.removeLongValleyReloc();

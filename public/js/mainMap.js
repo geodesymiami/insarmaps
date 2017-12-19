@@ -24,6 +24,15 @@ function MapController(loadJSONFunc) {
     this.startingZoom = 1.6;
     this.datasetZoom = 8.0;
     this.startingCoords = [0, 30];
+
+    // default zoom and radii of circle geojson features
+    this.radiusStops = [
+        [5, 2],
+        [8, 2],
+        [13, 8],
+        [21, 16],
+        [34, 32]
+    ];
     // the map
     this.map = null;
     this.geoJSONSource = null;
@@ -796,18 +805,55 @@ function MapController(loadJSONFunc) {
         this.map.setStyle(styleAndLayer.style);
     };
 
+    this.addReferencePoint = function(area) {
+        var attributesController = new AreaAttributesController(this, area);
+        if (attributesController.areaHasAttribute("ref_lon") && attributesController.areaHasAttribute("ref_lat")) {
+            var refLon = attributesController.getAttribute("ref_lon");
+            var refLat = attributesController.getAttribute("ref_lat");
+
+            var referencePointSource = {
+                type: "geojson",
+                cluster: false,
+                data: {
+                    "type": "FeatureCollection",
+                    "features": [{
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [refLon, refLat]
+                        },
+                    }]
+                }
+            };
+            var id = "ReferencePoint";
+            var before = this.getLayerOnTopOf(id);
+
+            this.addSource(id, referencePointSource);
+            this.addLayer({
+                "id": id,
+                "type": "circle",
+                "source": id,
+                "paint": {
+                    "circle-color": "black",
+                    "circle-radius": {
+                        stops: this.radiusStops
+                    }
+                }
+            }, before);
+        }
+    };
+
+    this.removeReferencePoint = function() {
+        if (this.map.getSource("ReferencePoint")) {
+            this.removeSourceAndLayer("ReferencePoint");
+        }
+    };
+
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
     this.addDataset = function(data, feature) {
         this.colorScale.setTopAsMax(true);
         this.colorOnDisplacement = false;
         var colorStops = this.colorScale.getMapboxStops();
-        var radiusStops = [
-            [5, 2],
-            [8, 2],
-            [13, 8],
-            [21, 16],
-            [34, 32]
-        ];
 
         this.addSource('insar_vector_source', {
             type: 'vector',
@@ -835,7 +881,7 @@ function MapController(loadJSONFunc) {
                     'circle-radius': {
                         // for an explanation of this array see here:
                         // https://www.mapbox.com/blog/data-driven-styling/
-                        stops: radiusStops
+                        stops: this.radiusStops
                     }
                 }
             }
@@ -843,42 +889,8 @@ function MapController(loadJSONFunc) {
             this.addLayer(layer, before);
         }.bind(this));
 
-        // add reference point... TODO
-        var attributesController = new AreaAttributesController(this, feature);
-        if (attributesController.areaHasAttribute("ref_lon") && attributesController.areaHasAttribute("ref_lat")) {
-            var refLon = attributesController.getAttribute("ref_lon");
-            var refLat = attributesController.getAttribute("ref_lat");
-
-            var referencePointSource = {
-                type: "geojson",
-                cluster: false,
-                data: {
-                    "type": "FeatureCollection",
-                    "features": [{
-                        type: 'Feature',
-                        geometry: {
-                            type: 'Point',
-                            coordinates: [refLon, refLat]
-                        },
-                    }]
-                }
-            };
-            var layerID = "ReferencePoint";
-            var sourceID = "ReferencePointSource";
-            var before = this.getLayerOnTopOf(layerID);
-
-            this.addSource(sourceID, referencePointSource);
-            this.addLayer({
-                "id": layerID,
-                "type": "circle",
-                "source": sourceID,
-                "paint": {
-                    "circle-color": "black",
-                    "circle-radius": {
-                        stops: radiusStops
-                    }
-                }
-            }, before);
+        if (referencePointToggleButton.toggleState == ToggleStates.ON) {
+            this.addReferencePoint(feature);
         }
     };
 
@@ -1354,6 +1366,8 @@ function MapController(loadJSONFunc) {
         if (this.map.getSource("onTheFlyJSON")) {
             this.removeSourceAndLayer("onTheFlyJSON");
         }
+
+        this.removeReferencePoint();
     }
 
     this.removeTouchLocationMarkers = function() {
