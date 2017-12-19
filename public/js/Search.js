@@ -279,7 +279,9 @@ function SearchFormController(container) {
             }
             searchTableHoverIn(this);
         }, function() {
-            searchTableHoverOut(this);
+            $("#search-form-results-table tr").each(function() {
+                searchTableHoverOut(this);
+            });
         });
 
         $("#search-form-results-table").trigger("update");

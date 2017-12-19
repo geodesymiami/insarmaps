@@ -847,11 +847,6 @@ $(window).on("load", function() {
         myMap.map.resize();
     });
 
-    // hide subset swath popup after we aren't hovering over it
-    $("#subset-swath-popup").mouseleave(function() {
-        $(this).removeClass("active");
-    });
-
     $("#search-form-and-results-maximize-button").on("click", function() {
         var container = $("#search-form-and-results-container");
         if (container.hasClass("minimized")) {
