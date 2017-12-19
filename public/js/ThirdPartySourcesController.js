@@ -1189,14 +1189,14 @@ function ThirdPartySourcesController(map) {
     };
 
     this.layerOrderToCallbackMap =  {
-        "USGSEarthquake": this.loadUSGSEarthquakeFeed,
-        "USGSEventsEarthquake": this.loadUSGSEventsEarthquake,
+        "USGS": this.loadUSGSEarthquakeFeed,
+        "USGSEvents": this.loadUSGSEventsEarthquake,
         "IGEPNEarthquake": this.loadIGEPNEarthquakeFeed,
-        "HawaiiReloc": this.loadHawaiiReloc,
-        "LongValleyReloc": this.loadLongValleyReloc,
-        "midas": this.loadmidasGpsStationMarkers,
-        "midas-arrows": this.loadmidasGpsStationMarkers,
-        "gpsStations": this.addGPSStationMarkers
+        "LinHawaiiReloc": this.loadHawaiiReloc,
+        "LinLongValleyReloc": this.loadLongValleyReloc,
+        "UNRVerticalMidas": this.loadmidasGpsStationMarkers,
+        "UNRHorizontalMidas": this.loadmidasGpsStationMarkers,
+        "UNRGPS": this.addGPSStationMarkers
     };
 
     this.loadSourceFromString = function(sourceName) {

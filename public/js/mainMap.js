@@ -304,6 +304,20 @@ function MapController(loadJSONFunc) {
         return null;
     };
 
+    this.hideInsarLayers = function() {
+        var insarLayers = this.getInsarLayers();
+        insarLayers.forEach(function(layerID) {
+            this.map.setLayoutProperty(layerID, "visibility", "none");
+        }.bind(this));
+    };
+
+    this.showInsarLayers = function() {
+        var insarLayers = this.getInsarLayers();
+        insarLayers.forEach(function(layerID) {
+            this.map.setLayoutProperty(layerID, "visibility", "visible");
+        }.bind(this));
+    };
+
     this.getTopMostSeismicitySource = function() {
         var allSources = Array.from(this.sources);
 
@@ -1124,8 +1138,8 @@ function MapController(loadJSONFunc) {
             this.addSwathsFromJSON(json, null, true, false);
         }
 
-        if (options.loadSeismicities) {
-            var sourceNames = options.loadSeismicities.split(",");
+        if (options.loadSeismicity) {
+            var sourceNames = options.loadSeismicity.split(",");
             sourceNames.forEach(function(sourceName) {
                 this.thirdPartySourcesController.loadSourceFromString(sourceName);
             }.bind(this));

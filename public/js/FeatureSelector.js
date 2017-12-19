@@ -149,10 +149,6 @@ function setupFeatureSelector() {
         // let the caller check if a coloring is in progress. otherwise user has to sometimes
         //  wait if they cancel a recoloring and want to do another one
 
-        if (this.map.map.getSource("onTheFlyJSON")) {
-            this.map.removeSourceAndLayer("onTheFlyJSON");
-        }
-
         // get the names of all the layers
         var pointLayers = this.map.getInsarLayers();
 
@@ -176,6 +172,13 @@ function setupFeatureSelector() {
                 ' features (max ' + MAX_FEATURES_TO_RECOLOR +
                 '). Please select a smaller number of features, zoom out, or zoom' + ' in to a smaller section of the map.');
             return;
+        }
+
+        // time to recolor, hide base vector tile features so they don't show when recoloring
+        this.map.hideInsarLayers();
+
+        if (this.map.map.getSource("onTheFlyJSON")) {
+            this.map.removeSourceAndLayer("onTheFlyJSON");
         }
 
         var geoJSONData = {
@@ -291,10 +294,12 @@ function setupFeatureSelector() {
                 }
 
                 this.recoloringInProgress = false;
+                this.map.showInsarLayers();
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed " + xhr.responseText);
+                this.map.showInsarLayers();
                 hideLoadingScreen();
             },
             requestHeader: {

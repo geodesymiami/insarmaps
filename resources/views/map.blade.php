@@ -102,7 +102,7 @@
                             <div class="caret"></div>
                         </div>
                     </div>
-                    <button class="form-group custom-input-container" id="recent-datasets-toggle-button" data-toggle="tooltip" title="Filter search results by time">All items</button>
+                    <button class="form-group custom-input-container" id="recent-datasets-toggle-button" data-toggle="tooltip" title="Show last year data">All items</button>
                     <!-- enter button to search for files with attributes matching above input -->
                     <!-- <div id="enter-button-search-attributes">
               <button class="btn btn-primary btn-block">Enter</button>
@@ -125,7 +125,8 @@
             @if (Auth::check())
             <a href="/auth/logout" class="btn btn-primary-outline">Logout</a>
             @endif
-            <div id="square-selector-button-div">
+            <!-- we inline hide it as we arent sure yet if want this button or not... -->
+            <div id="square-selector-button-div" style="display: none !important">
                 <button class="btn btn-primary-outline map-button no-padding clickable-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="square-selector-button">
                     <img src="/img/polygon.svg" alt="polygon.svg">
                 </button>
@@ -229,8 +230,10 @@
             </div>
             <div class="color-scale-main-container">
                 <div class="color-scale-and-values-container" class="clearfix">
-                    <div class="color-scale-picture-div" data-toggle="tooltip" title="Halve scale">
+                    <div class="color-scale-picture-div">
+                        <div class="hidden-colorscale-click-area" id="main-scale-invisible-top-half" data-toggle="tooltip" title="Double scale"></div>
                         <img src="/img/jet_scale.PNG" alt="jet_scale.PNG">
+                        <div class="hidden-colorscale-click-area" id="main-scale-invisible-bottom-half" data-toggle="tooltip" title="Halve scale"></div>
                     </div>
                     <div class="scale-values">
                         <div class="left-scale-minimum">

@@ -723,15 +723,12 @@ div.menu {
     border: none;
 }
 
-#color-scale .color-scale-picture-div {
-    cursor: pointer;
-}
-
 .color-scale-main-container {
     height: 90%;
 }
 
 .color-scale-picture-div {
+    position: relative;
     width: 35px;
     height: 100%;
     float: left;
@@ -740,6 +737,22 @@ div.menu {
 .color-scale-picture-div > img {
     width: 100%;
     height: 100%;
+}
+
+.color-scale-picture-div .hidden-colorscale-click-area {
+    position: absolute;
+    height: 50%;
+    width: 100%;
+    z-index: 99;
+    cursor: pointer;
+}
+
+#main-scale-invisible-top-half {
+    top: 0;
+}
+
+#main-scale-invisible-bottom-half {
+    top: 50%;
 }
 
 .color-scale-and-values-container {

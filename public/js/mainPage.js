@@ -526,9 +526,11 @@ function setupToggleButtons() {
     // for little gain
     $("#recent-datasets-toggle-button").on("click", function() {
         if ($(this).html() === "Last year") {
+            $(this).attr("data-original-title", "Show last year data");
             $(this).html("All items");
             $(this).removeClass("toggled");
         } else {
+            $(this).attr("data-original-title", "Show all data");
             $(this).html("Last year");
             $(this).addClass("toggled");
         }
@@ -728,20 +730,29 @@ $(window).on("load", function() {
         }
     });
 
-    $("#color-scale .color-scale-picture-div").on("click", function() {
+    $("#color-scale .color-scale-picture-div .hidden-colorscale-click-area").on("click", function() {
         var min = myMap.colorScale.min;
         var max = myMap.colorScale.max;
-        var selectedColoring = $("#color-scale .color-scale-text-div").attr("data-original-title") === "Color on time"
-                                ? "depth" : "time";
+        var selectedColoring = $("#color-scale .color-scale-text-div").attr("data-original-title") === "Color on time" ?
+            "depth" : "time";
         if ($(this).attr("data-original-title") === "Halve scale") {
-            $(this).attr("data-original-title", "Double scale");
-            myMap.colorScale.setMinMax(min / 2, max / 2);
+            min /= 2;
+            max /= 2;
+            myMap.colorScale.setMinMax(min, max);
         } else {
-            $(this).attr("data-original-title", "Halve scale");
-            myMap.colorScale.setMinMax(min * 2, max * 2);
+            min *= 2;
+            max *= 2;
+            myMap.colorScale.setMinMax(min, max);
         }
 
-        myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
+        var curMode = myMap.getCurrentMode();
+        if (curMode === "insar") {
+            // below line makes sure insar scale values are preserved if we are in a different mode...
+            myMap.insarColorScaleValues = { min: min, max: max };
+            myMap.refreshDataset();
+        } else if (curMode === "seismicity") {
+            myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
+        }
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {
