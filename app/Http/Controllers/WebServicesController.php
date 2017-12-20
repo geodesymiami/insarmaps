@@ -27,6 +27,7 @@ class WebServicesOptions {
     public $datasetUnavcoName = NULL; // if user wants to find specific dataset
     public $pointID = NULL; // if user wants a specific point within a dataset
     public $volcanoID = NULL;
+    public $volcanoName = NULL;
 
     public function __construct() {
         $this->dateFormatter = new DateFormatter();
@@ -437,6 +438,12 @@ class WebServicesController extends Controller {
                 if (strlen($value) > 0) {
                     $options->volcanoID = $value;
                 }
+                break;
+            case 'volcanoName':
+                if (strlen($value) > 0) {
+                    $options->volcanoName = $value;
+                }
+                break;
             default:
                 break;
             }
@@ -445,10 +452,10 @@ class WebServicesController extends Controller {
         return $options;
     }
 
-    private function getAreasFromAttributes($attributes) {
+    public function getAreasFromAttributes($attributes) {
         $queryConditions = [];
         $controller = new GeoJSONController();
-        $query = "SELECT id, unavco_name FROM area INNER JOIN (select t1" . ".area_id FROM ";
+        $query = "SELECT * FROM area INNER JOIN (select t1" . ".area_id FROM ";
         $preparedValues = [];
 
         if (isset($attributes->satellite) && strlen($attributes->satellite) > 0) {
@@ -491,6 +498,15 @@ class WebServicesController extends Controller {
             array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='scene_footprint' AND ST_Intersects(ST_MakePolygon(ST_GeomFromText(?, 4326)), ST_GeomFromText(attributevalue, 4326)))");
 
             array_push($preparedValues, $attributes->box);
+        }
+
+        // lat and long are set, search areas that contain this point
+        if (!($attributes->latitude == 1000.0 && $attributes->longitude == 1000.0)) {
+            array_push($queryConditions, "(SELECT * FROM extra_attributes WHERE attributekey='scene_footprint' AND ST_Intersects(ST_SetSRID(ST_Makepoint(?, ?), 4326), ST_GeomFromText(attributevalue, 4326)))");
+            // dd("(SELECT * FROM extra_attributes WHERE attributekey='scene_footprint' AND ST_Intersects(ST_MakePoint(?, ?), ST_GeomFromText(attributevalue, 4326)))");
+
+            array_push($preparedValues, $attributes->longitude);
+            array_push($preparedValues, $attributes->latitude);
         }
 
         if (count($queryConditions) == 1) {
@@ -709,19 +725,37 @@ class WebServicesController extends Controller {
             return response()->json($json);
         }
 
+        $volcanoInformation = NULL;
         if ($options->volcanoID) {
-            Excel::load(storage_path() . '/GVP_Volcano_List.xlsx', function ($reader) use ($options) {
+            Excel::load(storage_path() . '/GVP_Volcano_List.xlsx', function ($reader) use ($options, &$volcanoInformation) {
                 $array = $reader->toArray();
 
                 $volcanoInformation = binary_search($array, $options->volcanoID, function ($row1, $id) {
                     return (int) ($id - $row1["volcano_number"]);
                 });
+            });
+        } else if ($options->volcanoName) {
+            Excel::load(storage_path() . '/GVP_Volcano_List.xlsx', function ($reader) use ($options, &$volcanoInformation) {
+                $array = $reader->toArray();
+                // dd($array);
 
-                // TODO: call him and ask what we do here...
-                if ($volcanoInformation) {
+                $volcanoInformationsArray = array_filter($array, function ($row) use ($options) {
+                    // case insensitive
+                    return strtoupper($row["volcano_name"]) == strtoupper($options->volcanoName);
+                });
+
+                // extract first result which should be our result... dont ask me why, just array_filter
+                // returns a dictionary like array.
+                foreach ($volcanoInformationsArray as $key => $value) {
+                    $volcanoInformation = $value;
+                    break;
                 }
             });
-            return;
+        }
+
+        // can't redirect inside lambdas
+        if ($volcanoInformation) {
+            return redirect("/volcanoes/" . $volcanoInformation["latitude"] . "/" . $volcanoInformation["longitude"]);
         }
 
         $returnValues = NULL;
@@ -768,8 +802,15 @@ class WebServicesController extends Controller {
 
         if (strcasecmp($options->outputType, "json") == 0) {
             $json = [];
-            foreach ($returnValues as $areaID => $area) {
-                $json[$area->unavco_name] = $area;
+            $controller = new GeoJSONController();
+            foreach ($returnValues as $areaID => $value) {
+                // if $value represents a point
+                if (isset($value->p)) {
+                    $json[$value->unavco_name] = $value;
+                    // or it represents an area...
+                } else {
+                    $json[$value->unavco_name] = $controller->DBAreaToJSON($value);
+                }
             }
             return response()->json($json);
         }

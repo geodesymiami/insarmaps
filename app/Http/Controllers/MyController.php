@@ -35,6 +35,28 @@ class MyController extends Controller {
         return view('map', ["urlOptions" => $allOptions]);
     }
 
+    public function renderVolcanos(Request $request, $lat = 0.0, $long = 0.0) {
+        $controller = new WebServicesController();
+        $json = [];
+        $options = new WebServicesOptions();
+        $options->latitude = $lat;
+        $options->longitude = $long;
+
+        $areas = $controller->getAreasFromAttributes($options);
+
+        $datasets = [];
+
+        foreach ($areas as $areaID => $area) {
+            if (isset($datasets[$area->extra_attributes["mission"]])) {
+                array_push($datasets[$area->extra_attributes["mission"]], $area->unavco_name);
+            } else {
+                $datasets[$area->extra_attributes["mission"]] = [$area->unavco_name];
+            }
+        }
+
+        return view("volcanoes", ["datasets" => $datasets, "lat" => $lat, "long" => $long]);
+    }
+
     // creates a folder to store json and returns string of that folder path
     public function makeFolder(Request $request) {
         // get path where the Converter.py is stored in

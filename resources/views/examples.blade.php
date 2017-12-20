@@ -67,7 +67,6 @@
 		<div class="col-xs-6">
 			{!! $startDatasetCode !!}
 			<iframe src= {{ $startDatasetURL }}></iframe>
-			}
 		</div>
 	</div>
 	<div class="row">

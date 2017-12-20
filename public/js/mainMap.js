@@ -710,10 +710,15 @@ function MapController(loadJSONFunc) {
 
                 var centerOfDataset = feature.geometry.coordinates;
 
-                this.map.flyTo({
-                    center: centerOfDataset,
-                    zoom: zoom
-                });
+                // don't fly to center of dataset if this option is false in the url... this allows
+                // user to control whether to use their specified starting coordinates after loading a dataset
+                // to focus on a volcano for example
+                if (!(urlOptions && urlOptions.startingDatasetOptions.flyToDatasetCenter === "false")) {
+                    this.map.flyTo({
+                        center: centerOfDataset,
+                        zoom: zoom
+                    });
+                }
 
                 var attributesController = new AreaAttributesController(this, feature);
                 attributesController.processAttributes();

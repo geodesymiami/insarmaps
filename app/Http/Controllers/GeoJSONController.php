@@ -183,7 +183,7 @@ class GeoJSONController extends Controller {
 
             return response()->make($binary, 200, [
                 "Content-Type" => "application/octet-stream",
-            ]);;
+            ]);
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json(["Error Getting Points"]);
         }
@@ -273,10 +273,47 @@ class GeoJSONController extends Controller {
         }
     }
 
+    public function DBAreaToJSON($area) {
+        $unavco_name = $area->unavco_name;
+        $project_name = $area->project_name;
+
+        $currentArea = [];
+        $currentArea["properties"]["unavco_name"] = $unavco_name;
+        $currentArea["properties"]["project_name"] = $project_name;
+        $currentArea["type"] = "Feature";
+        $currentArea["geometry"]["type"] = "Point";
+        $currentArea["geometry"]["coordinates"] = [floatval($area->longitude), floatval($area->latitude)];
+
+        $currentArea["properties"]["num_chunks"] = $area->numchunks;
+        $currentArea["properties"]["country"] = $area->country;
+        $currentArea["properties"]["attributekeys"] = $this->arrayFormatter->postgresToPHPArray($area->attributekeys);
+        $currentArea["properties"]["attributevalues"] = $this->arrayFormatter->postgresToPHPArray($area->attributevalues);
+        $currentArea["properties"]["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($area->decimaldates);
+        $currentArea["properties"]["string_dates"] = $this->arrayFormatter->postgresToPHPArray($area->stringdates);
+        $currentArea["properties"]["region"] = $area->region;
+
+        $bindings = [$area->id];
+
+        if (isset($area->extra_attributes)) {
+            $currentArea["properties"]["extra_attributes"] = $area->extra_attributes;
+        } else {
+            $currentArea["properties"]["extra_attributes"] = NULL;
+        }
+
+        if (isset($plot_attributes[$area->id])) {
+            $currentArea["properties"]["plot_attributes"] = $plot_attributes[$area->id]["plotAttributes"];
+        } else {
+            $currentArea["properties"]["plot_attributes"] = NULL;
+        }
+
+        return $currentArea;
+    }
+
 // TODO: the below bbox code should be changed to intersecting polygons
     // not crucial since no function passes in a non-null bbox anymore since
     // we do client side polygon intersections
-    public function getAreasJSON($bbox = NULL) {
+    // new TODO: use WebServicesController getAreasFromAttributes for refactoring this code...
+    public function getAreasJSONFromBbox($bbox = NULL) {
         $json = array();
 
         try {
@@ -291,39 +328,9 @@ class GeoJSONController extends Controller {
 
             $json["areas"] = [];
             foreach ($areas as $area) {
-                $unavco_name = $area->unavco_name;
-                $project_name = $area->project_name;
+                $areaJSON = $this->DBAreaToJSON($area);
 
-                $currentArea = [];
-                $currentArea["properties"]["unavco_name"] = $unavco_name;
-                $currentArea["properties"]["project_name"] = $project_name;
-                $currentArea["type"] = "Feature";
-                $currentArea["geometry"]["type"] = "Point";
-                $currentArea["geometry"]["coordinates"] = [floatval($area->longitude), floatval($area->latitude)];
-
-                $currentArea["properties"]["num_chunks"] = $area->numchunks;
-                $currentArea["properties"]["country"] = $area->country;
-                $currentArea["properties"]["attributekeys"] = $this->arrayFormatter->postgresToPHPArray($area->attributekeys);
-                $currentArea["properties"]["attributevalues"] = $this->arrayFormatter->postgresToPHPArray($area->attributevalues);
-                $currentArea["properties"]["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($area->decimaldates);
-                $currentArea["properties"]["string_dates"] = $this->arrayFormatter->postgresToPHPArray($area->stringdates);
-                $currentArea["properties"]["region"] = $area->region;
-
-                $bindings = [$area->id];
-
-                if (isset($area->extra_attributes)) {
-                    $currentArea["properties"]["extra_attributes"] = $area->extra_attributes;
-                } else {
-                    $currentArea["properties"]["extra_attributes"] = NULL;
-                }
-
-                if (isset($plot_attributes[$area->id])) {
-                    $currentArea["properties"]["plot_attributes"] = $plot_attributes[$area->id]["plotAttributes"];
-                } else {
-                    $currentArea["properties"]["plot_attributes"] = NULL;
-                }
-
-                array_push($json["areas"], $currentArea);
+                array_push($json["areas"], $areaJSON);
             }
 
             return response()->json($json);
