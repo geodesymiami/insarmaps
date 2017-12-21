@@ -248,8 +248,8 @@ function SearchFormController(container) {
         var haveSubsets = subsetFeatures && subsetFeatures.length > 1;
         if (haveSubsets) {
             html = "<tr class='" + rowClass + "' class='have-subsets'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
-                first_frame + "</td><td>" + mode + "</td><td><div class='flight-direction'>" + flight_direction +
-                "</div><div class='show-children-button caret' id='" + unavco_name + "'></div></td></tr>";
+                first_frame + "</td><td>" + mode + "</td><td>" + flight_direction +
+                "<div class='show-children-button caret' id='" + unavco_name + "'></div></td></tr>";
         }
 
         $("#search-form-results-table tbody").append(html);

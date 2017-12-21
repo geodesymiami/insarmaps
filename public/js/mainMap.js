@@ -1251,6 +1251,10 @@ function MapController(loadJSONFunc) {
                     $(".show-children-button#" + rowID).mouseover();
                     searchFormController.populateSubsetPopup(frameFeature, subsetFeatures);
                 }
+
+                this.gpsStationNamePopup.setLngLat(e.lngLat)
+                    .setHTML(frameFeature.properties.unavco_name)
+                    .addTo(this.map);
             } else if (!this.selector.selecting()) {
                 var featureViewOptions = this.thirdPartySourcesController.featureToViewOptions(features[0]);
                 if (featureViewOptions.coordinates) {
@@ -1447,6 +1451,7 @@ function MapController(loadJSONFunc) {
         this.removeAreaPopups();
         $("#search-form-and-results-minimize-button").click();
         this.seismicityGraphsController.hideChartContainers();
+        $("#insar-chart-slider-container").removeClass("active");
 
         $("#point-details").empty();
 

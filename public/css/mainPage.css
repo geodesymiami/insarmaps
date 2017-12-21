@@ -1115,11 +1115,6 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     position: fixed;
 }
 
-.flight-direction {
-    height: 30px;
-    float: left;
-}
-
 .show-children-button {
     position: absolute;
     top: 50%;
