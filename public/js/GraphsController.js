@@ -888,7 +888,10 @@ function setupGraphsController() {
             }
         }
 
-        this.map.seismicityGraphsController.timeSlider.setMinMax(e.min, e.max);
+        var timeSlider = this.map.seismicityGraphsController.timeSlider;
+        if (timeSlider) {
+            timeSlider.setMinMax(e.min, e.max);
+        }
     };
 
     GraphsController.prototype.createInsarSliderForDataset = function(area) {
