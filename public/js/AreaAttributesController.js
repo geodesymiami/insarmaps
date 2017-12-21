@@ -52,6 +52,8 @@ function AreaAttributesController(map, area) {
         }
 
         fullAttributes["unavco_name"] = unavco_name;
+        fullAttributes["decimal_dates"] = this.datesArray;
+        fullAttributes["string_dates"] = propertyToJSON(this.area.properties.string_dates);
 
         return fullAttributes;
     };

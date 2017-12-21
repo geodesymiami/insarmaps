@@ -518,6 +518,7 @@ function MapController(loadJSONFunc) {
 
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "/point", function(response) {
+            $("#insar-chart-slider-container").removeClass("active");
             $("#graph-div-maximize-button").click();
 
             var json = JSON.parse(response);
@@ -687,6 +688,8 @@ function MapController(loadJSONFunc) {
         this.colorScale.setTitle("LOS Velocity [cm/yr]");
 
         this.addDataset(tileJSON, feature);
+        $("#insar-chart-slider-container").addClass("active");
+        this.graphsController.createInsarSliderForDataset(currentArea);
 
         this.map.once("data", function(event) {
             this.removeAreaMarkersThroughButton();
@@ -752,14 +755,6 @@ function MapController(loadJSONFunc) {
                 this.determineZoomOutZoom();
 
                 var feature = frameFeature;
-
-                var unavco_name = feature.properties.unavco_name;
-                var project_name = feature.properties.project_name;
-                var lat = feature.geometry.coordinates[0];
-                var long = feature.geometry.coordinates[1];
-                var num_chunks = feature.properties.num_chunks;
-                var attributeKeys = feature.properties.attributekeys;
-                var attributeValues = feature.properties.attributevalues;
                 // set coordinates to center of dataset
                 feature.geometry.coordinates = JSON.parse(feature.properties.centerOfDataset);
                 this.loadDatasetFromFeature(feature);
@@ -1221,8 +1216,10 @@ function MapController(loadJSONFunc) {
         this.map.boxZoom.disable();
 
         this.leftClickOnAPoint = this.leftClickOnAPoint.bind(this);
-        this.map.on('click', this.leftClickOnAPoint);
-        this.map.on('click', function() { fullyHideSearchBars(); });
+        this.map.on('click', function(e) {
+            fullyHideSearchBars();
+            this.leftClickOnAPoint(e);
+        }.bind(this));
 
         //this.map.on("contextmenu", this.rightClickOnAPoint);
 

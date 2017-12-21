@@ -54,19 +54,19 @@ function AbstractGraphsController() {
 
     this.setNavigatorHandlers = function(chartID, divIDDisableDraggable) {
         $("#" + chartID + " .highcharts-navigator").mouseenter(function() {
-            $("#" + divIDDisableDraggable).draggable("disable");
+            $(divIDDisableDraggable).draggable("disable");
         }).mouseleave(function() {
-            $("#" + divIDDisableDraggable).draggable("enable");
+            $(divIDDisableDraggable).draggable("enable");
         });;
         $("#" + chartID + ".highcharts-navigator-handle-left").mouseenter(function() {
-            $("#" + divIDDisableDraggable).draggable("disable");
+            $(divIDDisableDraggable).draggable("disable");
         }).mouseleave(function() {
-            $("#" + divIDDisableDraggable).draggable("enable");
+            $(divIDDisableDraggable).draggable("enable");
         });;
         $("#" + chartID + ".highcharts-navigator-handle-right").mouseenter(function() {
-            $("#" + divIDDisableDraggable).draggable("disable");
+            $(divIDDisableDraggable).draggable("disable");
         }).mouseleave(function() {
-            $("#" + divIDDisableDraggable).draggable("enable");
+            $(divIDDisableDraggable).draggable("enable");
         });;
     };
 
@@ -168,6 +168,14 @@ function AbstractGraphsController() {
     this.createChartNotDestroyingOld = function(chartContainer, chartOpts) {
         Highcharts.chart(chartContainer, chartOpts);
     };
+
+    this.createSlider = function(sliderContainer, data, dataType, title, afterSetExtremes) {
+        var slider = new CustomHighchartsSlider();
+        slider.init(null, afterSetExtremes.bind(this));
+        slider.display(sliderContainer, data, dataType, title);
+
+        return slider;
+    };
 }
 
 
@@ -200,6 +208,8 @@ function GraphsController() {
             navigatorEvent: null
         }
     };
+
+    this.insarTimeSlider = null;
 }
 
 // for the below class, we always destroy and recreate the chart.
@@ -299,6 +309,9 @@ function setupGraphsController() {
                 type: 'datetime',
                 events: { // get dates for slider bounds
                     afterSetExtremes: function(e) {
+                        this.insarTimeSlider.dontPerformAfterSetExtremes = true;
+                        this.insarTimeSlider.setMinMax(e.min, e.max); // update insarTimeSlider in case it must be reshown
+                        this.insarTimeSlider.dontPerformAfterSetExtremes = false;
                         // we get called when graph is created
                         this.graphSettings[chartContainer].navigatorEvent = e;
                         var dates = this.getValideDatesFromNavigatorExtremes(chartContainer);
@@ -338,20 +351,7 @@ function setupGraphsController() {
                         if (selector.lastbbox == selector.bbox && selector.lastMinIndex == selector.minIndex && selector.lastMaxIndex == selector.maxIndex) {
                             return;
                         }
-                        if (selector.bbox != null && selector.minIndex != -1 && selector.maxIndex != -1) {
-                            if (this.map.colorOnDisplacement) {
-                                var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
-                                var startDate = new Date(dates[this.map.selector.minIndex]);
-                                var endDate = new Date(dates[this.map.selector.maxIndex]);
-                                this.map.selector.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE to interrupt");
-                            } else {
-                                this.map.selector.recolorDataset();
-                            }
-                        }
-
-                        if (insarGraphSyncToggleButton.toggleState == ToggleStates.ON) {
-                            this.map.seismicityGraphsController.timeSlider.setMinMax(e.min, e.max);
-                        }
+                        this.recolorInsarFromDates(e, date_array);
                     }.bind(this)
                 },
                 dateTimeLabelFormats: {
@@ -450,7 +450,7 @@ function setupGraphsController() {
         $('#' + chartContainer).highcharts(chartOpts);
         this.highChartsOpts[chartContainer] = chartOpts;
 
-        this.setNavigatorHandlers(chartContainer, "charts");
+        this.setNavigatorHandlers(chartContainer, "#charts");
 
         // this calls recreate in the background.
         // TODO: make detrend data functions not call recreate
@@ -871,9 +871,52 @@ function setupGraphsController() {
             this.addRegressionLines();
         }
 
-        this.setNavigatorHandlers("chartContainer", "charts");
-        this.setNavigatorHandlers("chartContainer2", "charts");
+        this.setNavigatorHandlers("chartContainer", "#charts");
+        this.setNavigatorHandlers("chartContainer2", "#charts");
 
+    };
+
+    GraphsController.prototype.recolorInsarFromDates = function(e, dates) {
+        var selector = this.map.selector;
+        if (selector.minIndex != -1 && selector.maxIndex != -1) {
+            if (this.map.colorOnDisplacement) {
+                var startDate = new Date(dates[this.map.selector.minIndex]);
+                var endDate = new Date(dates[this.map.selector.maxIndex]);
+                this.map.selector.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE to interrupt");
+            } else {
+                this.map.selector.recolorDataset();
+            }
+        }
+
+        this.map.seismicityGraphsController.timeSlider.setMinMax(e.min, e.max);
+    };
+
+    GraphsController.prototype.createInsarSliderForDataset = function(area) {
+        var controller = new AreaAttributesController(null, area);
+        var date_string_array = controller.getAttribute("string_dates");
+        var date_array = convertStringsToDateArray(date_string_array);
+        // console.log(JSON.stringify(date_array));
+        var data = date_array.map(function(date) {
+            return [date.getTime(), date.getTime()];
+        });
+        // console.log(JSON.stringify(data));
+
+        this.insarTimeSlider = this.createSlider("insar-chart-slider", data, "datetime", null, function(e) {
+            // don't recolor twice when main color scale updates this slider...
+            if (this.insarTimeSlider.dontPerformAfterSetExtremes) {
+                return;
+            }
+            var dates = this.mapExtremesToArrayIndeces(e.min, e.max, date_array);
+            this.map.selector.lastMinIndex = myMap.selector.minIndex;
+            this.map.selector.lastMaxIndex = myMap.selector.maxIndex;
+            // set selector to work
+            this.map.selector.minIndex = dates.minIndex;
+            this.map.selector.maxIndex = dates.maxIndex;
+
+            this.recolorInsarFromDates(e, date_array);
+        }.bind(this));
+
+        this.setNavigatorHandlers("insar-chart-slider", "#seismicity-chart-sliders");
     };
 }
 
@@ -1624,6 +1667,7 @@ function CustomHighchartsSlider() {
     this.chartContainer = null;
     this.manuallySetExtremes = false;
     this.settingData = false;
+    this.dontPerformAfterSetExtremes = false;
 }
 
 function setupCustomHighchartsSlider() {
@@ -1711,7 +1755,7 @@ function setupCustomHighchartsSlider() {
 
         this.createChartDestroyingOld(chartContainer, chartOpts);
         $("#" + chartContainer).css("height", chartOpts.chart.height + "px");
-        this.setNavigatorHandlers(chartContainer, "seismicity-chart-sliders");
+        this.setNavigatorHandlers(chartContainer, ".draggable");
     };
 
     CustomHighchartsSlider.prototype.setMin = function(min) {
@@ -1824,7 +1868,7 @@ function setupCustomSliderSeismicityController() {
         }
 
         // if insar is up, recolor insar
-        if (seismicityGraphSyncToggleButton.toggleState == ToggleStates.ON && currentArea) {
+        if (currentArea) {
             var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.decimal_dates));
             var startDate = dates[0];
             var endDate = dates[dates.length - 1];
@@ -1839,6 +1883,7 @@ function setupCustomSliderSeismicityController() {
                 minMilliseconds = seismicityDates.min;
             }
             this.map.graphsController.setNavigatorMinMax("chartContainer", minMilliseconds, maxMilliseconds);
+            this.map.graphsController.insarTimeSlider.setMinMax(minMilliseconds, maxMilliseconds);
         }
         this.map.thirdPartySourcesController.filterSeismicities([this.timeRange], "time");
 
@@ -1942,14 +1987,6 @@ function setupCustomSliderSeismicityController() {
     CustomSliderSeismicityController.prototype.createAllCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
         SeismicityGraphsController.prototype.createAllCharts.call(this, selectedColoring, optionalBounds, optionalFeatures);
         this.createOrUpdateSliders(optionalFeatures);
-    };
-
-    CustomSliderSeismicityController.prototype.createSlider = function(sliderContainer, data, dataType, title, afterSetExtremes) {
-        var slider = new CustomHighchartsSlider();
-        slider.init(null, afterSetExtremes.bind(this));
-        slider.display(sliderContainer, data, dataType, title);
-
-        return slider;
     };
 
     CustomSliderSeismicityController.prototype.destroyAllSliders = function() {

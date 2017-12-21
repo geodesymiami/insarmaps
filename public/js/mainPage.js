@@ -382,22 +382,27 @@ function setupToggleButtons() {
         }
     });
 
-    insarGraphSyncToggleButton = new ToggleButton("insar-sync-toggle-button");
-    insarGraphSyncToggleButton.onclick(function(state) {
-        if (state == ToggleStates.ON) {
-            if (!myMap.seismicityGraphsController.timeSlider) {
-                var features = myMap.thirdPartySourcesController.getAllSeismicityFeatures();
-                myMap.seismicityGraphsController.createOrUpdateSliders(features);
-            }
-        } else {
-            if (myMap.seismicityGraphsController.timeSlider) {
-                myMap.seismicityGraphsController.destroyAllSliders();
-            }
-        }
-    });
+    // POTENTIALLY REMOVE
+    // in case he changes his mind, i've uncommented this. he isn't sure yet whether
+    // we need this button or not
+    // insarGraphSyncToggleButton = new ToggleButton("insar-sync-toggle-button");
+    // insarGraphSyncToggleButton.onclick(function(state) {
+    //     if (state == ToggleStates.ON) {
+    //         if (!myMap.seismicityGraphsController.timeSlider) {
+    //             var features = myMap.thirdPartySourcesController.getAllSeismicityFeatures();
+    //             myMap.seismicityGraphsController.createOrUpdateSliders(features);
+    //         }
+    //     } else {
+    //         if (myMap.seismicityGraphsController.timeSlider) {
+    //             myMap.seismicityGraphsController.destroyAllSliders();
+    //         }
+    //     }
+    // });
 
-    seismicityGraphSyncToggleButton = new ToggleButton("seismicity-sync-toggle-button");
-    seismicityGraphSyncToggleButton.onclick(null);
+    // in case he changes his mind, i've uncommented this. he isn't sure yet whether
+    // we need this button or not
+    // seismicityGraphSyncToggleButton = new ToggleButton("seismicity-sync-toggle-button");
+    // seismicityGraphSyncToggleButton.onclick(null);
 
     topGraphToggleButton = new ToggleButton("top-graph-toggle-button");
     topGraphToggleButton.onclick(function(state) {
@@ -776,6 +781,15 @@ $(window).on("load", function() {
         }
     });
 
+    $(".draggable").draggable({
+        start: function(event, ui) {
+            $(this).addClass("disable-transitions");
+        },
+        stop: function(event, ui) {
+            $(this).removeClass("disable-transitions");
+        }
+    });
+
     // set up tooltips on graph div and area attributes div
     // $(".wrap#charts").tooltip("disable");
     // $(".wrap#area-attributes-div").tooltip("disable");
@@ -792,6 +806,7 @@ $(window).on("load", function() {
             container.removeClass("maximized");
             container.addClass("minimized");
             myMap.removeTouchLocationMarkers();
+            $("#insar-chart-slider-container").addClass("active");
         }
     });
 
@@ -935,15 +950,6 @@ $(window).on("load", function() {
         myMap.seismicityGraphsController.createChart(null, "cumulative-events-vs-date-graph", null, null);
     });
 
-    $(".wrap#seismicity-chart-sliders, .wrap#seismicity-charts, .wrap#cross-section-charts, .wrap#USGSEvents-options").draggable({
-        start: function(event, ui) {
-            $(this).addClass("disable-transitions");
-        },
-        stop: function(event, ui) {
-            $(this).removeClass("disable-transitions");
-        }
-    });
-
     $("#cross-section-charts-maximize-button").on("click", function() {
         var $container = $(".wrap#cross-section-charts");
         if (!$container.hasClass("active") && !myMap.seismicityGraphsController.chartsVisible()) {
@@ -971,23 +977,24 @@ $(window).on("load", function() {
         myMap.seismicityGraphsController.resetSliderRange(sliderName);
     });
 
-    $("#set-insar-time-range-to-seismicity-button").on("click", function() {
-        if (myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
-            var insarDates = myMap.graphsController.graphSettings["chartContainer"].navigatorEvent;
-            var seismicityDates = myMap.seismicityGraphsController.timeRange;
-            // make sure insardates are within seismicity dates, capping them at seismicity extremes otherwise
-            var minMilliseconds = seismicityDates.min;
-            var maxMilliseconds = seismicityDates.max;
-            if (insarDates.max < maxMilliseconds && insarDates.max > minMilliseconds) {
-                maxMilliseconds = insarDates.max;
-            }
-            if (insarDates.min > minMilliseconds && insarDates.min < maxMilliseconds) {
-                minMilliseconds = insarDates.min;
-            }
+    // POTENTIALLY REMOVE
+    // $("#set-insar-time-range-to-seismicity-button").on("click", function() {
+    //     if (myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
+    //         var insarDates = myMap.graphsController.graphSettings["chartContainer"].navigatorEvent;
+    //         var seismicityDates = myMap.seismicityGraphsController.timeRange;
+    //         // make sure insardates are within seismicity dates, capping them at seismicity extremes otherwise
+    //         var minMilliseconds = seismicityDates.min;
+    //         var maxMilliseconds = seismicityDates.max;
+    //         if (insarDates.max < maxMilliseconds && insarDates.max > minMilliseconds) {
+    //             maxMilliseconds = insarDates.max;
+    //         }
+    //         if (insarDates.min > minMilliseconds && insarDates.min < maxMilliseconds) {
+    //             minMilliseconds = insarDates.min;
+    //         }
 
-            myMap.seismicityGraphsController.timeSlider.setMinMax(minMilliseconds, maxMilliseconds);
-        }
-    });
+    //         myMap.seismicityGraphsController.timeSlider.setMinMax(minMilliseconds, maxMilliseconds);
+    //     }
+    // });
 
     // chart div resizable
     $(".wrap#charts").resizable({
@@ -1008,13 +1015,6 @@ $(window).on("load", function() {
             $(this).removeClass("disable-transitions");
             myMap.graphsController.resizeChartContainers();
             myMap.graphsController.recreateGraphs();
-        }
-    }).draggable({
-        start: function(event, ui) {
-            $(this).addClass("disable-transitions");
-        },
-        stop: function(event, ui) {
-            $(this).removeClass("disable-transitions");
         }
     });
 

@@ -149,7 +149,7 @@
                     </div>
                     <button class="btn btn-primary-outline" id="hide-show-seismicities-button" data-toggle="tooltip" title="Show">Seismicity</button>
                     <button class="btn btn-primary-outline" id="hide-show-insar-button" data-toggle="tooltip" title="Show">InSAR</button>
-                    <div class="wrap wrap-transitions" id="USGSEvents-options">
+                    <div class="wrap wrap-transitions draggable" id="USGSEvents-options">
                         <div class="top-right-buttons">
                             <button type="button" class="minimize-button" data-dismiss="modal" id="USGSEvents-options-minimize-button"></button>
                         </div>
@@ -275,7 +275,7 @@
                 </div>
             </div>
         </div>
-        <div class="wrap wrap-transitions minimized" id="charts" title="Displacement time-series">
+        <div class="wrap wrap-transitions draggable minimized" id="charts" title="Displacement time-series">
             <div class="top-right-buttons">
                 <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="graph-div-minimize-button"></button>
             </div>
@@ -316,15 +316,16 @@
                         <label>Detrend</label>
                         <input id="detrend-toggle-button" type="checkbox" name="overlayToggle" />
                     </div>
-                    <div class="overlay_toggle">
+                    <!-- POTENTIALLY REMOVE -->
+                    <!-- <div class="overlay_toggle">
                         <label>Sync</label>
                         <input id="insar-sync-toggle-button" type="checkbox" name="overlayToggle" />
-                    </div>
+                    </div> -->
                     <button class="btn btn-primary-outline" id="download-as-text-button">Download as TXT</button>
                 </div>
             </div>
         </div>
-        <div class="wrap wrap-transitions" id="seismicity-charts">
+        <div class="wrap wrap-transitions draggable" id="seismicity-charts">
             <div class="top-right-buttons">
                 <button type="button" class="minimize-button" data-dismiss="modal" id="seismicity-charts-minimize-button"></button>
             </div>
@@ -404,7 +405,7 @@
                 </div>
             </div>
         </div>
-        <div class="wrap wrap-transitions" id="cross-section-charts">
+        <div class="wrap wrap-transitions draggable" id="cross-section-charts">
             <div class="top-right-buttons">
                 <button type="button" class="minimize-button" data-dismiss="modal" id="cross-section-charts-minimize-button"></button>
             </div>
@@ -468,24 +469,35 @@
                 </div>
             </div>
         </div>
-        <div class="wrap wrap-transitions" id="seismicity-chart-sliders">
+        <div class="wrap wrap-transitions draggable" id="seismicity-chart-sliders">
             <div class="top-right-buttons">
                 <button type="button" class="minimize-button" data-dismiss="modal" id="seismicity-chart-sliders-minimize-button"></button>
             </div>
             <div class="content">
                 <div class="chart-containers">
                     <h7>Time (Distribution)</h7>
-                    <div class="seismicity-chart-slider" id="time-slider"></div>
+                    <div class="chart-slider" id="time-slider"></div>
                     <button class="btn btn-primary-outline slider-range-button" data-slider-type="time-slider">Set Range</button>
                     <button class="btn btn-primary-outline slider-reset-button" data-slider-type="time-slider">Reset</button>
-                    <button class="btn btn-primary-outline" id="set-insar-time-range-to-seismicity-button">Sync</button>
+                    <!-- POTENTIALLY REMOVE -->
+                    <!-- <button class="btn btn-primary-outline" id="set-insar-time-range-to-seismicity-button">Sync</button>
                     <label>Sync</label>
-                    <input id="seismicity-sync-toggle-button" type="checkbox" name="overlayToggle">
+                    <input id="seismicity-sync-toggle-button" type="checkbox" name="overlayToggle"> -->
                     <br>
                     <h7>Depth (Distribution)</h7>
-                    <div class="seismicity-chart-slider" id="depth-slider"></div>
+                    <div class="chart-slider" id="depth-slider"></div>
                     <button class="btn btn-primary-outline slider-range-button" data-slider-type="depth-slider">Set Range</button>
                     <button class="btn btn-primary-outline slider-reset-button" data-slider-type="depth-slider">Reset</button>
+                </div>
+            </div>
+        </div>
+        <div class="wrap wrap-transitions draggable" id="insar-chart-slider-container">
+            <!-- <div class="top-right-buttons">
+                <button type="button" class="minimize-button" data-dismiss="modal" id="insar-chart-slider-minimize-button"></button>
+            </div> -->
+            <div class="content">
+                <div class="chart-containers">
+                    <div class="chart-slider" id="insar-chart-slider"></div>
                 </div>
             </div>
         </div>

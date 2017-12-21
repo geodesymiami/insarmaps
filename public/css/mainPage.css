@@ -272,7 +272,7 @@ a.btn {
     max-height: 445px;
     margin: 0 auto;
     top: 29px;
-    left: 688px;
+    left: 640px;
 }
 
 #USGSEvents-options .content {
@@ -856,7 +856,7 @@ input[type=number] {
     width: 100%;
 }
 
-#seismicity-chart-sliders {
+#seismicity-chart-sliders, #insar-chart-slider-container {
     position: absolute;
     left: 10%;
     width: 30%;
@@ -864,7 +864,7 @@ input[type=number] {
     height: 210px;
 }
 
-.seismicity-chart-slider {
+.chart-slider {
     height: 45px;
     margin-bottom: 5px
 }
