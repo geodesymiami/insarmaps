@@ -479,7 +479,7 @@ function setupToggleButtons() {
 
     USGSEventsEarthquakeToggleButton = new SeismicityToggleButton("USGSEvents-earthquake-toggle-button", "overlay-options-toggles", "USGS Events");
     USGSEventsEarthquakeToggleButton.onclick(function(state) {
-        var $container = $(".wrap#USGSEvents-options");
+        var $container = $(".wrap#USGSEvents-options-wrapper");
         if (state == ToggleStates.ON) {
             if (!$container.hasClass("active")) {
                 $container.addClass("active");
@@ -665,7 +665,7 @@ $(window).on("load", function() {
     });
 
     $("#USGSEvents-options-minimize-button").on("click", function() {
-        var $container = $(".wrap#USGSEvents-options");
+        var $container = $(".wrap#USGSEvents-options-wrapper");
 
         if ($container.hasClass("active")) {
             $container.removeClass("active");

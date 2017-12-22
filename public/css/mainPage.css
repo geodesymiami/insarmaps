@@ -265,14 +265,26 @@ a.btn {
     display: none;
 }
 
-#USGSEvents-options {
+#USGSEvents-options-wrapper {
     position: absolute;
-    width: 155px;
-    max-width: 330px;
-    max-height: 445px;
+    width: 300px;
+    height: 600px;
+    max-width: 350px;
+    max-height: 850px;
     margin: 0 auto;
     top: 29px;
     left: 640px;
+    background: rgba(0, 0, 0, 0);
+    border: none !important;
+    box-shadow: none !important;
+}
+
+#USGSEvents-options {
+    position: relative;
+    min-width: 50px;
+    width: 50%;
+    height: 80%;
+    max-height: 450px;
 }
 
 #USGSEvents-options .content {
