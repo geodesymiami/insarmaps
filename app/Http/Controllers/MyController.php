@@ -35,7 +35,7 @@ class MyController extends Controller {
         return view('map', ["urlOptions" => $allOptions]);
     }
 
-    public function renderVolcanos(Request $request, $lat = 0.0, $long = 0.0) {
+    public function renderVolcanoes(Request $request, $lat = 0.0, $long = 0.0) {
         $controller = new WebServicesController();
         $json = [];
         $options = new WebServicesOptions();

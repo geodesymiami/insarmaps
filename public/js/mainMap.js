@@ -640,6 +640,20 @@ function MapController(loadJSONFunc) {
     };
 
     this.loadDatasetFromFeature = function(feature, initialZoom) {
+        var attributesController = new AreaAttributesController(this, feature);
+        $.ajax({
+            url: "/preLoad",
+            type: "post",
+            async: true,
+            data: {
+                datasetUnavcoName: attributesController.getAttribute("unavco_name"),
+            },
+            success: function(response) {
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.log("failed: " + xhr.responseText);
+            }
+        });
         var tileJSON = {
             "minzoom": 0,
             "maxzoom": 14,
@@ -723,7 +737,6 @@ function MapController(loadJSONFunc) {
                     });
                 }
 
-                var attributesController = new AreaAttributesController(this, feature);
                 attributesController.processAttributes();
                 this.areaMarkerLayer.setAreaRowHighlighted(feature.properties.unavco_name);
                 // in case someone called loading screen

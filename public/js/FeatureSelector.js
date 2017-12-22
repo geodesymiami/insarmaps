@@ -308,8 +308,9 @@ function setupFeatureSelector() {
             responseType: "arraybuffer"
         }, function() {
             this.cancelRecoloring = true;
+            this.map.showInsarLayers();
             hideLoadingScreen();
-        });
+        }.bind(this));
     };
 
     FeatureSelector.prototype.recolorDataset = function() {

@@ -367,6 +367,19 @@ class GeoJSONController extends Controller {
         }
     }
 
+    public function preloadDatasetDBTable() {
+        try {
+            // TODO: try to use prepared values on this :c
+            $unavcoName = Input::get("datasetUnavcoName");
+            $query = "SELECT pg_prewarm('\"" . $unavcoName . "\"', 'prefetch')";
+            DB::select(DB::raw($query));
+
+            return response("Successfully preloaded " . Input::get("datasetUnavcoName"), 200);
+        } catch (Exception $e) {
+            return response()->json($e);
+        }
+    }
+
     // how to get points in polygon for webservices:
     /*
 Assume we have lat, long; delta = 0.0001 but can be refined later
