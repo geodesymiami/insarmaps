@@ -458,6 +458,7 @@ function MapController(loadJSONFunc) {
         if (pointNumber === undefined || pointNumber === null || feature.layer.id == "contours" || feature.layer.id == "contour_label") {
             return;
         }
+        $("#charts").removeClass("only-show-slider");
         var areaName = currentArea.properties.unavco_name;
 
         // show link to current clicked point in webservices
@@ -518,7 +519,6 @@ function MapController(loadJSONFunc) {
 
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "/point", function(response) {
-            $("#insar-chart-slider-container").removeClass("active");
             $("#graph-div-maximize-button").click();
 
             var json = JSON.parse(response);
@@ -702,7 +702,7 @@ function MapController(loadJSONFunc) {
         this.colorScale.setTitle("LOS Velocity [cm/yr]");
 
         this.addDataset(tileJSON, feature);
-        $("#insar-chart-slider-container").addClass("active");
+        $("#charts").addClass("only-show-slider").addClass("active");
         this.graphsController.createInsarSliderForDataset(currentArea);
 
         this.map.once("data", function(event) {
@@ -1464,7 +1464,6 @@ function MapController(loadJSONFunc) {
         this.removeAreaPopups();
         $("#search-form-and-results-minimize-button").click();
         this.seismicityGraphsController.hideChartContainers();
-        $("#insar-chart-slider-container").removeClass("active");
 
         $("#point-details").empty();
 

@@ -848,6 +848,24 @@ input[type=number] {
     width: 40%;
 }
 
+#charts.only-show-slider {
+    height: 10%;
+    min-height: 50px;
+}
+
+#charts.active > #insar-chart-slider-container {
+    display: none !important;
+}
+
+#charts.active.only-show-slider > #insar-chart-slider-container {
+    display: block !important;
+    height: 100%;
+}
+
+#charts.active.only-show-slider > .content {
+    display: none;
+}
+
 #seismicity-charts {
     position: absolute;
     right: 0%;
@@ -871,9 +889,9 @@ input[type=number] {
 #seismicity-chart-sliders, #insar-chart-slider-container {
     position: absolute;
     left: 10%;
-    width: 30%;
+    width: 75%;
     bottom: 0%;
-    height: 210px;
+    height: 135px;
 }
 
 .chart-slider {

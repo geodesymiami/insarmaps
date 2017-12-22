@@ -802,7 +802,7 @@ $(window).on("load", function() {
         var container = $(".wrap#charts");
         if (container.hasClass("maximized")) {
             $("#graph-div-maximize-button").css("display", "block");
-            container.removeClass("active");
+            container.removeClass("active").removeClass("maximized").addClass("minimized").addClass("only-show-slider");;
             container.removeClass("maximized");
             container.addClass("minimized");
             myMap.removeTouchLocationMarkers();

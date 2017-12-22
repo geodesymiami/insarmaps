@@ -900,11 +900,11 @@ function setupGraphsController() {
         var date_array = convertStringsToDateArray(date_string_array);
         // console.log(JSON.stringify(date_array));
         var data = date_array.map(function(date) {
-            return [date.getTime(), date.getTime()];
+            return [date.getTime(), 1];
         });
         // console.log(JSON.stringify(data));
 
-        this.insarTimeSlider = this.createSlider("insar-chart-slider", data, "datetime", null, function(e) {
+        this.insarTimeSlider = this.createSlider("insar-chart-slider", data, "datetime", "Date", function(e) {
             // don't recolor twice when main color scale updates this slider...
             if (this.insarTimeSlider.dontPerformAfterSetExtremes) {
                 return;

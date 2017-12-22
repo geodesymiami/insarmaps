@@ -20,7 +20,7 @@
     <div id="information-div" class="overlay-div">
         <div class="vertically-aligned" id="information-div-contents">
             <p>
-                This website provides InSAR displacement time-series produced by the University of Miami Geodesy Laboratory, which is supported by NASA and the NSF. For InSAR processing JPL's ISCE software and the Fattahi et al.’s (2017) stack processor is used for Sentinel-1 and for most other sensors a combination of ROI_PAC and the GAMMA software. Time series processing uses the University of Miami-developed PySAR software.
+                This website provides InSAR displacement time-series produced by the University of Miami Geodesy Laboratory, which is supported by NASA and the NSF. For InSAR processing JPL's ISCE software and the Fattahi et al.’s (2017) stack processor is used for Sentinel-1 and for most other sensors a combination of ROI_PAC and the GAMMA software. Time series processing uses the University of Miami-developed PySAR software(lead developer Yunjun Zhang).
             </p>
             <p>
                 This website was created by University of Miami Computer Science students Alfredo Terrero and Zishi Wu. It started as a class project of CSC 431, taught by Chris Mader and Julio Perez of the University of Miami’s Center for Computational Sciences (CCS). The data processing is conducted using the University of Miami’s High Performance Computing systems.
@@ -326,6 +326,16 @@
                     <button class="btn btn-primary-outline" id="download-as-text-button">Download as TXT</button>
                 </div>
             </div>
+            <div class="draggable" id="insar-chart-slider-container">
+                <!-- <div class="top-right-buttons">
+                    <button type="button" class="minimize-button" data-dismiss="modal" id="insar-chart-slider-minimize-button"></button>
+                </div> -->
+                <div class="content">
+                    <div class="chart-containers">
+                        <div class="chart-slider" id="insar-chart-slider"></div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="wrap wrap-transitions draggable" id="seismicity-charts">
             <div class="top-right-buttons">
@@ -490,16 +500,6 @@
                     <div class="chart-slider" id="depth-slider"></div>
                     <button class="btn btn-primary-outline slider-range-button" data-slider-type="depth-slider">Set Range</button>
                     <button class="btn btn-primary-outline slider-reset-button" data-slider-type="depth-slider">Reset</button>
-                </div>
-            </div>
-        </div>
-        <div class="wrap wrap-transitions draggable" id="insar-chart-slider-container">
-            <!-- <div class="top-right-buttons">
-                <button type="button" class="minimize-button" data-dismiss="modal" id="insar-chart-slider-minimize-button"></button>
-            </div> -->
-            <div class="content">
-                <div class="chart-containers">
-                    <div class="chart-slider" id="insar-chart-slider"></div>
                 </div>
             </div>
         </div>
