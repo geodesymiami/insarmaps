@@ -713,20 +713,29 @@ $(window).on("load", function() {
                 myMap.colorDatasetOnVelocity();
                 $(this).attr("data-original-title", "Color on displacement");
             }
-        } else if (curMode === "seismicity") {
+        }
+    });
+
+    $("#seismicity-color-scale .color-scale-text-div").on("click", function() {
+        var selectedColoring = null;
+        var title = $(this).attr("data-original-title");
+
+        myMap.seismicityColorScale.setTopAsMax(false);
+        var curMode = myMap.getCurrentMode();
+        if (curMode === "seismicity") {
             $seismicityColoringButtons = $(".seismicity-chart-set-coloring-button");
             if (title === "Color on time") {
                 selectedColoring = "time";
                 $(this).attr("data-original-title", "Color on depth");
-                myMap.colorScale.setInDateMode(true);
-                myMap.colorScale.setMinMax(myMap.seismicityGraphsController.timeRange.min, myMap.seismicityGraphsController.timeRange.max);
+                myMap.seismicityColorScale.setInDateMode(true);
+                myMap.seismicityColorScale.setMinMax(myMap.seismicityGraphsController.timeRange.min, myMap.seismicityGraphsController.timeRange.max);
                 $seismicityColoringButtons.attr("data-original-title", "Color on time")
                 $seismicityColoringButtons.click();
             } else if (title === "Color on depth") {
                 selectedColoring = "depth";
                 $(this).attr("data-original-title", "Color on time");
-                myMap.colorScale.setInDateMode(false);
-                myMap.colorScale.setMinMax(myMap.seismicityGraphsController.depthRange.min, myMap.seismicityGraphsController.depthRange.max);
+                myMap.seismicityColorScale.setInDateMode(false);
+                myMap.seismicityColorScale.setMinMax(myMap.seismicityGraphsController.depthRange.min, myMap.seismicityGraphsController.depthRange.max);
                 $seismicityColoringButtons.attr("data-original-title", "Color on depth")
                 $seismicityColoringButtons.click();
             }
@@ -735,19 +744,31 @@ $(window).on("load", function() {
         }
     });
 
-    $("#color-scale .color-scale-picture-div .hidden-colorscale-click-area").on("click", function() {
-        var min = myMap.colorScale.min;
-        var max = myMap.colorScale.max;
-        var selectedColoring = $("#color-scale .color-scale-text-div").attr("data-original-title") === "Color on time" ?
+    $(".color-scale > .color-scale-picture-div > .hidden-colorscale-click-area").on("click", function() {
+        var scale = null;
+        var id = $(this).attr("id");
+
+        if (id === "color-scale") {
+            scale = myMap.colorScale;
+        } else if (id === "seismicity-color-scale") {
+            scale = myMap.seismicityColorScale;
+        // do nothing
+        } else {
+            return;
+        }
+
+        var min = scale.min;
+        var max = scale.max;
+        var selectedColoring = $(".color-scale .color-scale-text-div").attr("data-original-title") === "Color on time" ?
             "depth" : "time";
         if ($(this).attr("data-original-title") === "Halve scale") {
             min /= 2;
             max /= 2;
-            myMap.colorScale.setMinMax(min, max);
+            scale.setMinMax(min, max);
         } else {
             min *= 2;
             max *= 2;
-            myMap.colorScale.setMinMax(min, max);
+            scale.setMinMax(min, max);
         }
 
         var curMode = myMap.getCurrentMode();
@@ -802,12 +823,10 @@ $(window).on("load", function() {
         var container = $(".wrap#charts");
         if (container.hasClass("maximized")) {
             $("#graph-div-maximize-button").css("display", "block");
-            container.removeClass("active").removeClass("maximized").addClass("minimized").addClass("only-show-slider");;
-            container.removeClass("maximized");
-            container.addClass("minimized");
             myMap.removeTouchLocationMarkers();
-            $("#insar-chart-slider-container").addClass("active");
         }
+
+        container.removeClass("active").removeClass("maximized").addClass("minimized").addClass("only-show-slider");
     });
 
     $("#graph-div-maximize-button").on("click", function() {

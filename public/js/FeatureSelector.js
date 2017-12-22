@@ -109,30 +109,30 @@ function setupFeatureSelector() {
             if (bounds) {
                 this.addSelectionPolygonFromMapBounds(this.map.seismicityGraphsController.mapForPlot.getBounds());
             }
-        } else if (mode === "insar") {
-            if (this.minIndex == -1 || this.maxIndex == -1) {
-                return;
-            }
+        } else if (mode === "insar") { // said we don't need it for now, but keep to make sure
+            // if (this.minIndex == -1 || this.maxIndex == -1) {
+            //     return;
+            // }
 
-            // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
-            if (this.lastbbox == this.bbox && this.lastMinIndex == this.minIndex && this.lastMaxIndex == this.maxIndex) {
-                return;
-            }
+            // // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
+            // if (this.lastbbox == this.bbox && this.lastMinIndex == this.minIndex && this.lastMaxIndex == this.maxIndex) {
+            //     return;
+            // }
 
-            // cancelled recoloring at any point...
-            if (this.cancelRecoloring) {
-                this.cancelRecoloring = false;
-                return;
-            }
+            // // cancelled recoloring at any point...
+            // if (this.cancelRecoloring) {
+            //     this.cancelRecoloring = false;
+            //     return;
+            // }
 
-            if (this.map.colorOnDisplacement) {
-                var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
-                var startDate = new Date(dates[this.minIndex]);
-                var endDate = new Date(dates[this.maxIndex]);
-                this.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE to interrupt");
-            } else {
-                this.recolorDataset();
-            }
+            // if (this.map.colorOnDisplacement) {
+            //     var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
+            //     var startDate = new Date(dates[this.minIndex]);
+            //     var endDate = new Date(dates[this.maxIndex]);
+            //     this.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE to interrupt");
+            // } else {
+            //     this.recolorDataset();
+            // }
         } else if (mode === "gps") {
             // TODO: logic for gps selection
         }
@@ -162,7 +162,7 @@ function setupFeatureSelector() {
         }
 
         this.lastbbox = this.bbox;
-        if (features.length == 0) {
+        if (!features || features.length == 0) {
             return;
         }
 

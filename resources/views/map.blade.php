@@ -126,7 +126,7 @@
             <a href="/auth/logout" class="btn btn-primary-outline">Logout</a>
             @endif
             <!-- we inline hide it as we arent sure yet if want this button or not... -->
-            <div id="square-selector-button-div" style="display: none !important">
+            <div id="square-selector-button-div">
                 <button class="btn btn-primary-outline map-button no-padding clickable-button" data-toggle="tooltip" data-placement="right" title="Select rectangle" id="square-selector-button">
                     <img src="/img/polygon.svg" alt="polygon.svg">
                 </button>
@@ -226,26 +226,54 @@
                 <img id="arrow-image" src="/img/arrow.PNG">
             </div>
         </div>
-        <div id="color-scale">
-            <div class="btn btn-primary color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color on time">
-                LOS Velocity [cm/yr]
-            </div>
-            <div class="color-scale-main-container">
-                <div class="color-scale-and-values-container" class="clearfix">
-                    <div class="color-scale-picture-div">
-                        <div class="hidden-colorscale-click-area" id="main-scale-invisible-top-half" data-toggle="tooltip" title="Double scale"></div>
-                        <img src="/img/jet_scale.PNG" alt="jet_scale.PNG">
-                        <div class="hidden-colorscale-click-area" id="main-scale-invisible-bottom-half" data-toggle="tooltip" title="Halve scale"></div>
-                    </div>
-                    <div class="scale-values">
-                        <div class="left-scale-minimum">
-                            <div class="form-group">
-                                <input type="number" class="form-control bottom-scale-value" />
+        <div id="insar-seismicity-color-scales-container">
+            <div class="color-scale" id="color-scale">
+                <div class="btn btn-primary color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color on time">
+                    LOS Velocity [cm/yr]
+                </div>
+                <div class="color-scale-main-container">
+                    <div class="color-scale-and-values-container" class="clearfix">
+                        <div class="color-scale-picture-div">
+                            <div class="hidden-colorscale-click-area scale-click-area-invisible-top-half" data-toggle="tooltip" title="Double scale"></div>
+                            <img src="/img/jet_scale.PNG" alt="jet_scale.PNG">
+                            <div class="hidden-colorscale-click-area scale-click-area-invisible-bottom-half"" data-toggle="tooltip" title="Halve scale"></div>
+                        </div>
+                        <div class="scale-values">
+                            <div class="left-scale-minimum">
+                                <div class="form-group">
+                                    <input type="number" class="form-control bottom-scale-value" />
+                                </div>
+                            </div>
+                            <div class="right-scale-maximum">
+                                <div class="form-group">
+                                    <input type="number" class="form-control top-scale-value" />
+                                </div>
                             </div>
                         </div>
-                        <div class="right-scale-maximum">
-                            <div class="form-group">
-                                <input type="number" class="form-control top-scale-value" />
+                    </div>
+                </div>
+            </div>
+            <div class="color-scale" id="seismicity-color-scale">
+                <div class="btn btn-primary color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color on time">
+                    Depth-colored
+                </div>
+                <div class="color-scale-main-container">
+                    <div class="color-scale-and-values-container" class="clearfix">
+                        <div class="color-scale-picture-div">
+                            <div class="hidden-colorscale-click-area scale-click-area-invisible-top-half" data-toggle="tooltip" title="Double scale"></div>
+                            <img src="/img/jet_scale.PNG" alt="jet_scale.PNG">
+                            <div class="hidden-colorscale-click-area scale-click-area-invisible-bottom-half" data-toggle="tooltip" title="Halve scale"></div>
+                        </div>
+                        <div class="scale-values">
+                            <div class="left-scale-minimum">
+                                <div class="form-group">
+                                    <input type="number" class="form-control bottom-scale-value" />
+                                </div>
+                            </div>
+                            <div class="right-scale-maximum">
+                                <div class="form-group">
+                                    <input type="number" class="form-control top-scale-value" />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -326,7 +354,7 @@
                     <button class="btn btn-primary-outline" id="download-as-text-button">Download as TXT</button>
                 </div>
             </div>
-            <div class="draggable" id="insar-chart-slider-container">
+            <div id="insar-chart-slider-container">
                 <!-- <div class="top-right-buttons">
                     <button type="button" class="minimize-button" data-dismiss="modal" id="insar-chart-slider-minimize-button"></button>
                 </div> -->

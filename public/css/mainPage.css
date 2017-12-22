@@ -683,13 +683,13 @@ div.menu {
     height: 20px;
 }
 
-#color-scale {
-    display: none;
+#insar-seismicity-color-scales-container {
     position: absolute;
     top: 50%;
     left: 0;
     z-index: 98;
     text-align: center;
+    height: 45%;
 }
 
 .minimap-color-scale {
@@ -718,20 +718,25 @@ div.menu {
     width: 60%;
 }
 
-#color-scale.active {
+.color-scale {
+    display: none;
+}
+
+.color-scale.active {
     display: block;
     background-color: rgba(255, 255, 255, 0.5);
-    height: 45%;
+    height: 100%;
+    float: left;
 }
 
 .color-scale-text-div {
     height: 10%;
 }
 
-#color-scale .color-scale-text-div {
+.color-scale .color-scale-text-div {
     cursor: pointer;
-    background-color: white;
-    color: black;
+    background-color: white !important;
+    color: black !important;
     border: none;
 }
 
@@ -759,11 +764,11 @@ div.menu {
     cursor: pointer;
 }
 
-#main-scale-invisible-top-half {
+.scale-click-area-invisible-top-half {
     top: 0;
 }
 
-#main-scale-invisible-bottom-half {
+.scale-click-area-invisible-bottom-half {
     top: 50%;
 }
 
@@ -889,8 +894,13 @@ input[type=number] {
 #seismicity-chart-sliders, #insar-chart-slider-container {
     position: absolute;
     left: 10%;
-    width: 75%;
+    width: 30%;
     bottom: 0%;
+    height: 210px;
+}
+
+#insar-chart-slider-container {
+    width: 75%;
     height: 135px;
 }
 

@@ -68,10 +68,18 @@ function MapController(loadJSONFunc) {
                 this.refreshDataset();
                 this.insarColorScaleValues.min = newMin;
                 this.insarColorScaleValues.max = newMax;
-            } else if (curMode === "gps") {
+            }
+        }
+    }.bind(this));
+    this.seismicityColorScale = new ColorScale(-2.00, 2.00, "seismicity-color-scale");
+    this.seismicityColorScale.onScaleChange(function(newMin, newMax) {
+        var curMode = this.getCurrentMode();
+
+        if (curMode) { // no mode (ie essentially empty map)
+            if (curMode === "gps") {
                 this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             } else if (curMode === "seismicity") {
-                if (!this.colorScale.inDateMode) {
+                if (!this.seismicityColorScale.inDateMode) {
                     this.seismicityGraphsController.depthSlider.setMinMax(newMin, newMax);
                 } else {
                     this.seismicityGraphsController.timeSlider.setMinMax(newMin, newMax);
@@ -174,6 +182,7 @@ function MapController(loadJSONFunc) {
             $("#seismicity-maximize-buttons-container").removeClass("active");
             $("#insar-maximize-buttons-container").addClass("active");
             this.colorScale.remove();
+            this.seismicityColorScale.remove();
             this.loadAreaMarkersThroughButton();
         } else {
             if (curMode !== "insar") {
@@ -189,6 +198,7 @@ function MapController(loadJSONFunc) {
                     if (this.lastMode == curMode) {
                         return;
                     }
+
                     $hideShowInsarButton = $("#hide-show-insar-button");
                     if ($hideShowInsarButton.attr("data-original-title") === "Show") {
                         $hideShowInsarButton.attr("data-original-title", "Hide");
@@ -200,9 +210,11 @@ function MapController(loadJSONFunc) {
                     this.colorScale.setInDateMode(false);
                     this.colorScale.initVisualScale();
                     if (this.pointsLoaded()) {
+                        $("#insar-seismicity-color-scales-container").css("display", "block");
                         this.colorScale.show();
                         this.colorScale.setTitle("LOS Velocity [cm/yr]");
                     } else {
+                        $("#insar-seismicity-color-scales-container").css("display", "none");
                         this.colorScale.remove();
                     }
                     $("#color-scale .color-scale-text-div").attr("data-original-title", "Color on displacement");
@@ -214,9 +226,11 @@ function MapController(loadJSONFunc) {
                         this.thirdPartySourcesController.populateMidasHorizontalArrowScale();
                     }
                     if (layerIDs.includes("midas")) {
+                        $("#insar-seismicity-color-scales-container").css("display", "block");
                         this.colorScale.show();
                         this.colorScale.setTitle("Vertical Velocity cm/yr");
                     } else {
+                        $("#insar-seismicity-color-scales-container").css("display", "none");
                         this.colorScale.remove();
                     }
                 }
@@ -228,8 +242,8 @@ function MapController(loadJSONFunc) {
                     // remove swaths
                     this.removeAreaMarkersThroughButton();
                     $("#square-selector-button").attr("data-original-title", "Select Seismicity");
-                    $("#color-scale .color-scale-text-div").attr("data-original-title", "Color on time");
-                    this.colorScale.setTopAsMax(false);
+                    $("#seismicity-color-scale .color-scale-text-div").attr("data-original-title", "Color on time");
+                    this.seismicityColorScale.setTopAsMax(false);
                     $("#seismicity-maximize-buttons-container").addClass("active");
 
                     // don't prepare for seismicities if layer that was changed was on the fly as it means
@@ -1196,6 +1210,7 @@ function MapController(loadJSONFunc) {
             $("#usgs-events-current-viewport").html("sw: " + sw + ", ne: " + ne);
 
             this.colorScale.initVisualScale();
+            this.seismicityColorScale.initVisualScale();
             this.map.getCanvas().style.cursor = 'auto';
             this.selector = new FeatureSelector();
             this.selector.map = this;
@@ -1438,6 +1453,11 @@ function MapController(loadJSONFunc) {
         // and color scale, but only if midas is not up
         if (!this.thirdPartySourcesController.midasLoaded()) {
             this.colorScale.remove();
+        }
+
+        // also make sure seismicity isn't loaded and remove seismicity color scale if not
+        if (!this.thirdPartySourcesController.seismicityLoaded()) {
+            this.seismicityColorScale.remove();
         }
     };
 

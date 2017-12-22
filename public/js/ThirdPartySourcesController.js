@@ -14,7 +14,7 @@ function ThirdPartySourcesController(map) {
 
     this.stopsCalculator = new MapboxStopsCalculator();
     // the default
-    this.currentSeismicityColorStops = this.stopsCalculator.getDepthStops(0, 50, this.map.colorScale.jet_r);
+    this.currentSeismicityColorStops = this.stopsCalculator.getDepthStops(0, 50, this.map.seismicityColorScale.jet_r);
     this.currentSeismicityColoring = "depth";
     this.midasArrows = null;
     this.referenceArrow = null;
@@ -86,7 +86,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.refreshmidasGpsStationMarkers = function() {
-        var stops = this.map.colorScale.getMapboxStops();
+        var stops = this.map.seismicityColorScale.getMapboxStops();
         if (this.map.map.getLayer("midas")) {
             this.map.map.setPaintProperty("midas", "circle-color", {
                 "property": 'v',
@@ -395,7 +395,7 @@ function ThirdPartySourcesController(map) {
                     var layerID = "midas";
                     mapboxStationFeatures.data.features = features.points;
                     this.map.addSource(layerID, mapboxStationFeatures);
-                    var stops = this.map.colorScale.getMapboxStops();
+                    var stops = this.map.seismicityColorScale.getMapboxStops();
                     var before = this.map.getLayerOnTopOf(layerID);
                     this.map.addLayer({
                         "id": layerID,
@@ -411,7 +411,7 @@ function ThirdPartySourcesController(map) {
                     }, before);
                 }
 
-                this.map.colorScale.setTitle("Vertical Velocity cm/yr");
+                this.map.seismicityColorScale.setTitle("Vertical Velocity cm/yr");
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -444,6 +444,10 @@ function ThirdPartySourcesController(map) {
         return this.map.map.getSource("midas") && this.map.map.getLayer("midas");
     };
 
+    this.seismicityLoaded = function() {
+        return this.getAllSeismicityFeatures().length > 0;
+    };
+
     this.prepareForSeismicities = function(features) {
         this.setupColorScaleForSeismicities();
 
@@ -459,9 +463,9 @@ function ThirdPartySourcesController(map) {
     };
 
     this.setupColorScaleForSeismicities = function() {
-        this.map.colorScale.show();
-        this.map.colorScale.setTitle("Depth (Km)");
-        this.map.colorScale.setMinMax(0, 50); // not necessary, as set features will override it
+        this.map.seismicityColorScale.show();
+        this.map.seismicityColorScale.setTitle("Depth (Km)");
+        this.map.seismicityColorScale.setMinMax(0, 50); // not necessary, as set features will override it
     };
 
     this.loadUSGSEarthquakeFeed = function() {
@@ -488,7 +492,7 @@ function ThirdPartySourcesController(map) {
                     data: featureCollection
                 };
 
-                var colors = this.map.colorScale.jet_r;
+                var colors = this.map.seismicityColorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
                 var magStops = this.currentSeismicitySizeStops;
 
@@ -580,7 +584,7 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
-                var colors = this.map.colorScale.jet_r;
+                var colors = this.map.seismicityColorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
                 var magStops = this.currentSeismicitySizeStops;
 
@@ -639,7 +643,7 @@ function ThirdPartySourcesController(map) {
 
                 this.currentFeatures = features;
 
-                var colors = this.map.colorScale.jet_r;
+                var colors = this.map.seismicityColorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
                 var magStops = this.currentSeismicitySizeStops;
 
@@ -779,7 +783,7 @@ function ThirdPartySourcesController(map) {
 
                 this.currentFeatures = features;
 
-                var colors = this.map.colorScale.jet_r;
+                var colors = this.map.seismicityColorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
                 var magStops = this.currentSeismicitySizeStops;
 
@@ -888,7 +892,7 @@ function ThirdPartySourcesController(map) {
 
                 this.currentFeatures = features;
 
-                var colors = this.map.colorScale.jet_r;
+                var colors = this.map.seismicityColorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
                 var magStops = this.currentSeismicitySizeStops;
 
@@ -911,7 +915,7 @@ function ThirdPartySourcesController(map) {
                         }
                     }
                 });
-                this.map.colorScale.setTopAsMax(false);
+                this.map.seismicityColorScale.setTopAsMax(false);
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -1099,15 +1103,15 @@ function ThirdPartySourcesController(map) {
 
     this.recolorSeismicities = function(selectedColoring) {
         var stops = null;
-        var colors = this.map.colorScale.jet_r;
-        var min = this.map.colorScale.min;
-        var max = this.map.colorScale.max;
+        var colors = this.map.seismicityColorScale.jet_r;
+        var min = this.map.seismicityColorScale.min;
+        var max = this.map.seismicityColorScale.max;
         var type = "interval";
         if (selectedColoring === "time") {
-            this.map.colorScale.setTitle("Time-colored")
+            this.map.seismicityColorScale.setTitle("Time-colored")
             stops = this.stopsCalculator.getTimeStops(min, max, colors);
         } else if (selectedColoring === "depth") {
-            this.map.colorScale.setTitle("Depth-colored");
+            this.map.seismicityColorScale.setTitle("Depth-colored");
             stops = this.stopsCalculator.getDepthStops(min, max, colors);
         } else {
             throw new Error("Invalid dropdown selection");

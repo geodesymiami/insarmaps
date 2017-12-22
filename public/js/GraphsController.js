@@ -985,11 +985,11 @@ function setupSeismicityGraphsController() {
         this.crossSectionTimeColorScale.setMinMax(this.timeRange.min, this.timeRange.max);
         this.crossSectionDepthColorScale.setMinMax(this.depthRange.min, this.depthRange.max);
         var selectedColoring = null;
-        if (this.map.colorScale.inDateMode) {
-            this.map.colorScale.setMinMax(this.timeRange.min, this.timeRange.max);
+        if (this.map.seismicityColorScale.inDateMode) {
+            this.map.seismicityColorScale.setMinMax(this.timeRange.min, this.timeRange.max);
             selectedColoring = "time";
         } else {
-            this.map.colorScale.setMinMax(this.depthRange.min, this.depthRange.max);
+            this.map.seismicityColorScale.setMinMax(this.depthRange.min, this.depthRange.max);
             selectedColoring = "depth";
         }
 
@@ -1087,7 +1087,7 @@ function setupSeismicityGraphsController() {
             }.bind(this));
         }
         var stopsCalculator = new MapboxStopsCalculator();
-        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet_r);
+        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.seismicityColorScale.jet_r);
         var sizeStops = this.map.thirdPartySourcesController.currentSeismicitySizeStops;
 
         return this.getSeriesData(seriesFeatures, colorStops, sizeStops);
@@ -1209,7 +1209,7 @@ function setupSeismicityGraphsController() {
             }.bind(this));
         }
         var stopsCalculator = new MapboxStopsCalculator();
-        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet_r);
+        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.seismicityColorScale.jet_r);
         var sizeStops = this.map.thirdPartySourcesController.currentSeismicitySizeStops;
 
         return this.getSeriesData(seriesFeatures, colorStops, sizeStops);
@@ -1358,7 +1358,7 @@ function setupSeismicityGraphsController() {
             }.bind(this));
         }
         var stopsCalculator = new MapboxStopsCalculator();
-        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.colorScale.jet_r);
+        var colorStops = stopsCalculator.getTimeStops(min, max, this.map.seismicityColorScale.jet_r);
         var sizeStops = this.map.thirdPartySourcesController.currentSeismicitySizeStops;
 
         return this.getSeriesData(seriesFeatures, colorStops, sizeStops);
@@ -1852,8 +1852,8 @@ function setupCustomSliderSeismicityController() {
 
         this.depthColorScale.setMinMax(e.min, e.max);
         this.crossSectionDepthColorScale.setMinMax(e.min, e.max);
-        if (!this.map.colorScale.inDateMode) {
-            this.map.colorScale.setMinMax(e.min, e.max);
+        if (!this.map.seismicityColorScale.inDateMode) {
+            this.map.seismicityColorScale.setMinMax(e.min, e.max);
             this.map.thirdPartySourcesController.recolorSeismicities("depth");
         }
 
@@ -1892,8 +1892,8 @@ function setupCustomSliderSeismicityController() {
 
         this.timeColorScale.setMinMax(e.min, e.max);
         this.crossSectionTimeColorScale.setMinMax(e.min, e.max);
-        if (this.map.colorScale.inDateMode) {
-            this.map.colorScale.setMinMax(e.min, e.max);
+        if (this.map.seismicityColorScale.inDateMode) {
+            this.map.seismicityColorScale.setMinMax(e.min, e.max);
             this.map.thirdPartySourcesController.recolorSeismicities("time");
         }
 
