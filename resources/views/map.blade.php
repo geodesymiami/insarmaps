@@ -234,9 +234,9 @@
                 <div class="color-scale-main-container">
                     <div class="color-scale-and-values-container" class="clearfix">
                         <div class="color-scale-picture-div">
-                            <div class="hidden-colorscale-click-area scale-click-area-invisible-top-half" data-toggle="tooltip" title="Double scale"></div>
+                            <div class="hidden-colorscale-click-area scale-click-area-invisible-top-half" data-scale-type="insar"data-toggle="tooltip" title="Double scale"></div>
                             <img src="/img/jet_scale.PNG" alt="jet_scale.PNG">
-                            <div class="hidden-colorscale-click-area scale-click-area-invisible-bottom-half"" data-toggle="tooltip" title="Halve scale"></div>
+                            <div class="hidden-colorscale-click-area scale-click-area-invisible-bottom-half"" data-scale-type="insar" data-toggle="tooltip" title="Halve scale"></div>
                         </div>
                         <div class="scale-values">
                             <div class="left-scale-minimum">
@@ -260,9 +260,7 @@
                 <div class="color-scale-main-container">
                     <div class="color-scale-and-values-container" class="clearfix">
                         <div class="color-scale-picture-div">
-                            <div class="hidden-colorscale-click-area scale-click-area-invisible-top-half" data-toggle="tooltip" title="Double scale"></div>
                             <img src="/img/jet_scale.PNG" alt="jet_scale.PNG">
-                            <div class="hidden-colorscale-click-area scale-click-area-invisible-bottom-half" data-toggle="tooltip" title="Halve scale"></div>
                         </div>
                         <div class="scale-values">
                             <div class="left-scale-minimum">

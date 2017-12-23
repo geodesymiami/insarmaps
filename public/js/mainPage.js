@@ -744,15 +744,14 @@ $(window).on("load", function() {
         }
     });
 
-    $(".color-scale > .color-scale-picture-div > .hidden-colorscale-click-area").on("click", function() {
+    $(".color-scale .color-scale-picture-div > .hidden-colorscale-click-area").on("click", function() {
         var scale = null;
-        var id = $(this).attr("id");
+        var type = $(this).data("scale-type");
+        console.log(type);
 
-        if (id === "color-scale") {
+        if (type === "insar") {
             scale = myMap.colorScale;
-        } else if (id === "seismicity-color-scale") {
-            scale = myMap.seismicityColorScale;
-        // do nothing
+            // do nothing
         } else {
             return;
         }
@@ -771,14 +770,9 @@ $(window).on("load", function() {
             scale.setMinMax(min, max);
         }
 
-        var curMode = myMap.getCurrentMode();
-        if (curMode === "insar") {
-            // below line makes sure insar scale values are preserved if we are in a different mode...
-            myMap.insarColorScaleValues = { min: min, max: max };
-            myMap.refreshDataset();
-        } else if (curMode === "seismicity") {
-            myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
-        }
+        // below line makes sure insar scale values are preserved if we are in a different mode...
+        myMap.insarColorScaleValues = { min: min, max: max };
+        myMap.refreshDataset();
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {

@@ -472,7 +472,7 @@ function MapController(loadJSONFunc) {
         if (pointNumber === undefined || pointNumber === null || feature.layer.id == "contours" || feature.layer.id == "contour_label") {
             return;
         }
-        $("#charts").removeClass("only-show-slider");
+
         var areaName = currentArea.properties.unavco_name;
 
         // show link to current clicked point in webservices
@@ -533,10 +533,17 @@ function MapController(loadJSONFunc) {
 
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "/point", function(response) {
-            $("#graph-div-maximize-button").click();
-
             var json = JSON.parse(response);
-            this.graphsController.JSONToGraph(json, chartContainer, e);
+
+            // only draw graph after window finishes maximize animation
+            var animationEvents = "webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend";
+            var onAnimationEnd = function(event) {
+                this.graphsController.JSONToGraph(json, chartContainer, e);
+                $("#charts").off(animationEvents, null, onAnimationEnd);
+            }.bind(this);
+            $("#charts").one(animationEvents, onAnimationEnd);
+            $("#graph-div-maximize-button").click();
+            $("#charts").removeClass("only-show-slider");
 
             // request elevation of point from google api
             var elevationGetter = new google.maps.ElevationService;
@@ -662,8 +669,7 @@ function MapController(loadJSONFunc) {
             data: {
                 datasetUnavcoName: attributesController.getAttribute("unavco_name"),
             },
-            success: function(response) {
-            },
+            success: function(response) {},
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed: " + xhr.responseText);
             }
