@@ -545,6 +545,11 @@ function MapController(loadJSONFunc) {
             $("#graph-div-maximize-button").click();
             $("#charts").removeClass("only-show-slider");
 
+            // if graph isn't animating, we still want to draw chart. this means if it is animating,
+            // it will draw twice, but logic to prevent this would have made code messy for a premature
+            // optimization...
+            this.graphsController.JSONToGraph(json, chartContainer, e);
+
             // request elevation of point from google api
             var elevationGetter = new google.maps.ElevationService;
             elevationGetter.getElevationForLocations({
@@ -843,6 +848,14 @@ function MapController(loadJSONFunc) {
         this.sources.forEach(function(source, sourceID) {
             baseStyle.sources[sourceID] = source;
         });
+
+        // TODO: remove me. this is so he can see something...
+        if (mapType === "satellite") {
+            delete sources["raster-tiles"]["url"];
+            sources["raster-tiles"]["tiles"] = [
+                "http://mt.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+            ];
+        }
 
         baseStyle.layers = [];
         this.layers_.forEach(function(layer, layerID) {
