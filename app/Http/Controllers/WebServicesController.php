@@ -553,10 +553,11 @@ class WebServicesController extends Controller {
         $query = "";
         $preparedValues = [];
         $areasMap = [];
+
         foreach ($areas as $areaID => $area) {
-            $areasMap[$area->unavco_name] = $area;
-            // can also do a select from area like so: (SELECT (SELECT unavco_name FROM area WHERE unavco_name='" . $area->unavco_name . "') as unavco_name, p ..., etc. But, why go to area table if we have unavco_name already from previous query, so let's insert it by simple php concatenation
-            $query .= "(SELECT CAST ((SELECT '" . $area->unavco_name . "') as varchar) AS unavco_name, p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM \"" . $area->unavco_name . "\" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry)) UNION ";
+            $areasMap[$area->id] = $area;
+            // can also do a select from area like so: (SELECT (SELECT id FROM area WHERE id='" . $area->id . "') as table_id, p ..., etc. But, why go to area table if we have unavco_name already from previous query, so let's insert it by simple php concatenation
+            $query .= "(SELECT CAST ((SELECT '" . $area->id . "') as varchar) AS table_id, p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM \"" . $area->id . "\" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry)) UNION ";
             $lineString = $this->latLongToSmallWKTPolygonLineString($attributes->latitude, $attributes->longitude);
             array_push($preparedValues, $lineString);
         }
@@ -570,10 +571,10 @@ class WebServicesController extends Controller {
         $groupedPoints = [];
         // gather all points grouped by datasets
         foreach ($points as $point) {
-            if (!isset($groupedPoints[$point->unavco_name])) {
-                $groupedPoints[$point->unavco_name] = [$point];
+            if (!isset($groupedPoints[$point->table_id])) {
+                $groupedPoints[$point->table_id] = [$point];
             } else {
-                array_push($groupedPoints[$point->unavco_name], $point);
+                array_push($groupedPoints[$point->table_id], $point);
             }
         }
 
@@ -595,14 +596,19 @@ class WebServicesController extends Controller {
         $json = [];
         $startDate = $attributes->startTime;
         $endDate = $attributes->endTime;
-        foreach ($groupedPoints as $unavco_name => $points) {
+        foreach ($groupedPoints as $table_id => $points) {
             if (count($points) > 0) {
+                // echo $table_id;
+                $unavco_name = $areasMap[$point->table_id]->unavco_name;
                 $point = $this->getNearestPoint($attributes->latitude, $attributes->longitude, $points);
-                $stringDates = $this->arrayFormatter->postgresToPHPArray($areasMap[$unavco_name]->stringdates);
-                $decimalDates = $this->arrayFormatter->postgresToPHPFloatArray($areasMap[$unavco_name]->decimaldates);
+                $stringDates = $this->arrayFormatter->postgresToPHPArray($areasMap[$table_id]->stringdates);
+                $decimalDates = $this->arrayFormatter->postgresToPHPFloatArray($areasMap[$table_id]->decimaldates);
                 $point->string_dates = $stringDates;
                 $point->decimal_dates = $decimalDates;
                 $point->d = $this->arrayFormatter->postgresToPHPFloatArray($point->d);
+
+                unset($point->table_id);
+                $point->unavco_name = $unavco_name;
                 if ($startDate || $endDate) {
                     $json[$unavco_name] = $this->constrainPointToDates($startDate, $endDate, $point);
                 } else {
@@ -803,6 +809,7 @@ class WebServicesController extends Controller {
         if (strcasecmp($options->outputType, "json") == 0) {
             $json = [];
             $controller = new GeoJSONController();
+
             foreach ($returnValues as $areaID => $value) {
                 // if $value represents a point
                 if (isset($value->p)) {

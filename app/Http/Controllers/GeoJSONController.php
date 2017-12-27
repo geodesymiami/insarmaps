@@ -69,7 +69,7 @@ class GeoJSONController extends Controller {
 
         $permissionController = new PermissionsController();
         $queryToFilterAreas = $permissionController->getQueryForFindingPermittedAreas(Auth::id());
-        $query = "SELECT decimaldates, stringdates FROM area WHERE unavco_name=?";
+        $query = "SELECT decimaldates, stringdates, id FROM area WHERE unavco_name=?";
         $query .= " AND area.id IN " . $queryToFilterAreas["sql"];
         $preparedValues = [$area];
         $preparedValues = array_merge($preparedValues, $queryToFilterAreas["preparedValues"]);
@@ -87,7 +87,7 @@ class GeoJSONController extends Controller {
             $string_dates = $dateInfo->stringdates;
         }
 
-        $query = 'SELECT *, st_astext(wkb_geometry) from "' . $area . '" where p = ?';
+        $query = 'SELECT *, st_astext(wkb_geometry) from "' . $dateInfos[0]->id . '" where p = ?';
 
         $points = DB::select($query, [$pointNumber]);
         $json = NULL;
@@ -138,7 +138,7 @@ class GeoJSONController extends Controller {
             $pointsArrayLen = count($pointsArray);
             $permissionController = new PermissionsController();
             $queryToFilterAreas = $permissionController->getQueryForFindingPermittedAreas(Auth::id());
-            $query = 'SELECT decimaldates, stringdates FROM area WHERE area.unavco_name LIKE ?';
+            $query = 'SELECT decimaldates, stringdates, id FROM area WHERE area.unavco_name LIKE ?';
             $query .= " AND area.id IN " . $queryToFilterAreas["sql"];
             $preparedValues = [$area];
             $preparedValues = array_merge($preparedValues, $queryToFilterAreas["preparedValues"]);
@@ -170,8 +170,9 @@ class GeoJSONController extends Controller {
             $minIndex++;
             $maxIndex++;
             // add last ANY values without comma. it fails when this last value is a ? prepared value... something about not being able to compare to text... investigate but i have no idea.
+            $tableID = $dateInfos[0]->id;
             $curPointNum = $pointsArray[$i];
-            $query = $query . '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], ROW_NUMBER() OVER() AS groupNumber FROM "' . $area . '" INNER JOIN points p ON ("' . $area . '".p = p.point) ORDER BY p ASC) AS displacements) AS z GROUP BY groupNumber ORDER BY groupNumber ASC';
+            $query = $query . '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], ROW_NUMBER() OVER() AS groupNumber FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point) ORDER BY p ASC) AS displacements) AS z GROUP BY groupNumber ORDER BY groupNumber ASC';
 
             $slopes = DB::select(DB::raw($query));
             $json = [];
@@ -371,7 +372,7 @@ class GeoJSONController extends Controller {
         try {
             // TODO: try to use prepared values on this :c
             $unavcoName = Input::get("datasetUnavcoName");
-            $query = "SELECT pg_prewarm('\"" . $unavcoName . "\"', 'prefetch')";
+            $query = "SELECT pg_prewarm((SELECT id FROM area WHERE unavco_name = '" . $unavcoName . "')::text, 'prefetch')";
             DB::select(DB::raw($query));
 
             return response("Successfully preloaded " . Input::get("datasetUnavcoName"), 200);
