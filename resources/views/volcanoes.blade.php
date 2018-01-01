@@ -11,7 +11,11 @@
 		<div class="row">
 			@foreach ($datasets as $dataset)
 				<div class="col-xs-6">
-					<iframe src="/start/{{ $lat }}/{{ $long }}/10/?startDataset={{ $dataset }}&flyToDatasetCenter=false"></iframe>
+					@php
+					$urlOptions["startingDatasetOptions"]["startDataset"] = $dataset;
+					$src = URLStartingOptionsToURLString($urlOptions);
+					@endphp
+					<iframe src={{ $src }}></iframe>
 				</div>
 			@endforeach
 		</div>

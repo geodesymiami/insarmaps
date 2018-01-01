@@ -22,7 +22,7 @@ class MyController extends Controller {
         return view('map', ["fileName" => $fileName]);
     }
 
-    public function returnPage(Request $request, $lat = 30.0, $long = 0.0, $zoom = 1.6) {
+    private function getStartingURLOptions(Request $request, $lat = 30.0, $long = 0.0, $zoom = 0.0) {
         $allOptions = [];
         $startingView = [];
         $startingView["lat"] = $lat;
@@ -31,6 +31,12 @@ class MyController extends Controller {
         $allOptions["startingView"] = $startingView;
         $options = $request->all();
         $allOptions["startingDatasetOptions"] = $options;
+
+        return $allOptions;
+    }
+
+    public function returnPage(Request $request, $lat = 30.0, $long = 0.0, $zoom = 1.6) {
+        $allOptions = $this->getStartingURLOptions($request, $lat, $long, $zoom);
 
         return view('map', ["urlOptions" => $allOptions]);
     }
@@ -54,7 +60,10 @@ class MyController extends Controller {
             }
         }
 
-        return view("volcanoes", ["datasets" => $datasets, "lat" => $lat, "long" => $long]);
+        $allOptions = $this->getStartingURLOptions($request, $lat, $long, 10.0);
+        $allOptions["startingDatasetOptions"]["flyToDatasetCenter"] = "false";
+
+        return view("volcanoes", ["datasets" => $datasets, "lat" => $lat, "long" => $long, "urlOptions" => $allOptions]);
     }
 
     // creates a folder to store json and returns string of that folder path

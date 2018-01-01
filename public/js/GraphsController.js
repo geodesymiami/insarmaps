@@ -245,11 +245,9 @@ function setupGraphsController() {
         var date_string_array = json.string_dates;
         var date_array = convertStringsToDateArray(date_string_array);
         var decimal_dates = json.decimal_dates;
-        var displacement_array = json.displacements;
-
         // convert from m to cm
-        displacement_array.forEach(function(element, index, array) {
-            array[index] = 100 * array[index];
+        var displacement_array = json.displacements.map(function(displacement) {
+            return 100 * displacement;
         });
 
         this.graphSettings[chartContainer].date_string_array = date_string_array;

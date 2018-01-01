@@ -136,7 +136,7 @@ function MapController(loadJSONFunc) {
     // higher index layerID's come below lower indexed ones
     this.layerOrders = (function() {
         const FIRST_INSAR_CHUNK = "chunk_1";
-        var allLayers = [this.thirdPartySourcesController.layerOrder, ["onTheFlyJSON", "ReferencePoint", FIRST_INSAR_CHUNK]];
+        var allLayers = [this.thirdPartySourcesController.layerOrder, ["ReferencePoint", "onTheFlyJSON", FIRST_INSAR_CHUNK]];
 
         var layerOrders = [];
         allLayers.forEach(function(layersArray) {

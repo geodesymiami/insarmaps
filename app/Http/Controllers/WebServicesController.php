@@ -598,8 +598,7 @@ class WebServicesController extends Controller {
         $endDate = $attributes->endTime;
         foreach ($groupedPoints as $table_id => $points) {
             if (count($points) > 0) {
-                // echo $table_id;
-                $unavco_name = $areasMap[$point->table_id]->unavco_name;
+                $unavco_name = $areasMap[$table_id]->unavco_name;
                 $point = $this->getNearestPoint($attributes->latitude, $attributes->longitude, $points);
                 $stringDates = $this->arrayFormatter->postgresToPHPArray($areasMap[$table_id]->stringdates);
                 $decimalDates = $this->arrayFormatter->postgresToPHPFloatArray($areasMap[$table_id]->decimaldates);
@@ -638,82 +637,129 @@ class WebServicesController extends Controller {
     private function findPointInDataset($datasetName, $lat, $long) {
         // make sure we have that datasetName in our available datasets. this seems like it can be refactored since it seems repeated among the methods
         $controller = new GeoJSONController();
-        // can be made faster by doing one query
-        $areas = $controller->getPermittedAreasWithQuery("SELECT * FROM area");
+
+        $areas = $controller->getPermittedAreasWithQuery("SELECT * FROM area", ["unavco_name = ?"], [$datasetName]);
+
+        $area = NULL;
+        foreach ($areas as $area_id => $areaObj) {
+            $area = $areaObj;
+        }
 
         $point = NULL;
-        foreach ($areas as $areaID => $area) {
-            if ($area->unavco_name === $datasetName) {
-                $query = 'SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM "' . $datasetName . '" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry)';
+        if ($areas) {
+            $query = 'SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM "' . $area->id . '" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry)';
 
-                $lineString = $this->latLongToSmallWKTPolygonLineString($lat, $long);
-                $preparedValues = [$lineString];
-                $dbPoints = NULL;
-                try {
-                    $dbPoints = DB::select($query, $preparedValues);
-                } catch (\Illuminate\Database\QueryException $e) {
-                    return NULL;
-                }
+            $lineString = $this->latLongToSmallWKTPolygonLineString($lat, $long);
+            $preparedValues = [$lineString];
+            $dbPoints = NULL;
+            try {
+                $dbPoints = DB::select($query, $preparedValues);
+            } catch (\Illuminate\Database\QueryException $e) {
+                return NULL;
+            }
 
-                if ($dbPoints) {
-                    $dbPoint = $this->getNearestPoint($lat, $long, $dbPoints);
-                    $point = $controller->dbPointToJSON($dbPoint, $area->decimaldates, $area->stringdates);
-                }
-                break;
+            if ($dbPoints) {
+                $dbPoint = $this->getNearestPoint($lat, $long, $dbPoints);
+                $point = $controller->dbPointToJSON($dbPoint, $area->decimaldates, $area->stringdates);
+
+                return $point;
             }
         }
 
-        return $point;
+        return NULL;
     }
 
     private function getPointsInBbox($datasetName, $lineStringBbox, $downsampleFactor) {
         // the below areas thing really needs refactoring...
         // make sure we have that datasetName in our available datasets. this seems like it can be refactored since it seems repeated among the methods
         $controller = new GeoJSONController();
-        // can be made faster by doing one query
-        $areas = $controller->getPermittedAreasWithQuery("SELECT * FROM area");
+        $areas = $controller->getPermittedAreasWithQuery("SELECT * FROM area", ["unavco_name = ?"], [$datasetName]);
+
+        $area = NULL;
+        foreach ($areas as $area_id => $areaObj) {
+            $area = $areaObj;
+        }
         $points = [];
         $MAX_POINTS = 155;
-        foreach ($areas as $areaID => $area) {
-            if ($area->unavco_name === $datasetName) {
-                $query = 'SELECT COUNT(*) FROM "' . $datasetName . '" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry) AND p % ? = 0';
-                $preparedValues = [$lineStringBbox, $downsampleFactor];
+        if ($areas) {
+            $query = 'SELECT COUNT(*) FROM "' . $area->id . '" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry) AND p % ? = 0';
+            $preparedValues = [$lineStringBbox, $downsampleFactor];
 
-                $numPoints = $MAX_POINTS;
+            $numPoints = $MAX_POINTS;
+            try {
+                $numPointsStdClassArray = DB::select($query, $preparedValues);
+                foreach ($numPointsStdClassArray as $countObj) {
+                    $numPoints = $countObj->count;
+                }
+            } catch (\Illuminate\Database\QueryException $e) {
+                return NULL;
+            }
+
+            if ($numPoints < $MAX_POINTS) {
+                $query = 'SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM "' . $area->id . '" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry) AND p % ? = 0';
+                $dbPoints = NULL;
                 try {
-                    $numPointsStdClassArray = DB::select($query, $preparedValues);
-                    foreach ($numPointsStdClassArray as $countObj) {
-                        $numPoints = $countObj->count;
-                    }
+                    $dbPoints = DB::select($query, $preparedValues);
                 } catch (\Illuminate\Database\QueryException $e) {
+                    dd($e);
                     return NULL;
                 }
 
-                if ($numPoints < $MAX_POINTS) {
-                    $query = 'SELECT p, d, ST_X(wkb_geometry), ST_Y(wkb_geometry) FROM "' . $datasetName . '" WHERE st_contains(ST_MakePolygon(ST_GeomFromText(?, 4326)), wkb_geometry) AND p % ? = 0';
-                    $dbPoints = NULL;
-                    try {
-                        $dbPoints = DB::select($query, $preparedValues);
-                    } catch (\Illuminate\Database\QueryException $e) {
-                        dd($e);
-                        return NULL;
-                    }
+                $points["dates"]["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($area->decimaldates);
+                $points["dates"]["string_dates"] = $this->arrayFormatter->postgresToPHPArray($area->stringdates);
+                $points["points"] = [];
 
-                    $points["dates"]["decimal_dates"] = $this->arrayFormatter->postgresToPHPFloatArray($area->decimaldates);
-                    $points["dates"]["string_dates"] = $this->arrayFormatter->postgresToPHPArray($area->stringdates);
-                    $points["points"] = [];
-
-                    $controller = new GeoJSONController();
-                    foreach ($dbPoints as $point) {
-                        array_push($points["points"], $controller->dbPointToJSON($point, NULL, NULL));
-                    }
-                } else {
-                    $points["error"] = "Too many points, increase down sampling or decrease bounding area";
+                $controller = new GeoJSONController();
+                foreach ($dbPoints as $point) {
+                    array_push($points["points"], $controller->dbPointToJSON($point, NULL, NULL));
                 }
+            } else {
+                $points["error"] = "Too many points, increase down sampling or decrease bounding area";
             }
         }
 
         return $points;
+    }
+
+    public function getVolcanoForIDs($ids) {
+        $volcanoInformations = [];
+        Excel::load(storage_path() . '/GVP_Volcano_List.xlsx', function ($reader) use ($ids, &$volcanoInformations) {
+                $array = $reader->toArray();
+
+                foreach ($ids as $id) {
+                    $volcanoInformation = binary_search($array, $id, function ($row1, $toFindID) {
+                        return (int) ($toFindID - $row1["volcano_number"]);
+                    });
+
+                    array_push($volcanoInformations, $volcanoInformation);
+                }
+            });
+
+        return $volcanoInformations;
+    }
+
+    public function getVolcanoForNames($names) {
+        $volcanoInformations = [];
+        Excel::load(storage_path() . '/GVP_Volcano_List.xlsx', function ($reader) use ($names, &$volcanoInformations) {
+                $array = $reader->toArray();
+
+                foreach ($names as $name) {
+                    $volcanoInformationsArray = array_filter($array, function ($row) use ($name) {
+                        // case insensitive
+                        return strtoupper($row["volcano_name"]) == strtoupper($name);
+                    });
+                    // extract first result which should be our result... dont ask me why, just array_filter
+                    // returns a dictionary like array.
+                    foreach ($volcanoInformationsArray as $key => $value) {
+                        $volcanoInformation = $value;
+                        break;
+                    }
+
+                    array_push($volcanoInformations, $volcanoInformation);
+                }
+            });
+
+        return $volcanoInformations;
     }
 
     public function processRequest(Request $request) {
@@ -731,37 +777,16 @@ class WebServicesController extends Controller {
             return response()->json($json);
         }
 
-        $volcanoInformation = NULL;
+        $volcanoInformation = [NULL];
         if ($options->volcanoID) {
-            Excel::load(storage_path() . '/GVP_Volcano_List.xlsx', function ($reader) use ($options, &$volcanoInformation) {
-                $array = $reader->toArray();
-
-                $volcanoInformation = binary_search($array, $options->volcanoID, function ($row1, $id) {
-                    return (int) ($id - $row1["volcano_number"]);
-                });
-            });
+            $volcanoInformation = $this->getVolcanoForIDs([$options->volcanoID]);
         } else if ($options->volcanoName) {
-            Excel::load(storage_path() . '/GVP_Volcano_List.xlsx', function ($reader) use ($options, &$volcanoInformation) {
-                $array = $reader->toArray();
-                // dd($array);
-
-                $volcanoInformationsArray = array_filter($array, function ($row) use ($options) {
-                    // case insensitive
-                    return strtoupper($row["volcano_name"]) == strtoupper($options->volcanoName);
-                });
-
-                // extract first result which should be our result... dont ask me why, just array_filter
-                // returns a dictionary like array.
-                foreach ($volcanoInformationsArray as $key => $value) {
-                    $volcanoInformation = $value;
-                    break;
-                }
-            });
+            $volcanoInformation = $this->getVolcanoForNames([$options->volcanoName]);
         }
 
         // can't redirect inside lambdas
-        if ($volcanoInformation) {
-            return redirect("/volcanoes/" . $volcanoInformation["latitude"] . "/" . $volcanoInformation["longitude"]);
+        if ($volcanoInformation[0]) {
+            return redirect("/volcanoes/" . $volcanoInformation[0]["latitude"] . "/" . $volcanoInformation[0]["longitude"]);
         }
 
         $returnValues = NULL;

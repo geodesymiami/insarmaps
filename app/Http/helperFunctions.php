@@ -21,3 +21,19 @@ function binary_search($array, $toFind, $compareFunc) {
 
 	return NULL;
 }
+
+function URLStartingOptionsToURLString($URLStartingOptions) {
+	// dd($URLStartingOptions);
+	$startingView = $URLStartingOptions["startingView"];
+	$str = "/start/" . $startingView["lat"] . "/" . $startingView["lng"] . "/" . $startingView["zoom"] . "/?";
+	$keys = ["startDataset", "flyToDatasetCenter", "zoomOut"];
+
+	$startingDatasetOptions = $URLStartingOptions["startingDatasetOptions"];
+	foreach ($keys as $key) {
+		if (isset($startingDatasetOptions[$key])) {
+			$str .= "&" . $key . "=" . $startingDatasetOptions[$key];
+		}
+	}
+
+	return $str;
+}
