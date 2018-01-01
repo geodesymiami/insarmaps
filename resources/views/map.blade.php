@@ -124,6 +124,9 @@
             <button class="btn btn-primary-outline" id="information-button">About</button>
             @if (Auth::check())
             <a href="/auth/logout" class="btn btn-primary-outline">Logout</a>
+                @if (Auth::user()->isAdmin)
+                <a href="/adminPanel" class="btn btn-primary-outline">Admin Panel</a>
+                @endif
             @endif
             <!-- we inline hide it as we arent sure yet if want this button or not... -->
             <div id="square-selector-button-div">
@@ -146,6 +149,11 @@
                         <label for='streets'>Streets</label>
                         <input id='satellite' type='radio' name='rtoggle' value='satellite' />
                         <label for='satellite'>Satellite</label>
+                        @if (Auth::check() && Auth::user()->isAdmin)
+                        <!-- remove when functionality made available to third parties -->
+                        <input id='google-satellite' type='radio' name='rtoggle' value='google-satellite' />
+                        <label for='google-satellite'>Google Satellite</label>
+                        @endif
                     </div>
                     <button class="btn btn-primary-outline" id="hide-show-seismicities-button" data-toggle="tooltip" title="Show">Seismicity</button>
                     <button class="btn btn-primary-outline" id="hide-show-insar-button" data-toggle="tooltip" title="Show">InSAR</button>

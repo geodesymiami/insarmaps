@@ -849,8 +849,8 @@ function MapController(loadJSONFunc) {
             baseStyle.sources[sourceID] = source;
         });
 
-        // TODO: remove me. this is so he can see something...
-        if (mapType === "satellite") {
+        // remove when functionality made available to third parties
+        if (mapType === "google-satellite") {
             delete sources["raster-tiles"]["url"];
             sources["raster-tiles"]["tiles"] = [
                 "http://mt.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
