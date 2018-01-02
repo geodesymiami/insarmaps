@@ -68,9 +68,9 @@ class GeoJSONController extends Controller {
         $string_dates = NULL;
 
         $permissionController = new PermissionsController();
-        $queryToFilterAreas = $permissionController->getQueryForFindingPermittedAreas(Auth::id());
+        $queryToFilterAreas = $permissionController->getAndQueryForFindingPermittedAreas(Auth::id());
         $query = "SELECT decimaldates, stringdates, id FROM area WHERE unavco_name=?";
-        $query .= " AND area.id IN " . $queryToFilterAreas["sql"];
+        $query .= " " . $queryToFilterAreas["sql"];
         $preparedValues = [$area];
         $preparedValues = array_merge($preparedValues, $queryToFilterAreas["preparedValues"]);
         $dateInfos = DB::select($query, $preparedValues);
@@ -137,9 +137,9 @@ class GeoJSONController extends Controller {
 
             $pointsArrayLen = count($pointsArray);
             $permissionController = new PermissionsController();
-            $queryToFilterAreas = $permissionController->getQueryForFindingPermittedAreas(Auth::id());
+            $queryToFilterAreas = $permissionController->getAndQueryForFindingPermittedAreas(Auth::id());
             $query = 'SELECT decimaldates, stringdates, id FROM area WHERE area.unavco_name LIKE ?';
-            $query .= " AND area.id IN " . $queryToFilterAreas["sql"];
+            $query .= " " . $queryToFilterAreas["sql"];
             $preparedValues = [$area];
             $preparedValues = array_merge($preparedValues, $queryToFilterAreas["preparedValues"]);
             $dateInfos = DB::select($query, $preparedValues);
@@ -230,9 +230,7 @@ class GeoJSONController extends Controller {
             $query = substr($query, 0, -1);
         }
         try {
-            $permissionController = new PermissionsController();
             $areas = NULL;
-            $queryToFilterAreas = $permissionController->getQueryForFindingPermittedAreas(Auth::id());
             if ($wheres) {
                 $query .= " WHERE ";
                 foreach ($wheres as $where) {
@@ -240,9 +238,14 @@ class GeoJSONController extends Controller {
                 }
             }
 
+            $permissionController = new PermissionsController();
+
             if ($wheres && count($wheres) > 0) {
-                $query .= "area.id IN " . $queryToFilterAreas["sql"];
+                $queryToFilterAreas = $permissionController->getAndQueryForFindingPermittedAreas(Auth::id());
+                $query = rtrim($query, "AND ");
+                $query .= " " . $queryToFilterAreas["sql"];
             } else {
+                $queryToFilterAreas = $permissionController->getQueryForFindingPermittedAreas(Auth::id());
                 $query .= " WHERE area.id IN " . $queryToFilterAreas["sql"];
             }
 

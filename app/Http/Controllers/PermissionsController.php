@@ -17,6 +17,15 @@ class PermissionsController extends Controller {
 
         return ["sql" => $sql, "preparedValues" => $preparedValues];
     }
+
+    public function getAndQueryForFindingPermittedAreas($userID) {
+        $query = $this->getQueryForFindingPermittedAreas($userID);
+        $sql = rtrim($query["sql"], ";");
+        $sql = "AND (area.id IN " . $sql . ");";
+        $query["sql"] = $sql;
+
+        return $query;
+    }
     // get permissions by id
     public function getPermissions($tableName, $permissionsTableName, $joinConditions) {
         $sql = "SELECT * FROM " . $tableName . " INNER JOIN " . $permissionsTableName . " ON (" . $joinConditions[0];
