@@ -726,6 +726,7 @@ function setupGraphsController() {
 
     GraphsController.prototype.prepareForSecondGraph = function() {
         //$("#charts").append('<div id="chartContainer2" class="side-item graph"></div>');
+        $("#hide-when-only-show-sliders").height("100%");
         $("#chart-containers").width("95%");
         $("#graph-select-div").css("display", "block");
         $("#chartContainer2").css("display", "block");
@@ -760,6 +761,7 @@ function setupGraphsController() {
         }
 
         //$("#chartContainer2").remove();
+        $("#hide-when-only-show-sliders").height("auto");
         $("#chart-containers").width("100%");
         $("#graph-select-div").css("display", "none");
         $("#chartContainer2").css("display", "none");
@@ -2011,16 +2013,29 @@ function setupCustomSliderSeismicityController() {
     };
 
     CustomSliderSeismicityController.prototype.showSliders = function() {
-        var $sliderContainer = $("#seismicity-chart-sliders");
-        if (!$sliderContainer.hasClass("active")) {
-            $("#seismicity-chart-sliders-maximize-button").click();
+        var $topMostDiv = $("#charts");
+        if (!$topMostDiv.hasClass("active")) {
+            $topMostDiv.addClass("active");
         }
+        $topMostDiv.addClass("show-seismicity-sliders");
+
+        var $sliderContainer = $("#seismicity-chart-sliders");
+        if ($sliderContainer.hasClass("no-display")) {
+            $sliderContainer.removeClass("no-display");
+        }
+
+        $("#hide-when-only-show-sliders").css("display", "none");
     };
 
     CustomSliderSeismicityController.prototype.hidesliders = function() {
         var $sliderContainer = $("#seismicity-chart-sliders");
-        if ($sliderContainer.hasClass("active")) {
-            $("#seismicity-chart-sliders-minimize-button").click();
+        if (!$sliderContainer.hasClass("no-display")) {
+            $sliderContainer.addClass("no-display");
+        }
+
+        var $topMostDiv = $("#charts");
+        if ($topMostDiv.hasClass("show-seismicity-sliders")) {
+            $topMostDiv.removeClass("show-seismicity-sliders");
         }
     };
 

@@ -316,57 +316,67 @@
                 <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="graph-div-minimize-button"></button>
             </div>
             <div class="content">
-                <div class="chart-containers" id="chart-containers">
-                    <div id="chartContainer" class="side-item">
+                <div id="hide-when-only-show-sliders">
+                    <div class="chart-containers" id="chart-containers">
+                        <div id="chartContainer" class="side-item">
+                        </div>
+                        <div id="chartContainer2" class="side-item"></div>
                     </div>
-                    <div id="chartContainer2" class="side-item"></div>
-                </div>
-                <div id="graph-select-div">
-                    <div class="overlay_toggle">
-                        <div id="top-graph-focus-div">
-                            Select
-                            <input id="top-graph-toggle-button" type="checkbox" name="overlayToggle" />
+                    <div id="graph-select-div">
+                        <div class="overlay_toggle">
+                            <div id="top-graph-focus-div">
+                                Select
+                                <input id="top-graph-toggle-button" type="checkbox" name="overlayToggle" />
+                            </div>
+                        </div>
+                        <div class="overlay_toggle">
+                            <div id="bottom-graph-focus-div">
+                                Select
+                                <input id="bottom-graph-toggle-button" type="checkbox" name="overlayToggle" />
+                            </div>
                         </div>
                     </div>
-                    <div class="overlay_toggle">
-                        <div id="bottom-graph-focus-div">
-                            Select
-                            <input id="bottom-graph-toggle-button" type="checkbox" name="overlayToggle" />
+                    <div id="map-options">
+                        <div class="overlay_toggle">
+                            <label>Second graph</label>
+                            <input id="second-graph-toggle-button" type="checkbox" name="overlayToggle" />
                         </div>
+                        <div class="overlay_toggle">
+                            <label>Line</label>
+                            <input id="dot-toggle-button" type="checkbox" name="overlayToggle" />
+                        </div>
+                        <div class="overlay_toggle">
+                            <label>Regression</label>
+                            <input id="regression-toggle-button" type="checkbox" name="overlayToggle" />
+                        </div>
+                        <div class="overlay_toggle">
+                            <label>Detrend</label>
+                            <input id="detrend-toggle-button" type="checkbox" name="overlayToggle" />
+                        </div>
+                        <!-- POTENTIALLY REMOVE -->
+                        <!-- <div class="overlay_toggle">
+                            <label>Sync</label>
+                            <input id="insar-sync-toggle-button" type="checkbox" name="overlayToggle" />
+                        </div> -->
+                        <button class="btn btn-primary-outline" id="download-as-text-button">Download as TXT</button>
                     </div>
                 </div>
-                <div id="map-options">
-                    <div class="overlay_toggle">
-                        <label>Second graph</label>
-                        <input id="second-graph-toggle-button" type="checkbox" name="overlayToggle" />
-                    </div>
-                    <div class="overlay_toggle">
-                        <label>Line</label>
-                        <input id="dot-toggle-button" type="checkbox" name="overlayToggle" />
-                    </div>
-                    <div class="overlay_toggle">
-                        <label>Regression</label>
-                        <input id="regression-toggle-button" type="checkbox" name="overlayToggle" />
-                    </div>
-                    <div class="overlay_toggle">
-                        <label>Detrend</label>
-                        <input id="detrend-toggle-button" type="checkbox" name="overlayToggle" />
-                    </div>
-                    <!-- POTENTIALLY REMOVE -->
-                    <!-- <div class="overlay_toggle">
-                        <label>Sync</label>
-                        <input id="insar-sync-toggle-button" type="checkbox" name="overlayToggle" />
-                    </div> -->
-                    <button class="btn btn-primary-outline" id="download-as-text-button">Download as TXT</button>
-                </div>
-            </div>
-            <div id="insar-chart-slider-container">
-                <!-- <div class="top-right-buttons">
-                    <button type="button" class="minimize-button" data-dismiss="modal" id="insar-chart-slider-minimize-button"></button>
-                </div> -->
-                <div class="content">
+                <div class="chart-slider" id="insar-chart-slider"></div>
+                <div class="no-display" id="seismicity-chart-sliders">
                     <div class="chart-containers">
-                        <div class="chart-slider" id="insar-chart-slider"></div>
+                        <h7>Time (Distribution)</h7>
+                        <div class="chart-slider" id="time-slider"></div>
+                        <button class="btn btn-primary-outline slider-range-button" data-slider-type="time-slider">Set Range</button>
+                        <button class="btn btn-primary-outline slider-reset-button" data-slider-type="time-slider">Reset</button>
+                        <!-- POTENTIALLY REMOVE -->
+                        <!-- <button class="btn btn-primary-outline" id="set-insar-time-range-to-seismicity-button">Sync</button>
+                        <label>Sync</label>
+                        <input id="seismicity-sync-toggle-button" type="checkbox" name="overlayToggle"> -->
+                        <br>
+                        <h7>Depth (Distribution)</h7>
+                        <div class="chart-slider" id="depth-slider"></div>
+                        <button class="btn btn-primary-outline slider-range-button" data-slider-type="depth-slider">Set Range</button>
+                        <button class="btn btn-primary-outline slider-reset-button" data-slider-type="depth-slider">Reset</button>
                     </div>
                 </div>
             </div>
@@ -512,28 +522,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="wrap wrap-transitions draggable" id="seismicity-chart-sliders">
-            <div class="top-right-buttons">
-                <button type="button" class="minimize-button" data-dismiss="modal" id="seismicity-chart-sliders-minimize-button"></button>
-            </div>
-            <div class="content">
-                <div class="chart-containers">
-                    <h7>Time (Distribution)</h7>
-                    <div class="chart-slider" id="time-slider"></div>
-                    <button class="btn btn-primary-outline slider-range-button" data-slider-type="time-slider">Set Range</button>
-                    <button class="btn btn-primary-outline slider-reset-button" data-slider-type="time-slider">Reset</button>
-                    <!-- POTENTIALLY REMOVE -->
-                    <!-- <button class="btn btn-primary-outline" id="set-insar-time-range-to-seismicity-button">Sync</button>
-                    <label>Sync</label>
-                    <input id="seismicity-sync-toggle-button" type="checkbox" name="overlayToggle"> -->
-                    <br>
-                    <h7>Depth (Distribution)</h7>
-                    <div class="chart-slider" id="depth-slider"></div>
-                    <button class="btn btn-primary-outline slider-range-button" data-slider-type="depth-slider">Set Range</button>
-                    <button class="btn btn-primary-outline slider-reset-button" data-slider-type="depth-slider">Reset</button>
                 </div>
             </div>
         </div>

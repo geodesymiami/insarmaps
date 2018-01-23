@@ -178,6 +178,7 @@ function MapController(loadJSONFunc) {
         if (!curMode) { // no mode (ie essentially empty map)
             this.seismicityGraphsController.destroyAllCharts();
             this.seismicityGraphsController.hideChartContainers();
+            $(".wrap#charts").removeClass("active");
             this.selector.removeSelectionPolygon();
             $("#seismicity-maximize-buttons-container").removeClass("active");
             $("#insar-maximize-buttons-container").addClass("active");
@@ -185,12 +186,17 @@ function MapController(loadJSONFunc) {
             this.seismicityColorScale.remove();
             this.loadAreaMarkersThroughButton();
         } else {
+            // no seismicity loaded? hide charts. use getTopMostSeismicitySource
+            // instead of thirdpartysourcescontroller method which gives us all seismicities
+            // cause this seems less resource heavy
+            if (!this.getTopMostSeismicitySource()) {
+                this.seismicityGraphsController.destroyAllCharts();
+                this.seismicityGraphsController.hideChartContainers();
+            }
             if (curMode !== "insar") {
                 $("#insar-maximize-buttons-container").removeClass("active");
             }
             if (curMode !== "seismicity") {
-                this.seismicityGraphsController.destroyAllCharts();
-                this.seismicityGraphsController.hideChartContainers();
                 this.selector.removeSelectionPolygon();
                 $("#seismicity-maximize-buttons-container").removeClass("active");
                 $("#square-selector-button").attr("data-original-title", "Select Points");
@@ -542,8 +548,11 @@ function MapController(loadJSONFunc) {
                 $("#charts").off(animationEvents, null, onAnimationEnd);
             }.bind(this);
             $("#charts").one(animationEvents, onAnimationEnd);
+            // why isn't graphsController handling these showing of the graph divs
+            // TODO: refactor
             $("#graph-div-maximize-button").click();
             $("#charts").removeClass("only-show-slider");
+            $("#hide-when-only-show-sliders").css("display", "block");
 
             // if graph isn't animating, we still want to draw chart. this means if it is animating,
             // it will draw twice, but logic to prevent this would have made code messy for a premature
