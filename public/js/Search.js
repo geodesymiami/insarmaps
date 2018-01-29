@@ -203,7 +203,8 @@ function SearchFormController(container) {
 
                 $("." + rowClass).css({ cursor: "pointer" });
                 $("." + rowClass).click(function() {
-                    if (!currentArea || (subsetFeature.properties.layerID != currentArea.properties.layerID) && !myMap.pointsLoaded()) {
+                    if ((!currentArea || (subsetFeature.properties.unavco_name != currentArea.properties.unavco_name))
+                        && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
                         SearchFormController.loadedSubsets = false;
                         myMap.loadDatasetFromFeature(subsetFeature);
                     }
