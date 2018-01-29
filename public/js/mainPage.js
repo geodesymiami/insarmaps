@@ -668,6 +668,13 @@ $(window).on("load", function() {
         }
     });
 
+    // use on click to allow for selection of same value
+    $("#japan-seismicity-select").on("click", function() {
+        if (this.selectedIndex != -1) {
+            
+        }
+    });
+
     $("#USGSEvents-options-minimize-button").on("click", function() {
         var $container = $(".wrap#USGSEvents-options-wrapper");
 

@@ -351,7 +351,7 @@ function ThirdPartySourcesController(map) {
         return features;
     };
 
-
+    // TODO: these load/remove seismicity functions REALLY need to be refactored to one common function
     this.loadmidasGpsStationMarkers = function(loadVelocityArrows) {
         showLoadingScreen("Loading data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
@@ -934,6 +934,107 @@ function ThirdPartySourcesController(map) {
     };
 
     this.removeUSGSEventsEarthquake = function() {
+        var name = "USGSEventsEarthquake";
+
+        this.map.removeSourceAndLayer(name);
+    };
+
+    this.parseJapanSeismicity = function(rawData) {
+        var lines = rawData.split("\n");
+        var features = [];
+
+        for (var i = 0; i < lines.length; i++) {
+            var attributes = lines[i].split("|");
+            if (attributes && attributes.length > 0 && attributes[0] != "") {
+                var lat = parseFloat(attributes[2]);
+                var long = parseFloat(attributes[3]);
+                var depth = parseFloat(attributes[4]);
+                var mag = parseFloat(attributes[10]);
+                var coordinates = [long, lat];
+                var milliseconds = new Date(attributes[1]).getTime();
+                var location = attributes[12];
+
+                var feature = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": coordinates
+                    },
+                    "properties": {
+                        "depth": depth,
+                        "mag": mag,
+                        "time": milliseconds,
+                        "location": location
+                    }
+                };
+
+                features.push(feature);
+            }
+        }
+
+        return features;
+    };
+
+    this.loadJapanSeismicity = function(dates) {
+        showLoadingScreen("Loading data", "ESCAPE to interrupt");
+
+        this.cancellableAjax.ajax({
+            url: "/JapanSeismicities/" + dates,
+            success: function(response) {
+                var features = this.parseJapanSeismicity(response);
+                var mapboxStationFeatures = {
+                    type: "geojson",
+                    cluster: false,
+                    data: {
+                        "type": "FeatureCollection",
+                        "features": features
+                    }
+                };
+
+                this.currentFeatures = features;
+
+                var colors = this.map.seismicityColorScale.jet_r;
+                var depthStops = this.currentSeismicityColorStops;
+                var magStops = this.currentSeismicitySizeStops;
+
+                var layerID = "USGSEventsEarthquake";
+                this.map.addSource(layerID, mapboxStationFeatures);
+                this.map.addLayer({
+                    "id": layerID,
+                    "type": "circle",
+                    "source": layerID,
+                    "paint": {
+                        "circle-color": {
+                            "property": "depth",
+                            "stops": depthStops,
+                            "type": "interval"
+                        },
+                        "circle-radius": {
+                            "property": "mag",
+                            "stops": magStops,
+                            "type": "interval"
+                        }
+                    }
+                });
+                this.map.seismicityColorScale.setTopAsMax(false);
+                hideLoadingScreen();
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                hideLoadingScreen();
+
+                // don't do the below if error is due to pressing escape key
+                if (xhr.responseText) {
+                    USGSEventsEarthquakeToggleButton.click();
+                    window.alert("Bad USGSEvents parameters. Here's the server's response:\n" + xhr.responseText);
+                }
+            }
+        }, function() {
+            hideLoadingScreen();
+            USGSEventsEarthquakeToggleButton.click();
+        });
+    };
+
+    this.removeJapanSeismicities = function(dates) {
         var name = "USGSEventsEarthquake";
 
         this.map.removeSourceAndLayer(name);

@@ -589,7 +589,7 @@ div.menu {
     min-width: 173px;
 }
 
-#select-layer-button-div:hover > #overlay-options-toggles {
+#select-layer-button-div:hover > #overlay-options-container {
     display: block;
 }
 
@@ -597,17 +597,17 @@ div.menu {
     height: 34px;
 }
 
-#overlay-options-toggles {
+#overlay-options-container {
     width: 100%;
     background: white;
     display: none;
 }
 
-#overlay-options-toggles.active {
+#overlay-options-container.active {
     display: block;
 }
 
-#overlay-options-toggles .overlay_toggle {
+#overlay-options-container .overlay_toggle {
     width: 100%;
 }
 

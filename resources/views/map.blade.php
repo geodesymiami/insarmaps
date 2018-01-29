@@ -143,7 +143,7 @@
                 <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="More options" id="select-layer-button">
                     <img src="/img/layerSwitchIcon.png" alt="layerSwitchIcon.png" style="width: 20px; height: 20px">
                 </button>
-                <div id="overlay-options-toggles">
+                <div id="overlay-options-container">
                     <div id="map-type-menu">
                         <input id='streets' type='radio' name='rtoggle' value='streets' checked="checked" />
                         <label for='streets'>Streets</label>
@@ -157,6 +157,16 @@
                     </div>
                     <button class="btn btn-primary-outline" id="hide-show-seismicities-button" data-toggle="tooltip" title="Show">Seismicity</button>
                     <button class="btn btn-primary-outline" id="hide-show-insar-button" data-toggle="tooltip" title="Show">InSAR</button>
+                    <div id="overlay-options-toggles"></div>
+                    <!--<label for="japan-seismicity-select">Japan Seismicity</label>
+                    <select id="japan-seismicity-select">
+                      <option value="2005-2006">2005-2006</option>
+                      <option value="2007-2008">2007-2008</option>
+                      <option value="2009-2010">2009-2010</option>
+                      <option value="2011-2012">2011-2012</option>
+                      <option value="2013-2014">2013-2014</option>
+                      <option value="20154">2015</option>
+                    </select>-->
                     <div class="wrap wrap-transitions draggable" id="USGSEvents-options-wrapper">
                         <div id="USGSEvents-options">
                             <div class="top-right-buttons">
