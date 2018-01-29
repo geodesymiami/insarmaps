@@ -204,6 +204,7 @@ function SearchFormController(container) {
                 $("." + rowClass).css({ cursor: "pointer" });
                 $("." + rowClass).click(function() {
                     if (!currentArea || (subsetFeature.properties.layerID != currentArea.properties.layerID) && !myMap.pointsLoaded()) {
+                        SearchFormController.loadedSubsets = false;
                         myMap.loadDatasetFromFeature(subsetFeature);
                     }
                 });
@@ -273,7 +274,7 @@ function SearchFormController(container) {
                 $subsetSwathPopup.removeClass("active");
             }
 
-            if (SearchFormController.loadedSubsets) {
+            if (SearchFormController.loadedSubsets && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
                 myMap.loadSwathsInCurrentViewport(false);
                 SearchFormController.loadedSubsets = false;
             }
