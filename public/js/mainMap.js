@@ -544,7 +544,14 @@ function MapController(loadJSONFunc) {
             // only draw graph after window finishes maximize animation
             var animationEvents = "webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend";
             var onAnimationEnd = function(event) {
-                this.graphsController.JSONToGraph(json, chartContainer, e);
+                // make sure the chart exists and hasn't been deleted. we need this cause what if this event
+                // never fires, but we click on a new dataset, and this causes the div which contains all sliders
+                // to change size/animate? we could just remove this event when we select a new dataset, but I don't feel
+                // like copying animation events and removal code etc again... i also dont feel like making animationevents
+                // nor the callback global variables when a simple if will fix the issues/exceptions...
+                if (this.graphsController.chartExists(chartContainer)) {
+                    this.graphsController.JSONToGraph(json, chartContainer, e);
+                }
                 $("#charts").off(animationEvents, null, onAnimationEnd);
             }.bind(this);
             $("#charts").one(animationEvents, onAnimationEnd);
@@ -736,7 +743,9 @@ function MapController(loadJSONFunc) {
         this.colorScale.setTitle("LOS Velocity [cm/yr]");
 
         this.addDataset(tileJSON, feature);
+        this.graphsController.destroyGraphs();
         $("#charts").addClass("only-show-slider").addClass("active");
+        $("#hide-when-only-show-sliders").css("display", "none");
         this.graphsController.createInsarSliderForDataset(currentArea);
 
         this.map.once("data", function(event) {

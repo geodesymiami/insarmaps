@@ -156,11 +156,20 @@ function AbstractGraphsController() {
         return chartOpts;
     };
 
-    this.createChartDestroyingOld = function(chartContainer, chartOpts) {
+    this.chartExists = function(chartContainer) {
         var chart = $("#" + chartContainer).highcharts();
-        if (chart) {
-            chart.destroy();
+
+        return  chart !== null && chart !== undefined;
+    };
+
+    this.destroyChart = function(chartContainer) {
+        if (this.chartExists(chartContainer)) {
+            $("#" + chartContainer).highcharts().destroy();
         }
+    };
+
+    this.createChartDestroyingOld = function(chartContainer, chartOpts) {
+        this.destroyChart(chartContainer);
 
         $("#" + chartContainer).highcharts(chartOpts);
     };
@@ -920,6 +929,11 @@ function setupGraphsController() {
         }.bind(this));
 
         this.setNavigatorHandlers("insar-chart-slider", "#charts");
+    };
+
+    GraphsController.prototype.destroyGraphs = function() {
+        this.destroyChart("chartContainer");
+        this.destroyChart("chartContainer2");
     };
 }
 

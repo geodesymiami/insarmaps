@@ -822,9 +822,10 @@ $(window).on("load", function() {
         if (container.hasClass("maximized")) {
             $("#graph-div-maximize-button").css("display", "block");
             myMap.removeTouchLocationMarkers();
+            $("#hide-when-only-show-sliders").css("display", "none");
         }
 
-        container.removeClass("active").removeClass("maximized").addClass("minimized").addClass("only-show-slider");
+        container.removeClass("maximized").addClass("minimized").addClass("only-show-slider");
     });
 
     $("#graph-div-maximize-button").on("click", function() {
