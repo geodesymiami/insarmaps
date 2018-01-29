@@ -568,21 +568,25 @@ function CountryGeocoder(mapboxAccessToken) {
 }
 
 function slideFunction(event, ui) {
+    var newOpacity = ui.value / 100.0;
+    newOpacity *= newOpacity * newOpacity; // scale it, as the default scale is not very linear
     // start at 1 to avoid base map layer
     for (var i = 1; i <= currentArea.properties.num_chunks; i++) {
         var layerName = "chunk_" + i;
-        var newOpacity = ui.value / 100.0;
-        newOpacity *= newOpacity * newOpacity; // scale it, as the default scale is not very linear
 
         myMap.map.setPaintProperty(layerName, "circle-opacity", newOpacity);
+    }
+
+    if (myMap.map.getLayer("onTheFlyJSON")) {
+        myMap.map.setPaintProperty("onTheFlyJSON", "circle-opacity", newOpacity);
     }
 }
 
 function showBrowserAlert() {
-    var isChrome = !!window.chrome && !!window.chrome.webstore
+    var isChrome = !!window.chrome && !!window.chrome.webstore;
     if (!isChrome && !localStorage.getItem("showedBrowserAlert")) {
         alert("Warning: This website relies on Mapbox GL JS, which in turn relies on WebGL. As it stands," + " Google Chrome offers the best compatibility when browsing this site.");
-        // if can't set item due to private browsing, don't just crash the whole page
+        // try catch cause if can't set item due to private browsing, don't just crash the whole page
         try {
             localStorage.setItem("showedBrowserAlert", "true");
         } catch (e) {}

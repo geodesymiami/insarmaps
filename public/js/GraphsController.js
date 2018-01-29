@@ -919,7 +919,7 @@ function setupGraphsController() {
             this.recolorInsarFromDates(e, date_array);
         }.bind(this));
 
-        this.setNavigatorHandlers("insar-chart-slider", "#seismicity-chart-sliders");
+        this.setNavigatorHandlers("insar-chart-slider", "#charts");
     };
 }
 

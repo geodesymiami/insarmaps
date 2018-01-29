@@ -69,7 +69,7 @@ class GeoJSONController extends Controller {
 
         $permissionController = new PermissionsController();
         $queryToFilterAreas = $permissionController->getAndQueryForFindingPermittedAreas(Auth::id());
-        $query = "SELECT decimaldates, stringdates, id FROM area WHERE unavco_name=?";
+        $query = "SELECT decimaldates, stringdates, id FROM area WHERE unavco_name = ?";
         $query .= " " . $queryToFilterAreas["sql"];
         $preparedValues = [$area];
         $preparedValues = array_merge($preparedValues, $queryToFilterAreas["preparedValues"]);
@@ -138,7 +138,7 @@ class GeoJSONController extends Controller {
             $pointsArrayLen = count($pointsArray);
             $permissionController = new PermissionsController();
             $queryToFilterAreas = $permissionController->getAndQueryForFindingPermittedAreas(Auth::id());
-            $query = 'SELECT decimaldates, stringdates, id FROM area WHERE area.unavco_name LIKE ?';
+            $query = 'SELECT decimaldates, stringdates, id FROM area WHERE area.unavco_name = ?';
             $query .= " " . $queryToFilterAreas["sql"];
             $preparedValues = [$area];
             $preparedValues = array_merge($preparedValues, $queryToFilterAreas["preparedValues"]);
