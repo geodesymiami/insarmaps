@@ -663,12 +663,13 @@ function MapController(loadJSONFunc) {
 
                 return unavcoNameFields1 - unavcoNameFields2;
             });
+            var minNumFields = minMax.min.properties.unavco_name.split("_").length;
             subsetFeatures.forEach(function(feature) {
-                // ignore smallest, or "master", non-subset feature. this feature will use it's regular
+                // ignore smallest, or "master", non-subset feature(s). these features will use their regular
                 // scene_footprint to be added to the map. the others will use their data_footprint. we put
                 // data_footprint of non-master features into scene_footprint since addSwathsFromJSON reads
                 // the scene_footprint.
-                if (feature.properties.unavco_name !== minMax.min.properties.unavco_name) {
+                if (feature.properties.unavco_name.split("_").length != minNumFields) {
                     var dataFootprint = feature.properties.extra_attributes.data_footprint;
                     feature.properties.extra_attributes.scene_footprint = dataFootprint;
                 }

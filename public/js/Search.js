@@ -256,7 +256,7 @@ function SearchFormController(container) {
         $("#search-form-results-table tbody").append(html);
         $("." + rowClass).css({ cursor: "pointer" });
         $("." + rowClass).click(function() {
-            if (!currentArea || (area.properties.layerID != currentArea.properties.layerID)
+            if ((!currentArea || (area.properties.unavco_name != currentArea.properties.unavco_name))
                 && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
                 myMap.loadDatasetFromFeature(area);
             }
