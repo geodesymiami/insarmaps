@@ -832,6 +832,11 @@ $(window).on("load", function() {
             $("#hide-when-only-show-sliders").css("display", "none");
         }
 
+        if (container.hasClass("show-seismicity-sliders")) {
+            container.removeClass("show-seismicity-sliders");
+            $("#seismicity-chart-sliders").addClass("no-display");
+        }
+
         container.removeClass("maximized").addClass("minimized").addClass("only-show-slider");
     });
 
