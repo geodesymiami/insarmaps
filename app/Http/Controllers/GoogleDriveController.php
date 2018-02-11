@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 class GoogleDriveController extends Controller {
-   private static $H5_DRIVE_FOLDER = "%270B6tU3PZAQUfhV0ozd3h2NElpREk%27";
+    private static $H5_DRIVE_FOLDER = "%270B6tU3PZAQUfhV0ozd3h2NElpREk%27";
 
     public function getFilesInFolder(Request $request) {
        $apiKey = config("apiKeys.google_drive");
