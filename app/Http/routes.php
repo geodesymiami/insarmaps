@@ -31,6 +31,7 @@ Route::get("/HawaiiReloc", "ThirdPartyDataNoCorsController@getHawaiiReloc")->nam
 Route::get("/LongValleyReloc", "ThirdPartyDataNoCorsController@getLongValleyReloc")->name("getLongValleyReloc");
 Route::get("/USGSMonthlyFeed", "ThirdPartyDataNoCorsController@getUSGSMonthlyFeed")->name("getUSGSMonthlyFeed");
 Route::get("/USGSEventsEarthquake/", "ThirdPartyDataNoCorsController@getUSGSEventsEarthquake")->name("USGSEventsEarthquake");
+Route::get("/driveFiles/", "GoogleDriveController@getFilesInFolder")->name("getFilesOnGoogleDrive");
 
 Route::post("/points", "GeoJSONController@getPoints");
 Route::controllers([

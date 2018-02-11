@@ -174,6 +174,32 @@ function AreaAttributesPopup() {
             var html = attributesController.getAttribute("referenceText") + " <a href='" + attributesController.getAttribute("referencePdfUrl") + "' target='_blank'>PDF</a>";
             $("#reference-tab").html(html);
         }
+
+        $.ajax({
+            url: "/driveFiles",
+            success: function(response) {
+                var fileIDs = response.files;
+                var fileID = null;
+                var fileName = attributesController.getAttribute("unavco_name") + ".he5";
+
+                for (var i = 0; i < fileIDs.length; i++) {
+                    var curName = fileIDs[i].name;
+                    if (curName === fileName) {
+                        fileID = fileIDs[i].id;
+                        break;
+                    }
+                }
+
+                if (fileID) {
+                    var html = "<a href='https://drive.google.com/uc?id=" + fileID + "&export=download' target='_blank'>Download HDF-EOS file</a>";
+                    $("#downloads-tab").html(html);
+                }
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.log("failed " + xhr.responseText);
+                this.lastRequest = null;
+            }
+        });
     };
 };
 
@@ -1189,3 +1215,4 @@ $(window).on("load", function() {
     });
     // $("#search-form-results-table").tablesorter();
 });
+
