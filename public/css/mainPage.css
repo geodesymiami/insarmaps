@@ -855,6 +855,7 @@ input[type=number] {
     bottom: 0%;
     height: 70%;
     width: 40%;
+    max-height: 500px;
 }
 
 #charts #insar-chart-slider {
@@ -868,6 +869,7 @@ input[type=number] {
 
 #charts.show-seismicity-sliders {
     min-height: 300px;
+    max-height: none;
 }
 
 #charts.active.only-show-slider #insar-chart-slider {
