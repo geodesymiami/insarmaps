@@ -1060,8 +1060,8 @@ function ThirdPartySourcesController(map) {
             }
         }, function() {
             hideLoadingScreen();
-            this.map.removeJapanSeismicities(dates);
-        });
+            this.removeJapanSeismicities(dates);
+        }.bind(this));
     };
 
     this.removeJapanSeismicities = function(dates) {
@@ -1408,3 +1408,4 @@ function ThirdPartySourcesController(map) {
         $("#arrow-image").css({ "width": DESIRED_PIXELS + "px", "height": "10px" });
     };
 }
+
