@@ -1737,6 +1737,10 @@ function MapController(loadJSONFunc) {
             hideLoadingScreen();
         });
     };
+
+    this.DMSToDecimalDegrees = function(degrees, minutes, seconds) {
+        return degrees + (minutes / 60.0) + (seconds / 3600.0);
+    };
 }
 
 

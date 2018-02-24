@@ -9,7 +9,10 @@ function ThirdPartySourcesController(map) {
 
     this.layerOrderToCallbackMap = null;
 
-    this.seismicities = ["USGSEarthquake", "USGSEventsEarthquake", "IGEPNEarthquake", "HawaiiReloc", "LongValleyReloc"];
+    this.seismicities = ["USGSEarthquake", "USGSEventsEarthquake", "IGEPNEarthquake", "HawaiiReloc", "LongValleyReloc",
+        "japan_seismicity_2005-2006", "japan_seismicity_2007-2008", "japan_seismicity_2009-2010", "japan_seismicity_2011-2012",
+        "japan_seismicity_2013-2014", "japan_seismicity_2015"
+    ];
     this.gps = ["midas", "midas-arrows", "gpsStations"];
 
     this.stopsCalculator = new MapboxStopsCalculator();
@@ -939,20 +942,45 @@ function ThirdPartySourcesController(map) {
         this.map.removeSourceAndLayer(name);
     };
 
+    // documentation: http://www.data.jma.go.jp/svd/eqev/data/bulletin/data/format/hypfmt_e.html
+    // NOTE: it was tricky due to how the fact that the documentation is 1 based indexing, and also due to
+    // the way substring in js works with up to but not including the endIndex...
     this.parseJapanSeismicity = function(rawData) {
         var lines = rawData.split("\n");
         var features = [];
 
         for (var i = 0; i < lines.length; i++) {
-            var attributes = lines[i].split("|");
-            if (attributes && attributes.length > 0 && attributes[0] != "") {
-                var lat = parseFloat(attributes[2]);
-                var long = parseFloat(attributes[3]);
-                var depth = parseFloat(attributes[4]);
-                var mag = parseFloat(attributes[10]);
+            // spaces are 0. can't just assume we will get nice numbers like 012 which will return
+            // something when parsed... sometimes we can get "   ", etc which will return NaN.
+            var attributes = lines[i].split(" ").join("0");
+            if (attributes != "") {
+                // lat DMS to decimal degrees
+                var degrees = parseFloat(attributes.substring(21, 24));
+                var minutes = parseFloat(attributes.substring(24, 28));
+                var lat = this.map.DMSToDecimalDegrees(degrees, minutes, 0);
+
+                // lat DMS to decimal degrees
+                degrees = parseFloat(attributes.substring(32, 36));
+                minutes = parseFloat(attributes.substring(36, 40));
+                var long = this.map.DMSToDecimalDegrees(degrees, minutes, 0);
+
+                var depth = parseFloat(attributes.substring(44, 49)) / 100.0;
+                var mag = parseFloat(attributes.substring(52, 54)); // Magnitude 1 in documentation
                 var coordinates = [long, lat];
-                var milliseconds = new Date(attributes[1]).getTime();
-                var location = attributes[12];
+                var dateStringUpToDay = attributes.substring(1, 9);
+
+                // date
+                var date = customDateStringToJSDate(dateStringUpToDay);
+                var hour = parseFloat(attributes.substring(9, 11));
+                var minute = parseFloat(attributes.substring(11, 13));
+                var second = parseFloat(attributes.substring(13, 17));
+                // TODO: check if these times are okay... not sure if this is right
+                var JAPAN_STANDARD_TIME_OFFSET_FROM_UTC = 9;
+                date.setUTCHours(hour - 9);
+                date.setUTCMinutes(minute);
+                date.setUTCSeconds(second);
+
+                var milliseconds = date.getTime();
 
                 var feature = {
                     "type": "Feature",
@@ -963,8 +991,7 @@ function ThirdPartySourcesController(map) {
                     "properties": {
                         "depth": depth,
                         "mag": mag,
-                        "time": milliseconds,
-                        "location": location
+                        "time": milliseconds
                     }
                 };
 
@@ -977,9 +1004,12 @@ function ThirdPartySourcesController(map) {
 
     this.loadJapanSeismicity = function(dates) {
         showLoadingScreen("Loading data", "ESCAPE to interrupt");
+        // why do we have this in public folder yet we have a route for the volcano excel file...
+        // TODO: be consistent in this regard
+        var url = "/japan_seismicities/japan_seismicity_" + dates + ".txt";
 
         this.cancellableAjax.ajax({
-            url: "/JapanSeismicities/" + dates,
+            url: url,
             success: function(response) {
                 var features = this.parseJapanSeismicity(response);
                 var mapboxStationFeatures = {
@@ -997,7 +1027,7 @@ function ThirdPartySourcesController(map) {
                 var depthStops = this.currentSeismicityColorStops;
                 var magStops = this.currentSeismicitySizeStops;
 
-                var layerID = "USGSEventsEarthquake";
+                var layerID = "japan_seismicity_" + dates;
                 this.map.addSource(layerID, mapboxStationFeatures);
                 this.map.addLayer({
                     "id": layerID,
@@ -1024,20 +1054,25 @@ function ThirdPartySourcesController(map) {
 
                 // don't do the below if error is due to pressing escape key
                 if (xhr.responseText) {
-                    USGSEventsEarthquakeToggleButton.click();
-                    window.alert("Bad USGSEvents parameters. Here's the server's response:\n" + xhr.responseText);
+                    this.removeJapanSeismicities(dates);
+                    window.alert("Bad Japan Seismicity Dates" + xhr.responseText);
                 }
             }
         }, function() {
             hideLoadingScreen();
-            USGSEventsEarthquakeToggleButton.click();
+            this.map.removeJapanSeismicities(dates);
         });
     };
 
     this.removeJapanSeismicities = function(dates) {
-        var name = "USGSEventsEarthquake";
-
+        var name = "japan_seismicity_" + dates;
         this.map.removeSourceAndLayer(name);
+    };
+
+    this.loadedJapanSeismicityDates = function(dates) {
+        var name = "japan_seismicity_" + dates;
+
+        return this.map.map.getSource(name) && this.map.map.getLayer(name);
     };
 
     this.featureToViewOptions = function(feature) {
@@ -1057,8 +1092,8 @@ function ThirdPartySourcesController(map) {
         var itsASeismicityFeature = this.seismicities.includes(layerID) || feature.properties.depth; // all seismicities have depth, right?
 
         var cursor = (itsAPoint || itsAGPSFeature || itsAMidasGPSFeature ||
-            itsASeismicityFeature || itsAMidasHorizontalArrow || itsAMiniMapFeature
-            || itsTheReferencePoint) ? 'pointer' : 'auto';
+            itsASeismicityFeature || itsAMidasHorizontalArrow || itsAMiniMapFeature ||
+            itsTheReferencePoint) ? 'pointer' : 'auto';
 
         var html = null;
         var coordinates = feature.geometry.coordinates;
@@ -1249,6 +1284,8 @@ function ThirdPartySourcesController(map) {
             }
         }.bind(this));
 
+        // console.log(features);
+
         return features;
     };
 
@@ -1293,7 +1330,7 @@ function ThirdPartySourcesController(map) {
         }
     };
 
-    this.layerOrderToCallbackMap =  {
+    this.layerOrderToCallbackMap = {
         "USGS": this.loadUSGSEarthquakeFeed,
         "USGSEvents": this.loadUSGSEventsEarthquake,
         "IGEPNEarthquake": this.loadIGEPNEarthquakeFeed,

@@ -695,11 +695,26 @@ $(window).on("load", function() {
     });
 
     // use on click to allow for selection of same value
-    $("#japan-seismicity-select").on("click", function() {
-        if (this.selectedIndex != -1) {
-            
-        }
-    });
+    // in anonymous function to have safe scope for lastIndex
+    (function() {
+        var lastIndex = 0;
+        $("#japan-seismicity-select").on("click", function() {
+            // if else allows desired behavior of triggering actions even when same value in dropdown
+            // is selected, but not triggering action when initially clicking the dropdown arrow to show
+            // the dropdown menu.
+            if (this.selectedIndex == lastIndex) {
+                lastIndex = 0;
+            } else {
+                lastIndex = this.selectedIndex;
+                var selection = $(this).val();
+                if (myMap.thirdPartySourcesController.loadedJapanSeismicityDates(selection)) {
+                    myMap.thirdPartySourcesController.removeJapanSeismicities(selection);
+                } else {
+                    myMap.thirdPartySourcesController.loadJapanSeismicity(selection);
+                }
+            }
+        });
+    })();
 
     $("#USGSEvents-options-minimize-button").on("click", function() {
         var $container = $(".wrap#USGSEvents-options-wrapper");
@@ -1215,4 +1230,3 @@ $(window).on("load", function() {
     });
     // $("#search-form-results-table").tablesorter();
 });
-

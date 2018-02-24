@@ -159,15 +159,17 @@
                     <button class="btn btn-primary-outline" id="hide-show-seismicities-button" data-toggle="tooltip" title="Show">Seismicity</button>
                     <button class="btn btn-primary-outline" id="hide-show-insar-button" data-toggle="tooltip" title="Show">InSAR</button>
                     <div id="overlay-options-toggles"></div>
-                    <!--<label for="japan-seismicity-select">Japan Seismicity</label>
+                    <label for="japan-seismicity-select">Japan Seismicity</label>
                     <select id="japan-seismicity-select">
-                      <option value="2005-2006">2005-2006</option>
-                      <option value="2007-2008">2007-2008</option>
-                      <option value="2009-2010">2009-2010</option>
-                      <option value="2011-2012">2011-2012</option>
-                      <option value="2013-2014">2013-2014</option>
-                      <option value="20154">2015</option>
-                    </select>-->
+                        <option selected disabled hidden style='display: none' value=''></option>
+                        <option value="2005-2006">2005-2006</option>
+                        <option value="2007-2008">2007-2008</option>
+                        <option value="2009-2010">2009-2010</option>
+                        <option value="2011-2012">2011-2012</option>
+                        <option value="2013-2014">2013-2014</option>
+                        <option value="2015">2015</option>
+                        <option value="remove">Remove</option>
+                    </select>
                     <div class="wrap wrap-transitions draggable" id="USGSEvents-options-wrapper">
                         <div id="USGSEvents-options">
                             <div class="top-right-buttons">
