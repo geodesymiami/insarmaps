@@ -878,7 +878,9 @@ $(window).on("load", function() {
             $("#seismicity-chart-sliders").addClass("no-display");
         }
 
-        container.removeClass("maximized").addClass("minimized").addClass("only-show-slider");
+        var miniSliderHeight = $("#insar-chart-slider").height();
+        container.removeClass("maximized").addClass("minimized")
+        .addClass("only-show-slider").height(miniSliderHeight);
     });
 
     $("#graph-div-maximize-button").on("click", function() {
