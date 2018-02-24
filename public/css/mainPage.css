@@ -855,7 +855,6 @@ input[type=number] {
     bottom: 0%;
     height: 70%;
     width: 40%;
-    max-height: 500px;
 }
 
 #charts #insar-chart-slider {
@@ -869,11 +868,14 @@ input[type=number] {
 
 #charts.show-seismicity-sliders {
     min-height: 300px;
-    max-height: none;
 }
 
 #charts.active.only-show-slider #insar-chart-slider {
     display: block !important;
+}
+
+#hide-when-only-show-sliders {
+    height: 100%;
 }
 
 #charts.active.only-show-slider #hide-when-only-show-sliders {
@@ -1095,7 +1097,8 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     /* hide by default */
     display: none;
     width: 35%;
-    height: 35%;
+    max-height: 35%;
+    overflow-y: auto;
     position: absolute;
     z-index: 99;
     bottom: 0;
