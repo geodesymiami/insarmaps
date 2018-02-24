@@ -544,6 +544,7 @@ function MapController(loadJSONFunc) {
             // only draw graph after window finishes maximize animation
             var animationEvents = "webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend";
             var onAnimationEnd = function(event) {
+                this.graphsController.resizeChartContainers();
                 // make sure the chart exists and hasn't been deleted. we need this cause what if this event
                 // never fires, but we click on a new dataset, and this causes the div which contains all sliders
                 // to change size/animate? we could just remove this event when we select a new dataset, but I don't feel
