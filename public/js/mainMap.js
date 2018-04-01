@@ -1368,10 +1368,6 @@ function MapController(loadJSONFunc) {
                 }
             }
 
-            if (this.map.getSource("onTheFlyJSON")) {
-                this.removeSourceAndLayer("onTheFlyJSON");
-            }
-
             if (this.thirdPartySourcesController.midasArrows) {
                 this.thirdPartySourcesController.updateArrowLengths();
             }

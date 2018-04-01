@@ -151,8 +151,8 @@ function setupFeatureSelector() {
 
         // get the names of all the layers
         var pointLayers = this.map.getInsarLayers();
-
         var features = null;
+
         if (box) {
             var pixelBoundingBox = [this.map.map.project(box[0]), this.map.map.project(box[1])];
             features = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
@@ -173,9 +173,6 @@ function setupFeatureSelector() {
                 '). Please select a smaller number of features, zoom out, or zoom' + ' in to a smaller section of the map.');
             return;
         }
-
-        // time to recolor, hide base vector tile features so they don't show when recoloring
-        this.map.hideInsarLayers();
 
         if (this.map.map.getSource("onTheFlyJSON")) {
             this.map.removeSourceAndLayer("onTheFlyJSON");
@@ -321,3 +318,4 @@ function setupFeatureSelector() {
         return this.recoloringInProgress;
     };
 }
+

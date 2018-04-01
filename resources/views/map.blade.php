@@ -317,9 +317,6 @@
                     <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Datasets"></button>
                 </div>
                 <div class="maximize-button-container">
-                    <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Displacement timeseries" id="graph-div-maximize-button"></button>
-                </div>
-                <div class="maximize-button-container">
                     <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Attributes" id="area-attributes-div-maximize-button"></button>
                 </div>
             </div>
