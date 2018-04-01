@@ -1006,8 +1006,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 }
 
 #graph-div-minimize-button {
-    margin-right: 10px;
-    margin-top: 6px;
+    display: none;
 }
 
 .chart-containers {

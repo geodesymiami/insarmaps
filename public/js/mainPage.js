@@ -862,10 +862,14 @@ $(window).on("load", function() {
     // $(".wrap#area-attributes-div").tooltip("disable");
 
     $(".maximize-button").on("click", function() {
-        $(this).css("display", "none");
+        if (!$(this).hasClass("dont-hide-on-click")) {
+            $(this).css("display", "none");
+        }
     });
 
     $("#graph-div-minimize-button").on("click", function() {
+        $(this).css("display", "none");
+        $("#graph-div-maximize-button").css("display", "block");
         var container = $(".wrap#charts");
         if (container.hasClass("maximized")) {
             $("#graph-div-maximize-button").css("display", "block");
@@ -885,20 +889,18 @@ $(window).on("load", function() {
 
     $("#graph-div-maximize-button").on("click", function() {
         var container = $(".wrap#charts");
-        if (container.hasClass("minimized")) {
+
+        if (container.hasClass("minimized") && myMap.pointClicked()) {
             $(this).css("display", "none");
+            $("#graph-div-minimize-button").css("display", "block");
             container.css("display", "block");
             container.addClass("active");
             container.removeClass("minimized");
             container.addClass("maximized");
 
-            if (!myMap.pointClicked()) {
-                $("#chartContainer").html("<h2>Select a timeseries point</h2>")
-            }
+            $(".wrap#charts").resizable("enable");
+            $(".wrap#charts").draggable("enable");
         }
-
-        $(".wrap#charts").resizable("enable");
-        $(".wrap#charts").draggable("enable");
     });
 
     $("#area-attributes-div-maximize-button").on("click", function(

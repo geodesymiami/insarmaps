@@ -536,6 +536,8 @@ function MapController(loadJSONFunc) {
         $("#point-details").html(pointDetailsHtml);
 
         $("#search-form-and-results-minimize-button").click();
+        $("#graph-div-minimize-button").css("display", "block");
+        $("#graph-div-maximize-button").css("display", "none");
 
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "/point", function(response) {
@@ -635,7 +637,7 @@ function MapController(loadJSONFunc) {
     };
 
     this.pointClicked = function() {
-        return this.map.getLayer("Top Graph") || this.map.getLayer("Bottom Graph");
+        return this.map.getLayer("Top Graph") !== undefined || this.map.getLayer("Bottom Graph") !== undefined;
     };
 
     this.getSubsetFeatures = function(feature) {
