@@ -6,6 +6,7 @@
     <title>Insar Viewer - University of Miami</title>
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <link rel="stylesheet" href="/css/mainPage.css" />
+    <link rel="stylesheet" href="/css/mobile-mainPage.css" />
     <link rel="stylesheet" href="/css/autocomplete.css" />
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>

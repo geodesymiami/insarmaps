@@ -563,7 +563,11 @@ function MapController(loadJSONFunc) {
             // why isn't graphsController handling these showing of the graph divs
             // TODO: refactor
             $("#graph-div-maximize-button").click();
-            $("#charts").removeClass("only-show-slider").height("70%");
+            var height = "70%";
+            if (window.matchMedia("(max-width: 590px)").matches) {
+                height = "100%";
+            }
+            $("#charts").removeClass("only-show-slider").height(height);
             $("#hide-when-only-show-sliders").css("display", "block");
 
             // if graph isn't animating, we still want to draw chart. this means if it is animating,

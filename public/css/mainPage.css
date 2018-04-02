@@ -855,6 +855,7 @@ input[type=number] {
     bottom: 0%;
     height: 70%;
     width: 40%;
+    z-index: 100;
 }
 
 #charts #insar-chart-slider {
