@@ -1322,9 +1322,15 @@ function MapController(loadJSONFunc) {
                     $(".show-children-button#" + rowID).mouseover();
                     searchFormController.populateSubsetPopup(frameFeature, subsetFeatures);
                 }
+                var nameParts = frameFeature.properties.unavco_name.split("_");
+                var html = frameFeature.properties.unavco_name;
+                if (nameParts[nameParts.length - 1] === "XXXXXXXX") {
+                    var lastDate = new AreaAttributesController(this, frameFeature).getAttribute("last_date");
+                    html += "<br>Last Date: " + lastDate;
+                }
 
                 this.gpsStationNamePopup.setLngLat(e.lngLat)
-                    .setHTML(frameFeature.properties.unavco_name)
+                    .setHTML(html)
                     .addTo(this.map);
             } else if (!this.selector.selecting()) {
                 var featureViewOptions = this.thirdPartySourcesController.featureToViewOptions(features[0]);

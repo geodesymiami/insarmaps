@@ -197,7 +197,7 @@
             </div>
         </div>
         <!-- by default, it is toggled, or minimized -->
-        <div id="search-form-and-results-container" class="minimized">
+        <div id="search-form-and-results-container" class="maximized">
             <div id="search-form-results">
                 <section class="fixed-header-table">
                     <div class="fixed-header-table-container">
@@ -313,9 +313,6 @@
                 </div>
             </div>
             <div class="btn btn-primary active" id="insar-maximize-buttons-container">
-                <div class="maximize-button-container">
-                    <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-maximize-button" data-toggle="tooltip" title="Datasets"></button>
-                </div>
                 <div class="maximize-button-container">
                     <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Attributes" id="area-attributes-div-maximize-button"></button>
                 </div>

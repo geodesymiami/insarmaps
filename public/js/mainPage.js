@@ -940,16 +940,6 @@ $(window).on("load", function() {
         myMap.map.resize();
     });
 
-    $("#search-form-and-results-maximize-button").on("click", function() {
-        var container = $("#search-form-and-results-container");
-        if (container.hasClass("minimized")) {
-            $(this).css("display", "none");
-            container.css("display", "block");
-            container.removeClass("minimized");
-            container.addClass("maximized");
-        }
-    });
-
     // TODO: again, these minimize buttons are dying to be abstracted into a class along with
     // other toggable, 2 state items
     $("#seismicity-charts-minimize-button").on("click", function() {
@@ -1131,14 +1121,25 @@ $(window).on("load", function() {
     // TODO: need to consolidate this if has class pattern into Toggable Class
     // We can also have a class for square selector type square buttons if he wants more
     $("#dataset-frames-toggle-button").on("click", function() {
+        var $container = $("#search-form-and-results-container");
         if ($(this).hasClass("toggled")) {
             myMap.loadSwathsInCurrentViewport(true);
             $(this).attr("data-original-title", "Hide swaths");
             $(this).removeClass("toggled");
+            if ($container.hasClass("minimized")) {
+                $container.css("display", "block");
+                $container.removeClass("minimized");
+                $container.addClass("maximized");
+            }
         } else {
             myMap.removeAreaMarkers();
             $(this).attr("data-original-title", "Show swaths");
             $(this).addClass("toggled");
+            if ($container.hasClass("maximized")) {
+                $container.css("display", "none");
+                $container.removeClass("maximized");
+                $container.addClass("minimized");
+            }
         }
     });
 

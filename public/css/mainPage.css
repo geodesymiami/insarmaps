@@ -1093,8 +1093,6 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 }
 
 #search-form-and-results-container {
-    /* hide by default */
-    display: none;
     width: 35%;
     max-height: 35%;
     overflow-y: auto;
@@ -1107,7 +1105,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 }
 
 #search-form {
-    width: 20%;
+    width: 140px;
     float: left;
 }
 
