@@ -68,6 +68,8 @@ function MapController(loadJSONFunc) {
                 this.refreshDataset();
                 this.insarColorScaleValues.min = newMin;
                 this.insarColorScaleValues.max = newMax;
+            } else if (curMode === "gps") {
+                this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             }
         }
     }.bind(this));

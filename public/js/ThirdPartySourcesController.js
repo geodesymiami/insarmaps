@@ -89,7 +89,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.refreshmidasGpsStationMarkers = function() {
-        var stops = this.map.seismicityColorScale.getMapboxStops();
+        var stops = this.map.colorScale.getMapboxStops();
         if (this.map.map.getLayer("midas")) {
             this.map.map.setPaintProperty("midas", "circle-color", {
                 "property": 'v',
@@ -398,7 +398,7 @@ function ThirdPartySourcesController(map) {
                     var layerID = "midas";
                     mapboxStationFeatures.data.features = features.points;
                     this.map.addSource(layerID, mapboxStationFeatures);
-                    var stops = this.map.seismicityColorScale.getMapboxStops();
+                    var stops = this.map.colorScale.getMapboxStops();
                     var before = this.map.getLayerOnTopOf(layerID);
                     this.map.addLayer({
                         "id": layerID,
@@ -414,7 +414,7 @@ function ThirdPartySourcesController(map) {
                     }, before);
                 }
 
-                this.map.seismicityColorScale.setTitle("Vertical Velocity cm/yr");
+                this.map.colorScale.setTitle("Vertical Velocity cm/yr");
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {

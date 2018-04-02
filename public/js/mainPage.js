@@ -798,10 +798,9 @@ $(window).on("load", function() {
 
     $(".color-scale .color-scale-picture-div > .hidden-colorscale-click-area").on("click", function() {
         var scale = null;
-        var type = $(this).data("scale-type");
-        console.log(type);
+        var mode = myMap.getCurrentMode();
 
-        if (type === "insar") {
+        if (mode === "insar" || mode === "gps") {
             scale = myMap.colorScale;
             // do nothing
         } else {
@@ -823,8 +822,12 @@ $(window).on("load", function() {
         }
 
         // below line makes sure insar scale values are preserved if we are in a different mode...
-        myMap.insarColorScaleValues = { min: min, max: max };
-        myMap.refreshDataset();
+        if (mode === "insar") {
+            myMap.insarColorScaleValues = { min: min, max: max };
+            myMap.refreshDataset();
+        } else if (mode === "gps") {
+            myMap.thirdPartySourcesController.refreshmidasGpsStationMarkers();
+        }
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {
