@@ -895,6 +895,11 @@ function setupGraphsController() {
             } else {
                 this.map.selector.recolorDataset();
             }
+
+            var timeSlider = this.map.seismicityGraphsController.timeSlider;
+            if (timeSlider) {
+                timeSlider.setMinMax(e.min, e.max);
+            }
         }
     };
 
@@ -1894,8 +1899,6 @@ function setupCustomSliderSeismicityController() {
             if (seismicityDates.min > minMilliseconds && seismicityDates.min < maxMilliseconds) {
                 minMilliseconds = seismicityDates.min;
             }
-            this.map.graphsController.setNavigatorMinMax("chartContainer", minMilliseconds, maxMilliseconds);
-            this.map.graphsController.insarTimeSlider.setMinMax(minMilliseconds, maxMilliseconds);
         }
         this.map.thirdPartySourcesController.filterSeismicities([this.timeRange], "time");
 

@@ -1095,7 +1095,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 
 #search-form-and-results-container {
     width: 35%;
-    max-height: 35%;
+    max-height: 200px;
     overflow-y: auto;
     position: absolute;
     z-index: 99;
