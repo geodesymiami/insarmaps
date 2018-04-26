@@ -27,14 +27,13 @@ function Swath(map, satellite, width, feature, id) {
     };
 
     this.remove = function() {
-        if (this.map.map.getSource(this.id)) {
-            this.map.removeSource(this.id);
-            this.map.removeSource(this.polygonID)
-        }
-
         if (this.map.map.getLayer(this.id)) {
             this.map.removeLayer(this.id);
             this.map.removeLayer(this.polygonID);
+        }
+        if (this.map.map.getSource(this.id)) {
+            this.map.removeSource(this.id);
+            this.map.removeSource(this.polygonID)
         }
     };
 

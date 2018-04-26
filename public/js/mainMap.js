@@ -948,7 +948,9 @@ function MapController(loadJSONFunc) {
             tiles: data['tiles'],
             minzoom: data['minzoom'],
             maxzoom: data['maxzoom'],
-            bounds: data['bounds']
+            // TODO: implement, but not really needed as mapbox (in newer releases) doesnt throw exceptions
+            // when map viewport is outside available mbtiles coverage
+            // bounds: data['bounds']
         });
 
         var before = this.getLayerOnTopOf("chunk_1");
@@ -1454,11 +1456,11 @@ function MapController(loadJSONFunc) {
             return;
         }
 
-        this.removeSource("insar_vector_source");
 
         for (var i = 1; i <= currentArea.properties.num_chunks; i++) {
             this.removeLayer("chunk_" + i);
         }
+        this.removeSource("insar_vector_source");
 
         if (this.map.getSource("onTheFlyJSON")) {
             this.removeSourceAndLayer("onTheFlyJSON");
@@ -1677,12 +1679,11 @@ function MapController(loadJSONFunc) {
     };
 
     this.removeSourceAndLayer = function(name) {
-        if (this.map.getSource(name)) {
-            this.removeSource(name);
-        }
-
         if (this.map.getLayer(name)) {
             this.removeLayer(name);
+        }
+        if (this.map.getSource(name)) {
+            this.removeSource(name);
         }
     };
 
