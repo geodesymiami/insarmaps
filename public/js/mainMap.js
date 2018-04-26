@@ -713,7 +713,7 @@ function MapController(loadJSONFunc) {
             ],
             "bounds": null,
             "tiles": [
-                "http://129.171.60.12:8888/" + feature.properties.unavco_name +
+                "https://129.171.60.12:8888/" + feature.properties.unavco_name +
                 "/{z}/{x}/{y}.pbf"
             ],
             "vector_layers": []
@@ -881,7 +881,7 @@ function MapController(loadJSONFunc) {
         if (mapType === "google-satellite") {
             delete sources["raster-tiles"]["url"];
             sources["raster-tiles"]["tiles"] = [
-                "http://mt.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+                "https://mt.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
             ];
         }
 

@@ -615,8 +615,8 @@
     <script type="text/javascript" src="/js/regression.js"></script>
     <script type="text/javascript" src="/js/canvasjs.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.3/js/jquery.tablesorter.min.js"></script>
-    <script src="http://code.highcharts.com/stock/highstock.js"></script>
-    <script src="http://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
     <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js">
     </script>
     <script type="text/javascript" src="/js/fuse.js"></script>
