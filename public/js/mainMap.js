@@ -1280,12 +1280,18 @@ function MapController(loadJSONFunc) {
         this.setBaseMapLayer("streets");
 
         this.map.addControl(new mapboxgl.NavigationControl());
-        this.map.addControl(new mapboxgl.GeolocateControl({
+        var geoLocator = new mapboxgl.GeolocateControl({
             positionOptions: {
-                enableHighAccuracy: true
+                enableHighAccuracy: true,
+                timeout: 30000 // 30 secs
             },
             trackUserLocation: true
-        }));
+        });
+        geoLocator.on("error", function(error) {
+            var errStr = "There was an error activating the gps feature.\nHere is the error:\n\n\"" + error.message + "\"\n\nPlease try again.";
+            window.alert(errStr);
+        });
+        this.map.addControl(geoLocator);
 
         // disable rotation gesture
         this.map.dragRotate.disable();
