@@ -24,7 +24,7 @@ class ThirdPartyDataNoCorsController extends Controller {
     }
 
     public function getHawaiiReloc() {
-        return file_get_contents("http://www.rsmas.miami.edu/personal/glin/Hawaii_files/out.reloc_release");
+        return file_get_contents("http://yyy.rsmas.miami.edu/users/glin/Hawaii_files/out.reloc_release");
     }
 
     public function getLongValleyReloc() {
