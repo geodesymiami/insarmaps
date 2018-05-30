@@ -190,6 +190,9 @@ class GeoJSONController extends Controller {
         }
     }
 
+    // TODO: the below is unsafe. prevent SQL injection by checking table exists in areas table...
+    // TODO: did a rough search in class and didnt find other points of SQL injection. but try to do a more careful
+    // search
     private function getAttributesForAreas($areas, $table) {
         $sql = "SELECT * FROM " . $table;
         $preparedValues = [];
