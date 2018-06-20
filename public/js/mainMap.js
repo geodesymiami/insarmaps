@@ -1376,6 +1376,15 @@ function MapController(loadJSONFunc) {
                 }
             }
 
+            if (this.map.getSource("onTheFlyJSON")) {
+                var pointLayers = this.getInsarLayers();
+                this.showInsarLayers();
+                this.onceRendered(function() {
+                    this.selector.recolorDataset();
+                    this.hideInsarLayers();
+                }.bind(this));
+            }
+
             if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled") && mode !== "seismicity") {
                 this.loadSwathsInCurrentViewport(true);
             }

@@ -152,14 +152,6 @@ function setupFeatureSelector() {
         // get the names of all the layers
         var pointLayers = this.map.getInsarLayers();
         var features = null;
-        var haveOnTheFlyJSON = false;
-
-        // recolor on the fly json itself if it is there, so we dont have to show original colormap
-        // to get rendered features
-        if (this.map.map.getSource("onTheFlyJSON")) {
-            haveOnTheFlyJSON = true;
-            pointLayers = ["onTheFlyJSON"];
-        }
 
         if (box) {
             var pixelBoundingBox = [this.map.map.project(box[0]), this.map.map.project(box[1])];
@@ -173,15 +165,6 @@ function setupFeatureSelector() {
         if (!features || features.length == 0) {
             return;
         }
-
-        var MAX_FEATURES_TO_RECOLOR = 60000;
-        if (features.length >= MAX_FEATURES_TO_RECOLOR) {
-            window.alert('Recoloring ' + features.length +
-                ' features (max ' + MAX_FEATURES_TO_RECOLOR +
-                '). Please select a smaller number of features, zoom out, or zoom' + ' in to a smaller section of the map.');
-            return;
-        }
-
 
         var geoJSONData = {
             "type": "FeatureCollection",
@@ -251,8 +234,10 @@ function setupFeatureSelector() {
                         var curFeature = geoJSONData.features[i];
                         curFeature.properties.m = parseFloat(json[i]) * multiplier; // useful to get other derivatives such as position instead of velocity
                     }
-                    if (haveOnTheFlyJSON) {
-                        this.map.map.getSource("onTheFlyJSON").setData(geoJSONData);
+
+                    var geoJSONSource = this.map.map.getSource("onTheFlyJSON");
+                    if (geoJSONSource) {
+                        geoJSONSource.setData(geoJSONData);
                     } else {
                         this.map.onceRendered(function() {
                             this.map.hideInsarLayers();
@@ -301,7 +286,7 @@ function setupFeatureSelector() {
                 console.log("failed " + xhr.responseText);
                 this.map.showInsarLayers();
                 this.doneRecoloring();
-            },
+            }.bind(this),
             requestHeader: {
                 'Content-type': 'application/x-www-form-urlencoded'
             },
