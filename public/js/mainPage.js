@@ -637,7 +637,7 @@ $(window).on("load", function() {
     // and of graphs controllers
     GraphsController.prototype = new AbstractGraphsController();
     SeismicityGraphsController.prototype = new AbstractGraphsController();
-    CustomHighchartsSlider.prototype = new AbstractGraphsController();
+    CustomHighchartsSlider.prototype = new AbstractGraphsController();// TODO: a slider inheriting from a controller? seems weird. fix this inheritance to be more logical
     CustomSliderSeismicityController.prototype = new SeismicityGraphsController();
     SeismicityToggleButton.prototype = new ToggleButton();
     myMap = new MapController(loadJSON);

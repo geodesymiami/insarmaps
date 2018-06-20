@@ -152,6 +152,14 @@ function setupFeatureSelector() {
         // get the names of all the layers
         var pointLayers = this.map.getInsarLayers();
         var features = null;
+        var haveOnTheFlyJSON = false;
+
+        // recolor on the fly json itself if it is there, so we dont have to show original colormap
+        // to get rendered features
+        if (this.map.map.getSource("onTheFlyJSON")) {
+            haveOnTheFlyJSON = true;
+            pointLayers = ["onTheFlyJSON"];
+        }
 
         if (box) {
             var pixelBoundingBox = [this.map.map.project(box[0]), this.map.map.project(box[1])];
@@ -174,9 +182,6 @@ function setupFeatureSelector() {
             return;
         }
 
-        if (this.map.map.getSource("onTheFlyJSON")) {
-            this.map.removeSourceAndLayer("onTheFlyJSON");
-        }
 
         var geoJSONData = {
             "type": "FeatureCollection",
@@ -240,74 +245,76 @@ function setupFeatureSelector() {
 
                 if (arrayBuffer) {
                     var json = new Float64Array(arrayBuffer);
-                    if (this.cancelRecoloring) {
-                        this.cancelRecoloring = false;
-                        return;
-                    }
                     console.log("Received points");
 
                     for (var i = 0; i < geoJSONData.features.length; i++) {
                         var curFeature = geoJSONData.features[i];
                         curFeature.properties.m = parseFloat(json[i]) * multiplier; // useful to get other derivatives such as position instead of velocity
                     }
-                    if (this.map.map.getSource("onTheFlyJSON")) {
-                        this.map.removeSource("onTheFlyJSON");
-                        this.map.removeLayer("onTheFlyJSON");
-                    }
-                    this.map.addSource("onTheFlyJSON", {
-                        "type": "geojson",
-                        "data": geoJSONData
-                    });
+                    if (haveOnTheFlyJSON) {
+                        this.map.map.getSource("onTheFlyJSON").setData(geoJSONData);
+                    } else {
+                        this.map.onceRendered(function() {
+                            this.map.hideInsarLayers();
+                        }.bind(this));
+                        this.map.addSource("onTheFlyJSON", {
+                            "type": "geojson",
+                            "data": geoJSONData
+                        });
 
-                    var before = this.map.getLayerOnTopOf("onTheFlyJSON");
-                    // always use the insar color scale values for coloring on the fly...
-                    var min = this.map.insarColorScaleValues.min;
-                    var max = this.map.insarColorScaleValues.max;
-                    var stops = this.map.colorScale.stopsCalculator.colorsToMapboxStops(min, max, this.map.colorScale.currentScale);
-                    this.map.addLayer({
-                        "id": "onTheFlyJSON",
-                        "type": "circle",
-                        "source": "onTheFlyJSON",
-                        "paint": {
-                            'circle-color': {
-                                property: 'm',
-                                stops: stops
-                            },
-                            'circle-radius': {
-                                // for an explanation of this array see here:
-                                // https://www.mapbox.com/blog/data-driven-styling/
-                                stops: [
-                                    [5, 2],
-                                    [8, 2],
-                                    [13, 8],
-                                    [21, 16],
-                                    [34, 32]
-                                ]
+                        var before = this.map.getLayerOnTopOf("onTheFlyJSON");
+                        // always use the insar color scale values for coloring on the fly...
+                        var min = this.map.insarColorScaleValues.min;
+                        var max = this.map.insarColorScaleValues.max;
+                        var stops = this.map.colorScale.stopsCalculator.colorsToMapboxStops(min, max, this.map.colorScale.currentScale);
+                        this.map.addLayer({
+                            "id": "onTheFlyJSON",
+                            "type": "circle",
+                            "source": "onTheFlyJSON",
+                            "paint": {
+                                'circle-color': {
+                                    property: 'm',
+                                    stops: stops
+                                },
+                                'circle-radius': {
+                                    // for an explanation of this array see here:
+                                    // https://www.mapbox.com/blog/data-driven-styling/
+                                    stops: [
+                                        [5, 2],
+                                        [8, 2],
+                                        [13, 8],
+                                        [21, 16],
+                                        [34, 32]
+                                    ]
+                                }
                             }
-                        }
-                    }, before);
+                        }, before);
+                    }
                 } else {
                     window.alert("Server encountered an error");
                 }
 
                 this.recoloringInProgress = false;
-                this.map.showInsarLayers();
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed " + xhr.responseText);
                 this.map.showInsarLayers();
-                hideLoadingScreen();
+                this.doneRecoloring();
             },
             requestHeader: {
                 'Content-type': 'application/x-www-form-urlencoded'
             },
             responseType: "arraybuffer"
         }, function() {
-            this.cancelRecoloring = true;
             this.map.showInsarLayers();
-            hideLoadingScreen();
+            this.doneRecoloring();
         }.bind(this));
+    };
+
+    FeatureSelector.prototype.doneRecoloring = function() {
+        hideLoadingScreen();
+        this.recoloringInProgress = false;
     };
 
     FeatureSelector.prototype.recolorDataset = function() {
