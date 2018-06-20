@@ -1,4 +1,3 @@
-import time
 import os
 import sys
 from os import listdir
