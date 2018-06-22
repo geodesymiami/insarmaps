@@ -340,6 +340,19 @@ function MapController(loadJSONFunc) {
         }.bind(this));
     };
 
+    this.insarLayersHidden = function() {
+        var insarLayers = this.getInsarLayers();
+        var allHidden = true;
+
+        insarLayers.forEach(function(layerID) {
+            if (this.map.getLayoutProperty(layerID, "visibility") === "visible") {
+                allHidden = false;
+            }
+        }.bind(this));
+
+        return allHidden;
+    };
+
     this.getTopMostSeismicitySource = function() {
         var allSources = Array.from(this.sources);
 
@@ -1378,11 +1391,12 @@ function MapController(loadJSONFunc) {
 
             if (this.map.getSource("onTheFlyJSON")) {
                 var pointLayers = this.getInsarLayers();
-                this.showInsarLayers();
                 this.onceRendered(function() {
                     this.selector.recolorDataset();
                     this.hideInsarLayers();
                 }.bind(this));
+                showLoadingScreen("Rendering at new zoom level", null);
+                this.showInsarLayers();
             }
 
             if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled") && mode !== "seismicity") {
@@ -1549,6 +1563,7 @@ function MapController(loadJSONFunc) {
 
         this.removeAreaPopups();
         $("#search-form-and-results-minimize-button").click();
+        $("#charts").removeClass("active");
         this.seismicityGraphsController.hideChartContainers();
 
         $("#point-details").empty();

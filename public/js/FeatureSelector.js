@@ -150,8 +150,11 @@ function setupFeatureSelector() {
         //  wait if they cancel a recoloring and want to do another one
 
         // get the names of all the layers
-        var pointLayers = this.map.getInsarLayers();
+        var pointLayers = ["onTheFlyJSON"];
         var features = null;
+        if (!this.map.insarLayersHidden()) {
+            pointLayers = this.map.getInsarLayers();
+        }
 
         if (box) {
             var pixelBoundingBox = [this.map.map.project(box[0]), this.map.map.project(box[1])];
