@@ -307,10 +307,12 @@ function MapController(loadJSONFunc) {
         this.afterLayersChanged(newLayer.id);
     };
 
-    this.removeLayer = function(id) {
+    this.removeLayer = function(id, callAfterLayersChanged = true) {
         this.layers_.delete(id);
         this.map.removeLayer(id);
-        this.afterLayersChanged(id);
+        if (callAfterLayersChanged) {
+            this.afterLayersChanged(id);
+        }
     };
 
     this.getInsarLayers = function() {
@@ -1716,11 +1718,27 @@ function MapController(loadJSONFunc) {
     };
 
     this.removeSourceAndLayer = function(name) {
+        var removedLayer = false;
+        // in removeLayer, pass in false so afterLayersChanged isn't called inside that
+        // method. why? because afterLayersChanged relies on getCurrentMode, which in turn
+        // relies on the order of sources on the map. thus, if we remove the layer first
+        // and then call afterlayers changed, it will create an inconsistency if the layer
+        // has been removed, but the corresponding source still hasn't. we can't base
+        // getCurrentMode on the order of layers beacause we dont stack layers on top of each other
+        // but arrange them in a specified order such that some layers might never be the topmost layer
+        // if added last but there is another layer enabled which supercedes that layer on the map stack.
+        // TODO: consider renaming afterLayersChanged to something like setCurrentMapMode and don't call it
+        // in either removeLayer or setLayer... either call it in both or neither...
         if (this.map.getLayer(name)) {
-            this.removeLayer(name);
+            this.removeLayer(name, false);
+            removedLayer = true;
         }
         if (this.map.getSource(name)) {
             this.removeSource(name);
+        }
+
+        if (removedLayer) {
+            this.afterLayersChanged(name);
         }
     };
 
