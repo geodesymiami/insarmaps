@@ -1398,7 +1398,7 @@ function MapController(loadJSONFunc) {
                 }
             }
 
-            if (this.map.getSource("onTheFlyJSON")) {
+            if (this.map.getSource("onTheFlyJSON") && !this.pointClicked()) {
                 var pointLayers = this.getInsarLayers();
                 this.onceRendered(function() {
                     this.selector.recolorDataset();
