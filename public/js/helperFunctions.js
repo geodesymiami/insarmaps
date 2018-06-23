@@ -1,4 +1,5 @@
-// take an array of displacement values and return velocity standard deviation (confuses the heck out of me)
+const MILLISECONDS_PER_YEAR = 365 * 24 * 60 * 60 * 1000;
+// take an array of displacement values and return velocity standard deviation
 var getStandardDeviation = function(displacements, slope) {
     var v_std = 0.0;
     for (i = 0; i < displacements.length; i++) {
@@ -9,9 +10,10 @@ var getStandardDeviation = function(displacements, slope) {
 
 // falk's date string is in format yyyymmdd - ex: 20090817 
 var customDateStringToJSDate = function(dateString) {
-    var year = dateString.substr(0, 4);
-    var month = dateString.substr(4, 2);
-    var day = dateString.substr(6, 2);
+    var year = parseInt(dateString.substr(0, 4));
+    var month = parseInt(dateString.substr(4, 2));
+    var day = parseInt(dateString.substr(6, 2));
+
     return new Date(year, month - 1, day);
 }
 
@@ -85,11 +87,9 @@ function getRegressionChartData(slope, y, decimal_dates, chart_data) {
 function getDisplacementChartData(displacements, dates) {
     var data = [];
     for (i = 0; i < dates.length; i++) {
-        var year = parseInt(dates[i].toString().substr(0, 4));
-        var month = parseInt(dates[i].toString().substr(4, 2));
-        var day = parseInt(dates[i].toString().substr(6, 2));
-        data.push([Date.UTC(year, month - 1, day), displacements[i]]);
+        data.push([customDateStringToJSDate(dates[i]).getTime(), displacements[i]]);
     }
+
     return data;
 }
 

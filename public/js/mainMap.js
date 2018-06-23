@@ -770,6 +770,9 @@ function MapController(loadJSONFunc) {
         $("#charts").addClass("only-show-slider").addClass("active");
         $("#hide-when-only-show-sliders").css("display", "none");
         this.graphsController.createInsarSliderForDataset(currentArea);
+        if (initialZoom) {
+            this.zoomOutZoom = initialZoom;
+        }
 
         this.map.once("data", function(event) {
             this.removeAreaMarkersThroughButton();
@@ -1203,7 +1206,7 @@ function MapController(loadJSONFunc) {
             for (var i = 0; i < this.allAreas.length; i++) {
                 if (this.allAreas[i].properties.unavco_name === options.startDataset) {
                     showLoadingScreen("Loading requested dataset...", null);
-                    this.loadDatasetFromFeature(this.allAreas[i], options.zoom);
+                    this.loadDatasetFromFeature(this.allAreas[i], urlOptions.startingView.zoom);
                     break;
                 }
             }
@@ -1378,7 +1381,11 @@ function MapController(loadJSONFunc) {
             var mode = this.getCurrentMode();
 
             // reshow area markers once we zoom out enough
-            if (currentZoom < this.zoomOutZoom) {
+            // add a small negative episolon to account for rounding errors...
+            // example if we set an initial map zoom of 6, zoomend gets called with
+            // a zoom of 5.9999999999999996 etc which makes the map instantly reset when
+            // initial zoom is supplied
+            if (currentZoom < (this.zoomOutZoom - 1e-8)) {
                 if (this.pointsLoaded()) {
                     this.reset();
                     // otherwise, points aren't loaded, but area previously was active
