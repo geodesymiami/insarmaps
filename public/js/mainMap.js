@@ -548,9 +548,9 @@ function MapController(loadJSONFunc) {
             }
         });
 
-        var pointDetailsHtml = lat.toFixed(5) + ", " + long.toFixed(5);
+        var pointDetailsHtml = lat.toFixed(3) + ", " + long.toFixed(3);
 
-        $("#point-details").html(pointDetailsHtml);
+        $("#point-details > .row > #clicked-point-lat-lng").html(pointDetailsHtml);
 
         $("#search-form-and-results-minimize-button").click();
         $("#graph-div-minimize-button").css("display", "block");
@@ -597,8 +597,8 @@ function MapController(loadJSONFunc) {
             }, function(results, status) {
                 if (status === google.maps.ElevationStatus.OK) {
                     // redundant but to avoid race conditions between two successive clicks
-                    $("#point-details").html(pointDetailsHtml);
-                    $("#point-details").append("<br>Elevation: " + results[0].elevation.toFixed(0) + " meters");
+                    $("#point-details > .row > #clicked-point-lat-lng").html(pointDetailsHtml);
+                    $("#point-details > .row > #clicked-point-lat-lng").append("<br>Elevation: " + results[0].elevation.toFixed(0) + " meters");
                 } else {
                     console.log(status);
                 }
@@ -1325,6 +1325,9 @@ function MapController(loadJSONFunc) {
         //this.map.on("contextmenu", this.rightClickOnAPoint);
 
         this.map.on('mousemove', function(e) {
+            var lat = e.lngLat.lat.toFixed(3);
+            var lng = e.lngLat.lng.toFixed(3);
+            $("#point-details > .row > #mouse-move-lat-lng").html(lat + ", " + lng);
             var features = this.map.queryRenderedFeatures(e.point);
 
             // mouse not under a marker, clear all popups
@@ -1575,7 +1578,7 @@ function MapController(loadJSONFunc) {
         $("#charts").removeClass("active");
         this.seismicityGraphsController.hideChartContainers();
 
-        $("#point-details").empty();
+        $("#point-details > .row > #clicked-point-lat-lng").empty();
 
         overlayToggleButton.set("off");
         this.tileJSON = null;

@@ -300,7 +300,14 @@
                 </div>
             </div>
         </div>
-        <div id="point-details"></div>
+        <div id="point-details">
+            <div class="row">
+                <div class="col-sm-6" id="mouse-move-lat-lng">
+                </div>
+                <div class="col-sm-6" id="clicked-point-lat-lng">
+                </div>
+            </div>
+        </div>
         <div class="maximize-buttons-container">
             <div class="btn btn-primary" id="seismicity-maximize-buttons-container">
                 <div class="maximize-button-container">

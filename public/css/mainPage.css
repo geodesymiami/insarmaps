@@ -1076,6 +1076,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     left: 0px;
     background-color: white;
     opacity: 0.6;
+    width: 280px;
 }
 
 #hidden-search-bars-container {
