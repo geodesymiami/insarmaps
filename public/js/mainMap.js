@@ -64,7 +64,7 @@ function MapController(loadJSONFunc) {
         var curMode = this.getCurrentMode();
 
         if (curMode) { // no mode (ie essentially empty map)
-            if (curMode === "insar" && this.pointsLoaded()) {
+            if (this.pointsLoaded()) {
                 this.refreshDataset();
                 this.insarColorScaleValues.min = newMin;
                 this.insarColorScaleValues.max = newMax;
@@ -570,7 +570,7 @@ function MapController(loadJSONFunc) {
                 // like copying animation events and removal code etc again... i also dont feel like making animationevents
                 // nor the callback global variables when a simple if will fix the issues/exceptions...
                 if (this.graphsController.chartExists(chartContainer)) {
-                    this.graphsController.JSONToGraph(json, chartContainer, e);
+                    this.graphsController.JSONToGraph(currentArea, json, chartContainer, e);
                 }
                 $("#charts").off(animationEvents, null, onAnimationEnd);
             }.bind(this);
@@ -588,7 +588,7 @@ function MapController(loadJSONFunc) {
             // if graph isn't animating, we still want to draw chart. this means if it is animating,
             // it will draw twice, but logic to prevent this would have made code messy for a premature
             // optimization...
-            this.graphsController.JSONToGraph(json, chartContainer, e);
+            this.graphsController.JSONToGraph(currentArea, json, chartContainer, e);
 
             // request elevation of point from google api
             var elevationGetter = new google.maps.ElevationService;
@@ -1471,8 +1471,7 @@ function MapController(loadJSONFunc) {
     this.colorDatasetOnVelocity = function() {
         this.colorOnDisplacement = false;
         if (this.map.getSource("onTheFlyJSON")) {
-            this.removeSource("onTheFlyJSON");
-            this.removeLayer("onTheFlyJSON");
+            this.removeSourceAndLayer("onTheFlyJSON");
         }
         this.colorScale.setTitle("LOS Velocity [cm/yr]");
     };
@@ -1567,6 +1566,9 @@ function MapController(loadJSONFunc) {
         this.thirdPartySourcesController.removeAll();
 
         this.colorDatasetOnVelocity();
+        if ($("#dataset-frames-toggle-button").hasClass("toggled")) {
+            $("#dataset-frames-toggle-button").click();
+        }
 
         var json = {
             "areas": this.allAreas
@@ -1574,7 +1576,7 @@ function MapController(loadJSONFunc) {
         this.addSwathsFromJSON(json, null, true, false);
 
         this.removeAreaPopups();
-        $("#search-form-and-results-minimize-button").click();
+        $("#search-form-and-results-container").css("display", "block");
         $("#charts").removeClass("active");
         this.seismicityGraphsController.hideChartContainers();
 

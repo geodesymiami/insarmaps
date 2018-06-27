@@ -250,7 +250,7 @@ function setupGraphsController() {
         }
     };
 
-    GraphsController.prototype.JSONToGraph = function(json, chartContainer, clickEvent) {
+    GraphsController.prototype.JSONToGraph = function(area, json, chartContainer, clickEvent) {
         var date_string_array = json.string_dates;
         var date_array = convertStringsToDateArray(date_string_array);
         var decimal_dates = json.decimal_dates;
@@ -301,7 +301,10 @@ function setupGraphsController() {
         // TODO: use getBasicChartJSON function instead of hard coding
         var chartOpts = {
             title: {
-                text: null
+                text: unavcoNameToShorterName(currentArea),
+                style: {
+                    "font-size": "10px"
+                }
             },
             subtitle: {
                 text: "velocity: " + (slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"

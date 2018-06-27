@@ -24,6 +24,13 @@ function DivState() {
     this.animating = false;
 }
 
+function unavcoNameToShorterName(area) {
+    var attributesController = new AreaAttributesController(myMap, area);
+    var areaAttributes = attributesController.getAllAttributes();
+    var first_frame = areaAttributes.first_frame ? areaAttributes.first_frame : areaAttributes.frame;
+
+    return (areaAttributes.mission + " " + areaAttributes.beam_mode + " " + areaAttributes.relative_orbit + " " + first_frame + " " + areaAttributes.flight_direction);
+}
 // TODO: make a popup super class and consolidate all popups in here
 // also, stick to either active class or minimized/maximized class to denote whether
 // popup is shown or not. right now, using one of the two has led to inconsistent code
@@ -101,8 +108,7 @@ function AreaAttributesPopup() {
             }
         }
 
-        var first_frame = areaAttributes.first_frame ? areaAttributes.first_frame : areaAttributes.frame;
-        var name = areaAttributes.mission + " " + areaAttributes.relative_orbit + " " + first_frame + " " + areaAttributes.beam_mode + " " + areaAttributes.flight_direction;
+        var name = unavcoNameToShorterName(area);
 
         if (attributesController.areaHasPlotAttribute("plot.name")) {
             name = attributesController.getPlotAttribute("plot.name");
@@ -620,8 +626,6 @@ function showBrowserAlert() {
 }
 // when site loads, turn toggle on
 $(window).on("load", function() {
-    showBrowserAlert();
-
     $(window).on('hashchange', function(e) {
         history.replaceState("", document.title, e.originalEvent.oldURL);
     });
@@ -744,14 +748,13 @@ $(window).on("load", function() {
         var title = $(this).attr("data-original-title");
 
         myMap.colorScale.setTopAsMax(false);
-        var curMode = myMap.getCurrentMode();
-        if (curMode === "insar") {
+        if (myMap.pointsLoaded()) {
             if (title === "Color on displacement") {
                 if (!currentArea) {
                     return;
                 }
 
-                var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.decimal_dates));
+                var dates = convertStringsToDateArray((new AreaAttributesController(myMap, currentArea)).getAttribute("string_dates"));
                 var startDate = dates[0];
                 var endDate = dates[dates.length - 1];
                 if (myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
@@ -763,6 +766,7 @@ $(window).on("load", function() {
                 $(this).attr("data-original-title", "Color on velocity");
             } else if (title === "Color on velocity") {
                 myMap.colorDatasetOnVelocity();
+                myMap.showInsarLayers();
                 $(this).attr("data-original-title", "Color on displacement");
             }
         }
@@ -800,12 +804,7 @@ $(window).on("load", function() {
         var scale = null;
         var mode = myMap.getCurrentMode();
 
-        if (mode === "insar" || mode === "gps") {
-            scale = myMap.colorScale;
-            // do nothing
-        } else {
-            return;
-        }
+        scale = myMap.colorScale;
 
         var min = scale.min;
         var max = scale.max;
@@ -822,7 +821,7 @@ $(window).on("load", function() {
         }
 
         // below line makes sure insar scale values are preserved if we are in a different mode...
-        if (mode === "insar") {
+        if (myMap.pointsLoaded()) {
             myMap.insarColorScaleValues = { min: min, max: max };
             myMap.refreshDataset();
         } else if (mode === "gps") {

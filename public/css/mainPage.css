@@ -768,6 +768,10 @@ div.menu {
     cursor: pointer;
 }
 
+#seismicity-color-scale {
+    padding-left: 5px;
+}
+
 .scale-click-area-invisible-top-half {
     top: 0;
 }
@@ -1131,7 +1135,8 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 #subset-swath-popup {
     position: absolute;
     display: none;
-    height: 30%;
+    max-height: 200px;
+    overflow-y: auto;
     width: 50%;
     bottom: 0;
     overflow-y: auto;
