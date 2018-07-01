@@ -920,9 +920,20 @@ function MapController(loadJSONFunc) {
 
     this.addReferencePoint = function(area) {
         var attributesController = new AreaAttributesController(this, area);
-        if (attributesController.areaHasAttribute("ref_lon") && attributesController.areaHasAttribute("ref_lat")) {
-            var refLon = attributesController.getAttribute("ref_lon");
-            var refLat = attributesController.getAttribute("ref_lat");
+        var oldRefLon = attributesController.getAttribute("ref_lon");
+        var newRefLon = attributesController.getAttribute("REF_LON");
+        var oldRefLat = attributesController.getAttribute("ref_lat");
+        var newRefLat = attributesController.getAttribute("REF_LAT");
+        if ((oldRefLon && oldRefLat) || (newRefLon && newRefLat)) {
+            var refLon = null;
+            var refLat = null;
+            if (oldRefLon && oldRefLat) {
+                refLon = oldRefLon;
+                refLat = oldRefLat;
+            } else {
+                refLon = newRefLon;
+                refLat = newRefLat;
+            }
 
             var referencePointSource = {
                 type: "geojson",
