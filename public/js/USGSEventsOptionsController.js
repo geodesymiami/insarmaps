@@ -7,7 +7,11 @@ function USGSEventsOptionsController(divID) {
     	var now = new Date();
         var startDate = new Date();
         startDate.setFullYear(now.getFullYear() - 2);
-        var nowString = $.datepicker.formatDate("yy-M-d", now);
+        this.populateDateInputsFromDates(startDate, now);
+    };
+
+    this.populateDateInputsFromDates = function(startDate, endDate) {
+        var nowString = $.datepicker.formatDate("yy-M-d", endDate);
         var startDateString = $.datepicker.formatDate("yy-M-d", startDate);
 
         $("#" + this.divID + " .start-date").val(startDateString);

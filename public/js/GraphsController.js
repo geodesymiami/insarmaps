@@ -2002,22 +2002,6 @@ function setupCustomSliderSeismicityController() {
         var minDepth = depthValues[0];
         var maxMilliseconds = millisecondValues[millisecondValues.length - 1];
         var minMilliseconds = millisecondValues[0];
-        // if insar is up, set seismicity scale dates to that of the current insar dates
-        if (this.map.pointsLoaded()) {
-            var attributesController = new AreaAttributesController(this.map, currentArea);
-            var string_dates = attributesController.getAttribute("string_dates");
-            var minDate = customDateStringToJSDate(string_dates[this.map.selector.minIndex]);
-
-            var dateDiffFromNow = (new Date()) - (new Date(attributesController.getAttribute("last_date")));
-            var yearsElapsed = dateDiffFromNow / MILLISECONDS_PER_YEAR;
-            var maxDate = customDateStringToJSDate(string_dates[this.map.selector.maxIndex]);
-            if (yearsElapsed < 1.0) {
-                maxDate = new Date(); // now
-            }
-            minMilliseconds = minDate.getTime();
-            maxMilliseconds = maxDate.getTime();
-        }
-
         this.timeSlider.setMinMax(minMilliseconds, maxMilliseconds);
         this.depthSlider.setMinMax(minDepth, maxDepth);
     };

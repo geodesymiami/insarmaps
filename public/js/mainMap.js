@@ -563,7 +563,14 @@ function MapController(loadJSONFunc) {
             // only draw graph after window finishes maximize animation
             var animationEvents = "webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend";
             var onAnimationEnd = function(event) {
-                this.graphsController.resizeChartContainers();
+                if (!this.pointsLoaded()) {
+                    return;
+                }
+                // dont resize charts if animation event triggered but we are displaying insar mini slider...
+                // TODO: this animation stuff really needs to be refactored, it is frightening currently and very hackish
+                if (!$("#charts").hasClass("only-show-slider")) {
+                    this.graphsController.resizeChartContainers();
+                }
                 // make sure the chart exists and hasn't been deleted. we need this cause what if this event
                 // never fires, but we click on a new dataset, and this causes the div which contains all sliders
                 // to change size/animate? we could just remove this event when we select a new dataset, but I don't feel
@@ -993,6 +1000,18 @@ function MapController(loadJSONFunc) {
                     }
                 }
             }
+            // set USGS events form start and end dates to that of the current insar dates
+            var attributesController = new AreaAttributesController(this, feature);
+            var firstDate = new Date(attributesController.getAttribute("first_date"));
+            var lastDate = new Date(attributesController.getAttribute("last_date"));
+            var now = new Date();
+
+            var dateDiffFromNow = now - lastDate;
+            var yearsElapsed = dateDiffFromNow / MILLISECONDS_PER_YEAR;
+            if (yearsElapsed < 1.0) {
+                lastDate = now;
+            }
+            this.thirdPartySourcesController.USGSEventsOptionsController.populateDateInputsFromDates(firstDate, lastDate);
 
             this.addLayer(layer, before);
         }.bind(this));
@@ -1000,6 +1019,7 @@ function MapController(loadJSONFunc) {
         if (referencePointToggleButton.toggleState == ToggleStates.ON) {
             this.addReferencePoint(feature);
         }
+        $("#charts").height("auto");
     };
 
     this.polygonToLineString = function(polygonGeoJSON) {
