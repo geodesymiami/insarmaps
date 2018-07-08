@@ -308,7 +308,7 @@
                 </div>
             </div>
         </div>
-        <div class="maximize-buttons-container">
+        <div class="maximize-buttons-container hidden">
             <div class="btn btn-primary" id="seismicity-maximize-buttons-container">
                 <div class="maximize-button-container">
                     <button type="button" class="maximize-button" data-dismiss="modal" id="seismicity-chart-sliders-maximize-button" data-toggle="tooltip" title="Seismicity plot sliders"></button>

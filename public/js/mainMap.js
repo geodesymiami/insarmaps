@@ -173,6 +173,12 @@ function MapController(loadJSONFunc) {
             return;
         }
 
+        if (this.pointsLoaded() || (curMode && curMode === "seismicity")) {
+            $(".maximize-buttons-container").removeClass("hidden");
+        } else {
+            $(".maximize-buttons-container").addClass("hidden");
+        }
+
         $("#magnitude-scale").removeClass("active");
         $("#arrow-length-scale").removeClass("active");
         // this is all quick and dirty.
@@ -1515,7 +1521,13 @@ function MapController(loadJSONFunc) {
     };
 
     this.pointsLoaded = function() {
-        return this.map.getSource("insar_vector_source") != null;
+        for (var i = 1; currentArea && i <= currentArea.properties.num_chunks; i++) {
+            if (this.map.getLayer("chunk_" + i)) {
+                return true;
+            }
+        }
+
+        return false;
     };
 
     this.areaSwathsLoaded = function() {

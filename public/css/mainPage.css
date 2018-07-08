@@ -1203,7 +1203,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 
 .maximize-buttons-container {
     position: absolute;
-    right: 50%;
+    right: 3%;
     bottom: 10px;
     z-index: 98;
 }
