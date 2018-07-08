@@ -883,6 +883,10 @@ input[type=number] {
     height: 100%;
 }
 
+#hide-when-only-show-sliders.show-seismicity-sliders {
+    height: 65%;
+}
+
 #charts.active.only-show-slider #hide-when-only-show-sliders {
     display: none;
 }
@@ -919,7 +923,9 @@ input[type=number] {
 
 .chart-slider {
     height: 45px;
-    margin-bottom: 5px
+    margin-bottom: 5px;
+    margin-left: 50px;
+    margin-right: 50px;
 }
 
 .seismicity-chart {
@@ -1055,6 +1061,10 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 
 #map-options {
     width: 100%;
+}
+
+#map-options.show-seismicity-sliders {
+    display: none;
 }
 
 #download-as-text-button {

@@ -590,7 +590,14 @@ function MapController(loadJSONFunc) {
                 height = "100%";
             }
             $("#charts").removeClass("only-show-slider").height(height);
-            $("#hide-when-only-show-sliders").css("display", "block");
+            $hideWhenOnlyShowSliders = $("#hide-when-only-show-sliders").css("display", "block");
+            if (this.thirdPartySourcesController.seismicityLoaded()) {
+                $hideWhenOnlyShowSliders.addClass("show-seismicity-sliders");
+                $("#map-options").addClass("show-seismicity-sliders");
+            } else {
+                $hideWhenOnlyShowSliders.removeClass("show-seismicity-sliders");
+                $("#map-options").removeClass("show-seismicity-sliders");
+            }
 
             // if graph isn't animating, we still want to draw chart. this means if it is animating,
             // it will draw twice, but logic to prevent this would have made code messy for a premature
