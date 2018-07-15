@@ -10,6 +10,10 @@ body {
     overflow: auto;
 }
 
+body {
+    color: black;
+}
+
 button {
     cursor: pointer;
 }
@@ -321,67 +325,8 @@ a.btn {
     font-family: 'Open Sans', cursive;
 }
 
-.accordion {
-    background: DeepSkyBlue;
-    border-bottom: 1px solid DodgerBlue;
-    border-radius: 7px 7px 0 0;
-    color: white;
-    font-size: 1.5em;
-    margin-top: 0.222em;
-    padding: 0.5em 1em;
-}
-
-.accordion dd {
-    border: 1px solid DeepSkyBlue;
-    border-top: none;
-    border-radius: 0 0 7px 7px;
-    paddig: 1em;
-}
-
-button.accordion {
-    /*background-color: #eee;
-    color: #444;*/
-    background-color: DeepSkyBlue;
-    border-bottom: 1px solid DodgerBlue;
-    cursor: pointer;
-    padding: 18px;
-    width: 100%;
-    border: none;
-    text-align: left;
-    outline: none;
-    font-size: 15px;
-    transition: 0.4s;
-}
-
-button.accordion.active,
-button.accordion:hover {
-    background-color: orange;
-    color: black;
-}
-
-div.panel {
-    padding: 0 18px;
-    display: none;
-    color: white;
-    border: 1 px solid orange;
-}
-
-div.panel.show {
-    border: 1px solid orange !important;
-    display: block !important;
-    color: white !white;
-}
-
-div.panel.show > p {
-    color: black;
-}
-
 button {
     font-family: 'Open Sans', 'Calibri'
-}
-
-p.ul {
-    color: black !important;
 }
 
 div.menu {
@@ -1111,8 +1056,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 
 #search-form-and-results-container {
     width: 35%;
-    max-height: 200px;
-    overflow-y: auto;
+    max-height: 280px;
     position: absolute;
     z-index: 99;
     bottom: 0;
@@ -1167,6 +1111,11 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 
 #search-form-results-table {
     font-size: 12px;
+}
+
+#search-form-results-table thead > tr {
+    height: 40px;
+    background-color: gray;
 }
 
 #search-form-results-table td {
@@ -1319,74 +1268,31 @@ ul.tab li a:focus,
     float: left;
 }
 
-
 /* fixed table headers */
-
-section.fixed-header-table {
-    height: 100%;
-    position: relative;
-    border: 1px solid #000;
-    padding-top: 37px;
-    background: gray;
+.table-fixed thead {
+    width: 97%;
 }
-
-section.fixed-header-table.positioned {
-    position: absolute;
-    top: 100px;
-    left: 100px;
-    width: 100%;
-    box-shadow: 0 0 15px #333;
-}
-
-.fixed-header-table-container {
+.table-fixed tbody {
+    max-height: 230px;
     overflow-y: auto;
-    height: 100%;
-    width: 100%;
-    background-color: white;
-}
-
-.fixed-header-table-container table {
-    border-spacing: 0;
     width: 100%;
 }
-
-.fixed-header-table-container td + .fixed-header-table-container td {
-    /*border-left: 1px solid #eee;*/
+.table-fixed td {
+    padding: 0 !important;
 }
-
-.fixed-header-table-container td,
-.fixed-header-table-container th {
-    border-bottom: 1px solid #eee;
-    color: #000;
-    border-left: 10px;
+.table-fixed tbody > tr {
+    height: 50px;
 }
-
-.fixed-header-table-container th {
-    height: 0 !important;
-    line-height: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    color: transparent;
-    border: none;
-    white-space: nowrap;
+.table-fixed thead, .table-fixed tbody, .table-fixed tr, .table-fixed td, .table-fixed th {
+    display: block;
 }
-
-.fixed-header-table-container th div {
-    position: absolute;
-    background: transparent;
-    color: #fff;
-    padding: 9px 25px;
-    top: 0;
-    margin-left: -25px;
-    line-height: normal;
-    border-left: 1px solid white;
-    font-size: 12px;
+.table-fixed tbody td, .table-fixed thead > tr> th {
+    float: left;
+    border-bottom-width: 0;
 }
-
-.fixed-header-table-container th:first-child div {
-    border: none;
+.col-half-offset {
+    margin-left:4.166666667%
 }
-
 
 @media handheld,
 screen and (max-width:880px) {

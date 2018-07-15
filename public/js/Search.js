@@ -243,14 +243,14 @@ function SearchFormController(container) {
         var flight_direction = areaAttributes.flight_direction;
         var unavco_name = area.properties.unavco_name;
         var rowClass = unavco_name + "-search-row";
-        var html = "<tr class='" + rowClass + "'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
-            first_frame + "</td><td>" + mode + "</td><td>" + flight_direction + "</td></tr>";
+        var html = "<tr class='" + rowClass + "'><td class='col-xs-2'>" + satellite + "</td><td class='col-xs-2 col-half-offset'>" + relative_orbit + "</td><td class='col-xs-2 col-half-offset'>" +
+            first_frame + "</td><td class='col-xs-2 col-half-offset'>" + mode + "</td><td class='col-xs-2 col-half-offset'>" + flight_direction + "</td></tr>";
 
         var subsetFeatures = myMap.getSubsetFeatures(area);
         var haveSubsets = subsetFeatures && subsetFeatures.length > 1;
         if (haveSubsets) {
-            html = "<tr class='" + rowClass + "' class='have-subsets'><td>" + satellite + "</td><td>" + relative_orbit + "</td><td>" +
-                first_frame + "</td><td>" + mode + "</td><td>" + flight_direction +
+            html = "<tr class='" + rowClass + "' class='have-subsets'><td class='col-xs-2'>" + satellite + "</td><td class='col-xs-2 col-half-offset'>" + relative_orbit + "</td><td class='col-xs-2 col-half-offset'>" +
+                first_frame + "</td><td class='col-xs-2 col-half-offset'>" + mode + "</td><td class='col-xs-2 col-half-offset'>" + flight_direction +
                 "<div class='show-children-button caret' id='" + unavco_name + "'></div></td></tr>";
         }
 
@@ -269,7 +269,7 @@ function SearchFormController(container) {
     };
 
     this.makeTableRowsInteractive = function() {
-        $("#search-form-results-table tr").hover(function(e) {
+        $("#search-form-results-table tbody > tr").hover(function(e) {
             var $subsetSwathPopup = $("#subset-swath-popup");
             if ($subsetSwathPopup.hasClass("active")) {
                 $subsetSwathPopup.removeClass("active");
@@ -281,7 +281,7 @@ function SearchFormController(container) {
             }
             searchTableHoverIn(this);
         }, function() {
-            $("#search-form-results-table tr").each(function() {
+            $("#search-form-results-table tbody > tr").each(function() {
                 searchTableHoverOut(this);
             });
         });

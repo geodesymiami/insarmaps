@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Insar Viewer - University of Miami</title>
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link rel="stylesheet" href="/css/mainPage.css" />
-    <link rel="stylesheet" href="/css/mobile-mainPage.css" />
-    <link rel="stylesheet" href="/css/autocomplete.css" />
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
     <!--boostrap-->
@@ -16,6 +13,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.28.3/css/theme.bootstrap.min.css" rel="stylesheet">
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/css/mainPage.css" />
+    <link rel="stylesheet" href="/css/mobile-mainPage.css" />
+    <link rel="stylesheet" href="/css/autocomplete.css" />
 </head>
 
 <body>
@@ -199,43 +199,18 @@
         </div>
         <!-- by default, it is toggled, or minimized -->
         <div id="search-form-and-results-container" class="maximized">
-            <div id="search-form-results">
-                <section class="fixed-header-table">
-                    <div class="fixed-header-table-container">
-                        <table class="tablesorter-bootstrap" id="search-form-results-table">
-                            <thead>
-                                <tr class="header">
-                                    <th>
-                                        Satellite
-                                        <div>Satellite</div>
-                                    </th>
-                                    <th>
-                                        Rel Orbit
-                                        <div>Rel Orbit</div>
-                                    </th>
-                                    <th>
-                                        First_Frame
-                                        <div>First Frame</div>
-                                    </th>
-                                    <th>
-                                        Mode
-                                        <div>Mode</div>
-                                    </th>
-                                    <th>
-                                        Flight Dir.
-                                        <div>Flight Dir.</div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-                <div class="top-right-buttons">
-                    <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="search-form-and-results-minimize-button"></button>
-                </div>
-            </div>
+            <table class="table table-fixed" id="search-form-results-table">
+                <thead>
+                    <tr>
+                        <th class="col-xs-2">Satellite</th>
+                        <th class="col-xs-2 col-half-offset">Rel Orbit</th>
+                        <th class="col-xs-2 col-half-offset">First Frame</th>
+                        <th class="col-xs-2 col-half-offset">Mode</th>
+                        <th class="col-xs-2 col-half-offset">Flight Dir.</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
         <div id="magnitude-and-arrow-scale-container">
             <div class="custom-scale" id="magnitude-scale" data-toggle="tooltip" title="Shrink relative scale">
