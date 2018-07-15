@@ -1108,7 +1108,9 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     word-break: break-all;
     border-bottom: 1px solid #eee;
 }
-
+#subset-swath-table > tbody tr {
+    cursor: pointer;
+}
 #search-form-results-table {
     font-size: 12px;
 }
@@ -1116,6 +1118,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 #search-form-results-table thead > tr {
     height: 40px;
     background-color: gray;
+    color: white;
 }
 
 #search-form-results-table td {

@@ -211,18 +211,38 @@ function SearchFormController(container) {
                 });
             });
 
-            var $tr = $("#subset-swath-table > tbody tr");
-            $tr.css({ cursor: "pointer" });
+            // gotta target even the thead row for the below to work
+            // otherwise, we can get strange edge cases where we get two rows highlighted
+            // if i target only #subset-swath-table > tbody tr, then we get two rows highlighted
+            // when user hovers over thead and then back to main search-form-results-table
+            var $tr = $("#subset-swath-table tr");
             // make search form table highlight on hover
             $tr.hover(function() {
-                if (!SearchFormController.loadedSubsets) {
-                    myMap.addSubsetSwaths(mainFeature, false);
-                    SearchFormController.loadedSubsets = true;
+                if (!$(this).parent().is("thead")) {
+                    if (!SearchFormController.loadedSubsets) {
+                        myMap.addSubsetSwaths(mainFeature, false);
+                        SearchFormController.loadedSubsets = true;
+                    }
+
+                    searchTableHoverIn(this);
+                }
+            }, function(e) {
+                if (!$(this).parent().is("thead")) {
+                    $(this).each(function() {
+                        searchTableHoverOut(this);
+                    });
                 }
 
-                searchTableHoverIn(this);
-            }, function() {
-                searchTableHoverOut(this);
+                // need a foreach because it just simplifies the logic...
+                // not sure why but .parent().parent() doesn't return similar type
+                // of things for both search-form-results-table and subset-swath-table tr's...
+                $(e.relatedTarget).parents().each(function() {
+                    if ($(this).attr("id") === "search-form-results-table") {
+                        $("#search-form-results-table tbody > tr").each(function() {
+                            searchTableHoverOut(this);
+                        });
+                    }
+                });
             });
         });
     };
@@ -281,7 +301,7 @@ function SearchFormController(container) {
             }
             searchTableHoverIn(this);
         }, function() {
-            $("#search-form-results-table tbody > tr").each(function() {
+            $(this).each(function() {
                 searchTableHoverOut(this);
             });
         });
