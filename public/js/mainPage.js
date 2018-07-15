@@ -853,6 +853,9 @@ $(window).on("load", function() {
     $(".draggable").draggable({
         start: function(event, ui) {
             $(this).addClass("disable-transitions");
+            // we rely on auto height, but we need to explicitly set the height on drag
+            // otherwise, we can have infinitely growing divs
+            $(this).css("height", $(this).height() + "px");
         },
         stop: function(event, ui) {
             $(this).removeClass("disable-transitions");
@@ -872,21 +875,27 @@ $(window).on("load", function() {
     $("#graph-div-minimize-button").on("click", function() {
         $(this).css("display", "none");
         $("#graph-div-maximize-button").css("display", "block");
-        var container = $(".wrap#charts");
-        if (container.hasClass("maximized")) {
+        var $container = $(".wrap#charts");
+        if ($container.hasClass("maximized")) {
             $("#graph-div-maximize-button").css("display", "block");
             myMap.removeTouchLocationMarkers();
             $("#hide-when-only-show-sliders").css("display", "none");
         }
 
-        if (container.hasClass("show-seismicity-sliders")) {
-            container.removeClass("show-seismicity-sliders");
+        if ($container.hasClass("show-seismicity-sliders")) {
+            $container.removeClass("show-seismicity-sliders");
             $("#seismicity-chart-sliders").addClass("no-display");
         }
 
+        var newPosCSS = {
+            left: "0%",
+            bottom: "0%",
+            top: "initial"
+        };
+
         var miniSliderHeight = $("#insar-chart-slider").height();
-        container.removeClass("maximized").addClass("minimized")
-        .addClass("only-show-slider").height(miniSliderHeight);
+        $container.removeClass("maximized").addClass("minimized")
+        .addClass("only-show-slider").height(miniSliderHeight).css(newPosCSS);
     });
 
     $("#graph-div-maximize-button").on("click", function() {
@@ -1082,6 +1091,11 @@ $(window).on("load", function() {
             $(this).removeClass("disable-transitions");
             myMap.graphsController.resizeChartContainers();
             myMap.graphsController.recreateGraphs();
+        },
+        resize: function(event, ui) {
+            if ($(this).hasClass("minimized")) {
+                $(this).mouseup();
+            }
         }
     });
 

@@ -333,12 +333,12 @@
             </div>
             <div class="content">
                 <div id="hide-when-only-show-sliders">
-                    <div class="chart-containers" id="chart-containers">
+                    <div class="chart-containers clearfix" id="chart-containers">
                         <div id="chartContainer" class="side-item">
                         </div>
                         <div id="chartContainer2" class="side-item"></div>
                     </div>
-                    <div id="graph-select-div">
+                    <div class="clearfix" id="graph-select-div">
                         <div class="overlay_toggle">
                             <div id="top-graph-focus-div">
                                 Select
@@ -352,7 +352,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="map-options">
+                    <div class="clearfix" id="map-options">
                         <div class="overlay_toggle">
                             <label>Second graph</label>
                             <input id="second-graph-toggle-button" type="checkbox" name="overlayToggle" />
@@ -374,7 +374,7 @@
                             <label>Sync</label>
                             <input id="insar-sync-toggle-button" type="checkbox" name="overlayToggle" />
                         </div> -->
-                        <button class="btn btn-primary-outline" id="download-as-text-button">Download as TXT</button>
+                        <button class="btn-xs btn-primary-outline" id="download-as-text-button">Download as TXT</button>
                     </div>
                 </div>
                 <div class="chart-slider" id="insar-chart-slider"></div>
