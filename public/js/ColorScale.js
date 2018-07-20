@@ -483,6 +483,10 @@ function ColorScale(min, max, divID) {
         return this.stopsCalculator.colorsToMapboxStops(this.min, this.max, this.currentScale);
     };
 
+    this.getCustomStops = function(min, max) {
+        return this.stopsCalculator.colorsToMapboxStops(min, max, this.currentScale);
+    };
+
     this.setTitle = function(title) {
         $("#" + this.divID + " > .color-scale-text-div").html(title);
     };
@@ -526,3 +530,4 @@ function ColorScale(min, max, divID) {
         this.scaleChangeCallback = callback;
     };
 }
+

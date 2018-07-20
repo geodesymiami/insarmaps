@@ -65,7 +65,8 @@ function MapController(loadJSONFunc) {
 
         if (curMode) { // no mode (ie essentially empty map)
             if (this.pointsLoaded()) {
-                this.refreshDataset();
+                var dates = this.selector.getCurrentStartEndDateFromArea(currentArea);
+                this.refreshDataset(dates.startDate, dates.endDate);
                 this.insarColorScaleValues.min = newMin;
                 this.insarColorScaleValues.max = newMax;
             } else if (curMode === "gps") {
@@ -1463,10 +1464,6 @@ function MapController(loadJSONFunc) {
                 if (this.selector.inSelectMode()) {
                     this.selector.disableSelectMode();
                 }
-
-                if (this.colorOnDisplacement) {
-                    this.colorDatasetOnVelocity();
-                }
             }
 
             if (this.thirdPartySourcesController.midasArrows) {
@@ -1508,15 +1505,13 @@ function MapController(loadJSONFunc) {
 
     this.colorDatasetOnDisplacement = function(startDate, endDate) {
         this.colorOnDisplacement = true;
-        this.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress... for fast zoom, switch to velocity or disable or deselect on the fly coloring", "ESCAPE to interrupt");
+        this.refreshDataset(startDate, endDate);
         this.colorScale.setTitle("LOS Displacement (cm)");
     };
 
-    this.colorDatasetOnVelocity = function() {
+    this.colorDatasetOnVelocity = function(startDate, endDate) {
         this.colorOnDisplacement = false;
-        if (this.map.getSource("onTheFlyJSON")) {
-            this.removeSourceAndLayer("onTheFlyJSON");
-        }
+        this.refreshDataset(startDate, endDate);
         this.colorScale.setTitle("LOS Velocity [cm/yr]");
     };
 
@@ -1751,8 +1746,16 @@ function MapController(loadJSONFunc) {
         return name;
     };
 
-    this.refreshDataset = function() {
-        var stops = this.colorScale.getMapboxStops();
+    this.refreshDataset = function(startDate, endDate) {
+        var stops = null;
+        if (!this.colorOnDisplacement) {
+            stops = this.colorScale.getMapboxStops();
+        } else {
+            var yearsDiff = (endDate - startDate) / MILLISECONDS_PER_YEAR;
+            var min = this.insarColorScaleValues.min / yearsDiff;
+            var max = this.insarColorScaleValues.max / yearsDiff;
+            stops = this.colorScale.getCustomStops(min, max);
+        }
         var insarLayers = this.getInsarLayers();
 
         insarLayers.forEach(function(layerID) {

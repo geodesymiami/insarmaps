@@ -141,8 +141,9 @@ function setupFeatureSelector() {
     FeatureSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate, loadingTextTop, loadingTextBottom) {
         const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
         var yearsElapsed = (endDecimalDate - startDecimalDate) / millisecondsPerYear;
+        var multiplier = 1.0 / yearsElapsed;
 
-        this.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed, loadingTextTop, loadingTextBottom);
+        this.recolorDatasetWithBoundingBoxAndMultiplier(null, multiplier, loadingTextTop, loadingTextBottom);
     };
 
     FeatureSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingTextTop, loadingTextBottom) {
@@ -232,11 +233,11 @@ function setupFeatureSelector() {
                 if (arrayBuffer) {
                     var json = new Float64Array(arrayBuffer);
                     console.log("Received points");
-
                     for (var i = 0; i < geoJSONData.features.length; i++) {
                         var curFeature = geoJSONData.features[i];
-                        curFeature.properties.m = parseFloat(json[i]) * multiplier; // useful to get other derivatives such as position instead of velocity
+                        curFeature.properties.m = parseFloat(json[i])
                     }
+
 
                     var geoJSONSource = this.map.map.getSource("onTheFlyJSON");
                     if (geoJSONSource) {
@@ -252,8 +253,8 @@ function setupFeatureSelector() {
 
                         var before = this.map.getLayerOnTopOf("onTheFlyJSON");
                         // always use the insar color scale values for coloring on the fly...
-                        var min = this.map.insarColorScaleValues.min;
-                        var max = this.map.insarColorScaleValues.max;
+                        var min = this.map.insarColorScaleValues.min * multiplier;
+                        var max = this.map.insarColorScaleValues.max * multiplier;
                         var stops = this.map.colorScale.stopsCalculator.colorsToMapboxStops(min, max, this.map.colorScale.currentScale);
                         this.map.addLayer({
                             "id": "onTheFlyJSON",
@@ -311,6 +312,21 @@ function setupFeatureSelector() {
 
     FeatureSelector.prototype.recoloring = function() {
         return this.recoloringInProgress;
+    };
+
+    FeatureSelector.prototype.getCurrentStartEndDateFromArea = function(area) {
+        var dates = convertStringsToDateArray((new AreaAttributesController(myMap, area)).getAttribute("string_dates"));
+        var startDate = dates[0];
+        var endDate = dates[dates.length - 1];
+        if (this.minIndex != -1 && this.maxIndex != -1) {
+            startDate = dates[this.minIndex];
+            endDate = dates[this.maxIndex];
+        }
+
+        return {
+            startDate: startDate,
+            endDate: endDate
+        }
     };
 }
 

@@ -749,23 +749,16 @@ $(window).on("load", function() {
 
         myMap.colorScale.setTopAsMax(false);
         if (myMap.pointsLoaded()) {
+            if (!currentArea) {
+                return;
+            }
+            var dates = myMap.selector.getCurrentStartEndDateFromArea(currentArea);
+
             if (title === "Color on displacement") {
-                if (!currentArea) {
-                    return;
-                }
-
-                var dates = convertStringsToDateArray((new AreaAttributesController(myMap, currentArea)).getAttribute("string_dates"));
-                var startDate = dates[0];
-                var endDate = dates[dates.length - 1];
-                if (myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
-                    startDate = dates[myMap.selector.minIndex];
-                    endDate = dates[myMap.selector.maxIndex];
-                }
-
-                myMap.colorDatasetOnDisplacement(startDate, endDate);
+                myMap.colorDatasetOnDisplacement(dates.startDate, dates.endDate);
                 $(this).attr("data-original-title", "Color on velocity");
             } else if (title === "Color on velocity") {
-                myMap.colorDatasetOnVelocity();
+                myMap.colorDatasetOnVelocity(dates.startDate, dates.endDate);
                 myMap.showInsarLayers();
                 $(this).attr("data-original-title", "Color on displacement");
             }
