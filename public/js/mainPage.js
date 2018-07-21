@@ -747,7 +747,7 @@ $(window).on("load", function() {
         var selectedColoring = null;
         var title = $(this).attr("data-original-title");
 
-        myMap.colorScale.setTopAsMax(false);
+        myMap.colorScale.setTopAsMax(true);
         if (myMap.pointsLoaded()) {
             if (!currentArea) {
                 return;
