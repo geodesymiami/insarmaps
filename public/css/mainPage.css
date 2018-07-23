@@ -1284,7 +1284,7 @@ ul.tab li a:focus,
     padding: 0 !important;
 }
 .table-fixed tbody > tr {
-    height: 50px;
+    height: 35px;
 }
 .table-fixed thead, .table-fixed tbody, .table-fixed tr, .table-fixed td, .table-fixed th {
     display: block;

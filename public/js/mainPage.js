@@ -1146,6 +1146,10 @@ $(window).on("load", function() {
                 $container.removeClass("maximized");
                 $container.addClass("minimized");
             }
+            var $subsetSwathPopup = $("#subset-swath-popup");
+            if ($subsetSwathPopup.hasClass("active")) {
+                $subsetSwathPopup.removeClass("active");
+            }
         }
     });
 
