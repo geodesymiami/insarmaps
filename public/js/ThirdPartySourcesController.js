@@ -1120,7 +1120,7 @@ function ThirdPartySourcesController(map) {
                 html += "Mag: " + props.mag + "<br>";
             }
             if (props.time) {
-                html += new Date(props.time).toISOString().slice(0, 10) + "<br>";
+                html += new Date(props.time).toISOString() + "<br>";
             }
             if (props.location) {
                 html += props.location;

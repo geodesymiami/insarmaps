@@ -1036,6 +1036,12 @@ function MapController(loadJSONFunc) {
             if (yearsElapsed < 1.0) {
                 lastDate = now;
             }
+            var centerLineUTC = attributesController.getAttribute("CENTER_LINE_UTC");
+            if (centerLineUTC) {
+                this.thirdPartySourcesController.USGSEventsOptionsController.UTCTime = centerLineUTC;
+            } else {
+                this.thirdPartySourcesController.USGSEventsOptionsController.UTCTime = "0";
+            }
             this.thirdPartySourcesController.USGSEventsOptionsController.populateDateInputsFromDates(firstDate, lastDate);
 
             this.addLayer(layer, before);
@@ -1609,6 +1615,7 @@ function MapController(loadJSONFunc) {
         this.gpsStationNamePopup.remove();
 
         this.thirdPartySourcesController.removeAll();
+        this.thirdPartySourcesController.USGSEventsOptionsController.UTCTime = "0";
 
         this.colorDatasetOnVelocity();
         if ($("#dataset-frames-toggle-button").hasClass("toggled")) {
@@ -1757,15 +1764,16 @@ function MapController(loadJSONFunc) {
             stops = this.colorScale.getCustomStops(min, max);
         }
         var insarLayers = this.getInsarLayers();
-
-        insarLayers.forEach(function(layerID) {
-            if (this.map.getPaintProperty(layerID, "circle-color")) {
-                this.map.setPaintProperty(layerID, "circle-color", {
-                    "property": 'm',
-                    "stops": stops
-                });
-            }
-        }.bind(this));
+        if (insarLayers) {
+            insarLayers.forEach(function(layerID) {
+                if (this.map.getPaintProperty(layerID, "circle-color")) {
+                    this.map.setPaintProperty(layerID, "circle-color", {
+                        "property": 'm',
+                        "stops": stops
+                    });
+                }
+            }.bind(this));
+        }
 
         if (this.map.getLayer("onTheFlyJSON")) {
             this.map.setPaintProperty("onTheFlyJSON", "circle-color", {

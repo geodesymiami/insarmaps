@@ -1,5 +1,6 @@
 function USGSEventsOptionsController(divID) {
     this.divID = divID;
+    this.UTCTime = "0";
 
     // populate view with start and end date
     // end date is today, start date is 2 years from now
@@ -24,10 +25,15 @@ function USGSEventsOptionsController(divID) {
         var opts = {};
         var minDate = null;
         var maxDate = null;
+        var UTCTime = parseFloat(this.UTCTime);
 
         try {
             minDate = $.datepicker.parseDate("yy-M-d",
                         $("#" + this.divID + " .start-date").val());
+            minDate.setUTCHours(0);
+            minDate.setUTCMinutes(0);
+            minDate.setUTCMilliseconds(0);
+            minDate.setUTCSeconds(UTCTime);
         } catch (exception) {
             window.alert("Invalid start date.");
         }
@@ -35,11 +41,15 @@ function USGSEventsOptionsController(divID) {
         try {
             maxDate =  $.datepicker.parseDate("yy-M-d",
                         $("#" + this.divID + " .end-date").val());
+            maxDate.setUTCHours(0);
+            maxDate.setUTCMinutes(0);
+            maxDate.setUTCMilliseconds(0);
+            maxDate.setUTCSeconds(UTCTime);
         } catch (exception) {
             window.alert("Invalid end date.");
         }
-        opts.minDate = $.datepicker.formatDate("yy-m-d", minDate);
-        opts.maxDate = $.datepicker.formatDate("yy-m-d", maxDate);
+        opts.minDate = minDate.toISOString();
+        opts.maxDate = maxDate.toISOString();
         opts.minMagnitude = $("#" + this.divID + " .min-magnitude").val();
         opts.maxMagnitude = $("#" + this.divID + " .max-magnitude").val();
         opts.minDepth = $("#" + this.divID + " .min-depth").val();
