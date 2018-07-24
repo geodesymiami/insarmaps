@@ -69,7 +69,8 @@ function AreaAttributesPopup() {
             "look_direction": true,
             "atmos_correct_method": true,
             "unwrap_method": true,
-            "post_processing_method": true
+            "post_processing_method": true,
+            "CENTER_LINE_UTC": true
         };
 
         // set like object. don't put these in using the for loop, as we will
@@ -87,6 +88,14 @@ function AreaAttributesPopup() {
                 if (!(curKey in manuallyOrdered)) {
                     if (curKey in attributesToDisplay) {
                         var curValue = areaAttributes[curKey];
+                        if (curKey === "CENTER_LINE_UTC") {
+                            var now = new Date();
+                            now.setUTCHours(0);
+                            now.setUTCMinutes(0);
+                            now.setUTCMilliseconds(0);
+                            now.setUTCSeconds(parseFloat(curValue));
+                            curValue = now.toISOString().split("T")[1];
+                        }
 
                         tableHTML += "<tr><td value=" + curKey + ">" + curKey +
                             "</td>";
