@@ -825,7 +825,8 @@ $(window).on("load", function() {
         // below line makes sure insar scale values are preserved if we are in a different mode...
         if (myMap.pointsLoaded()) {
             myMap.insarColorScaleValues = { min: min, max: max };
-            myMap.refreshDataset();
+            var dates = myMap.selector.getCurrentStartEndDateFromArea(currentArea);
+            myMap.refreshDataset(dates.startDate, dates.endDate);
         } else if (mode === "gps") {
             myMap.thirdPartySourcesController.refreshmidasGpsStationMarkers();
         }
