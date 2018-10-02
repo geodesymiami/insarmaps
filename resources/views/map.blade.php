@@ -226,7 +226,7 @@
         <div id="insar-seismicity-color-scales-container">
             <div class="color-scale" id="color-scale">
                 <div class="btn btn-primary color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color on time">
-                    LOS Velocity [cm/yr]
+                    LOS Velocity<br>[cm/yr]
                 </div>
                 <div class="color-scale-main-container">
                     <div class="color-scale-and-values-container" class="clearfix">
@@ -252,7 +252,7 @@
             </div>
             <div class="color-scale" id="seismicity-color-scale">
                 <div class="btn btn-primary color-scale-text-div" class="rotate" data-toggle="tooltip" title="Color on time">
-                    Depth-colored
+                    Depth-colored<br>[Km]
                 </div>
                 <div class="color-scale-main-container">
                     <div class="color-scale-and-values-container" class="clearfix">
@@ -381,17 +381,17 @@
                 <div class="chart-containers seismicity-charts-container">
                     <div class="seismicity-chart">
                         <div class="side-by-side">
-                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="lat-vs-long-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored</button>
+                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="lat-vs-long-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored<br>[Km]</button>
                             <div class="chart" id="lat-vs-long-graph"></div>
                         </div>
                         <div class="side-by-side">
-                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="lat-vs-depth-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored</button>
+                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="lat-vs-depth-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored<br>[Km]</button>
                             <div class="chart" id="lat-vs-depth-graph"></div>
                         </div>
                     </div>
                     <div class="seismicity-chart">
                         <div class="side-by-side">
-                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="depth-vs-long-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored</button>
+                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="depth-vs-long-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored<br>[Km]</button>
                             <div class="chart" id="depth-vs-long-graph"></div>
                         </div>
                         <div class="side-by-side">
@@ -445,7 +445,7 @@
                     <div class="seismicity-chart" id="cumulative-events-vs-date-container">
                         <div class="chart" id="cumulative-events-vs-date-graph"></div>
                         <div id="cumulative-events-vs-date-chart-buttons-container">
-                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cumulative-events-vs-date-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored</button>
+                            <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cumulative-events-vs-date-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored<br>[Km]</button>
                             <button class="btn btn-primary-outline" id="switch-to-distribution-button" data-toggle="tooltip" title="Switch to distribution" name="overlayToggle" data-placement="bottom">Cumulative</button>
                         </div>
                     </div>
@@ -459,11 +459,11 @@
             <div class="content">
                 <div class="chart-containers seismicity-charts-container">
                     <div class="cross-section-chart">
-                        <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cross-section-lat-vs-depth-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored</button>
+                        <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cross-section-lat-vs-depth-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored<br>[Km]</button>
                         <div class="chart" id="cross-section-lat-vs-depth-graph"></div>
                     </div>
                     <div class="cross-section-chart">
-                        <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cross-section-depth-vs-long-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored</button>
+                        <button class="seismicity-chart-set-coloring-button btn btn-primary-outline" data-chart-type="cross-section-depth-vs-long-graph" data-toggle="tooltip" title="Color on time" data-placement="bottom">Depth-colored<br>[Km]</button>
                         <div class="chart" id="cross-section-depth-vs-long-graph"></div>
                     </div>
                     <div class="cross-section-chart">

@@ -1247,7 +1247,7 @@ function ThirdPartySourcesController(map) {
             this.map.seismicityColorScale.setTitle("Time-colored")
             stops = this.stopsCalculator.getTimeStops(min, max, colors);
         } else if (selectedColoring === "depth") {
-            this.map.seismicityColorScale.setTitle("Depth-colored");
+            this.map.seismicityColorScale.setTitle("Depth-colored<br>[Km]");
             stops = this.stopsCalculator.getDepthStops(min, max, colors);
         } else {
             throw new Error("Invalid dropdown selection");

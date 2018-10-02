@@ -141,7 +141,7 @@ function AreaAttributesController(map, area) {
             }
 
             this.map.refreshDataset();
-            this.map.colorScale.setTitle("LOS Velocity [cm/yr]");
+            this.map.colorScale.setTitle("LOS Velocity<br>[cm/yr]");
         }
     };
 

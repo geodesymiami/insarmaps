@@ -227,7 +227,7 @@ function MapController(loadJSONFunc) {
                     if (this.pointsLoaded()) {
                         $("#insar-seismicity-color-scales-container").css("display", "block");
                         this.colorScale.show();
-                        this.colorScale.setTitle("LOS Velocity [cm/yr]");
+                        this.colorScale.setTitle("LOS Velocity<br>[cm/yr]");
                     } else {
                         $("#insar-seismicity-color-scales-container").css("display", "none");
                         this.colorScale.remove();
@@ -786,7 +786,7 @@ function MapController(loadJSONFunc) {
 
         this.colorScale.defaultValues(); // set default values in case they were modified by another area
         this.selector.reset(currentArea);
-        this.colorScale.setTitle("LOS Velocity [cm/yr]");
+        this.colorScale.setTitle("LOS Velocity<br>[cm/yr]");
 
         this.addDataset(tileJSON, feature);
         this.graphsController.destroyGraphs();
@@ -1512,13 +1512,13 @@ function MapController(loadJSONFunc) {
     this.colorDatasetOnDisplacement = function(startDate, endDate) {
         this.colorOnDisplacement = true;
         this.refreshDataset(startDate, endDate);
-        this.colorScale.setTitle("LOS Displacement (cm)");
+        this.colorScale.setTitle("LOS Displacement<br>[cm]");
     };
 
     this.colorDatasetOnVelocity = function(startDate, endDate) {
         this.colorOnDisplacement = false;
         this.refreshDataset(startDate, endDate);
-        this.colorScale.setTitle("LOS Velocity [cm/yr]");
+        this.colorScale.setTitle("LOS Velocity<br>[cm/yr]");
     };
 
     this.pointsLoaded = function() {

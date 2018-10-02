@@ -1007,7 +1007,7 @@ $(window).on("load", function() {
             $(this).attr("data-original-title", "Color on depth");
         } else { // depth class or no class we take as depth coloring
             selectedColoring = "depth";
-            $(this).html("Depth-colored");
+            $(this).html("Depth-colored<br>[Km]");
             $(this).attr("data-original-title", "Color on time");
         }
         myMap.seismicityGraphsController.seismicityColorings[targetGraph] = selectedColoring;

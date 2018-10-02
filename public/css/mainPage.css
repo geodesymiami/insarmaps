@@ -639,6 +639,7 @@ div.menu {
     z-index: 98;
     text-align: center;
     height: 45%;
+    max-height: 415px;
 }
 
 .minimap-color-scale {
@@ -679,7 +680,7 @@ div.menu {
 }
 
 .color-scale-text-div {
-    height: 10%;
+    height: 11%;
 }
 
 .color-scale .color-scale-text-div {
@@ -1093,6 +1094,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     max-height: 200px;
     overflow-y: auto;
     width: 50%;
+    max-width: 560px;
     bottom: 0;
     overflow-y: auto;
     z-index: 99;

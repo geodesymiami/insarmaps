@@ -179,15 +179,12 @@ function SearchFormController(container) {
                 var subsetLeft = rowCoords.left + $(this).width();
                 var $map = $("#map-container");
                 var mapBottom = $map.offset().top + $map.height();
-                // var subsetTop = rowCoords.top - $(this).position().top;
+                var subsetTop = rowCoords.top - $(this).position().top;
 
-                // if ((subsetTop + $subsetSwathPopup.height()) > mapBottom) {
-                //     subsetTop = subsetTop - $subsetSwathPopup.height() + $(this).height();
-                // }
-                // only add left but leave subsetTop calculation in case he wants the top to change in accordance
-                // with hoverd rows position again
-                // $subsetSwathPopup.css({ top: subsetTop, left: subsetLeft });
-                $subsetSwathPopup.css({ left: subsetLeft });
+                if ((subsetTop + $subsetSwathPopup.height()) > mapBottom) {
+                    subsetTop = subsetTop - $subsetSwathPopup.height() + $(this).height();
+                }
+                $subsetSwathPopup.css({ top: subsetTop, left: subsetLeft });
             }
 
             subsetFeatures.forEach(function(subsetFeature) {

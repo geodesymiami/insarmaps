@@ -187,7 +187,51 @@ function AbstractGraphsController() {
     };
 }
 
+// TODO: no idea why this isn't working. Even after trying many hacks due to the bug mentioned at the github link
+// below, it still doesn't work. Basically, the array I return from this function is still sometimes modified
+// by highcharts to contain only one value - the average of all the values of the array I supplied. No idea why...
+// the strange thing is that calling console.log shows the array being modified BEFORE it is even returned
+// from the function. just the fact that is returned after the console.log triggers this strange behavior. returning
+// any other array and then the array we build up isn't modified... so there is a very strange race condition
+// type of thing going on here and should open an issue on highcharts github
+function tickPositionerCallback() {
+    // without first line, sometimes these two numbers don't match
+    // no idea why - this is all a hack after all, see below comment
+    console.log(this.tickPositions.length);
+    console.log(this.tickPositions);
+    var ticks = [];
+    this.tickPositions.forEach(function(tickPosition) {
+        ticks.push(tickPosition);
+    });
+    ticks.info = {
+        unitName: this.tickPositions.info.unitName,
+        higherRanks: []
+    };
 
+    if (ticks.length == 1) {
+        // TODO: the ticks.info line is a hack due a to bug in Highcharts
+        // see: https://github.com/highcharts/highcharts/issues/6467
+        // and http://jsfiddle.net/oun5jmq7/2/
+        // the ticks.info line might not be needed when and if they fix this
+        var endTick = this.dataMax + ((this.dataMax - this.dataMin) * 0.01);
+        ticks = [this.dataMin, this.dataMax];
+        //ticks.info = this.tickPositions.info;
+
+        console.log("GONNA RETURN BEFORE IF LENGTH OF " + ticks.length);
+        console.log(ticks);
+        return ticks;
+    }
+
+    console.log("GONNA RETURN AFTER IF LENGTH OF " + ticks.length);
+    console.log(ticks);
+    // if its empty or 1 entry, it is not modified. if its > 1 entry, it is modified to contain one value only -
+    // the value of the average of all the values I defined...
+    var empty = [2, 4];
+    console.log("EMPTY");
+    console.log(empty);
+
+    return empty;
+}
 
 // for every graph operation, we simply re create the graph.
 // set size was playing weird games when the div was resized, and chart.series[0].update
@@ -310,7 +354,10 @@ function setupGraphsController() {
                 text: "velocity: " + (slope * 10).toFixed(2).toString() + " mm/yr,  v_std: " + (velocity_std * 10).toFixed(2).toString() + " mm/yr"
             },
             navigator: {
-                enabled: true
+                enabled: true,
+                xAxis: {
+                    tickPositioner: tickPositionerCallback
+                }
             },
             scrollbar: {
                 liveRedraw: false
@@ -376,7 +423,7 @@ function setupGraphsController() {
             },
             yAxis: {
                 title: {
-                    text: 'LOS Displacement (cm)'
+                    text: 'LOS Displacement<br>[cm]'
                 },
                 legend: {
                     layout: 'vertical',
@@ -1704,7 +1751,8 @@ function setupCustomHighchartsSlider() {
             enabled: true,
             top: 1,
             xAxis: {
-                tickPixelInterval: 75
+                tickPixelInterval: 75,
+                tickPositioner: tickPositionerCallback
             }
         };
 
