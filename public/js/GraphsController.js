@@ -195,6 +195,7 @@ function AbstractGraphsController() {
 // any other array and then the array we build up isn't modified... so there is a very strange race condition
 // type of thing going on here and should open an issue on highcharts github
 function tickPositionerCallback() {
+    return this.tickPositions;
     // without first line, sometimes these two numbers don't match
     // no idea why - this is all a hack after all, see below comment
     console.log(this.tickPositions.length);
