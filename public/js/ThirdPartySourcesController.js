@@ -162,7 +162,7 @@ function ThirdPartySourcesController(map) {
     // coordinates as gl js returned feature from queryrendered feature doesn't maintain exact
     // cords
     this.getArrowGeoJSON = function(startCoordinate, orientation, length, id) {
-        const DEGREE_PER_PIXEL = this.map.calculateDegreesPerPixelAtCurrentZoom(startCoordinate[1]);
+        const DEGREE_PER_PIXEL = this.map.calculateDegreesPerPixelAtCurrentZoom();
 
         var lengthInPixels = length;
         length *= DEGREE_PER_PIXEL;

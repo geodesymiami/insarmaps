@@ -25,6 +25,7 @@ function MapController(loadJSONFunc) {
     this.datasetZoom = 8.0;
     this.startingCoords = [0, 30];
 
+    this.insarActualPixelSize = false;
     // default zoom and radii of circle geojson features
     this.radiusStops = [
         [5, 2],
@@ -443,7 +444,7 @@ function MapController(loadJSONFunc) {
 
     // an alternative: http://wiki.openstreetmap.org/wiki/Zoom_levels
     // don't know if formula applies to gl js projection, though
-    this.calculateDegreesPerPixelAtCurrentZoom = function(lat) {
+    this.calculateDegreesPerPixelAtCurrentZoom = function() {
         var deltaPixels = 100.0;
         var point1Projected = { x: 0.0, y: 0.0 };
         var point2Projected = { x: 0.0, y: deltaPixels };
@@ -930,6 +931,33 @@ function MapController(loadJSONFunc) {
         });
 
         this.map.setStyle(styleAndLayer.style);
+    };
+
+    this.setInsarActualPixelSize = function(area) {
+        this.insarActualPixelSize = true;
+        var attributesController = new AreaAttributesController(this.map, area);
+        var x_step = parseFloat(attributesController.getAttribute("X_STEP"));
+        var y_step = parseFloat(attributesController.getAttribute("X_STEP"));
+        var mean_step_deg = (x_step + y_step) / 2.0;
+        // divide by 2.0 because we want radius, not diameter
+        var pixels = (mean_step_deg / this.calculateDegreesPerPixelAtCurrentZoom()) / 2.0;
+        this.getInsarLayers().forEach(function(layerID) {
+            if (this.map.getPaintProperty(layerID, "circle-radius")) {
+                this.map.setPaintProperty(layerID, "circle-radius", pixels);
+                console.log("set it to " + pixels);
+            }
+        }.bind(this));
+    };
+
+    this.setInsarDefaultPixelSize = function(area) {
+        this.insarActualPixelSize = false;
+        this.getInsarLayers().forEach(function(layerID) {
+            if (this.map.getPaintProperty(layerID, "circle-radius")) {
+                this.map.setPaintProperty(layerID, "circle-radius", {
+                    stops: this.radiusStops
+                });
+            }
+        }.bind(this));
     };
 
     this.addReferencePoint = function(area) {
@@ -1433,6 +1461,10 @@ function MapController(loadJSONFunc) {
 
         this.map.on('zoomend', function() {
             var currentZoom = this.map.getZoom();
+
+            if (this.insarActualPixelSize) {
+                this.setInsarDefaultPixelSize();
+            }
 
             var mode = this.getCurrentMode();
 

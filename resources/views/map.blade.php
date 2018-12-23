@@ -171,6 +171,8 @@
                         <option value="2015">2015</option>
                         <option value="remove">Remove</option>
                     </select>
+                    <br>
+                    <button class="btn btn-primary-outline" id="toggle-insar-circle-size-button" data-toggle="tooltip" title="Resize insar points to their actual size. Resets on zoom change">Actual Size</button>
                     <div class="wrap wrap-transitions draggable" id="USGSEvents-options-wrapper">
                         <div id="USGSEvents-options">
                             <div class="top-right-buttons">
@@ -584,7 +586,7 @@
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.js'></script>
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.css' rel='stylesheet' />
     <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
-    <script src="https://unpkg.com/terraformer@1.0.7"></script>
+    <script src="https://unpkg.com/terraformer@1.0.8"></script>
     <script src="https://unpkg.com/terraformer-wkt-parser@1.1.2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet">
     <script type="text/javascript">
