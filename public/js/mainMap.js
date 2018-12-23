@@ -944,7 +944,6 @@ function MapController(loadJSONFunc) {
         this.getInsarLayers().forEach(function(layerID) {
             if (this.map.getPaintProperty(layerID, "circle-radius")) {
                 this.map.setPaintProperty(layerID, "circle-radius", pixels);
-                console.log("set it to " + pixels);
             }
         }.bind(this));
     };

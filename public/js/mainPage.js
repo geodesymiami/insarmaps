@@ -730,8 +730,6 @@ $(window).on("load", function() {
     })();
 
     $("#toggle-insar-circle-size-button").on("click", function() {
-        console.log(currentArea);
-        console.log(myMap);
         myMap.setInsarActualPixelSize(currentArea);
     });
 
