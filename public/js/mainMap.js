@@ -938,9 +938,10 @@ function MapController(loadJSONFunc) {
         var attributesController = new AreaAttributesController(this.map, area);
         var x_step = parseFloat(attributesController.getAttribute("X_STEP"));
         var y_step = parseFloat(attributesController.getAttribute("X_STEP"));
-        var mean_step_deg = (x_step + y_step) / 2.0;
+        var largerStep = (x_step > y_step) ? x_step : y_step;
+        var radiusDegrees = Math.sqrt((largerStep * largerStep) + (largerStep * largerStep)) / 2.0;
         // divide by 2.0 because we want radius, not diameter
-        var pixels = (mean_step_deg / this.calculateDegreesPerPixelAtCurrentZoom()) / 2.0;
+        var pixels = radiusDegrees / this.calculateDegreesPerPixelAtCurrentZoom();
         this.getInsarLayers().forEach(function(layerID) {
             if (this.map.getPaintProperty(layerID, "circle-radius")) {
                 this.map.setPaintProperty(layerID, "circle-radius", pixels);
