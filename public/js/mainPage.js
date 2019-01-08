@@ -730,7 +730,17 @@ $(window).on("load", function() {
     })();
 
     $("#toggle-insar-circle-size-button").on("click", function() {
-        myMap.setInsarActualPixelSize(currentArea);
+        if ($(this).html() === "Actual Size") {
+            $(this).attr("data-original-title", "Reset size of insar points");
+            $(this).html("Reset Size");
+            myMap.setInsarActualPixelSize(currentArea);
+        } else if ($(this).html() === "Reset Size") {
+            $(this).attr("data-original-title", "Resize insar points to their actual size. Resets on zoom change");
+            $(this).html("Actual Size");
+            myMap.setInsarDefaultPixelSize(currentArea);
+        } else {
+            throw "Something went wrong";
+        }
     });
 
     $("#USGSEvents-options-minimize-button").on("click", function() {
