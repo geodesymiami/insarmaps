@@ -836,6 +836,14 @@ function MapController(loadJSONFunc) {
                 hideLoadingScreen();
             }.bind(this), 1000);
         }.bind(this));
+
+        if (!localStorage.getItem("colorScaleTip")) {
+            alert("Click on colorscale to adjust scale.");
+            // try catch cause if can't set item due to private browsing, don't just crash the whole page
+            try {
+                localStorage.setItem("colorScaleTip", "true");
+            } catch (e) {}
+        }
     };
 
     this.clickOnAnAreaMarker = function(e) {
