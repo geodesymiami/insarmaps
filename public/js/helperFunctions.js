@@ -1,11 +1,18 @@
 const MILLISECONDS_PER_YEAR = 365 * 24 * 60 * 60 * 1000;
 // take an array of displacement values and return velocity standard deviation
-var getStandardDeviation = function(displacements, slope) {
+var getStandardDeviation = function(displacements, slope, y, decimal_dates) {
     var v_std = 0.0;
+    t_mean = 0;
+    decimal_dates.forEach(function(date) {
+        t_mean += date;
+    });
+    t_mean /= decimal_dates.length;
+
     for (i = 0; i < displacements.length; i++) {
-        v_std += (Math.abs(slope - displacements[i]) * Math.abs(slope - displacements[i]));
+        dis_pred = slope * (decimal_dates[i] - decimal_dates[0]) + y
+        v_std += Math.pow(Math.abs(dis_pred - displacements[i]), 2) / Math.pow(Math.abs(displacements[i] - t_mean), 2);
     }
-    return Math.sqrt(v_std / (displacements.length - 1));
+    return Math.sqrt(v_std / (displacements.length - 2));
 }
 
 // falk's date string is in format yyyymmdd - ex: 20090817 

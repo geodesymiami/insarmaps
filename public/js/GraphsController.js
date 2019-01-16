@@ -320,7 +320,7 @@ function setupGraphsController() {
 
         // testing standard deviation calculation - we are using slope of linear reg line
         // as mean which gives different answer from taking mean of displacements
-        var velocity_std = getStandardDeviation(displacement_array, slope);
+        var velocity_std = getStandardDeviation(displacement_array, slope, y, decimal_dates);
 
         // returns array for linear regression on chart
         var regression_data = getRegressionChartData(slope, y, decimal_dates, chart_data);
@@ -549,7 +549,7 @@ function setupGraphsController() {
         var sub_y = sub_result["equation"][1];
         var regression_data = getRegressionChartData(sub_slope, sub_y,
             sub_decimal_dates, sub_chart_data);
-        var stdDev = getStandardDeviation(sub_displacements, sub_slope);
+        var stdDev = getStandardDeviation(sub_displacements, sub_slope, sub_y, sub_decimal_dates);
 
         var date_range = Highcharts.dateFormat(null, validDates.minDate) +
             " - " + Highcharts.dateFormat(null, validDates.maxDate);
