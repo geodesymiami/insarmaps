@@ -10,7 +10,7 @@ var getStandardDeviation = function(displacements, slope, y, decimal_dates) {
 
     for (i = 0; i < displacements.length; i++) {
         dis_pred = slope * (decimal_dates[i] - decimal_dates[0]) + y
-        v_std += Math.pow(Math.abs(dis_pred - displacements[i]), 2) / Math.pow(Math.abs(displacements[i] - t_mean), 2);
+        v_std += Math.pow(Math.abs(dis_pred - displacements[i]), 2) / Math.pow(Math.abs(decimal_dates[i] - t_mean), 2);
     }
     return Math.sqrt(v_std / (displacements.length - 2));
 }
