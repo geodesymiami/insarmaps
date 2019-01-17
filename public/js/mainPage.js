@@ -375,6 +375,7 @@ function switchLayer(layer) {
     }
     var layerID = layer.target.id;
     myMap.setBaseMapLayer(layerID);
+    myMap.refreshDataset();
 }
 
 function setupToggleButtons() {
