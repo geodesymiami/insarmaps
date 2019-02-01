@@ -1,10 +1,6 @@
 const MILLISECONDS_PER_YEAR = 365 * 24 * 60 * 60 * 1000;
 // take an array of displacement values and return velocity standard deviation
 var getStandardDeviation = function(displacements, slope, y, decimal_dates) {
-    console.log("slope: " + slope);
-    console.log("y: " + y);
-    console.log("displacements: " + displacements);
-    console.log("decimal_dates: " + decimal_dates);
     var v_std = 0.0;
     var t_mean = 0;
     decimal_dates.forEach(function(date) {
@@ -12,15 +8,15 @@ var getStandardDeviation = function(displacements, slope, y, decimal_dates) {
     });
     t_mean /= decimal_dates.length;
 
-    console.log("y: " + y);
     var sum_range_change = 0.0;
     var sum_times = 0.0;
-    for (i = 0; i < displacements.length; i++) {
-        var dis_pred = slope * (decimal_dates[i] - decimal_dates[0]) + y
-        /*v_std += Math.pow(Math.abs(dis_pred - displacements[i]), 2) / Math.pow(Math.abs(decimal_dates[i] - t_mean), 2);*/
+
+    for (var i = 0; i < displacements.length; i++) {
+        var dis_pred = slope * decimal_dates[i] + y
         sum_range_change += Math.pow(Math.abs(dis_pred - displacements[i]), 2);
         sum_times += Math.pow(Math.abs(decimal_dates[i] - t_mean), 2);
     }
+
     return Math.sqrt(sum_range_change / (sum_times * (displacements.length - 2)));
 }
 
