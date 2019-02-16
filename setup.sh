@@ -9,3 +9,5 @@ chmod -R 777 bootstrap/cache/
 chmod -R 777 storage/framework/views/
 chmod -R 777 storage/framework/sessions/
 
+# make sure .env is created by here
+php artisan key:generate
