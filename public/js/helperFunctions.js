@@ -157,6 +157,7 @@ function pysarSubsetToMapboxBounds(pysarSubset) {
 
 function binarySearch(array, toFind, compareFunc) {
     var first = 0, last = array.length - 1;
+    var middle = 0;
 
     while (!(first > last)) {
         var middle = parseInt((first + last) / 2);
@@ -173,7 +174,7 @@ function binarySearch(array, toFind, compareFunc) {
         }
     }
 
-    return { found: false, index: last + 1 };
+    return { found: false, index: middle };
 }
 
 // courtesy: https://stackoverflow.com/questions/4156101/javascript-push-array-values-into-another-array

@@ -91,35 +91,22 @@ function MapboxStopsCalculator() {
     };
 
     // assume order so use binary search
-    // TOOD: use binary search helper function. part after while loop is what needs careful thought
     this.getOutputIndexFromInputStop = function(stops, input) {
-        var first = 0,
-            last = stops.length - 1;
-        var middle, cmp = 0;
+        var searchResults = binarySearch(stops, input, function(val1, val2) {
+            return val2 - val1[0];
+        });
 
-        while (!(first > last)) {
-            // floor due to js's strange integer/float casting
-            middle = Math.floor((first + last) / 2);
-
-            cmp = input - stops[middle][0];
-
-            if (cmp == 0) {
-                return middle;
-            }
-            if (cmp < 0) {
-                last = middle - 1;
-            } else {
-                first = middle + 1;
-            }
+        if (searchResults.found) {
+            return searchResults.index;
         }
 
         // if we don't find it, return value of stops just before our input
-        cmp = input - stops[middle][0];
+        cmp = input - stops[searchResults.index][0];
         var toReturn = -1;
         if (cmp < 0) {
-            toReturn = middle - 1;
+            toReturn = searchResults.index - 1;
         } else {
-            toReturn = middle;
+            toReturn = searchResults.index;
         }
 
         // make sure we are in bounds of array
