@@ -728,6 +728,55 @@ function MapController(loadJSONFunc) {
         }
     };
 
+    this.getPermissibleMinMax = function(min, max) {
+        var absMax = Math.abs(max);
+        var absMin = Math.abs(min);
+        var limit = absMax > absMin ? absMax : absMin;
+        // he said take 50% of limit
+        limit *= 0.5;
+        var permissibleValues = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2, 3, 4, 5,
+                                 6, 7, 8, 9, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150,
+                                 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+        var permissibleValueIndex = binarySearch(permissibleValues, limit, function(val1, val2) {
+            return val2 - val1;
+        });
+
+        if (permissibleValueIndex.found) {
+            return permissibleValues[permissibleValueIndex.index];
+        }
+
+        // not found
+        var idx = permissibleValueIndex.index;
+        if (idx == 0) {
+           // only compare this index and one to the right
+           var diffCur = Math.abs(limit - permissibleValues[idx]);
+           var diffRight = Math.abs(limit - permissibleValues[idx + 1]);
+
+           return diffCur < diffRight ? permissibleValues[idx] : permissibleValues[idx + 1];
+        }
+
+        if (idx == permissibleValues.length) {
+            // last idx
+            return permissibleValues[idx - 1];
+        }
+
+        if (idx == permissibleValues.length - 1) {
+           // only compare this index (it's last one) and one to the left
+           var diffCur = Math.abs(limit - permissibleValues[idx]);
+           var diffLeft = Math.abs(limit - permissibleValues[idx - 1]);
+
+           return diffCur < diffLeft ? permissibleValues[idx] : permissibleValues[idx - 1];
+        }
+
+        // otherwise, compare values to the left and to the right and choose closest one
+        var diffCur = Math.abs(limit - permissibleValues[idx]);
+        var diffRight = Math.abs(limit - permissibleValues[idx + 1]);
+        var diffLeft = Math.abs(limit - permissibleValues[idx - 1]);
+        var closest =  diffCur < diffRight ? { diff: diffCur, val: permissibleValues[idx] } : { diff: diffRight, val: permissibleValues[idx + 1] };
+
+        return closest.diff < diffLeft ? closest.val : permissibleValues[idx - 1];
+    };
+
     this.loadDatasetFromFeature = function(feature, initialZoom) {
         var attributesController = new AreaAttributesController(this, feature);
         $.ajax({
@@ -737,7 +786,21 @@ function MapController(loadJSONFunc) {
             data: {
                 datasetUnavcoName: attributesController.getAttribute("unavco_name"),
             },
-            success: function(response) {},
+            success: function(response) {
+                // * 100.0 to convert from m to cm
+                var min = parseFloat(response[0].m) * 100.0;
+                var max = parseFloat(response[1].m) * 100.0;
+                var limit = this.getPermissibleMinMax(min, max);
+                if (this.map.loaded()) {
+                    this.colorScale.setMinMax(-limit, limit);
+                    this.refreshDataset();
+                } else {
+                    this.onceRendered(function(callback) {
+                        this.colorScale.setMinMax(-limit, limit);
+                        this.refreshDataset();
+                    }.bind(this));
+                }
+            }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
                 console.log("failed: " + xhr.responseText);
             }

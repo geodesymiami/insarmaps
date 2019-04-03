@@ -155,6 +155,27 @@ function pysarSubsetToMapboxBounds(pysarSubset) {
     return bounds;
 }
 
+function binarySearch(array, toFind, compareFunc) {
+    var first = 0, last = array.length - 1;
+
+    while (!(first > last)) {
+        var middle = parseInt((first + last) / 2);
+
+        var cmp = compareFunc(array[middle], toFind);
+
+        if (cmp == 0) {
+            return { found: true, index: middle };
+        }
+        if (cmp < 0) {
+            last = middle - 1;
+        } else {
+            first = middle + 1;
+        }
+    }
+
+    return { found: false, index: last + 1 };
+}
+
 // courtesy: https://stackoverflow.com/questions/4156101/javascript-push-array-values-into-another-array
 // fastest and most compatible way... could just do it inline I suppose but this uses apply plus adds it
 // to array prototype which is nice

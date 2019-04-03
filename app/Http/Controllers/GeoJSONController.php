@@ -376,12 +376,23 @@ class GeoJSONController extends Controller {
 
     public function preloadDatasetDBTable() {
         try {
-            // TODO: try to use prepared values on this :c
             $unavcoName = Input::get("datasetUnavcoName");
-            $query = "SELECT pg_prewarm((SELECT id FROM area WHERE unavco_name = '" . $unavcoName . "')::text, 'prefetch')";
-            DB::select(DB::raw($query));
+            $permissionController = new PermissionsController();
+            $queryToFilterAreas = $permissionController->getAndQueryForFindingPermittedAreas(Auth::id());
+            $query = "SELECT id FROM area WHERE unavco_name = ?";
+            $query .= " " . $queryToFilterAreas["sql"];
+            $preparedValues = [$unavcoName];
+            $preparedValues = array_merge($preparedValues, $queryToFilterAreas["preparedValues"]);
+            $table_id = DB::select($query, $preparedValues)[0]->id;
 
-            return response("Successfully preloaded " . Input::get("datasetUnavcoName"), 200);
+            // TODO: try to use prepared values on this :c
+            $query = "SELECT pg_prewarm(" . $table_id . "::text, 'prefetch');";
+            DB::unprepared(DB::raw($query));
+            // select m from "109" where p = (select max(p) from "109") union select m from     "109" where p = (select min(p) from "109");
+            $query = 'SELECT m FROM "' . $table_id . '" WHERE p = (SELECT max(p) FROM "' . $table_id . '") UNION SELECT m FROM "' .
+                        $table_id . '" WHERE p = (SELECT min(p) FROM "' . $table_id . '");';
+
+            return response()->json(DB::select(DB::raw($query)));
         } catch (Exception $e) {
             return response()->json($e);
         }
