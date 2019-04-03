@@ -91,6 +91,7 @@ function MapboxStopsCalculator() {
     };
 
     // assume order so use binary search
+    // TOOD: use binary search helper function. part after while loop is what needs careful thought
     this.getOutputIndexFromInputStop = function(stops, input) {
         var first = 0,
             last = stops.length - 1;
