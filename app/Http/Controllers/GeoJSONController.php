@@ -389,8 +389,8 @@ class GeoJSONController extends Controller {
             $query = "SELECT pg_prewarm(" . $table_id . "::text, 'prefetch');";
             DB::unprepared(DB::raw($query));
             // select m from "109" where p = (select max(p) from "109") union select m from     "109" where p = (select min(p) from "109");
-            $query = 'SELECT m FROM "' . $table_id . '" WHERE p = (SELECT max(p) FROM "' . $table_id . '") UNION SELECT m FROM "' .
-                        $table_id . '" WHERE p = (SELECT min(p) FROM "' . $table_id . '");';
+            $query = 'SELECT m FROM "' . $table_id . '" WHERE m = (SELECT max(m) FROM "' . $table_id . '") UNION SELECT m FROM "' .
+                        $table_id . '" WHERE m = (SELECT min(m) FROM "' . $table_id . '");';
 
             return response()->json(DB::select(DB::raw($query)));
         } catch (Exception $e) {
