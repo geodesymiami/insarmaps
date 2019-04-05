@@ -60,7 +60,7 @@
             <div id="loading-circle-container">
                 <div class="loading-circle"></div>
             </div>
-            <div class="loading-text-div" id="loading-text-div-bottom">ESCAPE to interrupt</div>
+            <div class="loading-text-div" id="loading-text-div-bottom">ESCAPE or click/tap this box to interrupt</div>
         </div>
     </div>
     <div id="map-container">

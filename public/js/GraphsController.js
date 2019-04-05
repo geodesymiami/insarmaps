@@ -942,7 +942,7 @@ function setupGraphsController() {
             if (this.map.colorOnDisplacement) {
                 var startDate = new Date(dates[this.map.selector.minIndex]);
                 var endDate = new Date(dates[this.map.selector.maxIndex]);
-                this.map.selector.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE to interrupt");
+                this.map.selector.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE or click/tap this box to interrupt");
             } else {
                 this.map.selector.recolorDataset();
             }

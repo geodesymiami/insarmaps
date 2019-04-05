@@ -44,7 +44,10 @@ function ThirdPartySourcesController(map) {
 
     this.addGPSStationMarkers = function(stations) {
         var features = [];
-        showLoadingScreen("Loading data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
         this.cancellableAjax.ajax({
             url: "/unr",
             success: function(response) {
@@ -356,7 +359,10 @@ function ThirdPartySourcesController(map) {
 
     // TODO: these load/remove seismicity functions REALLY need to be refactored to one common function
     this.loadmidasGpsStationMarkers = function(loadVelocityArrows) {
-        showLoadingScreen("Loading data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
         this.cancellableAjax.ajax({
             url: "/midas",
             success: function(response) {
@@ -472,7 +478,10 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadUSGSEarthquakeFeed = function() {
-        showLoadingScreen("Loading data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
         this.cancellableAjax.ajax({
             url: "/USGSMonthlyFeed",
             success: function(response) {
@@ -539,7 +548,10 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadIGEPNEarthquakeFeed = function() {
-        showLoadingScreen("Loading data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
         this.cancellableAjax.ajax({
             url: "/IGEPNEarthquakeFeed",
             success: function(response) {
@@ -630,7 +642,10 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadHawaiiReloc = function() {
-        showLoadingScreen("Loading data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
         this.cancellableAjax.ajax({
             url: "/HawaiiReloc",
             success: function(response) {
@@ -770,7 +785,10 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadLongValleyReloc = function() {
-        showLoadingScreen("Loading data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
         this.cancellableAjax.ajax({
             url: "/LongValleyReloc",
             success: function(response) {
@@ -876,7 +894,10 @@ function ThirdPartySourcesController(map) {
         var nowString = now.toISOString().split('T')[0];
         var startDateString = startDate.toISOString().split('T')[0];
 
-        showLoadingScreen("Loading data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
 
         this.USGSEventsURL = this.USGSEventsOptionsController.getURL();
 
@@ -1003,7 +1024,10 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadJapanSeismicity = function(dates) {
-        showLoadingScreen("Loading data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
         // why do we have this in public folder yet we have a route for the volcano excel file...
         // TODO: be consistent in this regard
         var url = "/japan_seismicities/japan_seismicity_" + dates + ".txt";
@@ -1057,7 +1081,7 @@ function ThirdPartySourcesController(map) {
                     this.removeJapanSeismicities(dates);
                     window.alert("Bad Japan Seismicity Dates" + xhr.responseText);
                 }
-            }
+            }.bind(this)
         }, function() {
             hideLoadingScreen();
             this.removeJapanSeismicities(dates);

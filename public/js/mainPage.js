@@ -247,6 +247,17 @@ function hideLoadingScreen() {
     }
 }
 
+function hideLoadingScreenWithClick(callback) {
+    $("#loading-screen.overlay-div").one("click", function() {
+        if ($("#loading-screen.overlay-div").hasClass("active")) {
+            $("#loading-screen.overlay-div").toggleClass("active");
+        }
+        if (callback) {
+            callback();
+        }
+    });
+}
+
 // enum-style object to denote toggle state
 var ToggleStates = {
     OFF: 0,

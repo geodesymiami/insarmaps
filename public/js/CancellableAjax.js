@@ -88,23 +88,27 @@ function CancellableAjax() {
     this.after = null;
     this.once = false;
 
+    this.cancel = function() {
+        if (this.lastAjax) {
+            this.lastAjax.abort();
+            this.lastAjax = null;
+        }
+
+        if (this.after) {
+            this.after();
+        }
+
+        if (this.once) {
+            this.removeKeyDown();
+        }
+    };
+
     this.keyDown = function(e) {
         // If the ESC key is pressed
         var ESCAPE_KEY = 27;
 
         if (e.keyCode === ESCAPE_KEY) {
-            if (this.lastAjax) {
-                this.lastAjax.abort();
-                this.lastAjax = null;
-            }
-
-            if (this.after) {
-                this.after();
-            }
-
-            if (this.once) {
-                this.removeKeyDown();
-            }
+            this.cancel();
         }
     };
 
@@ -129,3 +133,4 @@ function CancellableAjax() {
         document.removeEventListener('keydown', this.keyDown);
     };
 }
+

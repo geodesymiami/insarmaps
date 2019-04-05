@@ -217,6 +217,9 @@ function setupFeatureSelector() {
         //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
         //console.log(query);
         this.recoloringInProgress = true;
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
 
         this.cancellableAjax.xmlHTTPRequestAjax({
             url: "/points",
@@ -307,7 +310,7 @@ function setupFeatureSelector() {
     };
 
     FeatureSelector.prototype.recolorDataset = function() {
-        this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE to interrupt");
+        this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt");
     };
 
     FeatureSelector.prototype.recoloring = function() {

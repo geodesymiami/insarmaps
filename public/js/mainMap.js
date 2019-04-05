@@ -1913,7 +1913,10 @@ function MapController(loadJSONFunc) {
 
     // if after is supplied, it must hide loading screen
     this.subsetDataset = function(bbox, after) {
-        showLoadingScreen("Subsetting Dataset", "ESCAPE to interrupt");
+        showLoadingScreen("Subsetting Dataset", "ESCAPE or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
         // too many vector layers leads to browser running out of memory
         // when we set filter
         if (this.tileJSON.vector_layers.length > 1) {
