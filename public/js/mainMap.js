@@ -1540,7 +1540,7 @@ function MapController(loadJSONFunc) {
             var mode = this.getCurrentMode();
 
             // reshow area markers once we zoom out enough
-            // add a small negative episolon to account for rounding errors...
+            // add a small negative epsilon to account for rounding errors...
             // example if we set an initial map zoom of 6, zoomend gets called with
             // a zoom of 5.9999999999999996 etc which makes the map instantly reset when
             // initial zoom is supplied
