@@ -731,11 +731,18 @@ $(window).on("load", function() {
                 lastIndex = 0;
             } else {
                 lastIndex = this.selectedIndex;
-                var selection = $(this).val();
-                if (myMap.thirdPartySourcesController.loadedJapanSeismicityDates(selection)) {
-                    myMap.thirdPartySourcesController.removeJapanSeismicities(selection);
+                // last option is remove all japan seismicities
+                if (this.selectedIndex == this.length - 1) {
+                    $("#japan-seismicity-select option").each(function(selection) {
+                        myMap.thirdPartySourcesController.removeJapanSeismicities($(this).val());
+                    });
                 } else {
-                    myMap.thirdPartySourcesController.loadJapanSeismicity(selection);
+                    var selection = $(this).val();
+                    if (myMap.thirdPartySourcesController.loadedJapanSeismicityDates(selection)) {
+                        myMap.thirdPartySourcesController.removeJapanSeismicities(selection);
+                    } else {
+                        myMap.thirdPartySourcesController.loadJapanSeismicity(selection);
+                    }
                 }
             }
         });
