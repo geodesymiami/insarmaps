@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
+############################################################
+# Program is part of MintPy                                #
+# Copyright (c) 2013, Zhang Yunjun, Heresh Fattahi         #
+# Author: Alfredo Terreco, 2016                            #
+############################################################
 
-import psycopg2
+
 import sys
 import argparse
-import pysar.utils.readfile as readfile
+import psycopg2
 import pycurl
 from io import BytesIO
 import urllib.request, urllib.parse, urllib.error
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+import mintpy.utils.readfile as readfile
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -25,7 +32,8 @@ class InsarDatabaseController(object):
 
     def connect(self):
         try:
-            self.con = psycopg2.connect("dbname='pgis' user='" + self.username + "' host='" + self.host + "' password='" + self.password + "'")
+            self.con = psycopg2.connect("dbname='pgis' user='" + self.username + \
+                                        "' host='" + self.host + "' password='" + self.password + "'")
             self.cursor = self.con.cursor()
         except Exception as e:
             print("Error While Connecting")
@@ -72,7 +80,8 @@ class InsarDatabaseController(object):
     def attribute_exists_for_dataset(self, dataset, attributekey):
         dataset_id = self.get_dataset_id(dataset)
 
-        sql = "SELECT exists(SELECT attributekey FROM extra_attributes WHERE area_id = " + str(dataset_id) + " AND attributekey = '" + attributekey + "');"
+        sql = "SELECT exists(SELECT attributekey FROM extra_attributes WHERE area_id = " + \
+              str(dataset_id) + " AND attributekey = '" + attributekey + "');"
         self.cursor.execute(sql)
 
         return self.cursor.fetchone()[0]
@@ -80,7 +89,8 @@ class InsarDatabaseController(object):
     def plot_attribute_exists_for_dataset(self, dataset, attributekey):
         dataset_id = self.get_dataset_id(dataset)
 
-        sql = "SELECT exists(SELECT attributekey FROM plot_attributes WHERE area_id = " + str(dataset_id) + " AND attributekey = '" + attributekey + "');"
+        sql = "SELECT exists(SELECT attributekey FROM plot_attributes WHERE area_id = " + \
+              str(dataset_id) + " AND attributekey = '" + attributekey + "');"
         self.cursor.execute(sql)
 
         return self.cursor.fetchone()[0]
@@ -156,18 +166,24 @@ class InsarDatabaseController(object):
         
     def create_area_table_if_not_exists(self):
         # create area table if not exist - limit for number of dates is 2    00, limt for number of attribute keys/values is 100
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS area ( unavco_name varchar, project_name varchar, longitude double precision, latitude double precision, country varchar, region varchar, numchunks integer, attributekeys varchar[100], attributevalues varchar[100], stringdates varchar[200], decimaldates double precision[200] );")
+        msg = "CREATE TABLE IF NOT EXISTS area "
+        msg += "(unavco_name varchar, project_name varchar, "
+        msg += "longitude double precision, latitude double precision, "
+        msg += "country varchar, region varchar, numchunks integer, "
+        msg += "attributekeys varchar[100], attributevalues varchar[100], "
+        msg += "stringdates varchar[200], decimaldates double precision[200] );"
+        self.cursor.execute(msg)
         self.con.commit()
 
-    def insert_dataset_into_area_table(self, area, project_name,
-    mid_long, mid_lat, country, region, chunk_num, attribute_keys,
-    attribute_values, string_dates_sql, decimal_dates_sql):
+    def insert_dataset_into_area_table(self, area, project_name, mid_long, mid_lat,
+                                       country, region, chunk_num, attribute_keys,
+                                       attribute_values, string_dates_sql, decimal_dates_sql):
         # put dataset into area table
         query = "INSERT INTO area VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 
-        preparedValues = (area, project_name,
-    mid_long, mid_lat, country, region, chunk_num, attribute_keys,
-    attribute_values, string_dates_sql, decimal_dates_sql)
+        preparedValues = (area, project_name, mid_long, mid_lat,
+                          country, region, chunk_num, attribute_keys,
+                          attribute_values, string_dates_sql, decimal_dates_sql)
         self.cursor.execute(query, preparedValues)
         self.con.commit()
 
