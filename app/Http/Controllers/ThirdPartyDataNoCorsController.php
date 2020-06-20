@@ -6,12 +6,12 @@ use Illuminate\Http\Request;
 
 class ThirdPartyDataNoCorsController extends Controller {
     public function getUNR() {
-        return file_get_contents("ftp://gneiss.nbmg.unr.edu/rapids/llh");
+        return file_get_contents("http://geodesy.unr.edu/NGLStationPages/DataHoldings.txt");
     }
 
     public function getMidas() {
         $json = [];
-        $midas = file_get_contents("http://geodesy.unr.edu/velocities/midas.IGS08.txt");
+        $midas = file_get_contents("http://geodesy.unr.edu/velocities/midas.IGS14.txt");
         $stationLatLongs = $this->getUNR();
         $json["midas"] = $midas;
         $json["stationLatLongs"] = $stationLatLongs;

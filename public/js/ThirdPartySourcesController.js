@@ -101,7 +101,7 @@ function ThirdPartySourcesController(map) {
         }
     };
 
-    this.parseIGS08Stations = function(stations) {
+    this.parseIGSStations = function(stations) {
         var latLongs = stations.split("\n");
 
         var latLongMap = {};
@@ -114,7 +114,7 @@ function ThirdPartySourcesController(map) {
                 var station = fields[0];
                 var lat = parseFloat(fields[1]);
                 var long = parseFloat(fields[2]);
-                var type = "IGS08";
+                var type = "IGS14";
 
                 latLongMap[station] = {
                     "coordinates": [long, lat],
@@ -127,7 +127,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.parseUNR = function(IGS08Stations) {
-        var latLongMap = this.parseIGS08Stations(IGS08Stations);
+        var latLongMap = this.parseIGSStations(IGS08Stations);
         var features = [];
 
         for (var station in latLongMap) {
@@ -137,7 +137,7 @@ function ThirdPartySourcesController(map) {
                 var type = stationInfo.type;
                 var popupHTML = '<h3>Station: ' + station + '<br/>' +
                     ' <a target="_blank" href="http://geodesy.unr.edu/NGLStationPages/stations/' + station + '.sta"> ' +
-                    ' <img src="http://geodesy.unr.edu/tsplots/' + type + '/TimeSeries/' + station + '.png" align="center" width=400 height=600 alt="' + station + 'Time Series Plot"/> </a>' +
+                    ' <img src="http://geodesy.unr.edu/tsplots/' + type + '/' + type + '/TimeSeries/' + station + '.png" align="center" width=400 height=600 alt="' + station + 'Time Series Plot"/> </a>' +
                     ' <p> <h5> Click plot for full station page. Positions in ' + type + ' reference frame. ';
 
                 var feature = {
@@ -302,7 +302,7 @@ function ThirdPartySourcesController(map) {
 
     this.parseMidasJSON = function(midasJSON) {
         var midas = midasJSON.midas.split("\n");
-        var latLongMap = this.parseIGS08Stations(midasJSON.stationLatLongs);
+        var latLongMap = this.parseIGSStations(midasJSON.stationLatLongs);
 
         var features = { "points": [], "arrows": [] };
         for (var i = 0; i < midas.length; i++) {
@@ -315,7 +315,7 @@ function ThirdPartySourcesController(map) {
                     var type = stationInfo.type;
                     var popupHTML = '<h3>Station: ' + station + '<br/>' +
                         ' <a target="_blank" href="http://geodesy.unr.edu/NGLStationPages/stations/' + station + '.sta"> ' +
-                        ' <img src="http://geodesy.unr.edu/tsplots/' + type + '/TimeSeries/' + station + '.png" align="center" width=400 height=600 alt="' + station + 'Time Series Plot"/> </a>' +
+                        ' <img src="http://geodesy.unr.edu/tsplots/' + type + '/' + type + '/TimeSeries/' + station + '.png" align="center" width=400 height=600 alt="' + station + 'Time Series Plot"/> </a>' +
                         ' <p> <h5> Click plot for full station page. Positions in ' + type + ' reference frame. ';
 
                     // these numbers come from unr midas readme
