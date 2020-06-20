@@ -189,6 +189,9 @@ function AreaAttributesPopup() {
             var html = attributesController.getAttribute("referenceText") + " <a href='" + attributesController.getAttribute("referencePdfUrl") + "' target='_blank'>PDF</a>";
             $("#reference-tab").html(html);
         }
+        // TOOD: add me
+        if (attributesController.areaHasAttribute("insarmaps_download_flag")) {
+        }
 
         $.ajax({
             url: "/driveFiles",
