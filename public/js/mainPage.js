@@ -42,7 +42,7 @@ function AreaAttributesPopup() {
     this.resetTabContents = function() {
         $("#downloads-tab").html("<p>Download to Unavco InSAR data products to be implemented.</p>");
         $("#reference-tab").html("<p>Reference to the papers to be added.</p>");
-        $("#figures-tab").html("<p>Figures to be added</p>")
+        $("#processing-report-tab").html("<p>Processing reports to be added</p>")
     };
 
     this.populate = function(area) {
@@ -178,7 +178,7 @@ function AreaAttributesPopup() {
         if (attributesController.areaHasPlotAttribute("plot.title")) {
             var html = "<a href='#' id='preset-dataset-link'>" +
                 attributesController.getPlotAttribute("plot.title") + "</a>";
-            $("#figures-tab").html(html);
+            $("#processing-report-tab").html(html);
             $("#preset-dataset-link").on("click", function() {
                 attributesController.processPresetFigureAttributes();
             });
@@ -192,6 +192,9 @@ function AreaAttributesPopup() {
         // TOOD: add me
         if (attributesController.areaHasAttribute("insarmaps_download_flag")) {
         }
+
+        var html = "<a target='_blank' href='https://js-104-223.jetstream-cloud.org/data/HDF5EOS/" + area.properties.project_name + "/mintpy/pic'>Click to access processing report</a>";
+        $("#processing-report-tab").html(html);
 
         $.ajax({
             url: "/driveFiles",

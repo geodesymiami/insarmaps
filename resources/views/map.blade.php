@@ -527,7 +527,7 @@
                     <div id="area-attributes-areaname-div"></div>
                     <li><a href="#" id="details-tab-link" class="tablinks" onclick="goToTab(event, 'details-tab')">Details</a></li>
                     <li><a href="#" class="tablinks" onclick="goToTab(event, 'downloads-tab')">Downloads</a></li>
-                    <li><a href="#" class="tablinks" onclick="goToTab(event, 'figures-tab')">Figures</a></li>
+                    <li><a href="#" class="tablinks" onclick="goToTab(event, 'processing-report-tab')">Processing Report</a></li>
                     <!-- <li><a href="#" class="tablinks" onclick="goToTab(event, 'links-tab')">Links</a></li> -->
                 </ul>
                 <div id="details-tab" class="tabcontent">
@@ -541,8 +541,8 @@
                 <div id="downloads-tab" class="tabcontent">
                     <p>Download to Unavco InSAR data products to be implemented.</p>
                 </div>
-                <div id="figures-tab" class="tabcontent">
-                    <p>Figures to be added.</p>
+                <div id="processing-report-tab" class="tabcontent">
+                    <p>Processing report to be added.</p>
                 </div>
                 <!-- <div id="links-tab" class="tabcontent">
           <p>Extra links to be added.</p>
