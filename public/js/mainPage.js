@@ -191,6 +191,9 @@ function AreaAttributesPopup() {
         }
         // TOOD: add me
         if (attributesController.areaHasAttribute("insarmaps_download_flag")) {
+            var unavcoName = attributesController.getAttribute("unavco_name");
+            var downloadHTML = "<a target='_blank' href='https://js-104-223.jetstream-cloud.org/data/HDF5EOS/" + area.properties.project_name + "/mintpy/" + unavcoName + ".he5'>Download .he5 file</a>";
+            $("#downloads-tab").html(downloadHTML);
         }
 
         var html = "<a target='_blank' href='https://js-104-223.jetstream-cloud.org/data/HDF5EOS/" + area.properties.project_name + "/mintpy/pic'>Click to access processing report</a>";
