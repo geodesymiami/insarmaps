@@ -22,7 +22,9 @@
     <div id="information-div" class="overlay-div">
         <div class="vertically-aligned" id="information-div-contents">
             <p>
-                This website provides InSAR displacement time-series produced by the University of Miami Geodesy Laboratory, which is supported by NASA and the NSF. For InSAR processing JPL's ISCE software and the Fattahi et al.’s (2017) stack processor is used for Sentinel-1 and for most other sensors a combination of ROI_PAC and the GAMMA software. Time series processing uses the University of Miami-developed PySAR software(lead developer Yunjun Zhang).
+                This website provides InSAR displacement time-series produced by the University of Miami Geodesy Laboratory, which is supported by NASA and the NSF. For InSAR stack processing, we use the stack processor (Fattahi et al., 2016) within ISCE software (Rosen et al., 2012) from JPL/Caltech for Sentinel-1 and for most other sensors a combination of ROI_PAC (Rosen et al., 2004) and the GAMMA software (Werner et al., 2000). For time series analysis, we use the MintPy software (Yunjun et al., 2019) developed at University of Miami.</p>
+            <p>
+                Yunjun, Z., H. Fattahi, F. Amelung (2019), Small baseline InSAR time series analysis: Unwrapping error correction and noise reduction, Computers &amp; Geosciences, 133, 104331, doi:10.1016/j.cageo.2019.104331.
             </p>
             <p>
                 This website was created by University of Miami Computer Science students Alfredo Terrero and Zishi Wu. It started as a class project of CSC 431, taught by Chris Mader and Julio Perez of the University of Miami’s Center for Computational Sciences (CCS). The data processing is conducted using the University of Miami’s High Performance Computing systems.
@@ -47,7 +49,7 @@
             <img src="/img/nsf1.gif" alt="nsf_logo" height="100px" width="auto" class="logo2">
             <div id="information-div-buttom-buttons">
                 <div id="close-information-button">
-                    <button class="btn btn-primary-outline">Done</button>
+                    <button class="btn btn-primary-outline">Close</button>
                 </div>
             </div>
         </div>
