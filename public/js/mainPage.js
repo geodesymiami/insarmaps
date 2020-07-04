@@ -190,7 +190,7 @@ function AreaAttributesPopup() {
             $("#reference-tab").html(html);
         }
         // TOOD: add me
-        if (attributesController.areaHasAttribute("insarmaps_download_flag")) {
+        if (attributesController.getAttribute("insarmaps_download_flag") == "yes") {
             var unavcoName = attributesController.getAttribute("unavco_name");
             var downloadHTML = "<a target='_blank' href='https://js-104-223.jetstream-cloud.org/data/HDF5EOS/" + area.properties.project_name + "/mintpy/" + unavcoName + ".he5'>Download .he5 file</a>";
             $("#downloads-tab").html(downloadHTML);
