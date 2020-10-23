@@ -948,16 +948,29 @@ function MapController(loadJSONFunc) {
             "maxzoom": 22
         }];
 
+        // simplest solution to mapbox.streets being deprecated - use static tiles API for mapbox streets
+        // otherwise, many things break because we base alot of logic on the base map being raster
+        var rasterTileSource = {
+                "type": "raster",
+                "url": "mapbox://" + tileset,
+                "tileSize": 256
+        };
+        if (tileset === "mapbox.streets") {
+            rasterTileSource = {
+                "type": "raster",
+                "tiles": [
+                    "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=" + mapboxgl.accessToken
+                ],
+                "tileSize": 256
+            };
+        }
+
         var style = {
             version: 8,
             sprite: getRootUrl() + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
-                "raster-tiles": {
-                    "type": "raster",
-                    "url": "mapbox://" + tileset,
-                    "tileSize": 256
-                },
+                "raster-tiles": rasterTileSource,
                 'Mapbox Terrain V2': {
                     type: 'vector',
                     url: 'mapbox://mapbox.mapbox-terrain-v2'
