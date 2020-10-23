@@ -1414,7 +1414,6 @@ function MapController(loadJSONFunc) {
             center: startingCoords, // this.starting position
             zoom: startingZoom, // this.starting zoom
             minZoom: minZoom,
-            style: 'mapbox://styles/mapbox/streets-v11',
             attributionControl: false
         }).addControl(new mapboxgl.AttributionControl({
             compact: true
@@ -1446,7 +1445,7 @@ function MapController(loadJSONFunc) {
             this.areaFilterSelector.map = this;
         }.bind(this));
 
-        //this.setBaseMapLayer("mapbox.mapbox-streets-v8");
+        this.setBaseMapLayer("streets");
 
         this.map.addControl(new mapboxgl.NavigationControl());
         var geoLocator = new mapboxgl.GeolocateControl({
