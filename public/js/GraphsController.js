@@ -1482,11 +1482,17 @@ function setupSeismicityGraphsController() {
         // nw, ne, se, sw order. we can use this fact to get bounds in sw, ne
         // order as mapbox requires.
         bounds = this.map.selector.getVerticesOfSquareBbox(bounds);
-        var sanitizedBounds = [bounds[3], bounds[1]]; // sw, ne
+        var sw = bounds[3];
+        var ne = bounds[1];
+        var sanitizedBounds = [sw, ne]; // sw, ne
+        var centerLat = (sw.lat + ne.lat) / 2
+        var centerLon = (sw.lng + ne.lng) / 2
+        var center = { lng: centerLon, lat: centerLat };
 
         this.mapForPlot = new mapboxgl.Map({
             container: chartContainer, // container id
             attributionControl: false,
+            center: center,
             maxBounds: sanitizedBounds
         });
 
@@ -1593,8 +1599,7 @@ function setupSeismicityGraphsController() {
         }.bind(this);
         this.mapForPlot.on("zoomend", onMoveend);
         this.mapForPlot.on("dragend", onMoveend);
-        var styleAndLayer = this.map.getMapBaseStyle("mapbox.streets");
-        this.mapForPlot.setStyle(styleAndLayer.style);
+        this.mapForPlot.setStyle("mapbox://styles/mapbox/streets-v11");
     };
 
     SeismicityGraphsController.prototype.createSeismicityCharts = function(selectedColoring, optionalBounds, optionalFeatures) {
