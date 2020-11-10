@@ -1604,6 +1604,13 @@ function MapController(loadJSONFunc) {
             var sw = bounds._sw.lat.toFixed(2) + ", " + bounds._sw.lng.toFixed(2);
             var ne = bounds._ne.lat.toFixed(2) + ", " + bounds._ne.lng.toFixed(2);
             $("#usgs-events-current-viewport").html("sw: " + sw + ", ne: " + ne);
+            var center = this.map.getCenter();
+            var pushStateString = "/start/" + center.lat + "/" + center.lng + "/" + this.map.getZoom() + "?flyToDatasetCenter=false";
+            if (currentArea) {
+                pushStateString += "&startDataset=" + currentArea.properties.unavco_name;
+            }
+
+            window.history.replaceState({}, "lat_lon", pushStateString);
         }.bind(this));
 
         this.map.on("dragend", function(e) {
