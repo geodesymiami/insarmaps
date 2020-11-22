@@ -476,13 +476,14 @@ function setupGraphsController() {
                             console.log("repeat");
                             return;
                         }
+
                         if (pointClickedCounter % 2 == 1) {
                             myMap.selector.minIndex = e.point.index;
                             var minDate = chartData[e.point.index][0];
                             this.setNavigatorMin(chartContainer, minDate);
                         } else {
                             myMap.selector.maxIndex = e.point.index;
-                            var maxDate = chartData[e.point.index - 1][0];
+                            var maxDate = chartData[e.point.index][0];
                             this.setNavigatorMax(chartContainer, maxDate);
                         }
                         lastPointClicked = e.point.index;
