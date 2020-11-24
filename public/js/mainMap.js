@@ -483,7 +483,9 @@ function MapController(loadJSONFunc) {
                 }
             }
         }
-        appendUrlVar(/&pointID=\d*/, "&pointID=" + parseInt(feature.properties.p));
+        if (feature.properties.p) {
+            appendUrlVar(/&pointID=\d*/, "&pointID=" + parseInt(feature.properties.p));
+        }
         var id = feature.layer.id;
 
         if (id === "gpsStations" || id === "midas") {

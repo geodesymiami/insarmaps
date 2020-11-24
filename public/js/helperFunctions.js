@@ -122,15 +122,20 @@ function appendUrlVar(varRegex, varToAppend) {
 
 function updateUrlState(map) {
     var center = map.map.getCenter();
-    var pushStateString = "/start/" + center.lat + "/" + center.lng + "/" + map.map.getZoom() + "?flyToDatasetCenter=false";
+    var pushStateString = "/start/" + center.lat + "/" + center.lng + "/" + map.map.getZoom();
     if (currentArea) {
-        pushStateString += "&startDataset=" + currentArea.properties.unavco_name;
+        pushStateString += "?flyToDatasetCenter=false" + "&startDataset=" + currentArea.properties.unavco_name;
         var url = new URL(window.location.href);
         var pointID = url.searchParams.get("pointID");
         if (pointID) {
             pushStateString = pushStateString.replace(/&pointID=\d*/, "");
             console.log(pushStateString);
             pushStateString += "&pointID=" + pointID;
+        }
+    } else {
+        pushStateString = pushStateString.replace(/&startDataset=.+^/, "");
+        if (urlOptions.startingDatasetOptions["pointID"]) {
+             delete urlOptions.startingDatasetOptions["pointID"];
         }
     }
 
