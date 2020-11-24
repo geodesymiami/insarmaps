@@ -460,14 +460,30 @@ function MapController(loadJSONFunc) {
         return deltaDegrees / deltaPixels;
     };
 
-    this.clickOnAPoint = function(e) {
-        var features = this.map.queryRenderedFeatures(e.point);
+    this.clickOnAPoint = function(e, pointID) {
+        var features = null;
+
+        if (e) {
+            features = this.map.queryRenderedFeatures(e.point);
+        } else  {
+            features = this.map.queryRenderedFeatures();
+        }
 
         if (!features.length) {
             return;
         }
 
         var feature = features[0];
+        // pointID provided? this is our feature so find it
+        if (pointID) {
+            for (var f of features) {
+                if (f.properties.p == pointID) {
+                    feature = f;
+                    break;
+                }
+            }
+        }
+        appendUrlVar(/&pointID=\d*/, "&pointID=" + parseInt(feature.properties.p));
         var id = feature.layer.id;
 
         if (id === "gpsStations" || id === "midas") {
@@ -669,13 +685,13 @@ function MapController(loadJSONFunc) {
         return null;
     };
 
-    this.leftClickOnAPoint = function(e) {
-        this.clickOnAPoint(e);
+    this.leftClickOnAPoint = function(e, pointID) {
+        this.clickOnAPoint(e, pointID);
     };
 
-    this.rightClickOnAPoint = function(e) {
+    this.rightClickOnAPoint = function(e, pointID) {
         if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-            this.clickOnAPoint(e);
+            this.clickOnAPoint(e, pointID);
         }
     };
 
@@ -895,6 +911,12 @@ function MapController(loadJSONFunc) {
 
                 attributesController.processAttributes();
                 this.areaMarkerLayer.setAreaRowHighlighted(feature.properties.unavco_name);
+                if (urlOptions) {
+                    var pointID = urlOptions.startingDatasetOptions.pointID;
+                    if (pointID) {
+                        this.leftClickOnAPoint(null, pointID);
+                    }
+                }
                 // in case someone called loading screen
                 hideLoadingScreen();
             }.bind(this), 1000);
@@ -1604,13 +1626,7 @@ function MapController(loadJSONFunc) {
             var sw = bounds._sw.lat.toFixed(2) + ", " + bounds._sw.lng.toFixed(2);
             var ne = bounds._ne.lat.toFixed(2) + ", " + bounds._ne.lng.toFixed(2);
             $("#usgs-events-current-viewport").html("sw: " + sw + ", ne: " + ne);
-            var center = this.map.getCenter();
-            var pushStateString = "/start/" + center.lat + "/" + center.lng + "/" + this.map.getZoom() + "?flyToDatasetCenter=false";
-            if (currentArea) {
-                pushStateString += "&startDataset=" + currentArea.properties.unavco_name;
-            }
-
-            window.history.replaceState({}, "lat_lon", pushStateString);
+            updateUrlState(this);
         }.bind(this));
 
         this.map.on("dragend", function(e) {

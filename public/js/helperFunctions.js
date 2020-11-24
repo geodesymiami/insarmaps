@@ -109,6 +109,34 @@ function getRootUrl() {
     return window.location.origin ? window.location.origin + '/' : window.location.protocol + '/' + window.location.host + '/';
 }
 
+function appendUrlVar(varRegex, varToAppend) {
+    var optionsString = window.location.href.split(window.location.origin)[1];
+    var textRegex = varRegex.test(optionsString)
+    if (!textRegex) {
+        optionsString += varToAppend;
+    } else {
+        optionsString = optionsString.replace(varRegex, varToAppend);
+    }
+    window.history.replaceState({}, "lat_lon", optionsString);
+}
+
+function updateUrlState(map) {
+    var center = map.map.getCenter();
+    var pushStateString = "/start/" + center.lat + "/" + center.lng + "/" + map.map.getZoom() + "?flyToDatasetCenter=false";
+    if (currentArea) {
+        pushStateString += "&startDataset=" + currentArea.properties.unavco_name;
+        var url = new URL(window.location.href);
+        var pointID = url.searchParams.get("pointID");
+        if (pointID) {
+            pushStateString = pushStateString.replace(/&pointID=\d*/, "");
+            console.log(pushStateString);
+            pushStateString += "&pointID=" + pointID;
+        }
+    }
+
+    window.history.replaceState({}, "lat_lon", pushStateString);
+}
+
 // see: https://stackoverflow.com/questions/1379553/how-might-i-find-the-largest-number-contained-in-a-javascript-array. this is fastest method of finding min and max in array
 // is faster than sorting or reduce, etc...
 function findMinMaxOfArray(array, sortFunction) {
