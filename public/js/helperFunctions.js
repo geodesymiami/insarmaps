@@ -109,6 +109,12 @@ function getRootUrl() {
     return window.location.origin ? window.location.origin + '/' : window.location.protocol + '/' + window.location.host + '/';
 }
 
+function getUrlVar(varName) {
+    var url = new URL(window.location.href);
+
+    return url.searchParams.get(varName);
+}
+
 function appendUrlVar(varRegex, varToAppend) {
     var optionsString = window.location.href.split(window.location.origin)[1];
     var textRegex = varRegex.test(optionsString)
@@ -125,16 +131,14 @@ function updateUrlState(map) {
     var pushStateString = "/start/" + center.lat + "/" + center.lng + "/" + map.map.getZoom();
     if (currentArea) {
         pushStateString += "?flyToDatasetCenter=false" + "&startDataset=" + currentArea.properties.unavco_name;
-        var url = new URL(window.location.href);
-        var pointID = url.searchParams.get("pointID");
+        var pointID = getUrlVar("pointID");
         if (pointID) {
             pushStateString = pushStateString.replace(/&pointID=\d*/, "");
-            console.log(pushStateString);
             pushStateString += "&pointID=" + pointID;
         }
     } else {
         pushStateString = pushStateString.replace(/&startDataset=.+^/, "");
-        if (urlOptions.startingDatasetOptions["pointID"]) {
+        if (urlOptions && urlOptions.startingDatasetOptions["pointID"]) {
              delete urlOptions.startingDatasetOptions["pointID"];
         }
     }

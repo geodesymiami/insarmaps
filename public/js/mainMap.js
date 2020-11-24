@@ -59,8 +59,10 @@ function MapController(loadJSONFunc) {
     this.graphsController = new GraphsController(this);
     this.areas = null;
     this.allAreas = null;
-    this.insarColorScaleValues = { min: -2.00, max: 2.00 };
-    this.colorScale = new ColorScale(-2.00, 2.00, "color-scale");
+    var COLOR_SCALE_MIN = parseInt($("#color-scale .top-scale-value").val());
+    var COLOR_SCALE_MAX = parseInt($("#color-scale .bottom-scale-value").val());
+    this.insarColorScaleValues = { min: COLOR_SCALE_MIN, max: COLOR_SCALE_MAX };
+    this.colorScale = new ColorScale(COLOR_SCALE_MIN, COLOR_SCALE_MAX, "color-scale");
     this.colorScale.onScaleChange(function(newMin, newMax) {
         var curMode = this.getCurrentMode();
 
@@ -73,9 +75,10 @@ function MapController(loadJSONFunc) {
             } else if (curMode === "gps") {
                 this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             }
+            updateUrlState(this);
         }
     }.bind(this));
-    this.seismicityColorScale = new ColorScale(-2.00, 2.00, "seismicity-color-scale");
+    this.seismicityColorScale = new ColorScale(COLOR_SCALE_MIN, COLOR_SCALE_MAX, "seismicity-color-scale");
     this.seismicityColorScale.onScaleChange(function(newMin, newMax) {
         var curMode = this.getCurrentMode();
 
@@ -808,13 +811,23 @@ function MapController(loadJSONFunc) {
                 // * 100.0 to convert from m to cm
                 var min = parseFloat(response[0].m) * 100.0;
                 var max = parseFloat(response[1].m) * 100.0;
+                var minScale = parseInt(getUrlVar("minScale"));
+                var maxScale = parseInt(getUrlVar("maxScale"));
                 var limit = this.getPermissibleMinMax(min, max);
+                var posLimit = limit;
+                var negLimit = -limit;
+
+                // if we have min and max in url, use those
+                if (minScale && maxScale) {
+                    negLimit = minScale;
+                    posLimit = maxScale;
+                }
                 if (this.map.loaded()) {
-                    this.colorScale.setMinMax(-limit, limit);
+                    this.colorScale.setMinMax(posLimit, negLimit);
                     this.refreshDataset();
                 } else {
                     this.onceRendered(function(callback) {
-                        this.colorScale.setMinMax(-limit, limit);
+                        this.colorScale.setMinMax(posLimit, negLimit);
                         this.refreshDataset();
                     }.bind(this));
                 }
@@ -920,6 +933,8 @@ function MapController(loadJSONFunc) {
                     }
                 }
                 // in case someone called loading screen
+                appendUrlVar(/&minScale=-?\d*/, "&minScale=" + this.colorScale.min);
+                appendUrlVar(/&maxScale=-?\d*/, "&maxScale=" + this.colorScale.max);
                 hideLoadingScreen();
             }.bind(this), 1000);
         }.bind(this));
