@@ -77,7 +77,7 @@ function MapController(loadJSONFunc) {
             }
             // only append minScale and maxScale when physically clicked. if not, just let updateURLState do it's magic.
             // otherwise, if we just appendUrlVar every time, we will append it 
-            if (this.doubleOrHalfClicked) {
+            if (this.colorScale.doubleOrHalfClicked) {
                 this.doubleOrHalfClicked = false;
                 appendUrlVar(/&minScale=-?\d*/, "&minScale=" + newMin);
                 appendUrlVar(/&maxScale=-?\d*/, "&maxScale=" + newMax);
@@ -948,9 +948,7 @@ function MapController(loadJSONFunc) {
                         this.leftClickOnAPoint(null, pointID);
                     }
                 }
-                // don't add these variables if there - because clobbers passed in minScale and maxScale
-                addUrlVarIfNotThere("minScale", "&minScale=" + this.colorScale.min);
-                addUrlVarIfNotThere("maxScale", "&maxScale=" + this.colorScale.max);
+                updateUrlState(this);
                 // in case someone called loading screen
                 hideLoadingScreen();
             }.bind(this), 1000);

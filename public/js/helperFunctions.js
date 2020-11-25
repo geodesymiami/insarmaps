@@ -144,12 +144,12 @@ function updateUrlState(map) {
             pushStateString = pushStateString.replace(/&pointID=\d*/, "");
             pushStateString += "&pointID=" + pointID;
         }
-        window.history.replaceState({}, "lat_lon", pushStateString);
         var urlMinScale = getUrlVar("minScale");
         var urlMaxScale = getUrlVar("maxScale");
+        window.history.replaceState({}, "lat_lon", pushStateString);
         if (urlMinScale && urlMaxScale) {
-            appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + getUrlVar("minScale"));
-            appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + getUrlVar("maxScale"));
+            appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + urlMinScale);
+            appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + urlMaxScale);
         } else {
             appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + map.colorScale.min);
             appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + map.colorScale.max);
