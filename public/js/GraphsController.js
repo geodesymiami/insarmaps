@@ -42,7 +42,7 @@ function AbstractGraphsController() {
     };
 
     // do as name says, return struct with min and max dates to be optionally used
-    this.getValideDatesFromNavigatorExtremes = function(chartContainer) {
+    this.getValidDatesFromNavigatorExtremes = function(chartContainer) {
         var graphSettings = this.graphSettings[chartContainer];
 
         var minDate = graphSettings.navigatorEvent.min;
@@ -372,7 +372,8 @@ function setupGraphsController() {
                         this.insarTimeSlider.dontPerformAfterSetExtremes = false;
                         // we get called when graph is created
                         this.graphSettings[chartContainer].navigatorEvent = e;
-                        var dates = this.getValideDatesFromNavigatorExtremes(chartContainer);
+                        updateUrlState(this.map);
+                        var dates = this.getValidDatesFromNavigatorExtremes(chartContainer);
                         myMap.selector.lastMinIndex = myMap.selector.minIndex;
                         myMap.selector.lastMaxIndex = myMap.selector.maxIndex;
                         // set selector to work
@@ -531,7 +532,7 @@ function setupGraphsController() {
 
     GraphsController.prototype.getLinearRegressionLine = function(chartContainer, displacement_array) {
         var graphSettings = this.graphSettings[chartContainer];
-        var validDates = this.getValideDatesFromNavigatorExtremes(
+        var validDates = this.getValidDatesFromNavigatorExtremes(
             chartContainer);
         // returns array for displacement on chart
         var chart_data = getDisplacementChartData(displacement_array,

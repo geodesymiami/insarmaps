@@ -154,7 +154,6 @@ function updateUrlState(map) {
             appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + map.colorScale.min);
             appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + map.colorScale.max);
         }
-
     } else {
         pushStateString = pushStateString.replace(/&startDataset=.+^/, "");
         if (urlOptions && urlOptions.startingDatasetOptions["pointID"]) {

@@ -59,8 +59,8 @@ function MapController(loadJSONFunc) {
     this.graphsController = new GraphsController(this);
     this.areas = null;
     this.allAreas = null;
-    var COLOR_SCALE_MIN = parseFloat($("#color-scale .top-scale-value").val());
-    var COLOR_SCALE_MAX = parseFloat($("#color-scale .bottom-scale-value").val());
+    var COLOR_SCALE_MIN = parseFloat($("#color-scale .bottom-scale-value").val());
+    var COLOR_SCALE_MAX = parseFloat($("#color-scale .top-scale-value").val());
     this.insarColorScaleValues = { min: COLOR_SCALE_MIN, max: COLOR_SCALE_MAX };
     this.colorScale = new ColorScale(COLOR_SCALE_MIN, COLOR_SCALE_MAX, "color-scale");
     this.colorScale.onScaleChange(function(newMin, newMax) {
