@@ -59,8 +59,8 @@ function MapController(loadJSONFunc) {
     this.graphsController = new GraphsController(this);
     this.areas = null;
     this.allAreas = null;
-    var COLOR_SCALE_MIN = parseInt($("#color-scale .top-scale-value").val());
-    var COLOR_SCALE_MAX = parseInt($("#color-scale .bottom-scale-value").val());
+    var COLOR_SCALE_MIN = parseFloat($("#color-scale .top-scale-value").val());
+    var COLOR_SCALE_MAX = parseFloat($("#color-scale .bottom-scale-value").val());
     this.insarColorScaleValues = { min: COLOR_SCALE_MIN, max: COLOR_SCALE_MAX };
     this.colorScale = new ColorScale(COLOR_SCALE_MIN, COLOR_SCALE_MAX, "color-scale");
     this.colorScale.onScaleChange(function(newMin, newMax) {
@@ -75,7 +75,15 @@ function MapController(loadJSONFunc) {
             } else if (curMode === "gps") {
                 this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             }
-            updateUrlState(this);
+            // only append minScale and maxScale when physically clicked. if not, just let updateURLState do it's magic.
+            // otherwise, if we just appendUrlVar every time, we will append it 
+            if (this.doubleOrHalfClicked) {
+                this.doubleOrHalfClicked = false;
+                appendUrlVar(/&minScale=-?\d*/, "&minScale=" + newMin);
+                appendUrlVar(/&maxScale=-?\d*/, "&maxScale=" + newMax);
+            } else {
+                updateUrlState(this);
+            }
         }
     }.bind(this));
     this.seismicityColorScale = new ColorScale(COLOR_SCALE_MIN, COLOR_SCALE_MAX, "seismicity-color-scale");
@@ -800,6 +808,18 @@ function MapController(loadJSONFunc) {
 
     this.loadDatasetFromFeature = function(feature, initialZoom) {
         var attributesController = new AreaAttributesController(this, feature);
+        var minScale = parseFloat(getUrlVar("minScale"));
+        var maxScale = parseFloat(getUrlVar("maxScale"));
+
+        // if we have min and max in url, use those
+        if (minScale && maxScale) {
+            negLimit = minScale;
+            posLimit = maxScale;
+            this.doNowOrOnceRendered(function() {
+                this.colorScale.setMinMax(posLimit, negLimit);
+                this.refreshDataset();
+            }.bind(this));
+        }
         $.ajax({
             url: "/preLoad",
             type: "post",
@@ -808,25 +828,21 @@ function MapController(loadJSONFunc) {
                 datasetUnavcoName: attributesController.getAttribute("unavco_name"),
             },
             success: function(response) {
-                // * 100.0 to convert from m to cm
-                var min = parseFloat(response[0].m) * 100.0;
-                var max = parseFloat(response[1].m) * 100.0;
-                var minScale = parseInt(getUrlVar("minScale"));
-                var maxScale = parseInt(getUrlVar("maxScale"));
-                var limit = this.getPermissibleMinMax(min, max);
-                var posLimit = limit;
-                var negLimit = -limit;
-
-                // if we have min and max in url, use those
-                if (minScale && maxScale) {
-                    negLimit = minScale;
-                    posLimit = maxScale;
+                if (!urlOptions) {
+                    return;
                 }
-                if (this.map.loaded()) {
-                    this.colorScale.setMinMax(posLimit, negLimit);
-                    this.refreshDataset();
-                } else {
-                    this.onceRendered(function(callback) {
+                var minScale = parseFloat(urlOptions.startingDatasetOptions.minScale);
+                var maxScale = parseFloat(urlOptions.startingDatasetOptions.minScale);
+                // if we have min and max in url, use those, so don't calculate these color scale values
+                if (!(minScale && maxScale)) {
+                    // * 100.0 to convert from m to cm
+                    var min = parseFloat(response[0].m) * 100.0;
+                    var max = parseFloat(response[1].m) * 100.0;
+                    var limit = this.getPermissibleMinMax(min, max);
+                    var posLimit = limit;
+                    var negLimit = -limit;
+
+                    this.doNowOrOnceRendered(function() {
                         this.colorScale.setMinMax(posLimit, negLimit);
                         this.refreshDataset();
                     }.bind(this));
@@ -932,9 +948,10 @@ function MapController(loadJSONFunc) {
                         this.leftClickOnAPoint(null, pointID);
                     }
                 }
+                // don't add these variables if there - because clobbers passed in minScale and maxScale
+                addUrlVarIfNotThere("minScale", "&minScale=" + this.colorScale.min);
+                addUrlVarIfNotThere("maxScale", "&maxScale=" + this.colorScale.max);
                 // in case someone called loading screen
-                appendUrlVar(/&minScale=-?\d*/, "&minScale=" + this.colorScale.min);
-                appendUrlVar(/&maxScale=-?\d*/, "&maxScale=" + this.colorScale.max);
                 hideLoadingScreen();
             }.bind(this), 1000);
         }.bind(this));
@@ -1392,6 +1409,16 @@ function MapController(loadJSONFunc) {
             }
         }.bind(this);
         this.map.on("render", renderHandler);
+    };
+
+    this.doNowOrOnceRendered = function(callback) {
+        if (this.map.loaded()) {
+            callback();
+        } else {
+            this.onceRendered(function() {
+                callback();
+            }.bind(this));
+        }
     };
 
     this.loadSwathsInCurrentViewport = function(populateTable) {
@@ -2044,7 +2071,6 @@ function loadJSON(arg, param, callback) {
         fullQuery += arg[key] + "/"
     }
 
-    console.log(fullQuery);
     var xobj = new XMLHttpRequest();
     xobj.overrideMimeType("application/json");
     xobj.open('GET', fullQuery, true); // Replace 'my_data' with the path to your file

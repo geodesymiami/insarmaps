@@ -139,7 +139,7 @@ function AreaAttributesController(map, area) {
                 this.map.colorScale.setScale(scaleType);
                 if (!(getUrlVar("minScale") && getUrlVar("maxScale"))) {
                     this.map.colorScale.setMinMax(min, max);
-                } else console.log("we not gonna do ittttT");
+                }
             }
 
             this.map.refreshDataset();

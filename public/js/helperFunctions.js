@@ -115,6 +115,14 @@ function getUrlVar(varName) {
     return url.searchParams.get(varName);
 }
 
+function addUrlVarIfNotThere(varName, varToAppend) {
+    if (!getUrlVar(varName)) {
+        var optionsString = window.location.href.split(window.location.origin)[1];
+        optionsString += varToAppend;
+        window.history.replaceState({}, "lat_lon", optionsString);
+    }
+}
+
 function appendUrlVar(varRegex, varToAppend) {
     var optionsString = window.location.href.split(window.location.origin)[1];
     var textRegex = varRegex.test(optionsString)
@@ -136,14 +144,24 @@ function updateUrlState(map) {
             pushStateString = pushStateString.replace(/&pointID=\d*/, "");
             pushStateString += "&pointID=" + pointID;
         }
+        window.history.replaceState({}, "lat_lon", pushStateString);
+        var urlMinScale = getUrlVar("minScale");
+        var urlMaxScale = getUrlVar("maxScale");
+        if (urlMinScale && urlMaxScale) {
+            appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + getUrlVar("minScale"));
+            appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + getUrlVar("maxScale"));
+        } else {
+            appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + map.colorScale.min);
+            appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + map.colorScale.max);
+        }
+
     } else {
         pushStateString = pushStateString.replace(/&startDataset=.+^/, "");
         if (urlOptions && urlOptions.startingDatasetOptions["pointID"]) {
              delete urlOptions.startingDatasetOptions["pointID"];
         }
+        window.history.replaceState({}, "lat_lon", pushStateString);
     }
-
-    window.history.replaceState({}, "lat_lon", pushStateString);
 }
 
 // see: https://stackoverflow.com/questions/1379553/how-might-i-find-the-largest-number-contained-in-a-javascript-array. this is fastest method of finding min and max in array

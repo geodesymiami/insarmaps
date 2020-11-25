@@ -849,6 +849,7 @@ $(window).on("load", function() {
         var mode = myMap.getCurrentMode();
 
         scale = myMap.colorScale;
+        scale.doubleOrHalfClicked = true;
 
         var min = scale.min;
         var max = scale.max;
@@ -864,14 +865,7 @@ $(window).on("load", function() {
             scale.setMinMax(min, max);
         }
 
-        // below line makes sure insar scale values are preserved if we are in a different mode...
-        if (myMap.pointsLoaded()) {
-            myMap.insarColorScaleValues = { min: min, max: max };
-            var dates = myMap.selector.getCurrentStartEndDateFromArea(currentArea);
-            myMap.refreshDataset(dates.startDate, dates.endDate);
-        } else if (mode === "gps") {
-            myMap.thirdPartySourcesController.refreshmidasGpsStationMarkers();
-        }
+        scale.scaleChangeCallback(min, max);
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {
