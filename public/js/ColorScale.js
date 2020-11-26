@@ -126,7 +126,6 @@ function ColorScale(min, max, divID) {
     this.divID = divID;
     this.stopsCalculator = new MapboxStopsCalculator();
     this.inDateMode = false;
-    this.doubleOrHalfClicked = false;
 
     this.jet = [
         '#000080', '#000084', '#000089', '#00008d', '#000092', '#000096',

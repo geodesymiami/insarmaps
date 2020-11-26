@@ -849,7 +849,6 @@ $(window).on("load", function() {
         var mode = myMap.getCurrentMode();
 
         scale = myMap.colorScale;
-        scale.doubleOrHalfClicked = true;
 
         var min = scale.min;
         var max = scale.max;

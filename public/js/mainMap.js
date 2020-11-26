@@ -75,15 +75,8 @@ function MapController(loadJSONFunc) {
             } else if (curMode === "gps") {
                 this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             }
-            // only append minScale and maxScale when physically clicked. if not, just let updateURLState do it's magic.
-            // otherwise, if we just appendUrlVar every time, we will append it 
-            if (this.colorScale.doubleOrHalfClicked) {
-                this.doubleOrHalfClicked = false;
-                appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + newMin);
-                appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + newMax);
-            } else {
-                updateUrlState(this);
-            }
+            appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + newMin);
+            appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + newMax);
         }
     }.bind(this));
     this.seismicityColorScale = new ColorScale(COLOR_SCALE_MIN, COLOR_SCALE_MAX, "seismicity-color-scale");
@@ -808,17 +801,19 @@ function MapController(loadJSONFunc) {
 
     this.loadDatasetFromFeature = function(feature, initialZoom) {
         var attributesController = new AreaAttributesController(this, feature);
-        var minScale = parseFloat(getUrlVar("minScale"));
-        var maxScale = parseFloat(getUrlVar("maxScale"));
+        if (urlOptions) {
+            var minScale = parseFloat(urlOptions.startingDatasetOptions.minScale);
+            var maxScale = parseFloat(urlOptions.startingDatasetOptions.maxScale);
 
-        // if we have min and max in url, use those
-        if (minScale && maxScale) {
-            negLimit = minScale;
-            posLimit = maxScale;
-            this.doNowOrOnceRendered(function() {
-                this.colorScale.setMinMax(posLimit, negLimit);
-                this.refreshDataset();
-            }.bind(this));
+            // if we have min and max in url, use those
+            if (minScale && maxScale) {
+                negLimit = minScale;
+                posLimit = maxScale;
+                this.doNowOrOnceRendered(function() {
+                    this.colorScale.setMinMax(posLimit, negLimit);
+                    this.refreshDataset();
+                }.bind(this));
+            }
         }
         $.ajax({
             url: "/preLoad",
@@ -828,24 +823,23 @@ function MapController(loadJSONFunc) {
                 datasetUnavcoName: attributesController.getAttribute("unavco_name"),
             },
             success: function(response) {
-                if (!urlOptions) {
-                    return;
-                }
-                var minScale = parseFloat(urlOptions.startingDatasetOptions.minScale);
-                var maxScale = parseFloat(urlOptions.startingDatasetOptions.minScale);
-                // if we have min and max in url, use those, so don't calculate these color scale values
-                if (!(minScale && maxScale)) {
-                    // * 100.0 to convert from m to cm
-                    var min = parseFloat(response[0].m) * 100.0;
-                    var max = parseFloat(response[1].m) * 100.0;
-                    var limit = this.getPermissibleMinMax(min, max);
-                    var posLimit = limit;
-                    var negLimit = -limit;
+                if (urlOptions) {
+                    var minScale = parseFloat(urlOptions.startingDatasetOptions.minScale);
+                    var maxScale = parseFloat(urlOptions.startingDatasetOptions.minScale);
+                    // if we have min and max in url, use those, so don't calculate these color scale values
+                    if (!(minScale && maxScale)) {
+                        // * 100.0 to convert from m to cm
+                        var min = parseFloat(response[0].m) * 100.0;
+                        var max = parseFloat(response[1].m) * 100.0;
+                        var limit = this.getPermissibleMinMax(min, max);
+                        var posLimit = limit;
+                        var negLimit = -limit;
 
-                    this.doNowOrOnceRendered(function() {
-                        this.colorScale.setMinMax(posLimit, negLimit);
-                        this.refreshDataset();
-                    }.bind(this));
+                        this.doNowOrOnceRendered(function() {
+                            this.colorScale.setMinMax(posLimit, negLimit);
+                            this.refreshDataset();
+                        }.bind(this));
+                    }
                 }
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
