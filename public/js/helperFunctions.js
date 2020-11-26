@@ -144,15 +144,34 @@ function updateUrlState(map) {
             pushStateString = pushStateString.replace(/&pointID=\d*/, "");
             pushStateString += "&pointID=" + pointID;
         }
+        // TODO: this is hackish. the fact we have to get variables before calling replaceState...
+        // a better solution might be to just keep a master url string and manipulate it before calling replaceState
+        // the functions will then work on the string as a basis rather than the url... im basically using
+        // the browser's url string as a global variable which is the hack of the century...
         var urlMinScale = getUrlVar("minScale");
         var urlMaxScale = getUrlVar("maxScale");
+        var urlMinSliderDate = getUrlVar("minDate");
+        var urlMaxSliderDate = getUrlVar("maxDate");
+
         window.history.replaceState({}, "lat_lon", pushStateString);
+
         if (urlMinScale && urlMaxScale) {
             appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + urlMinScale);
             appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + urlMaxScale);
         } else {
             appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + map.colorScale.min);
             appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + map.colorScale.max);
+        }
+        var navigatorEvent = map.graphsController.graphSettings["chartContainer"].navigatorEvent;
+
+        if (navigatorEvent) {
+            if (urlMinSliderDate && urlMaxSliderDate) {
+                appendUrlVar(/&minDate=-?\d*\.?\d*/, "&minDate=" + urlMinSliderDate);
+                appendUrlVar(/&maxDate=-?\d*\.?\d*/, "&maxDate=" + urlMaxSliderDate);
+            } else {
+                appendUrlVar(/&minDate=-?\d*\.?\d*/, "&minDate=" + navigatorEvent.min);
+                appendUrlVar(/&maxDate=-?\d*\.?\d*/, "&maxDate=" + navigatorEvent.max);
+            }
         }
     } else {
         pushStateString = pushStateString.replace(/&startDataset=.+^/, "");

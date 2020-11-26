@@ -372,7 +372,8 @@ function setupGraphsController() {
                         this.insarTimeSlider.dontPerformAfterSetExtremes = false;
                         // we get called when graph is created
                         this.graphSettings[chartContainer].navigatorEvent = e;
-                        updateUrlState(this.map);
+                        appendUrlVar(/&minDate=-?\d*\.?\d*/, "&minDate=" + e.min);
+                        appendUrlVar(/&maxDate=-?\d*\.?\d*/, "&maxDate=" + e.max);
                         var dates = this.getValidDatesFromNavigatorExtremes(chartContainer);
                         myMap.selector.lastMinIndex = myMap.selector.minIndex;
                         myMap.selector.lastMaxIndex = myMap.selector.maxIndex;
@@ -493,7 +494,24 @@ function setupGraphsController() {
                 }
             }],
             chart: {
-                marginRight: 50
+                marginRight: 50,
+                events: {
+                    load: function(e) {
+                        chartOpts.loaded = true;
+                        if (urlOptions) {
+                            // need a set timeout or it doesn't work... thanks highcharts
+                            window.setTimeout(function() {
+                                var minDate = parseInt(urlOptions.startingDatasetOptions.minDate);
+                                var maxDate = parseInt(urlOptions.startingDatasetOptions.maxDate);
+                                if (minDate && maxDate) {
+                                    myMap.graphsController.setNavigatorMinMax("chartContainer", minDate, maxDate);
+                                    delete urlOptions.startingDatasetOptions.minDate;
+                                    delete urlOptions.startingDatasetOptions.maxDate;
+                                }
+                            }.bind(this), 1000);
+                        }
+                    }.bind(this)
+                }
             },
             exporting: {
                 enabled: false
