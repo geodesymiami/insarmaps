@@ -242,12 +242,12 @@
                         <div class="scale-values">
                             <div class="left-scale-minimum">
                                 <div class="form-group">
-                                    <input type="number" class="form-control bottom-scale-value" value={{ $urlOptions['startingDatasetOptions']['minScale'] ?? '-2.0'  }} />
+                                    <input type="number" class="form-control bottom-scale-value" value={{ $urlOptions['startingDatasetOptions']['minScale'] or '-2.0'  }} />
                                 </div>
                             </div>
                             <div class="right-scale-maximum">
                                 <div class="form-group">
-                                    <input type="number" class="form-control top-scale-value" value={{ $urlOptions['startingDatasetOptions']['maxScale'] ?? '2.0'  }} />
+                                    <input type="number" class="form-control top-scale-value" value={{ $urlOptions['startingDatasetOptions']['maxScale'] or '2.0'  }} />
                                 </div>
                             </div>
                         </div>
