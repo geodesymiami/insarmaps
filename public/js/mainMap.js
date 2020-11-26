@@ -79,8 +79,8 @@ function MapController(loadJSONFunc) {
             // otherwise, if we just appendUrlVar every time, we will append it 
             if (this.colorScale.doubleOrHalfClicked) {
                 this.doubleOrHalfClicked = false;
-                appendUrlVar(/&minScale=-?\d*/, "&minScale=" + newMin);
-                appendUrlVar(/&maxScale=-?\d*/, "&maxScale=" + newMax);
+                appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + newMin);
+                appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + newMax);
             } else {
                 updateUrlState(this);
             }
