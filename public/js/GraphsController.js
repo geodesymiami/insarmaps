@@ -375,11 +375,11 @@ function setupGraphsController() {
                         appendUrlVar(/&minDate=-?\d*\.?\d*/, "&minDate=" + e.min);
                         appendUrlVar(/&maxDate=-?\d*\.?\d*/, "&maxDate=" + e.max);
                         var dates = this.getValidDatesFromNavigatorExtremes(chartContainer);
-                        myMap.selector.lastMinIndex = myMap.selector.minIndex;
-                        myMap.selector.lastMaxIndex = myMap.selector.maxIndex;
+                        this.map.selector.lastMinIndex = this.map.selector.minIndex;
+                        this.map.selector.lastMaxIndex = this.map.selector.maxIndex;
                         // set selector to work
-                        myMap.selector.minIndex = dates.minIndex;
-                        myMap.selector.maxIndex = dates.maxIndex;
+                        this.map.selector.minIndex = dates.minIndex;
+                        this.map.selector.maxIndex = dates.maxIndex;
 
                         var graphSettings = this.graphSettings[chartContainer];
                         // update velocity, even if we don't have a linear regression line, needed the extra check as this library calls this function when graph is created... sigh
@@ -480,11 +480,9 @@ function setupGraphsController() {
                         }
 
                         if (pointClickedCounter % 2 == 1) {
-                            myMap.selector.minIndex = e.point.index;
                             var minDate = chartData[e.point.index][0];
                             this.setNavigatorMin(chartContainer, minDate);
                         } else {
-                            myMap.selector.maxIndex = e.point.index;
                             var maxDate = chartData[e.point.index][0];
                             this.setNavigatorMax(chartContainer, maxDate);
                         }
@@ -504,7 +502,7 @@ function setupGraphsController() {
                                 var minDate = parseInt(urlOptions.startingDatasetOptions.minDate);
                                 var maxDate = parseInt(urlOptions.startingDatasetOptions.maxDate);
                                 if (minDate && maxDate) {
-                                    myMap.graphsController.setNavigatorMinMax("chartContainer", minDate, maxDate);
+                                    this.map.graphsController.setNavigatorMinMax("chartContainer", minDate, maxDate);
                                     delete urlOptions.startingDatasetOptions.minDate;
                                     delete urlOptions.startingDatasetOptions.maxDate;
                                 }
