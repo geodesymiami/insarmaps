@@ -2,7 +2,7 @@
 
 # runs composer and fixes permissions of some folders
 
-composer install
+composer install --no-plugins
 composer update
 chmod -R 777 storage/logs/
 chmod -R 777 bootstrap/cache/
