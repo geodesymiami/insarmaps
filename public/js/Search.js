@@ -194,7 +194,8 @@ function SearchFormController(container) {
                 var html = "<tr class='" + rowClass + "'>";
                 html += "<td>" + attributes.first_date + "</td>";
                 html += "<td>" + attributes.last_date + "</td>";
-                html += "<td>" + attributes.unavco_name + "</td>";
+                html += "<td>" + attributes.unavco_name; 
+                html += "<button>Copy</button></td>";
                 html += "</tr>";
                 $subsetSwathTableBody.append(html);
 
@@ -205,6 +206,10 @@ function SearchFormController(container) {
                         SearchFormController.loadedSubsets = false;
                         myMap.loadDatasetFromFeature(subsetFeature);
                     }
+                });
+                $("." + rowClass + " > td > button").click(function(e) {
+                    e.stopPropagation(); // don't trigger parent click event
+                    copyTextToClipboard(subsetFeature.properties.unavco_name);
                 });
             });
 
