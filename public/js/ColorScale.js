@@ -475,8 +475,12 @@ function ColorScale(min, max, divID) {
         return this.stopsCalculator.colorsToMapboxStops(min, max, this.currentScale);
     };
 
-    this.setTitle = function(title) {
-        $("#" + this.divID + " > .color-scale-text-div").html(title);
+    this.setTitle = function(title, tooltip) {
+        var $colorScaleTextDiv = $("#" + this.divID + " > .color-scale-text-div");
+        $colorScaleTextDiv.html(title);
+        if (tooltip) {
+            $colorScaleTextDiv.attr("data-original-title", tooltip); 
+        }
     };
 
     this.show = function() {

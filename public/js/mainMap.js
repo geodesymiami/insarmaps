@@ -807,11 +807,25 @@ function MapController(loadJSONFunc) {
 
             // if we have min and max in url, use those
             if (minScale && maxScale) {
-                negLimit = minScale;
-                posLimit = maxScale;
+                var negLimit = minScale;
+                var posLimit = maxScale;
                 this.doNowOrOnceRendered(function() {
                     this.colorScale.setMinMax(posLimit, negLimit);
                     this.refreshDataset();
+                }.bind(this));
+            }
+            var colorscale = urlOptions.startingDatasetOptions.colorscale;
+            if (colorscale) {
+                var dates = this.selector.getCurrentStartEndDateFromArea(feature);
+                var minDate = parseInt(urlOptions.startingDatasetOptions.minDate) || dates.startDate;
+                var maxDate = parseInt(urlOptions.startingDatasetOptions.maxDate) || dates.endDate;
+
+                this.doNowOrOnceRendered(function() {
+                    if (colorscale === "velocity") {
+                        this.colorDatasetOnVelocity(minDate, maxDate);
+                    } else if (colorscale == "displacement") {
+                        this.colorDatasetOnDisplacement(minDate, maxDate);
+                    }
                 }.bind(this));
             }
         }
@@ -942,6 +956,7 @@ function MapController(loadJSONFunc) {
                         this.leftClickOnAPoint(null, pointID);
                     }
                 }
+                addUrlVarIfNotThere("colorscale", "&colorscale=velocity");
                 updateUrlState(this);
                 // in case someone called loading screen
                 hideLoadingScreen();
@@ -1687,13 +1702,15 @@ function MapController(loadJSONFunc) {
     this.colorDatasetOnDisplacement = function(startDate, endDate) {
         this.colorOnDisplacement = true;
         this.refreshDataset(startDate, endDate);
-        this.colorScale.setTitle("LOS Displacement<br>[cm]");
+        this.colorScale.setTitle("LOS Displacement<br>[cm]", "Color on velocity");
+        updateUrlState(this);
     };
 
     this.colorDatasetOnVelocity = function(startDate, endDate) {
         this.colorOnDisplacement = false;
         this.refreshDataset(startDate, endDate);
-        this.colorScale.setTitle("LOS Velocity<br>[cm/yr]");
+        this.colorScale.setTitle("LOS Velocity<br>[cm/yr]", "Color on displacement");
+        updateUrlState(this);
     };
 
     this.pointsLoaded = function() {

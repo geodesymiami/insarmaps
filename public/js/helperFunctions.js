@@ -152,6 +152,7 @@ function updateUrlState(map) {
         var urlMaxScale = getUrlVar("maxScale");
         var urlMinSliderDate = getUrlVar("minDate");
         var urlMaxSliderDate = getUrlVar("maxDate");
+        var colorOn = getUrlVar("colorscale");
 
         window.history.replaceState({}, "lat_lon", pushStateString);
 
@@ -171,6 +172,13 @@ function updateUrlState(map) {
             } else {
                 appendUrlVar(/&minDate=-?\d*\.?\d*/, "&minDate=" + navigatorEvent.min);
                 appendUrlVar(/&maxDate=-?\d*\.?\d*/, "&maxDate=" + navigatorEvent.max);
+            }
+        }
+        if (colorOn) {
+            if (myMap.colorOnDisplacement) {
+                appendUrlVar(/&colorscale/, "&colorscale=displacement");
+            } else {
+                appendUrlVar(/&colorscale/, "&colorscale=velocity");
             }
         }
     } else {
