@@ -170,8 +170,8 @@ function updateUrlState(map) {
                 appendUrlVar(/&minDate=-?\d*\.?\d*/, "&minDate=" + urlMinSliderDate);
                 appendUrlVar(/&maxDate=-?\d*\.?\d*/, "&maxDate=" + urlMaxSliderDate);
             } else {
-                appendUrlVar(/&minDate=-?\d*\.?\d*/, "&minDate=" + navigatorEvent.min);
-                appendUrlVar(/&maxDate=-?\d*\.?\d*/, "&maxDate=" + navigatorEvent.max);
+                appendUrlVar(/&minDate=-?\d*\.?\d*/, "&minDate=" + new Date(navigatorEvent.min).yyyymmdd());
+                appendUrlVar(/&maxDate=-?\d*\.?\d*/, "&maxDate=" + new Date(navigatorEvent.max).yyyymmdd());
             }
         }
         if (colorOn) {
@@ -267,6 +267,26 @@ Array.prototype.pushArray = function() {
         this.push(toPush[i]);
     }
 };
+
+Date.prototype.yyyymmdd = function() {
+    var month = this.getMonth() + 1; // getMonth() is zero-based
+    var day = this.getDate();
+    var customStr = this.getFullYear() + (month > 9 ? "": "0") + month +
+                    (day > 9 ? "" : "0") + day;
+
+    return customStr;
+};
+
+function yyyymmddToDate(toConvert) {
+    var year = parseInt(toConvert.substring(0, 4));
+    var month = parseInt(toConvert.substring(4, 6)) - 1;
+    var day = parseInt(toConvert.substring(6));
+
+    var date = new Date();
+    date.setFullYear(year, month, day);
+
+    return date;
+}
 
 // easy copy to clipboard. thanks to:
 // https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript

@@ -372,8 +372,8 @@ function setupGraphsController() {
                         this.insarTimeSlider.dontPerformAfterSetExtremes = false;
                         // we get called when graph is created
                         this.graphSettings[chartContainer].navigatorEvent = e;
-                        appendUrlVar(/&minDate=-?\d*\.?\d*/, "&minDate=" + e.min);
-                        appendUrlVar(/&maxDate=-?\d*\.?\d*/, "&maxDate=" + e.max);
+                        appendUrlVar(/&minDate=-?\d*\.?\d*/, "&minDate=" + new Date(e.min).yyyymmdd());
+                        appendUrlVar(/&maxDate=-?\d*\.?\d*/, "&maxDate=" + new Date(e.max).yyyymmdd());
                         var dates = this.getValidDatesFromNavigatorExtremes(chartContainer);
                         this.map.selector.lastMinIndex = this.map.selector.minIndex;
                         this.map.selector.lastMaxIndex = this.map.selector.maxIndex;
@@ -499,9 +499,13 @@ function setupGraphsController() {
                         if (urlOptions) {
                             // need a set timeout or it doesn't work... thanks highcharts
                             window.setTimeout(function() {
-                                var minDate = parseInt(urlOptions.startingDatasetOptions.minDate);
-                                var maxDate = parseInt(urlOptions.startingDatasetOptions.maxDate);
+                                var minDate = urlOptions.startingDatasetOptions.minDate;
+                                var maxDate = urlOptions.startingDatasetOptions.maxDate;
                                 if (minDate && maxDate) {
+                                    var minDate = yyyymmddToDate(minDate).getTime();
+                                    var maxDate = yyyymmddToDate(maxDate).getTime();
+                                    var minDate = new Date(minDate).getTime();
+                                    var maxDate = new Date(maxDate).getTime();
                                     this.map.graphsController.setNavigatorMinMax("chartContainer", minDate, maxDate);
                                     delete urlOptions.startingDatasetOptions.minDate;
                                     delete urlOptions.startingDatasetOptions.maxDate;
