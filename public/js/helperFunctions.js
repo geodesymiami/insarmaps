@@ -136,7 +136,7 @@ function appendUrlVar(varRegex, varToAppend) {
 
 function updateUrlState(map) {
     var center = map.map.getCenter();
-    var pushStateString = "/start/" + center.lat + "/" + center.lng + "/" + map.map.getZoom();
+    var pushStateString = "/start/" + center.lat.toFixed(4) + "/" + center.lng.toFixed(4) + "/" + map.map.getZoom().toFixed(4);
     if (currentArea) {
         pushStateString += "?flyToDatasetCenter=false" + "&startDataset=" + currentArea.properties.unavco_name;
         var pointID = getUrlVar("pointID");
@@ -285,7 +285,6 @@ function fallbackCopyTextToClipboard(text) {
 
     try {
         var successful = document.execCommand('copy');
-        var msg = successful ? 'successful' : 'unsuccessful';
     } catch (err) {
         window.alert('Fallback: Oops, unable to copy', err);
     }
