@@ -159,9 +159,6 @@ function updateUrlState(map) {
         if (urlMinScale && urlMaxScale) {
             appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + urlMinScale);
             appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + urlMaxScale);
-        } else {
-            appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + map.colorScale.min);
-            appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + map.colorScale.max);
         }
         var navigatorEvent = map.graphsController.graphSettings["chartContainer"].navigatorEvent;
 
@@ -169,17 +166,10 @@ function updateUrlState(map) {
             if (urlMinSliderDate && urlMaxSliderDate) {
                 appendUrlVar(/&startDate=-?\d*\.?\d*/, "&startDate=" + urlMinSliderDate);
                 appendUrlVar(/&endDate=-?\d*\.?\d*/, "&endDate=" + urlMaxSliderDate);
-            } else {
-                appendUrlVar(/&startDate=-?\d*\.?\d*/, "&startDate=" + new Date(navigatorEvent.min).yyyymmdd());
-                appendUrlVar(/&endDate=-?\d*\.?\d*/, "&endDate=" + new Date(navigatorEvent.max).yyyymmdd());
             }
         }
         if (colorOn) {
-            if (myMap.colorOnDisplacement) {
-                appendUrlVar(/&colorscale/, "&colorscale=displacement");
-            } else {
-                appendUrlVar(/&colorscale/, "&colorscale=velocity");
-            }
+            appendUrlVar(/&colorscale=(velocity|displacement)/, "&colorscale=" + colorOn);
         }
     } else {
         pushStateString = pushStateString.replace(/&startDataset=.+^/, "");

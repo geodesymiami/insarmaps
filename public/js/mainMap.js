@@ -956,7 +956,6 @@ function MapController(loadJSONFunc) {
                         this.leftClickOnAPoint(null, pointID);
                     }
                 }
-                addUrlVarIfNotThere("colorscale", "&colorscale=velocity");
                 updateUrlState(this);
                 // in case someone called loading screen
                 hideLoadingScreen();
@@ -1703,14 +1702,14 @@ function MapController(loadJSONFunc) {
         this.colorOnDisplacement = true;
         this.refreshDataset(startDate, endDate);
         this.colorScale.setTitle("LOS Displacement<br>[cm]", "Color on velocity");
-        updateUrlState(this);
+        appendUrlVar(/&colorscale=(velocity|displacement)/, "&colorscale=displacement");
     };
 
     this.colorDatasetOnVelocity = function(startDate, endDate) {
         this.colorOnDisplacement = false;
         this.refreshDataset(startDate, endDate);
         this.colorScale.setTitle("LOS Velocity<br>[cm/yr]", "Color on displacement");
-        updateUrlState(this);
+        appendUrlVar(/&colorscale=(velocity|displacement)/, "&colorscale=velocity");
     };
 
     this.pointsLoaded = function() {
