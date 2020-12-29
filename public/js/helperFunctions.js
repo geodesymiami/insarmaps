@@ -150,8 +150,8 @@ function updateUrlState(map) {
         // the browser's url string as a global variable which is the hack of the century...
         var urlMinScale = getUrlVar("minScale");
         var urlMaxScale = getUrlVar("maxScale");
-        var urlMinSliderDate = getUrlVar("minDate");
-        var urlMaxSliderDate = getUrlVar("maxDate");
+        var urlMinSliderDate = getUrlVar("startDate");
+        var urlMaxSliderDate = getUrlVar("endDate");
         var colorOn = getUrlVar("colorscale");
 
         window.history.replaceState({}, "lat_lon", pushStateString);
@@ -167,11 +167,11 @@ function updateUrlState(map) {
 
         if (navigatorEvent) {
             if (urlMinSliderDate && urlMaxSliderDate) {
-                appendUrlVar(/&minDate=-?\d*\.?\d*/, "&minDate=" + urlMinSliderDate);
-                appendUrlVar(/&maxDate=-?\d*\.?\d*/, "&maxDate=" + urlMaxSliderDate);
+                appendUrlVar(/&startDate=-?\d*\.?\d*/, "&startDate=" + urlMinSliderDate);
+                appendUrlVar(/&endDate=-?\d*\.?\d*/, "&endDate=" + urlMaxSliderDate);
             } else {
-                appendUrlVar(/&minDate=-?\d*\.?\d*/, "&minDate=" + new Date(navigatorEvent.min).yyyymmdd());
-                appendUrlVar(/&maxDate=-?\d*\.?\d*/, "&maxDate=" + new Date(navigatorEvent.max).yyyymmdd());
+                appendUrlVar(/&startDate=-?\d*\.?\d*/, "&startDate=" + new Date(navigatorEvent.min).yyyymmdd());
+                appendUrlVar(/&endDate=-?\d*\.?\d*/, "&endDate=" + new Date(navigatorEvent.max).yyyymmdd());
             }
         }
         if (colorOn) {

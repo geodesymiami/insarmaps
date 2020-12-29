@@ -817,8 +817,8 @@ function MapController(loadJSONFunc) {
             var colorscale = urlOptions.startingDatasetOptions.colorscale;
             if (colorscale) {
                 var dates = this.selector.getCurrentStartEndDateFromArea(feature);
-                var minDate = parseInt(urlOptions.startingDatasetOptions.minDate) || dates.startDate;
-                var maxDate = parseInt(urlOptions.startingDatasetOptions.maxDate) || dates.endDate;
+                var minDate = parseInt(urlOptions.startingDatasetOptions.startDate) || dates.startDate;
+                var maxDate = parseInt(urlOptions.startingDatasetOptions.endDate) || dates.endDate;
 
                 this.doNowOrOnceRendered(function() {
                     if (colorscale === "velocity") {
