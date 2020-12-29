@@ -818,22 +818,14 @@ function MapController(loadJSONFunc) {
                     this.refreshDataset();
                 }.bind(this));
             }
-            var dates = this.selector.getCurrentStartEndDateFromArea(feature);
-            var minDate = parseInt(urlOptions.startingDatasetOptions.startDate);
-            if (!minDate) {
-                minDate = dates.startDate;
-            } else {
-                delete urlOptions.startingDatasetOptions.startDate;
-            }
-            var maxDate = parseInt(urlOptions.startingDatasetOptions.endDate);
-            if (!maxDate) {
-                maxDate = dates.endDate;
-            } else {
-                delete urlOptions.startingDatasetOptions.endDate;
-            }
-            var colorscale = urlOptions.startingDatasetOptions.colorscale;
             if (colorscale) {
                 delete urlOptions.startingDatasetOptions.colorscale;
+                var dates = this.selector.getCurrentStartEndDateFromArea(feature);
+                // don't need to delete urlOptions start and end Date. they are deleted in chart
+                // load event after properly set
+                var minDate = parseInt(urlOptions.startingDatasetOptions.startDate) || dates.startDate;
+                var maxDate = parseInt(urlOptions.startingDatasetOptions.endDate) || dates.endDate;
+                var colorscale = urlOptions.startingDatasetOptions.colorscale;
 
                 this.doNowOrOnceRendered(function() {
                     if (colorscale === "velocity") {
