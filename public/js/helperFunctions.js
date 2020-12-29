@@ -169,7 +169,7 @@ function updateUrlState(map) {
             pushStateString += "&endDate=" + urlMaxSliderDate;
         }
         if (colorOn) {
-            pushStateString += "&colorScale=" + colorOn;
+            pushStateString += "&colorscale=" + colorOn;
         }
     }
     window.history.replaceState({}, "lat_lon", pushStateString);

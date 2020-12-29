@@ -815,24 +815,38 @@ function MapController(loadJSONFunc) {
                 var posLimit = maxScale;
                 this.doNowOrOnceRendered(function() {
                     this.colorScale.setMinMax(posLimit, negLimit);
-                    this.refreshDataset();
+                    var dates = this.selector.getCurrentStartEndDateFromArea(currentArea);
+                    this.refreshDataset(dates.startDate, dates.endDate);
                 }.bind(this));
             }
+            var colorscale = urlOptions.startingDatasetOptions.colorscale;
             if (colorscale) {
-                delete urlOptions.startingDatasetOptions.colorscale;
                 var dates = this.selector.getCurrentStartEndDateFromArea(feature);
                 // don't need to delete urlOptions start and end Date. they are deleted in chart
                 // load event after properly set
-                var minDate = parseInt(urlOptions.startingDatasetOptions.startDate) || dates.startDate;
-                var maxDate = parseInt(urlOptions.startingDatasetOptions.endDate) || dates.endDate;
+                var startDate = null;
+                var endDate = null;
+                var minDate = urlOptions.startingDatasetOptions.startDate;
+                if (minDate) {
+                    startDate = yyyymmddToDate(minDate);
+                } else {
+                    startDate = dates.startDate;
+                }
+                var maxDate = urlOptions.startingDatasetOptions.endDate;
+                if (maxDate) {
+                    endDate = yyyymmddToDate(maxDate);
+                } else {
+                    endDate = dates.endDate;
+                }
                 var colorscale = urlOptions.startingDatasetOptions.colorscale;
 
                 this.doNowOrOnceRendered(function() {
                     if (colorscale === "velocity") {
-                        this.colorDatasetOnVelocity(minDate, maxDate);
+                        this.colorDatasetOnVelocity(startDate, endDate);
                     } else if (colorscale == "displacement") {
-                        this.colorDatasetOnDisplacement(minDate, maxDate);
+                        this.colorDatasetOnDisplacement(startDate, endDate);
                     }
+                    delete urlOptions.startingDatasetOptions.colorscale;
                 }.bind(this));
             }
         }
@@ -855,7 +869,8 @@ function MapController(loadJSONFunc) {
 
                     this.doNowOrOnceRendered(function() {
                         this.colorScale.setMinMax(posLimit, negLimit);
-                        this.refreshDataset();
+                        var dates = this.selector.getCurrentStartEndDateFromArea(currentArea);
+                        this.refreshDataset(dates.startDate, dates.endDate);
                     }.bind(this));
                 }
             }.bind(this),
