@@ -801,12 +801,16 @@ function MapController(loadJSONFunc) {
 
     this.loadDatasetFromFeature = function(feature, initialZoom) {
         var attributesController = new AreaAttributesController(this, feature);
+        var minScale = null;
+        var maxScale = null;
         if (urlOptions) {
-            var minScale = parseFloat(urlOptions.startingDatasetOptions.minScale);
-            var maxScale = parseFloat(urlOptions.startingDatasetOptions.maxScale);
+            minScale = parseFloat(urlOptions.startingDatasetOptions.minScale);
+            maxScale = parseFloat(urlOptions.startingDatasetOptions.maxScale);
 
             // if we have min and max in url, use those
             if (minScale && maxScale) {
+                delete urlOptions.startingDatasetOptions.minScale;
+                delete urlOptions.startingDatasetOptions.maxScale;
                 var negLimit = minScale;
                 var posLimit = maxScale;
                 this.doNowOrOnceRendered(function() {
@@ -814,11 +818,22 @@ function MapController(loadJSONFunc) {
                     this.refreshDataset();
                 }.bind(this));
             }
+            var dates = this.selector.getCurrentStartEndDateFromArea(feature);
+            var minDate = parseInt(urlOptions.startingDatasetOptions.startDate);
+            if (!minDate) {
+                minDate = dates.startDate;
+            } else {
+                delete urlOptions.startingDatasetOptions.startDate;
+            }
+            var maxDate = parseInt(urlOptions.startingDatasetOptions.endDate);
+            if (!maxDate) {
+                maxDate = dates.endDate;
+            } else {
+                delete urlOptions.startingDatasetOptions.endDate;
+            }
             var colorscale = urlOptions.startingDatasetOptions.colorscale;
             if (colorscale) {
-                var dates = this.selector.getCurrentStartEndDateFromArea(feature);
-                var minDate = parseInt(urlOptions.startingDatasetOptions.startDate) || dates.startDate;
-                var maxDate = parseInt(urlOptions.startingDatasetOptions.endDate) || dates.endDate;
+                delete urlOptions.startingDatasetOptions.colorscale;
 
                 this.doNowOrOnceRendered(function() {
                     if (colorscale === "velocity") {
@@ -837,23 +852,19 @@ function MapController(loadJSONFunc) {
                 datasetUnavcoName: attributesController.getAttribute("unavco_name"),
             },
             success: function(response) {
-                if (urlOptions) {
-                    var minScale = parseFloat(urlOptions.startingDatasetOptions.minScale);
-                    var maxScale = parseFloat(urlOptions.startingDatasetOptions.minScale);
-                    // if we have min and max in url, use those, so don't calculate these color scale values
-                    if (!(minScale && maxScale)) {
-                        // * 100.0 to convert from m to cm
-                        var min = parseFloat(response[0].m) * 100.0;
-                        var max = parseFloat(response[1].m) * 100.0;
-                        var limit = this.getPermissibleMinMax(min, max);
-                        var posLimit = limit;
-                        var negLimit = -limit;
+                // if we have min and max in url, use those, so don't calculate these color scale values
+                if (!(minScale && maxScale)) {
+                    // * 100.0 to convert from m to cm
+                    var min = parseFloat(response[0].m) * 100.0;
+                    var max = parseFloat(response[1].m) * 100.0;
+                    var limit = this.getPermissibleMinMax(min, max);
+                    var posLimit = limit;
+                    var negLimit = -limit;
 
-                        this.doNowOrOnceRendered(function() {
-                            this.colorScale.setMinMax(posLimit, negLimit);
-                            this.refreshDataset();
-                        }.bind(this));
-                    }
+                    this.doNowOrOnceRendered(function() {
+                        this.colorScale.setMinMax(posLimit, negLimit);
+                        this.refreshDataset();
+                    }.bind(this));
                 }
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -953,6 +964,7 @@ function MapController(loadJSONFunc) {
                 if (urlOptions) {
                     var pointID = urlOptions.startingDatasetOptions.pointID;
                     if (pointID) {
+                        delete urlOptions.startingDatasetOptions.pointID;
                         this.leftClickOnAPoint(null, pointID);
                     }
                 }

@@ -134,50 +134,45 @@ function appendUrlVar(varRegex, varToAppend) {
     window.history.replaceState({}, "lat_lon", optionsString);
 }
 
+// TODO: it's much cleaner now. we're really only changing the first part with /start/
+// etc. maybe just change the logic to change/deal with this part of the url, and
+// forget the rest?
+// Basically just deals with lat, long, zoom, and dataset name... everything else is
+// updated in the url in the appropriate place (aka when scale changed, dates changed,
+// etc we make the appropriate change in those functions). maybe deal with zoom and lat
+// long in their appropriate place too. and deal with startDataset and flyToDatasetCenter
+// when you click on a dataset and reset the map.
 function updateUrlState(map) {
     var center = map.map.getCenter();
     var pushStateString = "/start/" + center.lat.toFixed(4) + "/" + center.lng.toFixed(4) + "/" + map.map.getZoom().toFixed(4);
     if (currentArea) {
         pushStateString += "?flyToDatasetCenter=false" + "&startDataset=" + currentArea.properties.unavco_name;
         var pointID = getUrlVar("pointID");
-        if (pointID) {
-            pushStateString = pushStateString.replace(/&pointID=\d*/, "");
-            pushStateString += "&pointID=" + pointID;
-        }
-        // TODO: this is hackish. the fact we have to get variables before calling replaceState...
-        // a better solution might be to just keep a master url string and manipulate it before calling replaceState
-        // the functions will then work on the string as a basis rather than the url... im basically using
-        // the browser's url string as a global variable which is the hack of the century...
         var urlMinScale = getUrlVar("minScale");
         var urlMaxScale = getUrlVar("maxScale");
         var urlMinSliderDate = getUrlVar("startDate");
         var urlMaxSliderDate = getUrlVar("endDate");
         var colorOn = getUrlVar("colorscale");
-
-        window.history.replaceState({}, "lat_lon", pushStateString);
-
-        if (urlMinScale && urlMaxScale) {
-            appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + urlMinScale);
-            appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + urlMaxScale);
+        if (pointID) {
+            pushStateString += "&pointID=" + pointID;
         }
-        var navigatorEvent = map.graphsController.graphSettings["chartContainer"].navigatorEvent;
-
-        if (navigatorEvent) {
-            if (urlMinSliderDate && urlMaxSliderDate) {
-                appendUrlVar(/&startDate=-?\d*\.?\d*/, "&startDate=" + urlMinSliderDate);
-                appendUrlVar(/&endDate=-?\d*\.?\d*/, "&endDate=" + urlMaxSliderDate);
-            }
+        if (urlMinScale) {
+            pushStateString += "&minScale=" + urlMinScale;
+        }
+        if (urlMaxScale) {
+            pushStateString += "&maxScale=" + urlMaxScale;
+        }
+        if (urlMinSliderDate) {
+            pushStateString += "&startDate=" + urlMinSliderDate;
+        }
+        if (urlMaxSliderDate) {
+            pushStateString += "&endDate=" + urlMaxSliderDate;
         }
         if (colorOn) {
-            appendUrlVar(/&colorscale=(velocity|displacement)/, "&colorscale=" + colorOn);
+            pushStateString += "&colorScale=" + colorOn;
         }
-    } else {
-        pushStateString = pushStateString.replace(/&startDataset=.+^/, "");
-        if (urlOptions && urlOptions.startingDatasetOptions["pointID"]) {
-             delete urlOptions.startingDatasetOptions["pointID"];
-        }
-        window.history.replaceState({}, "lat_lon", pushStateString);
     }
+    window.history.replaceState({}, "lat_lon", pushStateString);
 }
 
 // see: https://stackoverflow.com/questions/1379553/how-might-i-find-the-largest-number-contained-in-a-javascript-array. this is fastest method of finding min and max in array
