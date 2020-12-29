@@ -1174,17 +1174,12 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 }
 
 .maximize-button-container {
-    width: 33%;
-    height: 16px;
-    float: left;
-}
-
-.maximize-button-container {
     width: 16px;
     height: 16px;
     background-color: #b8b8b8;
     display: inline-block;
     margin: 0 4px 0 4px;
+    float: left;
 }
 
 .clickable-button:active {
@@ -1304,5 +1299,13 @@ screen and (max-width:880px) {
     #USGSEvents-options {
         top: 100px;
         left: 50%;
+    }
+    #search-form-and-results-container {
+        width: 100%;
+        left: 0px;
+    }
+    .maximize-buttons-container {
+        /* min-height of 50px of charts div and and height of 16px of this container*/
+        bottom: 66px;
     }
 }
