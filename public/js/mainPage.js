@@ -223,7 +223,7 @@ function AreaAttributesPopup() {
                 console.log("failed " + xhr.responseText);
                 this.lastRequest = null;
             }
-        });/*
+        });*/
     };
 };
 
