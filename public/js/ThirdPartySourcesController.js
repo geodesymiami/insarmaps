@@ -1343,9 +1343,9 @@ function ThirdPartySourcesController(map) {
         if (IGEPNEarthquakeToggleButton !== except) {
             IGEPNEarthquakeToggleButton.set("off", true);
         }
-        if (HawaiiRelocToggleButton !== except) {
+        /*if (HawaiiRelocToggleButton !== except) {
             HawaiiRelocToggleButton.set("off", true);
-        }
+        }*/
         if (USGSEventsEarthquakeToggleButton !== except) {
             USGSEventsEarthquakeToggleButton.set("off", true);
         }
