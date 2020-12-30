@@ -199,7 +199,7 @@ function AreaAttributesPopup() {
         var html = "<a target='_blank' href='https://js-104-223.jetstream-cloud.org/data/HDF5EOS/" + area.properties.project_name + "/mintpy/pic'>Click to access processing report</a>";
         $("#processing-report-tab").html(html);
 
-        $.ajax({
+        /*$.ajax({
             url: "/driveFiles",
             success: function(response) {
                 var fileIDs = response.files;
@@ -223,7 +223,7 @@ function AreaAttributesPopup() {
                 console.log("failed " + xhr.responseText);
                 this.lastRequest = null;
             }
-        });
+        });/*
     };
 };
 

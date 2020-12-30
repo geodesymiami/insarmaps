@@ -468,6 +468,7 @@ function MapController(loadJSONFunc) {
         var features = null;
 
         if (e) {
+            console.log(e.point);
             features = this.map.queryRenderedFeatures(e.point);
         } else  {
             features = this.map.queryRenderedFeatures();
@@ -478,6 +479,7 @@ function MapController(loadJSONFunc) {
         }
 
         var feature = features[0];
+        console.log(feature);
         // pointID provided? this is our feature so find it
         if (pointID) {
             for (var f of features) {
