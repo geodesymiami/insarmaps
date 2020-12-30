@@ -464,11 +464,10 @@ function MapController(loadJSONFunc) {
         return deltaDegrees / deltaPixels;
     };
 
-    this.clickOnAPoint = function(e, pointID) {
+    this.clickOnAPoint = function(e) {
         var features = null;
 
         if (e) {
-            console.log(e.point);
             features = this.map.queryRenderedFeatures(e.point);
         } else  {
             features = this.map.queryRenderedFeatures();
@@ -479,18 +478,11 @@ function MapController(loadJSONFunc) {
         }
 
         var feature = features[0];
-        console.log(feature);
-        // pointID provided? this is our feature so find it
-        if (pointID) {
-            for (var f of features) {
-                if (f.properties.p == pointID) {
-                    feature = f;
-                    break;
-                }
-            }
-        }
+
         if (feature.properties.p) {
-            appendUrlVar(/&pointID=\d*/, "&pointID=" + parseInt(feature.properties.p));
+            var lngLat = this.map.unproject(e.point);
+            appendUrlVar(/&pointLat=-?\d*\.?\d*/, "&pointLat=" + lngLat.lat.toFixed(5));
+            appendUrlVar(/&pointLon=-?\d*\.?\d*/, "&pointLon=" + lngLat.lng.toFixed(5));
         }
         var id = feature.layer.id;
 
@@ -693,13 +685,13 @@ function MapController(loadJSONFunc) {
         return null;
     };
 
-    this.leftClickOnAPoint = function(e, pointID) {
-        this.clickOnAPoint(e, pointID);
+    this.leftClickOnAPoint = function(e) {
+        this.clickOnAPoint(e);
     };
 
-    this.rightClickOnAPoint = function(e, pointID) {
+    this.rightClickOnAPoint = function(e) {
         if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
-            this.clickOnAPoint(e, pointID);
+            this.clickOnAPoint(e);
         }
     };
 
@@ -971,10 +963,13 @@ function MapController(loadJSONFunc) {
                 attributesController.processAttributes();
                 this.areaMarkerLayer.setAreaRowHighlighted(feature.properties.unavco_name);
                 if (urlOptions) {
-                    var pointID = urlOptions.startingDatasetOptions.pointID;
-                    if (pointID) {
-                        delete urlOptions.startingDatasetOptions.pointID;
-                        this.leftClickOnAPoint(null, pointID);
+                    var pointLat = urlOptions.startingDatasetOptions.pointLat;
+                    var pointLon = urlOptions.startingDatasetOptions.pointLon;
+                    if (pointLat && pointLon) {
+                        delete urlOptions.startingDatasetOptions.pointLat;
+                        delete urlOptions.startingDatasetOptions.pointLon;
+                        var point = this.map.project([pointLon, pointLat]);
+                        this.leftClickOnAPoint({ point: point });
                     }
                 }
                 updateUrlState(this);

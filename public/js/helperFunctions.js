@@ -147,14 +147,18 @@ function updateUrlState(map) {
     var pushStateString = "/start/" + center.lat.toFixed(4) + "/" + center.lng.toFixed(4) + "/" + map.map.getZoom().toFixed(4);
     if (currentArea) {
         pushStateString += "?flyToDatasetCenter=false" + "&startDataset=" + currentArea.properties.unavco_name;
-        var pointID = getUrlVar("pointID");
+        var pointLat = getUrlVar("pointLat");
+        var pointLon = getUrlVar("pointLon");
         var urlMinScale = getUrlVar("minScale");
         var urlMaxScale = getUrlVar("maxScale");
         var urlMinSliderDate = getUrlVar("startDate");
         var urlMaxSliderDate = getUrlVar("endDate");
         var colorOn = getUrlVar("colorscale");
-        if (pointID) {
-            pushStateString += "&pointID=" + pointID;
+        if (pointLat) {
+            pushStateString += "&pointLat=" + pointLat;
+        }
+        if (pointLon) {
+            pushStateString += "&pointLon=" + pointLon;
         }
         if (urlMinScale) {
             pushStateString += "&minScale=" + urlMinScale;
