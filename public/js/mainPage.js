@@ -11,7 +11,7 @@ var gpsStationsToggleButton = null;
 var midasStationsToggleButton = null;
 var usgsEarthquakeToggleButton = null;
 var IGEPNEarthquakeToggleButton = null;
-var HawaiiRelocToggleButton = null;
+//var HawaiiRelocToggleButton = null;
 var LongValleyRelocToggleButton = null;
 var midasEastNorthStationsToggleButton = null;
 var USGSEventsEarthquakeToggleButton = null;
@@ -567,7 +567,7 @@ function setupToggleButtons() {
 
     IGEPNEarthquakeToggleButton.setDescription("Recent earthquakes provided by the Instituto Geofisico, Quito, Ecuador at <a target='_blank' href='http://www.igepn.edu.ec/portal/eventos/www/events.xml'>http://www.igepn.edu.ec/portal/eventos/www/events.xml</a>");
 
-    HawaiiRelocToggleButton = new SeismicityToggleButton("Hawaii-reloc-toggle-button", "overlay-options-toggles", "Hawaii 1992-2008 Relocations");
+    /*HawaiiRelocToggleButton = new SeismicityToggleButton("Hawaii-reloc-toggle-button", "overlay-options-toggles", "Hawaii 1992-2008 Relocations");
     HawaiiRelocToggleButton.onclick(function(state) {
         if (state == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadHawaiiReloc();
@@ -576,7 +576,7 @@ function setupToggleButtons() {
         }
     });
 
-    HawaiiRelocToggleButton.setDescription("Relocated earthquakes provided by the University of Miami at <a target='_blank' href='http://www.rsmas.miami.edu/users/glin/Hawaii.html'>http://www.rsmas.miami.edu/users/glin/Hawaii.html</a>");
+    HawaiiRelocToggleButton.setDescription("Relocated earthquakes provided by the University of Miami at <a target='_blank' href='http://www.rsmas.miami.edu/users/glin/Hawaii.html'>http://www.rsmas.miami.edu/users/glin/Hawaii.html</a>");*/
 
     LongValleyRelocToggleButton = new SeismicityToggleButton("Long-Valley-reloc-toggle-button", "overlay-options-toggles", "Long Valley 1984-2014 Relocations.");
     LongValleyRelocToggleButton.onclick(function(state) {

@@ -86,9 +86,9 @@
 	</div>
 	<div class="row">
 		<div class="col-xs-12">
-			<p>Third Party Seismicity Sources can also be loaded, using loadSeismicity and a comma separated list of any of these options: "USGS", "USGSEvents",   "IGEPNEarthquake", "LinHawaiiReloc", "LinLongValleyReloc", "UNRVerticalMidas", "UNRHorizontalMidas", "UNRGPS":</p>
+			<p>Third Party Seismicity Sources can also be loaded, using loadSeismicity and a comma separated list of any of these options: "USGS", "USGSEvents", "IGEPNEarthquake", "LinLongValleyReloc", "UNRVerticalMidas", "UNRHorizontalMidas", "UNRGPS":</p>
 			@php
-			$seismicityURL = URL::to("/") . "/start/19.7/-155.6/7.5/?loadSeismicity=LinHawaiiReloc";
+			$seismicityURL = URL::to("/") . "/start/19.7/-155.6/7.5/?loadSeismicity=UNRHorizontalMidas";
 			$seismicityURLCode = "<pre><code class='html'>&lt;iframe src='". $seismicityURL . "'&gt;&lt;/iframe&gt;</code></pre>";
 			@endphp
 			<pre><code class="html">{!! $seismicityURLCode !!}</code></pre>
@@ -98,3 +98,4 @@
 </div>
 @section('js-includes')
 @endsection @endsection
+

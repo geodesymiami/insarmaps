@@ -1373,8 +1373,12 @@ function ThirdPartySourcesController(map) {
         }
 
         callback = callback.bind(this);
+        if (sourceName === "UNRHorizontalMidas") {
+            callback(true);
+        } else {
+            callback();
+        }
 
-        callback();
     };
 
     this.populateSeismicityMagnitudeScale = function() {

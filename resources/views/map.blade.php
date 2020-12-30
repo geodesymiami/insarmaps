@@ -303,6 +303,9 @@
                 <div class="maximize-button-container">
                     <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Attributes" id="area-attributes-div-maximize-button"></button>
                 </div>
+                <div class="maximize-button-container">
+                    <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Frame Window" id="frame-window-div-maximize-button"></button>
+                </div>
             </div>
         </div>
         <div class="wrap wrap-transitions draggable minimized" id="charts" title="Displacement time-series">
