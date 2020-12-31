@@ -157,6 +157,7 @@ function setupFeatureSelector() {
             pointLayers = this.map.getInsarLayers();
         }
 
+        showLoadingScreen(loadingTextTop, loadingTextBottom);
         if (box) {
             var pixelBoundingBox = [this.map.map.project(box[0]), this.map.map.project(box[1])];
             features = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
@@ -185,7 +186,6 @@ function setupFeatureSelector() {
             return a.properties.p - b.properties.p;
         });
 
-        showLoadingScreen(loadingTextTop, loadingTextBottom);
 
         for (var i = 0; i < features.length; i++) {
             var long = features[i].geometry.coordinates[0];
