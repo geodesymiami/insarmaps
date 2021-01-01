@@ -506,7 +506,7 @@ function setupGraphsController() {
                                     var maxDate = yyyymmddToDate(maxDate).getTime();
                                     var minDate = new Date(minDate).getTime();
                                     var maxDate = new Date(maxDate).getTime();
-                                    this.map.graphsController.setNavigatorMinMax("chartContainer", minDate, maxDate);
+                                    this.setNavigatorMinMax("chartContainer", minDate, maxDate);
                                     delete urlOptions.startingDatasetOptions.startDate;
                                     delete urlOptions.startingDatasetOptions.endDate;
                                 }

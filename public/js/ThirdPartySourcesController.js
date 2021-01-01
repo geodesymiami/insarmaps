@@ -991,7 +991,7 @@ function ThirdPartySourcesController(map) {
                 var dateStringUpToDay = attributes.substring(1, 9);
 
                 // date
-                var date = customDateStringToJSDate(dateStringUpToDay);
+                var date = yyyymmddToDate(dateStringUpToDay);
                 var hour = parseFloat(attributes.substring(9, 11));
                 var minute = parseFloat(attributes.substring(11, 13));
                 var second = parseFloat(attributes.substring(13, 17));

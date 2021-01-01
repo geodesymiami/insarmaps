@@ -21,7 +21,7 @@ var getStandardDeviation = function(displacements, slope, y, decimal_dates) {
 }
 
 // falk's date string is in format yyyymmdd - ex: 20090817 
-var customDateStringToJSDate = function(dateString) {
+var yyyymmddToDate = function(dateString) {
     var year = parseInt(dateString.substr(0, 4));
     var month = parseInt(dateString.substr(4, 2));
     var day = parseInt(dateString.substr(6, 2));
@@ -33,7 +33,7 @@ var customDateStringToJSDate = function(dateString) {
 var convertStringsToDateArray = function(date_string_array) {
     var date_array = [];
     for (var i = 0; i < date_string_array.length; i++) {
-        date_array.push(customDateStringToJSDate(date_string_array[i].toString()));
+        date_array.push(yyyymmddToDate(date_string_array[i].toString()));
     }
     return date_array;
 }
@@ -99,7 +99,7 @@ function getRegressionChartData(slope, y, decimal_dates, chart_data) {
 function getDisplacementChartData(displacements, dates) {
     var data = [];
     for (i = 0; i < dates.length; i++) {
-        data.push([customDateStringToJSDate(dates[i]).getTime(), displacements[i]]);
+        data.push([yyyymmddToDate(dates[i]).getTime(), displacements[i]]);
     }
 
     return data;
@@ -265,17 +265,6 @@ Date.prototype.yyyymmdd = function() {
 
     return customStr;
 };
-
-function yyyymmddToDate(toConvert) {
-    var year = parseInt(toConvert.substring(0, 4));
-    var month = parseInt(toConvert.substring(4, 6)) - 1;
-    var day = parseInt(toConvert.substring(6));
-
-    var date = new Date();
-    date.setFullYear(year, month, day);
-
-    return date;
-}
 
 // easy copy to clipboard. thanks to:
 // https://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
