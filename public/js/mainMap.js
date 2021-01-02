@@ -1966,8 +1966,8 @@ function MapController(loadJSONFunc) {
             stops = this.colorScale.getMapboxStops();
         } else {
             var yearsDiff = (endDate - startDate) / MILLISECONDS_PER_YEAR;
-            var min = this.insarColorScaleValues.min / yearsDiff;
-            var max = this.insarColorScaleValues.max / yearsDiff;
+            var min = this.colorScale.min / yearsDiff;
+            var max = this.colorScale.max / yearsDiff;
             stops = this.colorScale.getCustomStops(min, max);
         }
         var insarLayers = this.getInsarLayers();
