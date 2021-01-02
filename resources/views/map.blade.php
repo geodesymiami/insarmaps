@@ -210,7 +210,13 @@
                         <th class="col-xs-2 col-half-offset">Rel Orbit</th>
                         <th class="col-xs-2 col-half-offset">First Frame</th>
                         <th class="col-xs-2 col-half-offset">Mode</th>
-                        <th class="col-xs-2 col-half-offset">Flight Dir.</th>
+                        <th class="col-xs-2 col-half-offset">
+                            <div class="float-left">Flight Dir.</div>
+                            <div class="float-right top-right-buttons">
+                                <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="frame-window-div-minimize-button"></button>
+                                <button type="button" class="maximize-button hidden" data-dismiss="modal" aria-label="Close" id="frame-window-div-maximize-button"></button>
+                            </div>
+                        </th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -302,9 +308,6 @@
             <div class="btn btn-primary active" id="insar-maximize-buttons-container">
                 <div class="maximize-button-container">
                     <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Attributes" id="area-attributes-div-maximize-button"></button>
-                </div>
-                <div class="maximize-button-container">
-                    <button type="button" class="maximize-button" data-dismiss="modal" aria-label="Close" data-toggle="tooltip" title="Frame Window" id="frame-window-div-maximize-button"></button>
                 </div>
             </div>
         </div>

@@ -194,8 +194,8 @@ a.btn {
 
 .top-right-buttons {
     position: absolute;
-    top: 5px;
-    right: 15px;
+    top: 0px;
+    right: 0px;
     z-index: 3;
 }
 
@@ -1115,6 +1115,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 }
 #search-form-results-table {
     font-size: 12px;
+    margin-bottom: 0px;
 }
 
 #search-form-results-table thead > tr {
@@ -1159,7 +1160,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 .maximize-buttons-container {
     position: absolute;
     right: 3%;
-    bottom: 10px;
+    bottom: 50px;
     z-index: 98;
 }
 
@@ -1270,7 +1271,7 @@ ul.tab li a:focus,
 
 /* fixed table headers */
 .table-fixed thead {
-    width: 97%;
+    width: 100%;
 }
 .table-fixed tbody {
     max-height: 230px;

@@ -906,7 +906,7 @@ $(window).on("load", function() {
 
     $(".maximize-button").on("click", function() {
         if (!$(this).hasClass("dont-hide-on-click")) {
-            $(this).css("display", "none");
+            $(this).addClass("hidden");
         }
     });
 
@@ -926,7 +926,7 @@ $(window).on("load", function() {
         }
 
         var newPosCSS = {
-            right: "0%",
+            left: "0%",
             bottom: "0%",
             top: "initial"
         };
@@ -965,6 +965,27 @@ $(window).on("load", function() {
             areaAttributesPopup.minimize(true);
         }
     });
+
+    $("#frame-window-div-maximize-button").on("click", function(
+        event) {
+        $("#search-form-results-table > tbody").removeClass("hidden");
+        $("#frame-window-div-minimize-button").removeClass("hidden");
+    });
+
+    $("#frame-window-div-minimize-button").on("click", function(
+        event) {
+        $("#search-form-results-table > tbody").addClass("hidden");
+        $("#frame-window-div-maximize-button").removeClass("hidden");
+        $(this).addClass("hidden");
+    });
+
+    // frame window minimized on mobile by default
+    if (browsingThroughMobileDevice()) {
+        $("#search-form-results-table > tbody").addClass("hidden");
+        $("#frame-window-div-maximize-button").removeClass("hidden");
+        $("#frame-window-div-minimize-button").addClass("hidden");
+    }
+
     // TODO: these minimize buttons are dying to be put into a class
     // to reduce redundant code
     $("#search-form-and-results-minimize-button").on("click", function() {
