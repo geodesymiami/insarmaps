@@ -926,7 +926,7 @@ $(window).on("load", function() {
         }
 
         var newPosCSS = {
-            left: "0%",
+            right: "0%",
             bottom: "0%",
             top: "initial"
         };
