@@ -852,8 +852,6 @@ $(window).on("load", function() {
 
         var min = scale.min;
         var max = scale.max;
-        var selectedColoring = $(".color-scale .color-scale-text-div").attr("data-original-title") === "Color on time" ?
-            "depth" : "time";
         if ($(this).attr("data-original-title") === "Halve scale") {
             min /= 2;
             max /= 2;

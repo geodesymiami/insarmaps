@@ -97,6 +97,11 @@ function MapController(loadJSONFunc) {
         }
     }.bind(this));
     this.colorOnDisplacement = false;
+    // set current coloring mode based on url
+    if (urlOptions && urlOptions.startingDatasetOptions.minScale ||
+        urlOptions.startingDatasetOptions.maxScale) {
+        this.colorOnDisplacement = true;
+    }
     this.lastAreasRequest = null;
 
     this.areaMarkerLayer = new AreaMarkerLayer(this);
@@ -1180,7 +1185,11 @@ function MapController(loadJSONFunc) {
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
     this.addDataset = function(data, feature) {
         this.colorScale.setTopAsMax(true);
+        var colorOn = getUrlVar("colorscale");
         this.colorOnDisplacement = false;
+        if (colorOn && colorOn === "displacement") {
+            this.colorOnDisplacement = true;
+        }
         var colorStops = this.colorScale.getMapboxStops();
 
         this.addSource('insar_vector_source', {
@@ -1715,15 +1724,32 @@ function MapController(loadJSONFunc) {
     };
 
     this.colorDatasetOnDisplacement = function(startDate, endDate) {
-        this.colorOnDisplacement = true;
-        this.refreshDataset(startDate, endDate);
+        // if was coloring on velocity, recalculate scales, to simulate displacement
+        if (!this.colorOnDisplacement) {
+            this.colorOnDisplacement = true;
+            var yearsDiff = (endDate - startDate) / MILLISECONDS_PER_YEAR;
+            var min = this.colorScale.min / yearsDiff;
+            var max = this.colorScale.max / yearsDiff;
+            this.colorScale.setMinMax(min, max);
+            this.colorScale.scaleChangeCallback(min, max);
+        } else {
+            this.refreshDataset(startDate, endDate);
+        }
         this.colorScale.setTitle("LOS Displacement<br>[cm]", "Color on velocity");
         appendUrlVar(/&colorscale=(velocity|displacement)/, "&colorscale=displacement");
     };
 
     this.colorDatasetOnVelocity = function(startDate, endDate) {
-        this.colorOnDisplacement = false;
-        this.refreshDataset(startDate, endDate);
+        if (this.colorOnDisplacement) {
+            this.colorOnDisplacement = false;
+            var yearsDiff = (endDate - startDate) / MILLISECONDS_PER_YEAR;
+            var min = this.colorScale.min * yearsDiff;
+            var max = this.colorScale.max * yearsDiff;
+            this.colorScale.setMinMax(min, max);
+            this.colorScale.scaleChangeCallback(min, max);
+        } else {
+            this.refreshDataset(startDate, endDate);
+        }
         this.colorScale.setTitle("LOS Velocity<br>[cm/yr]", "Color on displacement");
         appendUrlVar(/&colorscale=(velocity|displacement)/, "&colorscale=velocity");
     };
@@ -1961,15 +1987,7 @@ function MapController(loadJSONFunc) {
     };
 
     this.refreshDataset = function(startDate, endDate) {
-        var stops = null;
-        if (!this.colorOnDisplacement) {
-            stops = this.colorScale.getMapboxStops();
-        } else {
-            var yearsDiff = (endDate - startDate) / MILLISECONDS_PER_YEAR;
-            var min = this.colorScale.min / yearsDiff;
-            var max = this.colorScale.max / yearsDiff;
-            stops = this.colorScale.getCustomStops(min, max);
-        }
+        var stops = this.colorScale.getMapboxStops();
         var insarLayers = this.getInsarLayers();
         if (insarLayers) {
             insarLayers.forEach(function(layerID) {
