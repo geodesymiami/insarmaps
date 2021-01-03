@@ -138,6 +138,14 @@ function setupFeatureSelector() {
         }
     };
 
+    FeatureSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate, loadingTextTop, loadingTextBottom) {
+        const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
+        var yearsElapsed = (endDecimalDate - startDecimalDate) / millisecondsPerYear;
+        var multiplier = 1.0 / yearsElapsed;
+
+        this.recolorDatasetWithBoundingBoxAndMultiplier(null, multiplier, loadingTextTop, loadingTextBottom);
+    };
+
     FeatureSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingTextTop, loadingTextBottom) {
         // let the caller check if a coloring is in progress. otherwise user has to sometimes
         //  wait if they cancel a recoloring and want to do another one
@@ -248,9 +256,9 @@ function setupFeatureSelector() {
 
                         var before = this.map.getLayerOnTopOf("onTheFlyJSON");
                         // always use the insar color scale values for coloring on the fly...
-                        var min = this.map.colorScale.min;
-                        var max = this.map.colorScale.min;
-                        var stops = this.map.colorScale.getMapboxStops();
+                        var min = this.map.insarColorScaleValues.min * multiplier;
+                        var max = this.map.insarColorScaleValues.max * multiplier;
+                        var stops = this.map.colorScale.stopsCalculator.colorsToMapboxStops(min, max, this.map.colorScale.currentScale);
                         this.map.addLayer({
                             "id": "onTheFlyJSON",
                             "type": "circle",

@@ -961,7 +961,13 @@ function setupGraphsController() {
     GraphsController.prototype.recolorInsarFromDates = function(e, dates) {
         var selector = this.map.selector;
         if (selector.minIndex != -1 && selector.maxIndex != -1) {
-            this.map.selector.recolorDataset();
+            if (this.map.colorOnDisplacement) {
+                var startDate = new Date(dates[this.map.selector.minIndex]);
+                var endDate = new Date(dates[this.map.selector.maxIndex]);
+                this.map.selector.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE or click/tap this box to interrupt");
+            } else {
+                this.map.selector.recolorDataset();
+            }
 
             var timeSlider = this.map.seismicityGraphsController.timeSlider;
             if (timeSlider) {
