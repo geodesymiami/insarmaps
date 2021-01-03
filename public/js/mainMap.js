@@ -1466,12 +1466,17 @@ function MapController(loadJSONFunc) {
         var options = urlOptions.startingDatasetOptions;
 
         if (options.startDataset) {
+            var exists = false;
             for (var i = 0; i < this.allAreas.length; i++) {
                 if (this.allAreas[i].properties.unavco_name === options.startDataset) {
+                    exists = true;
                     showLoadingScreen("Loading requested dataset...", null);
                     this.loadDatasetFromFeature(this.allAreas[i], urlOptions.startingView.zoom);
                     break;
                 }
+            }
+            if (!exists) {
+                window.alert(options.startDataset + " does not exist.");
             }
         } else if (options.onlyShowDatasets) {
             var datasetsToShow = options.onlyShowDatasets.split(",");
