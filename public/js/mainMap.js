@@ -61,7 +61,6 @@ function MapController(loadJSONFunc) {
     this.allAreas = null;
     var COLOR_SCALE_MIN = parseFloat($("#color-scale .bottom-scale-value").val());
     var COLOR_SCALE_MAX = parseFloat($("#color-scale .top-scale-value").val());
-    this.insarColorScaleValues = { min: COLOR_SCALE_MIN, max: COLOR_SCALE_MAX };
     this.colorScale = new ColorScale(COLOR_SCALE_MIN, COLOR_SCALE_MAX, "color-scale");
     this.colorScale.onScaleChange(function(newMin, newMax) {
         var curMode = this.getCurrentMode();
@@ -70,8 +69,6 @@ function MapController(loadJSONFunc) {
             if (this.pointsLoaded()) {
                 var dates = this.selector.getCurrentStartEndDateFromArea(currentArea);
                 this.refreshDataset(dates.startDate, dates.endDate);
-                this.insarColorScaleValues.min = newMin;
-                this.insarColorScaleValues.max = newMax;
             } else if (curMode === "gps") {
                 this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             }
