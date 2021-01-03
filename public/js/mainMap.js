@@ -98,8 +98,8 @@ function MapController(loadJSONFunc) {
     }.bind(this));
     this.colorOnDisplacement = false;
     // set current coloring mode based on url
-    if (urlOptions && (urlOptions.startingDatasetOptions &&
-        urlOptions.startingDatasetOptions.minScale ||
+    if (urlOptions && urlOptions.startingDatasetOptions &&
+        (urlOptions.startingDatasetOptions.minScale ||
         urlOptions.startingDatasetOptions.maxScale)) {
         this.colorOnDisplacement = true;
     }
@@ -1186,7 +1186,11 @@ function MapController(loadJSONFunc) {
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
     this.addDataset = function(data, feature) {
         this.colorScale.setTopAsMax(true);
+        var colorOn = getUrlVar("colorscale");
         this.colorOnDisplacement = false;
+        if (colorOn && colorOn === "displacement") {
+            this.colorOnDisplacement = true;
+        }
         var colorStops = this.colorScale.getMapboxStops();
 
         this.addSource('insar_vector_source', {
@@ -1721,6 +1725,17 @@ function MapController(loadJSONFunc) {
     };
 
     this.colorDatasetOnDisplacement = function(startDate, endDate) {
+        // if we were coloring on velocity, we change the color scale
+        // in such a way that the dataset retains the same colors as the current
+        // velocity coloring
+        if (!this.colorOnDisplacement) {
+            this.colorOnDisplacement = true;
+            var yearsDiff = (endDate - startDate) / MILLISECONDS_PER_YEAR;
+            var min = this.colorScale.min * yearsDiff;
+            var max = this.colorScale.max * yearsDiff;
+            this.colorScale.setMinMax(min, max);
+            this.colorScale.scaleChangeCallback(min, max);
+        }
         this.colorOnDisplacement = true;
         this.refreshDataset(startDate, endDate);
         this.colorScale.setTitle("LOS Displacement<br>[cm]", "Color on velocity");
@@ -1728,6 +1743,17 @@ function MapController(loadJSONFunc) {
     };
 
     this.colorDatasetOnVelocity = function(startDate, endDate) {
+        // if we were coloring on displacement, we change the color scale
+        // in such a way that the dataset retains the same colors as the current
+        // displacement coloring
+        if (this.colorOnDisplacement) {
+            this.colorOnDisplacement = false;
+            var yearsDiff = (endDate - startDate) / MILLISECONDS_PER_YEAR;
+            var min = this.colorScale.min / yearsDiff;
+            var max = this.colorScale.max / yearsDiff;
+            this.colorScale.setMinMax(min, max);
+            this.colorScale.scaleChangeCallback(min, max);
+        }
         this.colorOnDisplacement = false;
         this.refreshDataset(startDate, endDate);
         this.colorScale.setTitle("LOS Velocity<br>[cm/yr]", "Color on displacement");
