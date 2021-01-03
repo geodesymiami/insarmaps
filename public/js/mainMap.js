@@ -98,8 +98,9 @@ function MapController(loadJSONFunc) {
     }.bind(this));
     this.colorOnDisplacement = false;
     // set current coloring mode based on url
-    if (urlOptions && urlOptions.startingDatasetOptions.minScale ||
-        urlOptions.startingDatasetOptions.maxScale) {
+    if (urlOptions && (urlOptions.startingDatasetOptions &&
+        urlOptions.startingDatasetOptions.minScale ||
+        urlOptions.startingDatasetOptions.maxScale)) {
         this.colorOnDisplacement = true;
     }
     this.lastAreasRequest = null;
