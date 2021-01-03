@@ -1738,7 +1738,8 @@ function MapController(loadJSONFunc) {
             var yearsDiff = (endDate - startDate) / MILLISECONDS_PER_YEAR;
             var min = this.colorScale.min * yearsDiff;
             var max = this.colorScale.max * yearsDiff;
-            this.colorScale.setMinMax(min, max);
+            var limit = this.getPermissibleMinMax(min, max);
+            this.colorScale.setMinMax(-limit, limit);
             this.colorScale.scaleChangeCallback(min, max);
         }
         this.colorOnDisplacement = true;
@@ -1756,7 +1757,8 @@ function MapController(loadJSONFunc) {
             var yearsDiff = (endDate - startDate) / MILLISECONDS_PER_YEAR;
             var min = this.colorScale.min / yearsDiff;
             var max = this.colorScale.max / yearsDiff;
-            this.colorScale.setMinMax(min, max);
+            var limit = this.getPermissibleMinMax(min, max);
+            this.colorScale.setMinMax(-limit, limit);
             this.colorScale.scaleChangeCallback(min, max);
         }
         this.colorOnDisplacement = false;
