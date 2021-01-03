@@ -446,7 +446,7 @@ function setupGraphsController() {
             },
             tooltip: {
                 headerFormat: '',
-                pointFormat: '{point.x:%e. %b %Y}: {point.y:.6f} cm'
+                pointFormat: '{point.x:%e. %b %Y}: {point.y:.1f} cm'
             },
             series: [{
                 type: 'scatter',
