@@ -69,9 +69,9 @@ function MapController(loadJSONFunc) {
         if (curMode) { // no mode (ie essentially empty map)
             if (this.pointsLoaded()) {
                 var dates = this.selector.getCurrentStartEndDateFromArea(currentArea);
-                this.refreshDataset(dates.startDate, dates.endDate);
                 this.insarColorScaleValues.min = newMin;
                 this.insarColorScaleValues.max = newMax;
+                this.refreshDataset(dates.startDate, dates.endDate);
             } else if (curMode === "gps") {
                 this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             }
