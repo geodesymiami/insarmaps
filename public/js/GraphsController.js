@@ -446,7 +446,20 @@ function setupGraphsController() {
             },
             tooltip: {
                 headerFormat: '',
-                pointFormat: '{point.x:%e. %b %Y}: {point.y:.1f} cm'
+                pointFormatter: function() {
+                    var months = ["Jan.", "Feb.", "Mar.", "Apr.", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."];
+                    var d = new Date(this.x);
+                    var str = d.getDate() + " " + months[d.getMonth()] + " "
+                                + d.getFullYear();
+                    str += ": " + this.y.toFixed(1) + " cm<br>";
+                    if (pointClickedCounter % 2 == 0) {
+                        str += "Select start date";
+                    } else {
+                        str += "Select end date";
+                    }
+
+                    return str;
+                }
             },
             series: [{
                 type: 'scatter',
@@ -460,14 +473,12 @@ function setupGraphsController() {
                     // feature: when user clicks point, set point to be min or max index
                     // of graph depending on odd or even number of clicks
                     click: function(e) {
-                        pointClickedCounter++;
                         var graphSettings = this.graphSettings[chartContainer];
                         var chartData = graphSettings.chart_data;
                         var chart = $('#' + chartContainer).highcharts();
                         var extremes = chart.xAxis[0].getExtremes();
                         var minMax = this.mapExtremesToArrayIndeces(extremes.min, extremes.max, graphSettings.date_array);
 
-                        console.log(minMax.maxIndex - minMax.minIndex);
                         // only two points in view, so return
                         if ((minMax.maxIndex - minMax.minIndex) < 2) {
                             return;
@@ -475,9 +486,16 @@ function setupGraphsController() {
 
                         // stop user from clicking same point twice
                         if (e.point.index == lastPointClicked) {
-                            console.log("repeat");
+                            if (pointClickedCounter % 2 == 0) {
+                                window.alert("That start date is the same as the end date");
+                            } else {
+                                window.alert("That end date is the same as the start date");
+                            }
+
                             return;
                         }
+
+                        pointClickedCounter++;
 
                         if (pointClickedCounter % 2 == 1) {
                             var minDate = chartData[e.point.index][0];
