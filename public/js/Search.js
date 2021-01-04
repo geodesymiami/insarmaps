@@ -173,7 +173,8 @@ function SearchFormController(container) {
             $subsetSwathTableBody = $("#subset-swath-table > tbody").empty();
             var attributesController = new AreaAttributesController(myMap, mainFeature);
             var $subsetSwathPopup = $("#subset-swath-popup");
-            if (!$subsetSwathPopup.hasClass("active")) {
+            var $sfrContainer = $("#search-form-and-results-container");
+            if (!$subsetSwathPopup.hasClass("active") && $sfrContainer.hasClass("maximized")) {
                 $subsetSwathPopup.addClass("active");
                 var rowCoords = $(this).offset();
                 var subsetLeft = rowCoords.left + $(this).width();

@@ -603,7 +603,7 @@ function setupToggleButtons() {
         }
 
         new SearchFormController("search-form").search();
-        $("#search-form-and-results-maximize-button").click();
+        $("#frame-window-div-maximize-button").click();
     });
 }
 
@@ -970,6 +970,7 @@ $(window).on("load", function() {
         event) {
         $("#search-form-results-table > tbody").removeClass("hidden");
         $("#frame-window-div-minimize-button").removeClass("hidden");
+        $("#search-form-and-results-container").addClass("maximized").removeClass("minimized");
     });
 
     $("#frame-window-div-minimize-button").on("click", function(
@@ -977,6 +978,13 @@ $(window).on("load", function() {
         $("#search-form-results-table > tbody").addClass("hidden");
         $("#frame-window-div-maximize-button").removeClass("hidden");
         $(this).addClass("hidden");
+        $("#search-form-and-results-container").addClass("minimized").removeClass("maximized");
+
+        // minimize subset swath if it is up
+        $subsetSwathPopup = $("#subset-swath-popup");
+        if ($subsetSwathPopup.hasClass("active")) {
+            $subsetSwathPopup.removeClass("active");
+        }
     });
 
     // frame window minimized on mobile by default
@@ -986,28 +994,7 @@ $(window).on("load", function() {
         $("#frame-window-div-minimize-button").addClass("hidden");
     }
 
-    // TODO: these minimize buttons are dying to be put into a class
-    // to reduce redundant code
-    $("#search-form-and-results-minimize-button").on("click", function() {
-        // heights in percent
-        var container = $("#search-form-and-results-container");
-        if (container.hasClass("maximized")) {
-            $("#search-form-and-results-maximize-button").css("display", "block");
-            container.css("display", "none");
-            container.removeClass("maximized");
-            container.addClass("minimized");
-        }
-
-        // minimize subset swath if it is up
-        $subsetSwathPopup = $("#subset-swath-popup");
-        if ($subsetSwathPopup.hasClass("active")) {
-            $subsetSwathPopup.removeClass("active");
-        }
-
-        myMap.map.resize();
-    });
-
-    // TODO: again, these minimize buttons are dying to be abstracted into a class along with
+    // TODO: these minimize buttons are dying to be abstracted into a class along with
     // other toggable, 2 state items
     $("#seismicity-charts-minimize-button").on("click", function() {
         var $container = $(".wrap#seismicity-charts");
@@ -1257,7 +1244,7 @@ $(window).on("load", function() {
 
         if (event.keyCode == ENTER_KEY && $(this).val()) {
             search();
-            $("#search-form-and-results-maximize-button").click();
+            $("#frame-window-div-maximize-button").click();
         }
     });
 
