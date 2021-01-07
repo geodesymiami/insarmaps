@@ -75,8 +75,8 @@ function MapController(loadJSONFunc) {
             } else if (curMode === "gps") {
                 this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
             }
-            appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + newMin);
-            appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + newMax);
+            appendOrReplaceUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + newMin);
+            appendOrReplaceUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + newMax);
         }
     }.bind(this));
     this.seismicityColorScale = new ColorScale(COLOR_SCALE_MIN, COLOR_SCALE_MAX, "seismicity-color-scale");
@@ -487,8 +487,8 @@ function MapController(loadJSONFunc) {
 
         if (feature.properties.p) {
             var lngLat = this.map.unproject(e.point);
-            appendUrlVar(/&pointLat=-?\d*\.?\d*/, "&pointLat=" + lngLat.lat.toFixed(5));
-            appendUrlVar(/&pointLon=-?\d*\.?\d*/, "&pointLon=" + lngLat.lng.toFixed(5));
+            appendOrReplaceUrlVar(/&pointLat=-?\d*\.?\d*/, "&pointLat=" + lngLat.lat.toFixed(5));
+            appendOrReplaceUrlVar(/&pointLon=-?\d*\.?\d*/, "&pointLon=" + lngLat.lng.toFixed(5));
         }
         var id = feature.layer.id;
 
@@ -869,8 +869,8 @@ function MapController(loadJSONFunc) {
 
                     this.doNowOrOnceRendered(function() {
                         this.colorScale.setMinMax(posLimit, negLimit);
-                        appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + posLimit);
-                        appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + negLimit);
+                        appendOrReplaceUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + posLimit);
+                        appendOrReplaceUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + negLimit);
 
                         var dates = this.selector.getCurrentStartEndDateFromArea(currentArea);
                         this.refreshDataset(dates.startDate, dates.endDate);
@@ -1748,7 +1748,7 @@ function MapController(loadJSONFunc) {
         this.colorOnDisplacement = true;
         this.refreshDataset(startDate, endDate);
         this.colorScale.setTitle("LOS Displacement<br>[cm]", "Color on velocity");
-        appendUrlVar(/&colorscale=(velocity|displacement)/, "&colorscale=displacement");
+        appendOrReplaceUrlVar(/&colorscale=(velocity|displacement)/, "&colorscale=displacement");
     };
 
     this.colorDatasetOnVelocity = function(startDate, endDate) {
@@ -1767,7 +1767,7 @@ function MapController(loadJSONFunc) {
         this.colorOnDisplacement = false;
         this.refreshDataset(startDate, endDate);
         this.colorScale.setTitle("LOS Velocity<br>[cm/yr]", "Color on displacement");
-        appendUrlVar(/&colorscale=(velocity|displacement)/, "&colorscale=velocity");
+        appendOrReplaceUrlVar(/&colorscale=(velocity|displacement)/, "&colorscale=velocity");
     };
 
     this.pointsLoaded = function() {

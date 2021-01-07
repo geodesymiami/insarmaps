@@ -123,7 +123,7 @@ function addUrlVarIfNotThere(varName, varToAppend) {
     }
 }
 
-function appendUrlVar(varRegex, varToAppend) {
+function appendOrReplaceUrlVar(varRegex, varToAppend) {
     var optionsString = window.location.href.split(window.location.origin)[1];
     var textRegex = varRegex.test(optionsString)
     if (!textRegex) {

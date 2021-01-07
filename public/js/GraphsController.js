@@ -372,8 +372,8 @@ function setupGraphsController() {
                         this.insarTimeSlider.dontPerformAfterSetExtremes = false;
                         // we get called when graph is created
                         this.graphSettings[chartContainer].navigatorEvent = e;
-                        appendUrlVar(/&startDate=-?\d*\.?\d*/, "&startDate=" + new Date(e.min).yyyymmdd());
-                        appendUrlVar(/&endDate=-?\d*\.?\d*/, "&endDate=" + new Date(e.max).yyyymmdd());
+                        appendOrReplaceUrlVar(/&startDate=-?\d*\.?\d*/, "&startDate=" + new Date(e.min).yyyymmdd());
+                        appendOrReplaceUrlVar(/&endDate=-?\d*\.?\d*/, "&endDate=" + new Date(e.max).yyyymmdd());
                         var dates = this.getValidDatesFromNavigatorExtremes(chartContainer);
                         this.map.selector.lastMinIndex = this.map.selector.minIndex;
                         this.map.selector.lastMaxIndex = this.map.selector.maxIndex;
