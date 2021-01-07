@@ -869,6 +869,9 @@ function MapController(loadJSONFunc) {
 
                     this.doNowOrOnceRendered(function() {
                         this.colorScale.setMinMax(posLimit, negLimit);
+                        appendUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + posLimit);
+                        appendUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + negLimit);
+
                         var dates = this.selector.getCurrentStartEndDateFromArea(currentArea);
                         this.refreshDataset(dates.startDate, dates.endDate);
                     }.bind(this));
