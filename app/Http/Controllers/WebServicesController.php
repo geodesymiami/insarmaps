@@ -936,7 +936,7 @@ class WebServicesController extends Controller {
         try {
             $file->move(self::$MBTILES_PATH, $fileName);
         } catch (Exception $e) {
-            return response("Error storing file", 500);
+            return response($e->getMessage(), 500);
         }
 
         return response("Successfully stored file", 200);
