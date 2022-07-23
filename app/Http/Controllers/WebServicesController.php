@@ -931,9 +931,9 @@ class WebServicesController extends Controller {
     }
 
     public function uploadMbtiles(Request $request) {
-        $file = $request->file("file");
-        $fileName = $file->getClientOriginalName();
         try {
+            $file = $request->file("file");
+            $fileName = $file->getClientOriginalName();
             $file->move(self::$MBTILES_PATH, $fileName);
         } catch (Exception $e) {
             return response($e->getMessage(), 500);
