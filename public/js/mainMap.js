@@ -1678,7 +1678,9 @@ function MapController(loadJSONFunc) {
                 var pointLayers = this.getInsarLayers();
                 this.onceRendered(function() {
                     this.selector.recolorDataset();
-                    this.hideInsarLayers();
+                    this.onceRendered(function() {
+                        this.hideInsarLayers();;
+                    }.bind(this));
                 }.bind(this));
                 showLoadingScreen("Rendering at new zoom level", null);
                 this.showInsarLayers();
