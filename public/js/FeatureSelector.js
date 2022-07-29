@@ -208,17 +208,56 @@ function setupFeatureSelector() {
                     query += features[i].properties.p.toString() + "/";
                     featuresMap[curFeatureKey] = "1";
 
-                    geoJSONData.features.push({
-                        "type": "Feature",
-                        "geometry": {
-                            "type": "Point",
-                            "coordinates": [long, lat]
-                        },
-                        "properties": {
-                            "m": 0,
-                            "p": features[i].properties.p
+                    if (this.map.highResMode() || !this.map.insarActualPixelSize) {
+                        geoJSONData.features.push({
+                            "type": "Feature",
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [long, lat]
+                            },
+                            "properties": {
+                                "m": 0,
+                                "p": features[i].properties.p
+                            }
+                        });
+                    } else {
+                        if (features[0].geometry.type == "Polygon") {
+                            // when we query only the current onTheFlyJSON, we might get polygons or points.
+                            // not a problem when we query the mbtiles insar layer as we only get points then
+                            geoJSONData.features.push({
+                                "type": "Feature",
+                                "geometry": {
+                                    "type": "Polygon",
+                                    "coordinates": features[i].geometry.coordinates
+                                },
+                                "properties": {
+                                    "m": 0,
+                                    "p": features[i].properties.p
+                                }
+                            });
+                        } else {
+                            var attributesController = new AreaAttributesController(this.map, currentArea);
+                            var x_step = parseFloat(attributesController.getAttribute("X_STEP"));
+                            var y_step = parseFloat(attributesController.getAttribute("Y_STEP"));
+
+                            geoJSONData.features.push({
+                                "type": "Feature",
+                                "geometry": {
+                                    "type": "Polygon",
+                                    "coordinates": [
+                                        [
+                                            [long, lat], [long + x_step, lat], [long + x_step, lat + y_step],
+                                            [long, lat + y_step, long, lat]
+                                        ]
+                                    ]
+                                },
+                                "properties": {
+                                    "m": 0,
+                                    "p": features[i].properties.p
+                                }
+                            });
                         }
-                    });
+                    }
                 }
 
                 //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
@@ -250,6 +289,11 @@ function setupFeatureSelector() {
 
 
                             var geoJSONSource = this.map.map.getSource("onTheFlyJSON");
+                            // always use the insar color scale values for coloring on the fly...
+                            var min = this.map.insarColorScaleValues.min * multiplier;
+                            var max = this.map.insarColorScaleValues.max * multiplier;
+                            var stops = this.map.colorScale.stopsCalculator.colorsToMapboxStops(min, max, this.map.colorScale.currentScale);
+                            var radii = this.map.highResMode() ? this.map.highResRadiusStops: this.map.radiusStops;
                             if (geoJSONSource) {
                                 geoJSONSource.setData(geoJSONData);
                             } else {
@@ -262,32 +306,36 @@ function setupFeatureSelector() {
                                 });
 
                                 var before = this.map.getLayerOnTopOf("onTheFlyJSON");
-                                // always use the insar color scale values for coloring on the fly...
-                                var min = this.map.insarColorScaleValues.min * multiplier;
-                                var max = this.map.insarColorScaleValues.max * multiplier;
-                                var stops = this.map.colorScale.stopsCalculator.colorsToMapboxStops(min, max, this.map.colorScale.currentScale);
-                                this.map.addLayer({
-                                    "id": "onTheFlyJSON",
-                                    "type": "circle",
-                                    "source": "onTheFlyJSON",
-                                    "paint": {
-                                        'circle-color': {
-                                            property: 'm',
-                                            stops: stops
-                                        },
-                                        'circle-radius': {
-                                            // for an explanation of this array see here:
-                                            // https://www.mapbox.com/blog/data-driven-styling/
-                                            stops: [
-                                                [5, 2],
-                                                [8, 2],
-                                                [13, 8],
-                                                [21, 16],
-                                                [34, 32]
-                                            ]
+                                if (this.map.highResMode() || !this.map.insarActualPixelSize) {
+                                     this.map.addLayer({
+                                        "id": "onTheFlyJSON",
+                                        "type": "circle",
+                                        "source": "onTheFlyJSON",
+                                        "paint": {
+                                            'circle-color': {
+                                                property: 'm',
+                                                stops: stops
+                                            },
+                                            'circle-radius': {
+                                                // for an explanation of this array see here:
+                                                // https://www.mapbox.com/blog/data-driven-styling/
+                                                stops: radii
+                                            }
                                         }
-                                    }
-                                }, before);
+                                    }, before);
+                                } else {
+                                    this.map.addLayer({
+                                        "id": "onTheFlyJSON",
+                                        "type": "fill",
+                                        "source": "onTheFlyJSON",
+                                        "paint": {
+                                            'fill-color': {
+                                                property: 'm',
+                                                stops: stops
+                                            }
+                                        }
+                                    }, before);
+                                }
                             }
                         } else {
                             window.alert("Server encountered an error");

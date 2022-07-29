@@ -758,10 +758,14 @@ $(window).on("load", function() {
     })();
 
     $("#toggle-insar-circle-size-button").on("click", function() {
+        if (myMap.highResMode()) {
+            window.alert("This dataset is already high resolution and pixels are already actual size at high zoom levels");
+            return;
+        }
         if ($(this).html() === "Actual Size") {
             $(this).attr("data-original-title", "Reset size of insar points");
             $(this).html("Reset Size");
-            myMap.setInsarActualPixelSize(currentArea);
+            myMap.setInsarActualPixelSize(currentArea, null);
         } else if ($(this).html() === "Reset Size") {
             $(this).attr("data-original-title", "Resize insar points to their actual size. Resets on zoom change");
             $(this).html("Actual Size");

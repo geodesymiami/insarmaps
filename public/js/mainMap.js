@@ -34,6 +34,13 @@ function MapController(loadJSONFunc) {
         [21, 16],
         [34, 32]
     ];
+    this.highResRadiusStops = [
+        [5, 2],
+        [8, 2],
+        [13, 8],
+        [21, 4],
+        [34, 2]
+    ];
     // the map
     this.map = null;
     this.geoJSONSource = null;
@@ -135,6 +142,7 @@ function MapController(loadJSONFunc) {
     this.previousZoom = this.startingZoom;
 
     this.lastMode = null;
+    this.datasetCurrentlyRecolored = false;
 
     this.addSource = function(id, source) {
         this.sources.set(id, source);
@@ -516,8 +524,14 @@ function MapController(loadJSONFunc) {
             return;
         }
 
-        var long = feature.geometry.coordinates[0];
-        var lat = feature.geometry.coordinates[1];
+        var long, lat = -1;
+        if (feature.geometry.type == "Point") {
+            long = feature.geometry.coordinates[0];
+            lat = feature.geometry.coordinates[1];
+        } else if (feature._geometry.type == "Polygon") {
+            long = feature.geometry.coordinates[0][0][0];
+            lat = feature.geometry.coordinates[0][0][1];
+        }
         var pointNumber = feature.properties.p;
 
         currentPoint = pointNumber;
@@ -1104,31 +1118,102 @@ function MapController(loadJSONFunc) {
         this.map.setStyle(styleAndLayer.style);
     };
 
-    this.setInsarActualPixelSize = function(area) {
+    this.getActualSizeGeoJSON = function(features) {
+        var pointLayers = this.getInsarLayers();
+        if (!features) {
+            // if ontheflyjson is enabled, insar layers are not rendered
+            if (this.map.getLayer("onTheFlyJSON")) {
+                features = this.map.queryRenderedFeatures({ layers: ["onTheFlyJSON"] });
+            } else {
+                features = this.map.queryRenderedFeatures({ layers: pointLayers });
+            }
+        }
+        var attributesController = new AreaAttributesController(this, currentArea);
+        var x_step = parseFloat(attributesController.getAttribute("X_STEP"));
+        var y_step = parseFloat(attributesController.getAttribute("Y_STEP"));
+
+        var geoJSONData = {
+            "type": "FeatureCollection",
+            "features": []
+        };
+
+        features.forEach(function(feature) {
+            var long = feature.geometry.coordinates[0];
+            var lat = feature.geometry.coordinates[1];
+            geoJSONData.features.push({
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [long, lat], [long + x_step, lat], [long + x_step, lat + y_step],
+                            [long, lat + y_step, long, lat]
+                        ]
+                    ]
+                },
+                "properties": {
+                    "m": feature.properties.m,
+                    "p": feature.properties.p
+                }
+            });
+        });
+
+        return geoJSONData;
+    };
+
+    this.updateActualSizePixels = function() {
+        this.map.getSource("onTheFlyJSON").setData(this.getActualSizeGeoJSON());
+    };
+
+    this.setInsarActualPixelSize = function(area, stops) {
         this.insarActualPixelSize = true;
-        var attributesController = new AreaAttributesController(this.map, area);
+        var attributesController = new AreaAttributesController(this, area);
         var x_step = parseFloat(attributesController.getAttribute("X_STEP"));
         var y_step = parseFloat(attributesController.getAttribute("X_STEP"));
-        var largerStep = (x_step > y_step) ? x_step : y_step;
-        var radiusDegrees = Math.sqrt((largerStep * largerStep) + (largerStep * largerStep)) / 2.0;
-        // divide by 2.0 because we want radius, not diameter
-        var pixels = radiusDegrees / this.calculateDegreesPerPixelAtCurrentZoom();
-        this.getInsarLayers().forEach(function(layerID) {
-            if (this.map.getPaintProperty(layerID, "circle-radius")) {
-                this.map.setPaintProperty(layerID, "circle-radius", pixels);
+
+        var geoJSONData = this.getActualSizeGeoJSON();
+
+        var actualSizePixelsSource = this.map.getSource("onTheFlyJSON");
+        if (actualSizePixelsSource) {
+            actualSizePixelsSource.setData(geoJSONData);
+            this.removeLayer("onTheFlyJSON");
+        } else {
+            this.onceRendered(function() {
+                this.hideInsarLayers();
+            }.bind(this));
+            this.addSource("onTheFlyJSON", {
+                "type": "geojson",
+                "data": geoJSONData
+            });
+
+            var before = this.getLayerOnTopOf("onTheFlyJSON");
+        }
+        if (!stops) {
+            stops = this.colorScale.getMapboxStops();
+        }
+        this.addLayer({
+            "id": "onTheFlyJSON",
+            "type": "fill",
+            "source": "onTheFlyJSON",
+            "paint": {
+                'fill-color': {
+                    property: 'm',
+                    stops: stops
+                },
             }
-        }.bind(this));
+        }, before);
     };
 
     this.setInsarDefaultPixelSize = function(area) {
         this.insarActualPixelSize = false;
-        this.getInsarLayers().forEach(function(layerID) {
-            if (this.map.getPaintProperty(layerID, "circle-radius")) {
-                this.map.setPaintProperty(layerID, "circle-radius", {
-                    stops: this.radiusStops
-                });
+        if (this.map.getSource("onTheFlyJSON")) {
+            if (this.datasetCurrentlyRecolored) {
+                this.selector.recolorDataset();
+            } else {
+                this.removeSourceAndLayer("onTheFlyJSON");
             }
-        }.bind(this));
+            this.showInsarLayers();
+        }
     };
 
     this.addReferencePoint = function(area) {
@@ -1186,6 +1271,14 @@ function MapController(loadJSONFunc) {
         }
     };
 
+    this.highResMode = function() {
+        var attributesController = new AreaAttributesController(this, currentArea);
+        var x_step = parseFloat(attributesController.getAttribute("X_STEP"));
+        var y_step = parseFloat(attributesController.getAttribute("Y_STEP"));
+
+        return isNaN(x_step) || isNaN(y_step);
+    };
+
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
     this.addDataset = function(data, feature) {
         this.colorScale.setTopAsMax(true);
@@ -1207,6 +1300,11 @@ function MapController(loadJSONFunc) {
         });
 
         var before = this.getLayerOnTopOf("chunk_1");
+        var stops = this.radiusStops;
+        if (this.highResMode()) {
+            // TODO: calculate so radius corersponds to approximately 5 meters
+            stops = this.highResRadiusStops;
+        }
         data['vector_layers'].forEach(function(el) {
             var layer = {
                 id: el['id'],
@@ -1224,7 +1322,7 @@ function MapController(loadJSONFunc) {
                     'circle-radius': {
                         // for an explanation of this array see here:
                         // https://www.mapbox.com/blog/data-driven-styling/
-                        stops: this.radiusStops
+                        stops: stops
                     }
                 }
             }
@@ -1652,10 +1750,6 @@ function MapController(loadJSONFunc) {
         this.map.on('zoomend', function() {
             var currentZoom = this.map.getZoom();
 
-            if (this.insarActualPixelSize) {
-                this.setInsarDefaultPixelSize();
-            }
-
             var mode = this.getCurrentMode();
 
             // reshow area markers once we zoom out enough
@@ -2028,6 +2122,12 @@ function MapController(loadJSONFunc) {
 
         if (this.map.getLayer("onTheFlyJSON")) {
             this.map.setPaintProperty("onTheFlyJSON", "circle-color", {
+                "property": 'm',
+                "stops": stops
+            });
+        }
+        if (this.map.getLayer("onTheFlyJSON")) {
+            this.map.setPaintProperty("onTheFlyJSON", "fill-color", {
                 "property": 'm',
                 "stops": stops
             });

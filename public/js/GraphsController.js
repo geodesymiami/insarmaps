@@ -375,6 +375,7 @@ function setupGraphsController() {
                         appendOrReplaceUrlVar(/&startDate=-?\d*\.?\d*/, "&startDate=" + new Date(e.min).yyyymmdd());
                         appendOrReplaceUrlVar(/&endDate=-?\d*\.?\d*/, "&endDate=" + new Date(e.max).yyyymmdd());
                         var dates = this.getValidDatesFromNavigatorExtremes(chartContainer);
+                        this.map.datasetCurrentlyRecolored = dates.minIndex > 0 || dates.maxIndex < (date_array.length - 1);
                         this.map.selector.lastMinIndex = this.map.selector.minIndex;
                         this.map.selector.lastMaxIndex = this.map.selector.maxIndex;
                         // set selector to work
@@ -1015,6 +1016,7 @@ function setupGraphsController() {
             // set selector to work
             this.map.selector.minIndex = dates.minIndex;
             this.map.selector.maxIndex = dates.maxIndex;
+            this.map.datasetCurrentlyRecolored = dates.minIndex > 0 || dates.maxIndex < (date_array.length - 1);
 
             this.recolorInsarFromDates(e, date_array);
         }.bind(this));
