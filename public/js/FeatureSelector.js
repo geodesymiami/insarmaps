@@ -174,6 +174,7 @@ function setupFeatureSelector() {
 
                 this.lastbbox = this.bbox;
                 if (!features || features.length == 0) {
+                    hideLoadingScreen();
                     return;
                 }
 
