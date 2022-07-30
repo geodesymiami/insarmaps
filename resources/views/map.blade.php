@@ -311,7 +311,7 @@
                 </div>
             </div>
         </div>
-        <div class="wrap wrap-transitions draggable minimized" id="charts" title="Displacement time-series">
+        <div class="wrap wrap-transitions draggable minimized" id="charts">
             <div class="top-right-buttons">
                 <button type="button" class="minimize-button" data-dismiss="modal" aria-label="Close" id="graph-div-minimize-button"></button>
                 <button type="button" class="maximize-button dont-hide-on-click" data-dismiss="modal" aria-label="Close" id="graph-div-maximize-button"></button>
