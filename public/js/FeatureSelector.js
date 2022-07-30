@@ -296,7 +296,7 @@ function setupFeatureSelector() {
                                 this.map.removeLayer("onTheFlyJSON");
                             }
                             if (this.map.highResMode() || !this.map.insarActualPixelSize) {
-                                 this.map.addLayer({
+                                this.map.addLayer({
                                     "id": "onTheFlyJSON",
                                     "type": "circle",
                                     "source": "onTheFlyJSON",

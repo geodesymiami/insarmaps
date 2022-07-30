@@ -759,7 +759,7 @@ $(window).on("load", function() {
 
     $("#toggle-insar-circle-size-button").on("click", function() {
         if (myMap.highResMode()) {
-            window.alert("This dataset is already high resolution and pixels are already actual size at high zoom levels");
+            window.alert("This dataset is already high resolution, and pixels are already actual size at high zoom levels");
             return;
         }
         if ($(this).html() === "Actual Size") {

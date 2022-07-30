@@ -2087,13 +2087,18 @@ function MapController(loadJSONFunc) {
         }
 
         if (this.map.getLayer("onTheFlyJSON")) {
-            this.map.setPaintProperty("onTheFlyJSON", "circle-color", {
-                "property": 'm',
-                "stops": stops
-            });
-        }
-        if (this.map.getLayer("onTheFlyJSON")) {
-            this.map.setPaintProperty("onTheFlyJSON", "fill-color", {
+            var property = null;
+            try {
+                this.map.getPaintProperty("onTheFlyJSON", "circle-color");
+            } catch (e) {
+                property = "fill-color";
+            }
+            try {
+                this.map.getPaintProperty("onTheFlyJSON", "fill-color");
+            } catch (e) {
+                property = "circle-color";
+            }
+            this.map.setPaintProperty("onTheFlyJSON", property, {
                 "property": 'm',
                 "stops": stops
             });
