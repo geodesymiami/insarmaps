@@ -1147,7 +1147,7 @@ function MapController(loadJSONFunc) {
                     "coordinates": [
                         [
                             [long, lat], [long + x_step, lat], [long + x_step, lat + y_step],
-                            [long, lat + y_step, long, lat]
+                            [long, lat + y_step], [long, lat]
                         ]
                     ]
                 },

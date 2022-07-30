@@ -183,8 +183,6 @@ function setupFeatureSelector() {
                     "features": []
                 };
 
-                var featuresMap = [];
-
                 var query = currentArea.properties.unavco_name + "/";
 
                 // may be placebo effect, but seems to speed up query from db. also
@@ -199,14 +197,7 @@ function setupFeatureSelector() {
                     var lat = features[i].geometry.coordinates[1];
                     var curFeatureKey = features[i].properties.p.toString();
 
-                    // mapbox gives us duplicate tiles (see documentation to see how query rendered features works)
-                    // yet we only want unique features, not duplicates
-                    if (featuresMap[curFeatureKey] != null) {
-                        continue;
-                    }
-
                     query += features[i].properties.p.toString() + "/";
-                    featuresMap[curFeatureKey] = "1";
 
                     if (this.map.highResMode() || !this.map.insarActualPixelSize) {
                         geoJSONData.features.push({
@@ -221,7 +212,7 @@ function setupFeatureSelector() {
                             }
                         });
                     } else {
-                        if (features[0].geometry.type == "Polygon") {
+                        if (features[i].geometry.type == "Polygon") {
                             // when we query only the current onTheFlyJSON, we might get polygons or points.
                             // not a problem when we query the mbtiles insar layer as we only get points then
                             geoJSONData.features.push({
@@ -247,7 +238,7 @@ function setupFeatureSelector() {
                                     "coordinates": [
                                         [
                                             [long, lat], [long + x_step, lat], [long + x_step, lat + y_step],
-                                            [long, lat + y_step, long, lat]
+                                            [long, lat + y_step], [long, lat]
                                         ]
                                     ]
                                 },
