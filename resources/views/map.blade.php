@@ -607,6 +607,9 @@
     <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
     <script src="//rawgithub.com/phpepe/highcharts-regression/master/highcharts-regression.js">
     </script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
     <script type="text/javascript" src="/js/fuse.js"></script>
     <script type="text/javascript" src="/js/helperFunctions.js"></script>
     <script type="text/javascript" src="/js/GraphsController.js"></script>
