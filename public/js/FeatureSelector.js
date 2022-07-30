@@ -200,6 +200,10 @@ function setupFeatureSelector() {
                     query += features[i].properties.p.toString() + "/";
 
                     if (this.map.highResMode() || !this.map.insarActualPixelSize) {
+                        if (features[i].geometry.type == "Polygon") {
+                            long = features[i].geometry.coordinates[0][0][0];
+                            lat = features[i].geometry.coordinates[0][0][1];
+                        }
                         geoJSONData.features.push({
                             "type": "Feature",
                             "geometry": {
@@ -212,42 +216,33 @@ function setupFeatureSelector() {
                             }
                         });
                     } else {
+                        var coordinates = null;
                         if (features[i].geometry.type == "Polygon") {
                             // when we query only the current onTheFlyJSON, we might get polygons or points.
                             // not a problem when we query the mbtiles insar layer as we only get points then
-                            geoJSONData.features.push({
-                                "type": "Feature",
-                                "geometry": {
-                                    "type": "Polygon",
-                                    "coordinates": features[i].geometry.coordinates
-                                },
-                                "properties": {
-                                    "m": 0,
-                                    "p": features[i].properties.p
-                                }
-                            });
+                            coordinates = features[i].geometry.coordinates;
                         } else {
                             var attributesController = new AreaAttributesController(this.map, currentArea);
                             var x_step = parseFloat(attributesController.getAttribute("X_STEP"));
                             var y_step = parseFloat(attributesController.getAttribute("Y_STEP"));
-
-                            geoJSONData.features.push({
-                                "type": "Feature",
-                                "geometry": {
-                                    "type": "Polygon",
-                                    "coordinates": [
-                                        [
-                                            [long, lat], [long + x_step, lat], [long + x_step, lat + y_step],
-                                            [long, lat + y_step], [long, lat]
-                                        ]
+                            coordinates = [
+                                    [
+                                        [long, lat], [long + x_step, lat], [long + x_step, lat + y_step],
+                                        [long, lat + y_step], [long, lat]
                                     ]
-                                },
-                                "properties": {
-                                    "m": 0,
-                                    "p": features[i].properties.p
-                                }
-                            });
+                            ];
                         }
+                        geoJSONData.features.push({
+                            "type": "Feature",
+                            "geometry": {
+                                "type": "Polygon",
+                                "coordinates": coordinates
+                            },
+                            "properties": {
+                                "m": 0,
+                                "p": features[i].properties.p
+                            }
+                        });
                     }
                 }
 
@@ -295,45 +290,57 @@ function setupFeatureSelector() {
                                     "type": "geojson",
                                     "data": geoJSONData
                                 });
-
-                                var before = this.map.getLayerOnTopOf("onTheFlyJSON");
-                                if (this.map.highResMode() || !this.map.insarActualPixelSize) {
-                                     this.map.addLayer({
-                                        "id": "onTheFlyJSON",
-                                        "type": "circle",
-                                        "source": "onTheFlyJSON",
-                                        "paint": {
-                                            'circle-color': {
-                                                property: 'm',
-                                                stops: stops
-                                            },
-                                            'circle-radius': {
-                                                // for an explanation of this array see here:
-                                                // https://www.mapbox.com/blog/data-driven-styling/
-                                                stops: radii
-                                            }
+                            }
+                            var before = this.map.getLayerOnTopOf("onTheFlyJSON");
+                            if (this.map.map.getLayer("onTheFlyJSON")) {
+                                this.map.removeLayer("onTheFlyJSON");
+                            }
+                            if (this.map.highResMode() || !this.map.insarActualPixelSize) {
+                                 this.map.addLayer({
+                                    "id": "onTheFlyJSON",
+                                    "type": "circle",
+                                    "source": "onTheFlyJSON",
+                                    "paint": {
+                                        'circle-color': {
+                                            property: 'm',
+                                            stops: stops
+                                        },
+                                        'circle-radius': {
+                                            // for an explanation of this array see here:
+                                            // https://www.mapbox.com/blog/data-driven-styling/
+                                            stops: radii
                                         }
-                                    }, before);
-                                } else {
-                                    this.map.addLayer({
-                                        "id": "onTheFlyJSON",
-                                        "type": "fill",
-                                        "source": "onTheFlyJSON",
-                                        "paint": {
-                                            'fill-color': {
-                                                property: 'm',
-                                                stops: stops
-                                            }
+                                    }
+                                }, before);
+                            } else {
+                                this.map.addLayer({
+                                    "id": "onTheFlyJSON",
+                                    "type": "fill",
+                                    "source": "onTheFlyJSON",
+                                    "paint": {
+                                        'fill-color': {
+                                            property: 'm',
+                                            stops: stops
                                         }
-                                    }, before);
-                                }
+                                    }
+                                }, before);
                             }
                         } else {
                             window.alert("Server encountered an error");
                         }
 
                         this.recoloringInProgress = false;
-                        hideLoadingScreen();
+                        this.map.onceRendered(function() {
+                            // since we remove and add the oonTheFlyJSON layer
+                            // (because we alternate between points and polygons
+                            // now for actual size), sometimes the loading screen
+                            // will be removed but the layer not rendered yet
+                            // causing exception in queryRenderedFeatures
+                            // on mousemove if user does it fast enough.
+                            // hiding loading screen only after layer has been rendered
+                            // prevents this
+                            hideLoadingScreen();
+                        }.bind(this));
                     }.bind(this),
                     error: function(xhr, ajaxOptions, thrownError) {
                         console.log("failed " + xhr.responseText);

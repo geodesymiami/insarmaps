@@ -1167,41 +1167,7 @@ function MapController(loadJSONFunc) {
 
     this.setInsarActualPixelSize = function(area, stops) {
         this.insarActualPixelSize = true;
-        var attributesController = new AreaAttributesController(this, area);
-        var x_step = parseFloat(attributesController.getAttribute("X_STEP"));
-        var y_step = parseFloat(attributesController.getAttribute("X_STEP"));
-
-        var geoJSONData = this.getActualSizeGeoJSON();
-
-        var actualSizePixelsSource = this.map.getSource("onTheFlyJSON");
-        if (actualSizePixelsSource) {
-            actualSizePixelsSource.setData(geoJSONData);
-            this.removeLayer("onTheFlyJSON");
-        } else {
-            this.onceRendered(function() {
-                this.hideInsarLayers();
-            }.bind(this));
-            this.addSource("onTheFlyJSON", {
-                "type": "geojson",
-                "data": geoJSONData
-            });
-
-            var before = this.getLayerOnTopOf("onTheFlyJSON");
-        }
-        if (!stops) {
-            stops = this.colorScale.getMapboxStops();
-        }
-        this.addLayer({
-            "id": "onTheFlyJSON",
-            "type": "fill",
-            "source": "onTheFlyJSON",
-            "paint": {
-                'fill-color': {
-                    property: 'm',
-                    stops: stops
-                },
-            }
-        }, before);
+        this.selector.recolorDataset();
     };
 
     this.setInsarDefaultPixelSize = function(area) {
@@ -1211,8 +1177,8 @@ function MapController(loadJSONFunc) {
                 this.selector.recolorDataset();
             } else {
                 this.removeSourceAndLayer("onTheFlyJSON");
+                this.showInsarLayers();
             }
-            this.showInsarLayers();
         }
     };
 
