@@ -587,8 +587,8 @@
     var urlOptions = {!! json_encode($urlOptions) !!};
     </script>
     <link rel="stylesheet" href="/css/slideout.css" />
-    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.2/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css' rel='stylesheet' />
     <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
     <script src="https://unpkg.com/terraformer@1.0.8"></script>
     <script src="https://unpkg.com/terraformer-wkt-parser@1.1.2"></script>
