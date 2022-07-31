@@ -1008,7 +1008,9 @@ function MapController(loadJSONFunc) {
                 localStorage.setItem("colorScaleTip", "true");
             } catch (e) {}
         }
-    };
+        document.getElementsByTagName("title")[0].innerHTML = "Insar Viewer - University of Miami "
+                                        + attributesController.getAttribute("unavco_name");
+        };
 
     this.clickOnAnAreaMarker = function(e) {
         var features = this.map.queryRenderedFeatures(e.point);
