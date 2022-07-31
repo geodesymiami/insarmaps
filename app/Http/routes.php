@@ -60,3 +60,5 @@ Route::get("/WebServicesBox/{area}/{lineString}", "WebServicesBoxController@getP
 
 Route::post("/WebServices/uploadMbtiles", "WebServicesController@uploadMbtiles")->middleware("auth");
 Route::post("/WebServices/deleteMbtiles", "WebServicesController@deleteMbtiles")->middleware("auth");
+Route::get("/diskSpace/", "WebServicesController@diskSpace")->name("getDiskSpace");
+

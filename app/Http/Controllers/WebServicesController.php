@@ -959,6 +959,16 @@ class WebServicesController extends Controller {
         return response("Successfully deleted file", 200);
     }
 
+    public function diskSpace(Request $request) {
+        $DATA_DIR = "/data/";
+        $json = [
+            $DATA_DIR => disk_free_space($DATA_DIR),
+            self::$MBTILES_PATH => disk_free_space(self::$MBTILES_PATH)
+        ];
+
+        return response()->json($json);
+    }
+
     /**
      * Return Laravel view object for webservice UI for querying points
      *
