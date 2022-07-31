@@ -948,7 +948,7 @@ function MapController(loadJSONFunc) {
         $("#hide-when-only-show-sliders").css("display", "none");
         this.graphsController.createInsarSliderForDataset(currentArea);
         if (initialZoom) {
-            this.zoomOutZoom = initialZoom;
+            this.zoomOutZoom = initialZoom - 4;
         }
 
         this.map.once("data", function(event) {
