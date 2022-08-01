@@ -183,6 +183,8 @@ function setupFeatureSelector() {
                     "features": []
                 };
 
+                var featuresMap = [];
+
                 var query = currentArea.properties.unavco_name + "/";
 
                 // may be placebo effect, but seems to speed up query from db. also
@@ -197,7 +199,13 @@ function setupFeatureSelector() {
                     var lat = features[i].geometry.coordinates[1];
                     var curFeatureKey = features[i].properties.p.toString();
 
+                    // mapbox gives us duplicate tiles (see documentation to see how query rendered features works)
+                    // yet we only want unique features, not duplicates
+                    if (featuresMap[curFeatureKey] != null) {
+                        continue;
+                    }
                     query += features[i].properties.p.toString() + "/";
+                    featuresMap[curFeatureKey] = "1";
 
                     if (this.map.highResMode() || !this.map.insarActualPixelSize) {
                         if (features[i].geometry.type == "Polygon") {
@@ -250,8 +258,11 @@ function setupFeatureSelector() {
                 //console.log(query);
                 this.recoloringInProgress = true;
                 hideLoadingScreenWithClick(function() {
+                    geoJSONData = null;
+                    features = null;
                     this.cancellableAjax.cancel();
                 }.bind(this));
+                features = null;
 
                 this.cancellableAjax.xmlHTTPRequestAjax({
                     url: "/points",
@@ -291,6 +302,7 @@ function setupFeatureSelector() {
                                     "data": geoJSONData
                                 });
                             }
+                            geoJSONData = null;
                             var before = this.map.getLayerOnTopOf("onTheFlyJSON");
                             if (this.map.map.getLayer("onTheFlyJSON")) {
                                 this.map.removeLayer("onTheFlyJSON");
@@ -329,6 +341,7 @@ function setupFeatureSelector() {
                             window.alert("Server encountered an error");
                         }
 
+                        mapboxgl.clearStorage()
                         this.recoloringInProgress = false;
                         this.map.onceRendered(function() {
                             // since we remove and add the oonTheFlyJSON layer
@@ -346,6 +359,7 @@ function setupFeatureSelector() {
                         console.log("failed " + xhr.responseText);
                         this.map.showInsarLayers();
                         this.doneRecoloring();
+                        geoJSONData = null;
                     }.bind(this),
                     requestHeader: {
                         'Content-type': 'application/x-www-form-urlencoded'
@@ -354,6 +368,7 @@ function setupFeatureSelector() {
                 }, function() {
                     this.map.showInsarLayers();
                     this.doneRecoloring();
+                    geoJSONData = null;
                 }.bind(this));
             }.bind(this));
         }.bind(this));
