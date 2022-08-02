@@ -2,77 +2,93 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
-use App\Http\Requests;
-use DateTime;
 use DB;
-use Illuminate\Support\Facades\Input;
 
 class PermissionsController extends Controller {
-	// get permissions by id
-	public function getPermissions($tableName, $permissionsTableName, $joinConditions) {
-		$sql = "SELECT * FROM " . $tableName . " INNER JOIN " . $permissionsTableName . " ON (" . $joinConditions[0];
+    public function getQueryForFindingPermittedAreas($userID) {
+        $sql = "(SELECT area.id FROM area WHERE NOT EXISTS (SELECT area_id FROM area_allowed_permissions WHERE area_id = area.id) OR EXISTS (SELECT area_id FROM area_allowed_permissions WHERE area_id = area.id AND permission='public'))";
+        $preparedValues = [];
+        if ($userID) {
+            $sql .= " OR EXISTS (SELECT permission FROM user_permissions WHERE user_id = ? AND permission IN (SELECT permission FROM area_allowed_permissions WHERE area_id = area.id))";
+            array_push($preparedValues, $userID);
+        }
 
-		$numJoinConditions = count($joinConditions);
+        $sql .= ";";
 
-		for ($i = 1; $i < $numJoinConditions; $i++) {
-			$sql = $sql . " AND " . $joinConditions[i];
-		}
+        return ["sql" => $sql, "preparedValues" => $preparedValues];
+    }
 
-		$sql = $sql . ")";
-		$permissions = DB::select($sql);		
-		$permissionsDict = [];
+    public function getAndQueryForFindingPermittedAreas($userID) {
+        $query = $this->getQueryForFindingPermittedAreas($userID);
+        $sql = rtrim($query["sql"], ";");
+        $sql = "AND (area.id IN " . $sql . ");";
+        $query["sql"] = $sql;
 
-		foreach ($permissions as $permission) {
-			$curPermissionArea = $permission->area_name;
-			$curPermission = $permission->permission;
+        return $query;
+    }
+    // get permissions by id
+    public function getPermissions($tableName, $permissionsTableName, $joinConditions) {
+        $sql = "SELECT * FROM " . $tableName . " INNER JOIN " . $permissionsTableName . " ON (" . $joinConditions[0];
 
-			if (empty($permissionsDict[$curPermissionArea])) {
-				$permissionsDict[$curPermissionArea] = [$curPermission];
-			} else {
-				array_push($permissionsDict[$curPermissionArea], $curPermission);
-			}
-		}
+        $numJoinConditions = count($joinConditions);
 
-		return $permissionsDict;
-	}
+        for ($i = 1; $i < $numJoinConditions; $i++) {
+            $sql = $sql . " AND " . $joinConditions[i];
+        }
 
-	public function getUserPermissions($userID, $tableName, $permissionsTableName, $joinConditions) {
-		$sql = "SELECT * FROM " . $tableName . " INNER JOIN " . $permissionsTableName . " ON (" . $joinConditions[0];
+        $sql = $sql . ")";
+        $permissions = DB::select($sql);
+        $permissionsDict = [];
 
-		$numJoinConditions = count($joinConditions);
+        foreach ($permissions as $permission) {
+            $curPermissionArea = $permission->area_id;
+            $curPermission = $permission->permission;
 
-		for ($i = 1; $i < $numJoinConditions; $i++) {
-			$sql = $sql . " AND " . $joinConditions[i];
-		}
+            if (empty($permissionsDict[$curPermissionArea])) {
+                $permissionsDict[$curPermissionArea] = [$curPermission];
+            } else {
+                array_push($permissionsDict[$curPermissionArea], $curPermission);
+            }
+        }
 
-		$sql = $sql . ") WHERE " . $tableName . "." . "id=" . $userID;
+        return $permissionsDict;
+    }
 
-		$permissions = DB::select($sql);		
+    public function getUserPermissions($userID, $tableName, $permissionsTableName, $joinConditions) {
+        $sql = "SELECT * FROM " . $tableName . " INNER JOIN " . $permissionsTableName . " ON (" . $joinConditions[0];
 
-		$userPermissions = [];
+        $numJoinConditions = count($joinConditions);
 
-		foreach ($permissions as $permission) {
-			$curPermission = $permission->permission;
-			array_push($userPermissions, $curPermission);
-		}
+        for ($i = 1; $i < $numJoinConditions; $i++) {
+            $sql = $sql . " AND " . $joinConditions[i];
+        }
 
-		return $userPermissions;
-	}
+        $sql = $sql . ") WHERE " . $tableName . "." . "id=?";
+        $preparedValues = [$userID];
+        $permissions = DB::select(DB::raw($sql), $preparedValues);
 
-	public function getAllUserPermissions($userTableName, $permissionsTableName) {
-		$sql = "SELECT id, name, email FROM " . $userTableName;
-		$allUsers = DB::select($sql);
-		$userWithPermissions = [];
+        $userPermissions = [];
 
-		foreach ($allUsers as $user) {
-			$permisisons = $this->getUserPermissions($user->id, $userTableName, $permissionsTableName, ["users.id = user_permissions.user_id"]);
-			$userAndPermission = ["user" => $user, "permissions" => $permisisons];
+        foreach ($permissions as $permission) {
+            $curPermission = $permission->permission;
+            array_push($userPermissions, $curPermission);
+        }
 
-			array_push($userWithPermissions, $userAndPermission);			
-		}
+        return $userPermissions;
+    }
 
-		return $userWithPermissions;	
-	}
+    public function getAllUserPermissions($userTableName, $permissionsTableName) {
+        $sql = "SELECT id, name, email FROM " . $userTableName;
+        $allUsers = DB::select($sql);
+        $userWithPermissions = [];
+
+        foreach ($allUsers as $user) {
+            $permisisons = $this->getUserPermissions($user->id, $userTableName, $permissionsTableName, ["users.id = user_permissions.user_id"]);
+            $userAndPermission = ["user" => $user, "permissions" => $permisisons];
+
+            array_push($userWithPermissions, $userAndPermission);
+        }
+
+        return $userWithPermissions;
+    }
 }

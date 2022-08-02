@@ -13,8 +13,8 @@ function Swath(map, satellite, width, feature, id) {
         var swathColors = {
             "TERRASAR-X": "rgba(255, 0, 0, 1.0)",
             "CSK": "rgba(204, 52, 6, 1.0)",
-            "ERS": "rgba(146, 191, 63, 1.0)",
-            "ENVISAT": "rgba(110, 200, 54, 1.0)",
+            "ERS": "rgba(91, 154, 255, 1.0)",
+            "ENVISAT": "rgba(116, 166, 247, 1.0)",
             "RADARSAT": "rgba(74, 200, 54, 1.0)",
             "RADARSAT-2": "rgba(12, 201, 44, 1.0)",
             "SENTINEL": "rgba(3, 144, 17, 1.0)",
@@ -27,14 +27,13 @@ function Swath(map, satellite, width, feature, id) {
     };
 
     this.remove = function() {
-        if (this.map.map.getSource(this.id)) {
-            this.map.removeSource(this.id);
-            this.map.removeSource(this.polygonID)
-        }
-
         if (this.map.map.getLayer(this.id)) {
             this.map.removeLayer(this.id);
             this.map.removeLayer(this.polygonID);
+        }
+        if (this.map.map.getSource(this.id)) {
+            this.map.removeSource(this.id);
+            this.map.removeSource(this.polygonID)
         }
     };
 

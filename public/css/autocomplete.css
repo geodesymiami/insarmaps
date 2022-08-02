@@ -1,0 +1,53 @@
+.custom-input-container {
+    background-color: white;
+    background-color: -moz-field;
+    border: 1px solid darkgray;
+    - box-shadow: 1px 1px 1px 0 lightgray inset;
+    font: -moz-field;
+    font: -webkit-small-control;
+    font-family: "Helvetica";
+    width: 100%;
+    height: 34px;
+    border-radius: 7%;
+}
+
+.custom-input-container input {
+    width: 80% !important;
+    float: left;
+    height: 100%;
+    padding-left: 10px;
+    margin: 0 !important;
+    border: 0 !important;
+    font-family: "Helvetica";
+    font-size: 14px;
+}
+
+.custom-input-dropdown {
+    position: relative;
+    width: 20%;
+    float: left;
+    height: 100%;
+}
+
+.custom-input-dropdown:hover {
+    cursor: pointer;
+}
+
+.custom-input-dropdown > .caret {
+    position: absolute;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -moz-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+
+.custom-input {
+    height: auto;
+    min-height: 34px;
+}
+
+/* jquery autocomplete */
+.ui-autocomplete {
+    font-family: "Helvetica";
+}

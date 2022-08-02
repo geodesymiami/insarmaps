@@ -1,5 +1,6 @@
 function FeatureSelector() {
     this.recoloringInProgress = false;
+    this.selectionPolygonActive = false;
 }
 
 function setupFeatureSelector() {
@@ -12,6 +13,7 @@ function setupFeatureSelector() {
             this.map.removeSourceAndLayer("seismicitySelectedArea");
         }
     };
+
     FeatureSelector.prototype.addSelectionPolygonFromMapBounds = function(mapBounds) {
         var bbox = [mapBounds._ne, mapBounds._sw];
         var selectedAreaPolygon = this.squareBboxToMapboxPolygon(bbox);
@@ -30,24 +32,56 @@ function setupFeatureSelector() {
             'layout': {},
             'paint': {
                 'fill-color': '#088',
-                'fill-opacity': 0.8
+                'fill-opacity': 0.5
             }
         });
+        this.selectionPolygonActive = true;
     };
-    FeatureSelector.prototype.createSeismicityPlots = function(seismicityLayers, bbox) {
-        var pixelBoundingBox = [this.map.map.project(bbox[0]), this.map.map.project(bbox[1])];
-        var features = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: seismicityLayers });
+
+    FeatureSelector.prototype.removeSelectionPolygon = function() {
+        if (this.map.map.getSource("seismicitySelectedArea")) {
+            this.map.removeSourceAndLayer("seismicitySelectedArea");
+            this.selectionPolygonActive = false;
+        }
+    };
+
+    FeatureSelector.prototype.getAllRenderedSeismicityFeatures = function(bbox) {
+        var seismicityLayers = this.map.getLayerIDsInCurrentMode();
+        var features = null;
+        if (bbox) {
+            var pixelBoundingBox = [this.map.map.project(bbox[0]), this.map.map.project(bbox[1])];
+            features = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: seismicityLayers });
+        } else {
+            features = this.map.map.queryRenderedFeatures({ layers: seismicityLayers });
+        }
+
+        features.sort(function(feature1, feature2) {
+            return feature1.properties.time - feature2.properties.time;
+        });
+
+        return this.getUniqueFeatures(features);
+    };
+
+    FeatureSelector.prototype.createOnlyCrossSectionPlots = function(bbox) {
+        var features = this.getAllRenderedSeismicityFeatures(bbox);
         if (features.length == 0) {
             return;
         }
-        var selectedColoring = this.map.thirdPartySourcesController.currentSeismicityColoring;
-        var features = this.getUniqueFeatures(features); // avoid duplicates see mapbox documentation
-        this.map.seismicityGraphsController.setFeatures(features);
+
+        this.map.seismicityGraphsController.createCrossSectionCharts(null, null, features);
+    };
+
+    FeatureSelector.prototype.createSeismicityPlots = function(bbox) {
+        var features = this.getAllRenderedSeismicityFeatures(bbox);
+        if (features.length == 0) {
+            return;
+        }
         this.map.seismicityGraphsController.setBbox(bbox);
         // show containers before creating as we have an optimization to not create
-        // unless containers are shown
-        this.map.seismicityGraphsController.showChartContainers();
-        this.map.seismicityGraphsController.createAllCharts(selectedColoring, null, null);
+        // unless containers are shown. also, we want to hide cross section charts and show other charts
+        this.map.seismicityGraphsController.hideCrossSectionCharts();
+        this.map.seismicityGraphsController.showCharts();
+        this.map.seismicityGraphsController.createAllCharts(null, null, features);
     };
 
     FeatureSelector.prototype.finish = function(bbox) {
@@ -70,36 +104,35 @@ function setupFeatureSelector() {
         var mode = this.map.getCurrentMode();
 
         if (mode === "seismicity") {
-            var layerIDS = this.map.getLayerIDsInCurrentMode();
-            this.createSeismicityPlots(layerIDS, bbox);
+            this.createSeismicityPlots(bbox);
             var bounds = this.map.seismicityGraphsController.getMinimapBounds();
             if (bounds) {
                 this.addSelectionPolygonFromMapBounds(this.map.seismicityGraphsController.mapForPlot.getBounds());
             }
-        } else if (mode === "insar") {
-            if (this.minIndex == -1 || this.maxIndex == -1) {
-                return;
-            }
+        } else if (mode === "insar") { // said we don't need it for now, but keep to make sure
+            // if (this.minIndex == -1 || this.maxIndex == -1) {
+            //     return;
+            // }
 
-            // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
-            if (this.lastbbox == this.bbox && this.lastMinIndex == this.minIndex && this.lastMaxIndex == this.maxIndex) {
-                return;
-            }
+            // // haven't changed since last recoloring? well dont recolor (only if it's the same area of course)
+            // if (this.lastbbox == this.bbox && this.lastMinIndex == this.minIndex && this.lastMaxIndex == this.maxIndex) {
+            //     return;
+            // }
 
-            // cancelled recoloring at any point...
-            if (this.cancelRecoloring) {
-                this.cancelRecoloring = false;
-                return;
-            }
+            // // cancelled recoloring at any point...
+            // if (this.cancelRecoloring) {
+            //     this.cancelRecoloring = false;
+            //     return;
+            // }
 
-            if (this.map.colorOnDisplacement) {
-                var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
-                var startDate = new Date(dates[this.minIndex]);
-                var endDate = new Date(dates[this.maxIndex]);
-                this.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE to interrupt");
-            } else {
-                this.recolorDataset();
-            }
+            // if (this.map.colorOnDisplacement) {
+            //     var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.string_dates));
+            //     var startDate = new Date(dates[this.minIndex]);
+            //     var endDate = new Date(dates[this.maxIndex]);
+            //     this.recolorOnDisplacement(startDate, endDate, "Recoloring...", "ESCAPE to interrupt");
+            // } else {
+            //     this.recolorDataset();
+            // }
         } else if (mode === "gps") {
             // TODO: logic for gps selection
         }
@@ -108,182 +141,265 @@ function setupFeatureSelector() {
     FeatureSelector.prototype.recolorOnDisplacement = function(startDecimalDate, endDecimalDate, loadingTextTop, loadingTextBottom) {
         const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365;
         var yearsElapsed = (endDecimalDate - startDecimalDate) / millisecondsPerYear;
+        var multiplier = 1.0 / yearsElapsed;
 
-        this.recolorDatasetWithBoundingBoxAndMultiplier(null, yearsElapsed, loadingTextTop, loadingTextBottom);
+        this.recolorDatasetWithBoundingBoxAndMultiplier(null, multiplier, loadingTextTop, loadingTextBottom);
     };
 
     FeatureSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingTextTop, loadingTextBottom) {
         // let the caller check if a coloring is in progress. otherwise user has to sometimes
         //  wait if they cancel a recoloring and want to do another one
 
-        if (this.map.map.getSource("onTheFlyJSON")) {
-            this.map.removeSourceAndLayer("onTheFlyJSON");
-        }
-
         // get the names of all the layers
-        var pointLayers = this.map.getInsarLayers();
-
+        var pointLayers = ["onTheFlyJSON"];
         var features = null;
-        if (box) {
-            var pixelBoundingBox = [this.map.map.project(box[0]), this.map.map.project(box[1])];
-            features = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
-            // no bounding box
-        } else {
-            features = this.map.map.queryRenderedFeatures({ layers: pointLayers });
+        if (!this.map.insarLayersHidden()) {
+            pointLayers = this.map.getInsarLayers();
         }
-
-        this.lastbbox = this.bbox;
-        if (features.length == 0) {
-            return;
-        }
-
-        var MAX_FEATURES_TO_RECOLOR = 60000;
-        if (features.length >= MAX_FEATURES_TO_RECOLOR) {
-            window.alert('Recoloring ' + features.length +
-                ' features (max ' + MAX_FEATURES_TO_RECOLOR +
-                '). Please select a smaller number of features, zoom out, or zoom' + ' in to a smaller section of the map.');
-            return;
-        }
-
-        var geoJSONData = {
-            "type": "FeatureCollection",
-            "features": []
-        };
-
-        var featuresMap = [];
-
-        var query = currentArea.properties.unavco_name + "/";
-
-        // may be placebo effect, but seems to speed up query from db. also
-        // sort by p in ascending order so we match displacements with the features
-        features.sort(function(a, b) {
-            return a.properties.p - b.properties.p;
-        });
 
         showLoadingScreen(loadingTextTop, loadingTextBottom);
-
-        for (var i = 0; i < features.length; i++) {
-            var long = features[i].geometry.coordinates[0];
-            var lat = features[i].geometry.coordinates[1];
-            var curFeatureKey = features[i].properties.p.toString();
-
-            // mapbox gives us duplicate tiles (see documentation to see how query rendered features works)
-            // yet we only want unique features, not duplicates
-            if (featuresMap[curFeatureKey] != null) {
-                continue;
-            }
-
-            query += features[i].properties.p.toString() + "/";
-            featuresMap[curFeatureKey] = "1";
-
-            geoJSONData.features.push({
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [long, lat]
-                },
-                "properties": {
-                    "m": 0,
-                    "p": features[i].properties.p
+        // nested request animation frame ensures that loading screen is shown
+        // first. and queryRenderedFeatures (which takes long time in some cases)
+        // only called after loading screen already being rendered
+        // see: https://macarthur.me/posts/when-dom-updates-appear-to-be-asynchronous
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                if (box) {
+                    var pixelBoundingBox = [this.map.map.project(box[0]), this.map.map.project(box[1])];
+                    features = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
+                    // no bounding box
+                } else {
+                    features = this.map.map.queryRenderedFeatures({ layers: pointLayers });
                 }
-            });
-        }
 
-        //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
-        //console.log(query);
-        this.recoloringInProgress = true;
-
-        this.cancellableAjax.ajax({
-            url: "/points",
-            type: "post",
-            async: true,
-            data: {
-                points: query
-            },
-            success: function(response) {
-                if (this.cancelRecoloring) {
-                    this.cancelRecoloring = false;
+                this.lastbbox = this.bbox;
+                if (!features || features.length == 0) {
+                    hideLoadingScreen();
                     return;
                 }
-                console.log("Received points");
-                // console.log(response);
-                var json = JSON.parse(response);
-                // if (geoJSONData.features.length != json.displacements.length) {
-                //     console.log("not the same size json is " + json.displacements.length + " while features is " + geoJSONData.features.length);
-                // }
-                for (var i = 0; i < geoJSONData.features.length; i++) {
-                    var curFeature = geoJSONData.features[i];
 
-                    var date_string_array = json.string_dates;
-                    var date_array = convertStringsToDateArray(date_string_array);
-                    var decimal_dates = json.decimal_dates;
-                    var displacement_array = json.displacements[i];
-                    var sub_displacements = displacement_array.slice(this.minIndex, this.maxIndex + 1);
-                    var sub_decimal_dates = decimal_dates.slice(this.minIndex, this.maxIndex + 1);
+                var geoJSONData = {
+                    "type": "FeatureCollection",
+                    "features": []
+                };
 
-                    // // returns array for displacement on chart
-                    // chart_data = getDisplacementChartData(displacement_array, date_string_array);
+                var featuresMap = [];
 
-                    // calculate and render a linear regression of those dates and displacements
-                    var result = calcLinearRegression(sub_displacements, sub_decimal_dates);
-                    var slope = result["equation"][0] * multiplier; // useful to get other derivatives such as position instead of velocity
-                    var y = result["equation"][1];
-                    // console.log("before " + curFeature.properties.m)
-                    // console.log("slope is " + slope);
-                    // console.log(curFeature);
-                    curFeature.properties.m = slope;
-                    // console.log("after " + curFeature.properties.m);
-                    // console.log(curFeature);
-                }
-                if (this.map.map.getSource("onTheFlyJSON")) {
-                    this.map.removeSource("onTheFlyJSON");
-                    this.map.removeLayer("onTheFlyJSON");
-                }
-                this.map.addSource("onTheFlyJSON", {
-                    "type": "geojson",
-                    "data": geoJSONData
+                var query = currentArea.properties.unavco_name + "/";
+
+                // may be placebo effect, but seems to speed up query from db. also
+                // sort by p in ascending order so we match displacements with the features
+                features.sort(function(a, b) {
+                    return a.properties.p - b.properties.p;
                 });
 
-                this.map.addLayer({
-                    "id": "onTheFlyJSON",
-                    "type": "circle",
-                    "source": "onTheFlyJSON",
-                    "paint": {
-                        'circle-color': {
-                            property: 'm',
-                            stops: this.map.colorScale.getMapboxStops()
-                        },
-                        'circle-radius': {
-                            // for an explanation of this array see here:
-                            // https://www.mapbox.com/blog/data-driven-styling/
-                            stops: [
-                                [5, 2],
-                                [8, 2],
-                                [13, 8],
-                                [21, 16],
-                                [34, 32]
-                            ]
-                        }
+
+                for (var i = 0; i < features.length; i++) {
+                    var long = features[i].geometry.coordinates[0];
+                    var lat = features[i].geometry.coordinates[1];
+                    var curFeatureKey = features[i].properties.p.toString();
+
+                    // mapbox gives us duplicate tiles (see documentation to see how query rendered features works)
+                    // yet we only want unique features, not duplicates
+                    if (featuresMap[curFeatureKey] != null) {
+                        continue;
                     }
-                });
-                this.recoloringInProgress = false;
-                hideLoadingScreen();
-            }.bind(this),
-            error: function(xhr, ajaxOptions, thrownError) {
-                console.log("failed " + xhr.responseText);
-                hideLoadingScreen();
-            }
-        }, function() {
-            this.cancelRecoloring = true;
-            hideLoadingScreen();
-        });
+                    query += features[i].properties.p.toString() + "/";
+                    featuresMap[curFeatureKey] = "1";
+
+                    if (this.map.highResMode() || !this.map.insarActualPixelSize) {
+                        if (features[i].geometry.type == "Polygon") {
+                            long = features[i].geometry.coordinates[0][0][0];
+                            lat = features[i].geometry.coordinates[0][0][1];
+                        }
+                        geoJSONData.features.push({
+                            "type": "Feature",
+                            "geometry": {
+                                "type": "Point",
+                                "coordinates": [long, lat]
+                            },
+                            "properties": {
+                                "m": 0,
+                                "p": features[i].properties.p
+                            }
+                        });
+                    } else {
+                        var coordinates = null;
+                        if (features[i].geometry.type == "Polygon") {
+                            // when we query only the current onTheFlyJSON, we might get polygons or points.
+                            // not a problem when we query the mbtiles insar layer as we only get points then
+                            coordinates = features[i].geometry.coordinates;
+                        } else {
+                            var attributesController = new AreaAttributesController(this.map, currentArea);
+                            var x_step = parseFloat(attributesController.getAttribute("X_STEP"));
+                            var y_step = parseFloat(attributesController.getAttribute("Y_STEP"));
+                            coordinates = [
+                                    [
+                                        [long, lat], [long + x_step, lat], [long + x_step, lat + y_step],
+                                        [long, lat + y_step], [long, lat]
+                                    ]
+                            ];
+                        }
+                        geoJSONData.features.push({
+                            "type": "Feature",
+                            "geometry": {
+                                "type": "Polygon",
+                                "coordinates": coordinates
+                            },
+                            "properties": {
+                                "m": 0,
+                                "p": features[i].properties.p
+                            }
+                        });
+                    }
+                }
+
+                //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
+                //console.log(query);
+                this.recoloringInProgress = true;
+                hideLoadingScreenWithClick(function() {
+                    geoJSONData = null;
+                    features = null;
+                    this.cancellableAjax.cancel();
+                }.bind(this));
+                features = null;
+
+                this.cancellableAjax.xmlHTTPRequestAjax({
+                    url: "/points",
+                    type: "post",
+                    async: true,
+                    data: {
+                        points: query,
+                        arrayMinIndex: this.minIndex,
+                        arrayMaxIndex: this.maxIndex
+                    },
+                    success: function(response) {
+                        var arrayBuffer = response;
+
+                        if (arrayBuffer) {
+                            var json = new Float64Array(arrayBuffer);
+                            console.log("Received points");
+                            for (var i = 0; i < geoJSONData.features.length; i++) {
+                                var curFeature = geoJSONData.features[i];
+                                curFeature.properties.m = parseFloat(json[i])
+                            }
+
+
+                            var geoJSONSource = this.map.map.getSource("onTheFlyJSON");
+                            // always use the insar color scale values for coloring on the fly...
+                            var min = this.map.insarColorScaleValues.min * multiplier;
+                            var max = this.map.insarColorScaleValues.max * multiplier;
+                            var stops = this.map.colorScale.stopsCalculator.colorsToMapboxStops(min, max, this.map.colorScale.currentScale);
+                            var radii = this.map.highResMode() ? this.map.highResRadiusStops: this.map.radiusStops;
+                            if (geoJSONSource) {
+                                geoJSONSource.setData(geoJSONData);
+                            } else {
+                                this.map.onceRendered(function() {
+                                    this.map.hideInsarLayers();
+                                }.bind(this));
+                                this.map.addSource("onTheFlyJSON", {
+                                    "type": "geojson",
+                                    "data": geoJSONData
+                                });
+                            }
+                            geoJSONData = null;
+                            var before = this.map.getLayerOnTopOf("onTheFlyJSON");
+                            if (this.map.map.getLayer("onTheFlyJSON")) {
+                                this.map.removeLayer("onTheFlyJSON");
+                            }
+                            if (this.map.highResMode() || !this.map.insarActualPixelSize) {
+                                this.map.addLayer({
+                                    "id": "onTheFlyJSON",
+                                    "type": "circle",
+                                    "source": "onTheFlyJSON",
+                                    "paint": {
+                                        'circle-color': {
+                                            property: 'm',
+                                            stops: stops
+                                        },
+                                        'circle-radius': {
+                                            // for an explanation of this array see here:
+                                            // https://www.mapbox.com/blog/data-driven-styling/
+                                            stops: radii
+                                        }
+                                    }
+                                }, before);
+                            } else {
+                                this.map.addLayer({
+                                    "id": "onTheFlyJSON",
+                                    "type": "fill",
+                                    "source": "onTheFlyJSON",
+                                    "paint": {
+                                        'fill-color': {
+                                            property: 'm',
+                                            stops: stops
+                                        }
+                                    }
+                                }, before);
+                            }
+                        } else {
+                            window.alert("Server encountered an error");
+                        }
+
+                        mapboxgl.clearStorage()
+                        this.recoloringInProgress = false;
+                        this.map.onceRendered(function() {
+                            // since we remove and add the oonTheFlyJSON layer
+                            // (because we alternate between points and polygons
+                            // now for actual size), sometimes the loading screen
+                            // will be removed but the layer not rendered yet
+                            // causing exception in queryRenderedFeatures
+                            // on mousemove if user does it fast enough.
+                            // hiding loading screen only after layer has been rendered
+                            // prevents this
+                            hideLoadingScreen();
+                        }.bind(this));
+                    }.bind(this),
+                    error: function(xhr, ajaxOptions, thrownError) {
+                        console.log("failed " + xhr.responseText);
+                        this.map.showInsarLayers();
+                        this.doneRecoloring();
+                        geoJSONData = null;
+                    }.bind(this),
+                    requestHeader: {
+                        'Content-type': 'application/x-www-form-urlencoded'
+                    },
+                    responseType: "arraybuffer"
+                }, function() {
+                    this.map.showInsarLayers();
+                    this.doneRecoloring();
+                    geoJSONData = null;
+                }.bind(this));
+            }.bind(this));
+        }.bind(this));
+    };
+
+    FeatureSelector.prototype.doneRecoloring = function() {
+        hideLoadingScreen();
+        this.recoloringInProgress = false;
     };
 
     FeatureSelector.prototype.recolorDataset = function() {
-        this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE to interrupt");
+        this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt");
     };
 
     FeatureSelector.prototype.recoloring = function() {
         return this.recoloringInProgress;
     };
+
+    FeatureSelector.prototype.getCurrentStartEndDateFromArea = function(area) {
+        var dates = convertStringsToDateArray((new AreaAttributesController(myMap, area)).getAttribute("string_dates"));
+        var startDate = dates[0];
+        var endDate = dates[dates.length - 1];
+        if (this.minIndex != -1 && this.maxIndex != -1) {
+            startDate = dates[this.minIndex];
+            endDate = dates[this.maxIndex];
+        }
+
+        return {
+            startDate: startDate,
+            endDate: endDate
+        }
+    };
 }
+

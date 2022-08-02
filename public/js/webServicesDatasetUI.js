@@ -1,4 +1,4 @@
-$(window).load(function() {
+$(window).on("load", function() {
     var outputURL = getRootUrl() + "WebServicesDataset?";
     var placeholderURL = outputURL + "satellite=Alos&relativeOrbit=73&firstFrame=2950&mode=SM&flightDirection=D";
 

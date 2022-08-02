@@ -15,6 +15,7 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
+        \App\Http\Middleware\RedirectIfNotHTTPS::class
     ];
 
     /**
@@ -49,6 +50,7 @@ class Kernel extends HttpKernel
         'can' => \Illuminate\Foundation\Http\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        "checkAdmin" => \App\Http\Middleware\RedirectIfNotAdmin::class
+        "checkAdmin" => \App\Http\Middleware\RedirectIfNotAdmin::class,
+        "throttlePreloads" => \App\Http\Middleware\ThrottlePreloads::class
     ];
 }

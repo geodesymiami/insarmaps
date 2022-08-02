@@ -4,9 +4,14 @@ body {
     margin: 0;
     padding: 0;
     height: 100%;
-    width: 100% color: white;
+    width: 100%;
+    color: white;
     font-family: 'Open Sans', 'Calibri';
     overflow: auto;
+}
+
+body {
+    color: black;
 }
 
 button {
@@ -63,11 +68,34 @@ html[xmlns] .clearfix {
     height: 1%;
 }
 
+a.btn {
+    background-color: buttonface;
+    color: #333;
+}
+.vertically-aligned {
+    position: relative;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -moz-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+
+.disable-transitions {
+    -webkit-transition: none !important;
+    -moz-transition: none !important;
+    -o-transition: none !important;
+    transition: none !important;
+}
 
 /*TODO: consolidate the .active classes to mainly use/remove redundant code*/
 
 .active {
     display: block !important;
+}
+
+.no-display {
+    display: none;
 }
 
 .page-container {
@@ -123,26 +151,6 @@ html[xmlns] .clearfix {
     z-index: 1;
 }
 
-.wrap {
-    overflow: hidden;
-    /*padding: 20px 50px;*/
-    display: block;
-    border-radius: 4px;
-    transform: translateY(20px);
-    transition: all 0.5s;
-    visibility: hidden;
-    background-color: white;
-}
-
-.wrap .content {
-    opacity: 0;
-    margin: 0px !important;
-    background-color: white !important;
-    width: 100%;
-    height: 100%;
-    padding: 0px 20px 0px 20px;
-}
-
 #select-area-wrap {
     position: fixed;
     top: 10%;
@@ -186,8 +194,8 @@ html[xmlns] .clearfix {
 
 .top-right-buttons {
     position: absolute;
-    top: 5px;
-    right: 15px;
+    top: 0px;
+    right: 0px;
     z-index: 3;
 }
 
@@ -195,6 +203,26 @@ html[xmlns] .clearfix {
     border: none;
     color: red;
     font-size: 30px;
+}
+
+.wrap {
+    overflow: hidden;
+    /*padding: 20px 50px;*/
+    display: block;
+    border-radius: 4px;
+    transform: translateY(20px);
+    transition: all 0.5s;
+    visibility: hidden;
+    background-color: white;
+}
+
+.wrap .content {
+    opacity: 0;
+    margin: 0px !important;
+    background-color: white !important;
+    width: 100%;
+    height: 100%;
+    padding: 0px 20px 0px 20px;
 }
 
 .wrap:before {
@@ -245,6 +273,32 @@ html[xmlns] .clearfix {
     display: none;
 }
 
+#USGSEvents-options-wrapper {
+    position: absolute;
+    width: 300px;
+    height: 600px;
+    max-width: 350px;
+    max-height: 850px;
+    margin: 0 auto;
+    top: 29px;
+    left: 640px;
+    background: rgba(0, 0, 0, 0);
+    border: none !important;
+    box-shadow: none !important;
+}
+
+#USGSEvents-options {
+    position: relative;
+    min-width: 50px;
+    width: 50%;
+    height: 80%;
+    max-height: 450px;
+}
+
+#USGSEvents-options .content {
+    padding-top: 20px;
+}
+
 #popupButton {
     outline: none;
     font-size: 12px;
@@ -271,67 +325,8 @@ html[xmlns] .clearfix {
     font-family: 'Open Sans', cursive;
 }
 
-.accordion {
-    background: DeepSkyBlue;
-    border-bottom: 1px solid DodgerBlue;
-    border-radius: 7px 7px 0 0;
-    color: white;
-    font-size: 1.5em;
-    margin-top: 0.222em;
-    padding: 0.5em 1em;
-}
-
-.accordion dd {
-    border: 1px solid DeepSkyBlue;
-    border-top: none;
-    border-radius: 0 0 7px 7px;
-    paddig: 1em;
-}
-
-button.accordion {
-    /*background-color: #eee;
-    color: #444;*/
-    background-color: DeepSkyBlue;
-    border-bottom: 1px solid DodgerBlue;
-    cursor: pointer;
-    padding: 18px;
-    width: 100%;
-    border: none;
-    text-align: left;
-    outline: none;
-    font-size: 15px;
-    transition: 0.4s;
-}
-
-button.accordion.active,
-button.accordion:hover {
-    background-color: orange;
-    color: black;
-}
-
-div.panel {
-    padding: 0 18px;
-    display: none;
-    color: white;
-    border: 1 px solid orange;
-}
-
-div.panel.show {
-    border: 1px solid orange !important;
-    display: block !important;
-    color: white !white;
-}
-
-div.panel.show > p {
-    color: black;
-}
-
 button {
     font-family: 'Open Sans', 'Calibri'
-}
-
-p.ul {
-    color: black !important;
 }
 
 div.menu {
@@ -351,14 +346,22 @@ div.menu {
     top: 10px;
     left: 0px;
     z-index: 99;
-    height: 50px;
+    max-width: 80%;
 }
 
-#top-map-buttons > div {
+#top-map-buttons > * {
     margin-left: 10px;
     border-radius: 5px;
     float: left;
     z-index: 99;
+}
+
+#top-map-buttons > .btn {
+    background-color: white;
+}
+
+#top-map-buttons a {
+    color: black;
 }
 
 #map-type-menu {
@@ -366,6 +369,10 @@ div.menu {
     font-family: 'Open Sans', sans-serif;
     width: 120px;
     min-height: 34px;
+}
+
+#hide-show-seismicities-button, #hide-show-insar-button {
+    opacity: 0.7
 }
 
 #overlay-slider {
@@ -388,16 +395,13 @@ div.menu {
 }
 
 #information-div {
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.95);
 }
 
 #information-div-contents {
     width: 100%;
-    max-width: 640px;
+    max-width: 850px;
     margin: 0 auto 0 auto;
-    position: relative;
-    top: 50%;
-    transform: translateY(-50%);
 }
 
 #loading-screen {
@@ -413,10 +417,10 @@ div.menu {
     top: 50%;
     bottom: 50%;
     left: 50%;
-    -webkit-transform: translateX(-50%);
-    -moz-transform: translateX(-50%);
-    -ms-transform: translateX(-50%);
-    transform: translateX(-50%);
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
     background-color: rgba(255, 255, 255, 0.5);
 }
 
@@ -476,10 +480,6 @@ div.menu {
     }
 }
 
-#top-map-buttons > div > button {
-    background-color: white;
-}
-
 .logos {
     margin: 2em;
 }
@@ -501,12 +501,6 @@ div.menu {
 
 #map-options .overlay_toggle {
     width: 25%;
-}
-
-/*disable compass in nav controls*/
-
-.mapboxgl-ctrl-compass {
-    display: none !important;
 }
 
 .mapboxgl-ctrl-logo {
@@ -540,7 +534,7 @@ div.menu {
     min-width: 173px;
 }
 
-#select-layer-button-div:hover > #overlay-options-toggles {
+#select-layer-button-div:hover > #overlay-options-container {
     display: block;
 }
 
@@ -548,18 +542,47 @@ div.menu {
     height: 34px;
 }
 
-#overlay-options-toggles {
+#overlay-options-container {
     width: 100%;
     background: white;
     display: none;
 }
 
-#overlay-options-toggles.active {
+#overlay-options-container.active {
     display: block;
 }
 
-#overlay-options-toggles .overlay_toggle {
+#overlay-options-container .overlay_toggle {
     width: 100%;
+}
+
+.overlay-toggle {
+    height: 25px;
+}
+
+.overlay-toggle > * {
+    float: left;
+}
+
+.circular-question-mark {
+    width: 15px;
+    height: 15px;
+    line-height: 15px;
+    background-color: cyan;
+    border-radius: 50%;
+    font-size: 10px;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* change jquery tooltip of toggle buttons to white on black */
+/* also, disable max-width to allow for long links in descriptions */
+.black-on-white-tooltip + .tooltip > .tooltip-inner {
+    max-width: 300px;
+    background-color: white;
+    color: black;
+    word-wrap: break-word;
+    text-align: left;
 }
 
 #overlay-options {
@@ -570,13 +593,53 @@ div.menu {
     height: 100%;
 }
 
-#color-scale {
+#magnitude-and-arrow-scale-container {
+    position: absolute;
+    top: 30%;
+    z-index: 98;
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.custom-scale {
     display: none;
+}
+
+.magnitude-scale-circle, .magnitude-scale-value {
+    margin: 0 auto;
+}
+
+.magnitude-scale-circle {
+    border-radius: 100%;
+    border: 1px solid #000000;
+}
+
+#magnitude-scale:hover {
+    cursor: pointer;
+}
+
+#magnitude-scale > div {
+    float: left;
+}
+
+#magnitude-scale ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#magnitude-scale ul > li {
+    display: block;
+    height: 20px;
+}
+
+#insar-seismicity-color-scales-container {
     position: absolute;
     top: 50%;
     left: 0;
     z-index: 98;
     text-align: center;
+    height: 45%;
+    max-height: 415px;
 }
 
 .minimap-color-scale {
@@ -584,37 +647,56 @@ div.menu {
     float: left;
 }
 
-#lat-vs-long-depth-color-scale {
+.minimap-color-scale > .color-scale-text-div {
+    font-size: 15px;
+}
+
+#lat-vs-long-time-color-scale > .color-scale-text-div, #cross-section-time-color-scale > .color-scale-text-div {
+    padding-left: 35px;
+}
+
+#lat-vs-long-depth-color-scale > .color-scale-text-div, #cross-section-depth-color-scale > .color-scale-text-div {
+    width: 100%;
+    text-align: right;
+}
+
+#lat-vs-long-depth-color-scale, #cross-section-depth-color-scale {
     width: 40%;
 }
 
-#lat-vs-long-time-color-scale {
+#lat-vs-long-time-color-scale, #cross-section-time-color-scale {
     width: 60%;
 }
 
-.scale-values input.date-input {
-    font-size: 10px;
+.color-scale {
+    display: none;
 }
 
-#color-scale.active {
+.color-scale.active {
     display: block;
     background-color: rgba(255, 255, 255, 0.5);
-    width: 75px;
-    height: 45%;
+    height: 100%;
+    float: left;
 }
 
 .color-scale-text-div {
-    height: 15%;
-    width: 100%;
+    height: 11%;
+}
+
+.color-scale .color-scale-text-div {
+    cursor: pointer;
+    background-color: white !important;
+    color: black !important;
+    border: none;
 }
 
 .color-scale-main-container {
-    width: 100%;
-    height: 85%;
+    height: 90%;
 }
 
 .color-scale-picture-div {
-    width: 50%;
+    position: relative;
+    width: 35px;
     height: 100%;
     float: left;
 }
@@ -624,15 +706,34 @@ div.menu {
     height: 100%;
 }
 
+.color-scale-picture-div .hidden-colorscale-click-area {
+    position: absolute;
+    height: 50%;
+    width: 100%;
+    z-index: 99;
+    cursor: pointer;
+}
+
+#seismicity-color-scale {
+    padding-left: 5px;
+}
+
+.scale-click-area-invisible-top-half {
+    top: 0;
+}
+
+.scale-click-area-invisible-bottom-half {
+    top: 50%;
+}
+
 .color-scale-and-values-container {
     height: 100%;
-    width: 100%;
     margin: 0 auto;
 }
 
 .scale-values {
     position: relative;
-    width: 50%;
+    width: 40px;
     float: left;
     height: 100%;
 }
@@ -653,6 +754,10 @@ div.menu {
 
 .scale-values .form-group > input {
     padding: 0;
+}
+
+#lat-vs-long-depth-color-scale .color-scale-and-values-container, #cross-section-depth-color-scale .color-scale-and-values-container {
+    float: right;
 }
 
 
@@ -696,33 +801,117 @@ input[type=number] {
 
 #charts {
     position: absolute;
-    left: 0%;
+    right: 0%;
     bottom: 0%;
     height: 70%;
     width: 40%;
+    z-index: 100;
+}
+
+#charts #insar-chart-slider {
+    display: none;
+}
+
+#charts.only-show-slider, #charts.show-seismicity-sliders {
+    height: auto;
+    min-height: 50px;
+}
+
+#charts.show-seismicity-sliders {
+    min-height: 300px;
+}
+
+#charts.active.only-show-slider #insar-chart-slider {
+    display: block !important;
+}
+
+#hide-when-only-show-sliders {
+    height: 100%;
+}
+
+#hide-when-only-show-sliders.show-seismicity-sliders {
+    height: 65%;
+}
+
+#charts.active.only-show-slider #hide-when-only-show-sliders {
+    display: none;
 }
 
 #seismicity-charts {
     position: absolute;
     right: 0%;
     height: 100%;
+    width: 100%;
+    max-width: 768px;
+}
+
+#cross-section-charts {
+    position: absolute;
+    right: 0%;
+    height: 100%;
     width: 50%;
 }
 
-.seismicity-chart,
-.seismicity-chart-slider {
+.seismicity-chart {
     height: 33%;
     width: 100%;
+}
+
+#seismicity-chart-sliders, #insar-chart-slider {
+    left: 10%;
+    width: 100%;
+    bottom: 0%;
+}
+
+#insar-chart-slider {
+    width: 75%;
+}
+
+.chart-slider {
+    height: 45px;
+    margin-bottom: 5px;
+    margin-left: 50px;
+    margin-right: 50px;
 }
 
 .seismicity-chart {
     position: relative;
 }
 
-#seismicity-charts-container {
+.seismicity-charts-container {
     height: 100% !important;
+    padding-top: 20px;
 }
 
+.seismicity-chart-set-coloring-button {
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    right: 0;
+    padding: 0 !important;
+}
+
+#cumulative-events-vs-date-container .seismicity-chart-set-coloring-button {
+    position: static;
+}
+
+#cumulative-events-vs-date-chart-buttons-container {
+    position: absolute;
+    top: 0;
+    left: 70px;
+}
+
+#cumulative-events-vs-date-chart-buttons-container > button {
+    float: left;
+    padding: 0 !important;
+    margin-right: 10px;
+}
+
+/* make the chart containers relative by default so we can position
+    buttons absolutely which change their coloring */
+.seismicity-chart > div {
+    position: relative;
+}
 /*we use pos absolute because we reduce size of map and center it vertically
 to get it to exactly match the axes of the lat and long vs depth plots*/
 
@@ -738,6 +927,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 .seismicity-chart > div.side-by-side {
     position: absolute;
     width: 50%;
+    height: 100%;
 }
 
 .seismicity-chart > div.side-by-side:first-child {
@@ -748,28 +938,32 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     right: 0;
 }
 
-.seismicity-chart > div {
+.seismicity-chart .chart, .cross-section-chart .chart {
     height: 100%;
+}
+
+.cross-section-chart {
+    position: relative;
+    width: 100%;
+    height: 33%;
+}
+
+#cumulative-events-vs-date-container div {
+    float: left;
+}
+
+#cumulative-events-vs-date-graph {
+    width: 90%;
 }
 
 #lat-vs-long-graph {
     height: 80%;
-    width: 35%;
-    margin-left: 7%;
-}
-
-#seismicity-chart-sliders {
-    position: absolute;
-    left: 10%;
-    height: 50%;
-    max-height: 300px;
-    width: 30%;
-    bottom: 0%;
+    width: 80%;
+    float: right;
 }
 
 #graph-div-minimize-button {
-    margin-right: 10px;
-    margin-top: 6px;
+    display: none;
 }
 
 .chart-containers {
@@ -814,10 +1008,13 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 #map-options {
     width: 100%;
     height: 10%;
-    max-height: 40px;
 }
 
-#download-as-text-button > button {
+#map-options.show-seismicity-sliders {
+    display: none;
+}
+
+#download-as-text-button {
     border: solid;
     background-color: white;
     border-width: 1px;
@@ -835,83 +1032,32 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 
 #point-details {
     position: absolute;
-    z-index: 99;
+    z-index: 98;
     bottom: 0px;
     left: 0px;
     background-color: white;
     opacity: 0.6;
+    width: 280px;
 }
 
 #hidden-search-bars-container {
     display: none;
 }
 
-#toggle-other-bars > div {
+#recent-datasets-toggle-button {
+    color: rgb(125, 124, 122);
+    font-size: 15px;
+}
+
+#toggle-other-bars > .caret {
     position: absolute;
     display: block;
     bottom: 50%;
-    left: 50%;
-    -webkit-transform: translateX(-50%);
-    -moz-transform: translateX(-50%);
-    -ms-transform: translateX(-50%);
-    transform: translateX(-50%);
-}
-
-.custom-input {
-    -moz-appearance: textfield;
-    -webkit-appearance: textfield;
-    background-color: white;
-    background-color: -moz-field;
-    border: 1px solid darkgray;
-    - box-shadow: 1px 1px 1px 0 lightgray inset;
-    font: -moz-field;
-    font: -webkit-small-control;
-    font-family: "Helvetica";
-    width: 100%;
-    height: 34px;
-    border-radius: 7%;
-}
-
-.custom-input input {
-    width: 80%;
-    float: left;
-    height: 100%;
-    padding-left: 10px;
-    margin: 0 !important;
-    border: 0 !important;
-    font-family: "Helvetica";
-    font-size: 14px;
-}
-
-.custom-input-dropdown {
-    position: relative;
-    width: 20%;
-    float: left;
-    height: 100%;
-}
-
-.custom-input-dropdown:hover {
-    cursor: pointer;
-}
-
-#recent-datasets-toggle-button {
-    width: 13px;
-    height: 13px;
-    margin: 4px 0 0 0 !important;
-}
-
-
-/* jquery autocomplete */
-
-.ui-autocomplete {
-    font-family: "Helvetica";
 }
 
 #search-form-and-results-container {
-    /* hide by default */
-    display: none;
     width: 35%;
-    height: 35%;
+    max-height: 280px;
     position: absolute;
     z-index: 99;
     bottom: 0;
@@ -921,7 +1067,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 }
 
 #search-form {
-    width: 20%;
+    width: 140px;
     float: left;
 }
 
@@ -943,11 +1089,13 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 }
 
 #subset-swath-popup {
-    position: fixed;
+    position: absolute;
     display: none;
-    height: 30%;
+    max-height: 200px;
+    overflow-y: auto;
     width: 50%;
-    float: left;
+    max-width: 560px;
+    bottom: 0;
     overflow-y: auto;
     z-index: 99;
     background-color: white;
@@ -962,9 +1110,18 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     word-break: break-all;
     border-bottom: 1px solid #eee;
 }
-
+#subset-swath-table > tbody tr {
+    cursor: pointer;
+}
 #search-form-results-table {
     font-size: 12px;
+    margin-bottom: 0px;
+}
+
+#search-form-results-table thead > tr {
+    height: 40px;
+    background-color: gray;
+    color: white;
 }
 
 #search-form-results-table td {
@@ -975,11 +1132,6 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
     position: fixed;
 }
 
-.flight-direction {
-    height: 30px;
-    float: left;
-}
-
 .show-children-button {
     position: absolute;
     top: 50%;
@@ -988,6 +1140,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 
 .minimize-button,
 .maximize-button {
+    display: block;
     padding: 0 !important;
     border: 0 !important;
     width: 16px;
@@ -1006,9 +1159,13 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 
 .maximize-buttons-container {
     position: absolute;
-    right: 50%;
-    bottom: 10px;
+    right: 3%;
+    bottom: 50px;
     z-index: 98;
+}
+
+#seismicity-maximize-buttons-container, #insar-maximize-buttons-container {
+    display: none;
 }
 
 .maximize-buttons-container > .btn.btn-primary {
@@ -1018,17 +1175,12 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 }
 
 .maximize-button-container {
-    width: 33%;
-    height: 16px;
-    float: left;
-}
-
-.maximize-button-container {
     width: 16px;
     height: 16px;
     background-color: #b8b8b8;
     display: inline-block;
     margin: 0 4px 0 4px;
+    float: left;
 }
 
 .clickable-button:active {
@@ -1117,73 +1269,44 @@ ul.tab li a:focus,
     float: left;
 }
 
-
 /* fixed table headers */
-
-section.fixed-header-table {
-    height: 100%;
-    position: relative;
-    border: 1px solid #000;
-    padding-top: 37px;
-    background: gray;
-}
-
-section.fixed-header-table.positioned {
-    position: absolute;
-    top: 100px;
-    left: 100px;
+.table-fixed thead {
     width: 100%;
-    box-shadow: 0 0 15px #333;
 }
-
-.fixed-header-table-container {
+.table-fixed tbody {
+    max-height: 230px;
     overflow-y: auto;
-    height: 100%;
-    width: 100%;
-    background-color: white;
-}
-
-.fixed-header-table-container table {
-    border-spacing: 0;
     width: 100%;
 }
-
-.fixed-header-table-container td + .fixed-header-table-container td {
-    /*border-left: 1px solid #eee;*/
+.table-fixed td {
+    padding: 0 !important;
+}
+.table-fixed tbody > tr {
+    height: 35px;
+}
+.table-fixed thead, .table-fixed tbody, .table-fixed tr, .table-fixed td, .table-fixed th {
+    display: block;
+}
+.table-fixed tbody td, .table-fixed thead > tr> th {
+    float: left;
+    border-bottom-width: 0;
+}
+.col-half-offset {
+    margin-left:4.166666667%
 }
 
-.fixed-header-table-container td,
-.fixed-header-table-container th {
-    border-bottom: 1px solid #eee;
-    color: #000;
-    border-left: 10px;
+@media handheld,
+screen and (max-width:880px) {
+    #USGSEvents-options {
+        top: 100px;
+        left: 50%;
+    }
+    #search-form-and-results-container {
+        width: 100%;
+        left: 0px;
+    }
+    .maximize-buttons-container {
+        /* min-height of 50px of charts div and and height of 16px of this container*/
+        bottom: 66px;
+    }
 }
-
-.fixed-header-table-container th {
-    height: 0 !important;
-    line-height: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    color: transparent;
-    border: none;
-    white-space: nowrap;
-}
-
-.fixed-header-table-container th div {
-    position: absolute;
-    background: transparent;
-    color: #fff;
-    padding: 9px 25px;
-    top: 0;
-    margin-left: -25px;
-    line-height: normal;
-    border-left: 1px solid white;
-    font-size: 12px;
-}
-
-.fixed-header-table-container th:first-child div {
-    border: none;
-}
-
-
-/* -------------------------------------------------- */

@@ -1,39 +1,53 @@
+// TODO: adding and removing sources can be greatly refactored...
 function ThirdPartySourcesController(map) {
     this.map = map;
     this.cancellableAjax = new CancellableAjax();
-    this.layerOrder = ["IRISEarthquake", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake", "midas",
+
+    this.layerOrder = ["USGSEarthquake", "USGSEventsEarthquake", "IGEPNEarthquake", "HawaiiReloc", "LongValleyReloc", "midas",
         "midas-arrows", "gpsStations"
     ];
 
-    this.seismicities = ["IRISEarthquake", "HawaiiReloc", "IGEPNEarthquake", "USGSEarthquake"];
+    this.layerOrderToCallbackMap = null;
+
+    this.seismicities = ["USGSEarthquake", "USGSEventsEarthquake", "IGEPNEarthquake", "HawaiiReloc", "LongValleyReloc",
+        "japan_seismicity_2005-2006", "japan_seismicity_2007-2008", "japan_seismicity_2009-2010", "japan_seismicity_2011-2012",
+        "japan_seismicity_2013-2014", "japan_seismicity_2015"
+    ];
     this.gps = ["midas", "midas-arrows", "gpsStations"];
 
     this.stopsCalculator = new MapboxStopsCalculator();
     // the default
-    this.currentSeismicityColorStops = this.stopsCalculator.getDepthStops(0, 50, this.map.colorScale.jet_r);
+    this.currentSeismicityColorStops = this.stopsCalculator.getDepthStops(0, 50, this.map.seismicityColorScale.jet_r);
     this.currentSeismicityColoring = "depth";
     this.midasArrows = null;
     this.referenceArrow = null;
+    this.lastClickedArrow = null;
     this.subtractedMidasArrows = null;
+    this.USGSEventsURL = null;
+    this.midasArrowPixelsPerMeter = 2500;
 
-    this.getLayerOnTopOf = function(layer) {
-        for (var i = this.layerOrder.length - 1; i >= 0; i--) {
-            if (this.layerOrder[i] === layer) {
-                var j = i - 1;
-                while (!this.map.map.getLayer(this.layerOrder[j]) && j > -1) {
-                    j--;
-                }
+    // keep this around for when main map needs features to pass in to create
+    // the seismicity sliders. notice (below) that we always set this before
+    // calling mapcontroller methods which change layers and depend on having the
+    // latest feature (seismicity or otherwise)
+    this.currentFeatures = null;
 
-                return j == -1 ? null : this.layerOrder[j];
-            }
-        }
+    this.USGSEventsOptionsController = new USGSEventsOptionsController("USGSEvents-options");
+    this.USGSEventsOptionsController.onEnterKeyUp(function(url) {
+        this.USGSEventsURL = url;
+    }.bind(this));
 
-        return null;
-    };
+    this.defaultCircleSizes = [1.25, 2, 4.5, 8, 12.5, 18, 24.5, 32, 40.5, 48.5];
+    this.shrunkCircleSizes = [1.5, 2, 4, 6, 9, 12, 16, 20, 24, 28];
+
+    this.currentSeismicitySizeStops = this.stopsCalculator.getMagnitudeStops(1, 11, this.defaultCircleSizes);
 
     this.addGPSStationMarkers = function(stations) {
         var features = [];
-        showLoadingScreen("Getting UNR GPS Data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
         this.cancellableAjax.ajax({
             url: "/unr",
             success: function(response) {
@@ -48,7 +62,7 @@ function ThirdPartySourcesController(map) {
                 };
 
                 var layerID = "gpsStations";
-                var before = this.getLayerOnTopOf(layerID);
+                var before = this.map.getLayerOnTopOf(layerID);
                 this.map.addSource(layerID, mapboxStationFeatures);
                 this.map.addLayer({
                     "id": layerID,
@@ -87,7 +101,7 @@ function ThirdPartySourcesController(map) {
         }
     };
 
-    this.parseIGS08Stations = function(stations) {
+    this.parseIGSStations = function(stations) {
         var latLongs = stations.split("\n");
 
         var latLongMap = {};
@@ -100,7 +114,7 @@ function ThirdPartySourcesController(map) {
                 var station = fields[0];
                 var lat = parseFloat(fields[1]);
                 var long = parseFloat(fields[2]);
-                var type = "IGS08";
+                var type = "IGS14";
 
                 latLongMap[station] = {
                     "coordinates": [long, lat],
@@ -113,7 +127,7 @@ function ThirdPartySourcesController(map) {
     };
 
     this.parseUNR = function(IGS08Stations) {
-        var latLongMap = this.parseIGS08Stations(IGS08Stations);
+        var latLongMap = this.parseIGSStations(IGS08Stations);
         var features = [];
 
         for (var station in latLongMap) {
@@ -123,7 +137,7 @@ function ThirdPartySourcesController(map) {
                 var type = stationInfo.type;
                 var popupHTML = '<h3>Station: ' + station + '<br/>' +
                     ' <a target="_blank" href="http://geodesy.unr.edu/NGLStationPages/stations/' + station + '.sta"> ' +
-                    ' <img src="http://geodesy.unr.edu/tsplots/' + type + '/TimeSeries/' + station + '.png" align="center" width=400 height=600 alt="' + station + 'Time Series Plot"/> </a>' +
+                    ' <img src="http://geodesy.unr.edu/tsplots/' + type + '/' + type + '/TimeSeries/' + station + '.png" align="center" width=400 height=600 alt="' + station + 'Time Series Plot"/> </a>' +
                     ' <p> <h5> Click plot for full station page. Positions in ' + type + ' reference frame. ';
 
                 var feature = {
@@ -151,7 +165,7 @@ function ThirdPartySourcesController(map) {
     // coordinates as gl js returned feature from queryrendered feature doesn't maintain exact
     // cords
     this.getArrowGeoJSON = function(startCoordinate, orientation, length, id) {
-        const DEGREE_PER_PIXEL = this.map.calculateDegreesPerPixelAtCurrentZoom(startCoordinate[1]);
+        const DEGREE_PER_PIXEL = this.map.calculateDegreesPerPixelAtCurrentZoom();
 
         var lengthInPixels = length;
         length *= DEGREE_PER_PIXEL;
@@ -237,21 +251,19 @@ function ThirdPartySourcesController(map) {
             this.referenceArrow = arrow;
             this.subtractedMidasArrows = null;
             this.subtractedMidasArrows = [];
-            var arrowVector = Vector.newVectorFromMagAndAngle(arrow.properties.length, arrow.properties.orientation);
 
             for (var i = 0; i < this.midasArrows.length; i++) {
                 var curArrow = this.midasArrows[i];
-                var orientation = curArrow.properties.orientation;
-                var startCoordinate = curArrow.geometry.coordinates[0];
-                var length = curArrow.properties.length;
-                var curArrowVector = Vector.newVectorFromMagAndAngle(length, orientation);
-                var resultVector = curArrowVector.subtract(arrowVector);
-
-                var arrowGeoJSON = this.getArrowGeoJSON(startCoordinate, resultVector.angle, resultVector.mag, i);
                 if (curArrow.properties.id == arrow.properties.id) {
                     curArrow.properties.color = "red";
+                    curArrow.properties.isReference = true;
                     this.subtractedMidasArrows.push(curArrow);
                 } else {
+                    var arrowVector = Vector.newVectorFromMagAndAngle(arrow.properties.length, arrow.properties.orientation);
+                    var curArrowVector = this.arrowGeoJSONToVector(curArrow);
+                    var resultVector = curArrowVector.subtract(arrowVector);
+                    var startCoordinate = curArrow.geometry.coordinates[0];
+                    var arrowGeoJSON = this.getArrowGeoJSON(startCoordinate, resultVector.angle, resultVector.mag, i);
                     this.subtractedMidasArrows.push(arrowGeoJSON);
                 }
             }
@@ -263,9 +275,34 @@ function ThirdPartySourcesController(map) {
         }
     };
 
+    this.arrowGeoJSONToVector = function(arrowGeoJSON) {
+        var orientation = arrowGeoJSON.properties.orientation;
+        var startCoordinate = arrowGeoJSON.geometry.coordinates[0];
+        var length = arrowGeoJSON.properties.length;
+        var vector = Vector.newVectorFromMagAndAngle(length, orientation);
+
+        return vector;
+    };
+
+    this.handleClickOnArrowFeature = function(arrow) {
+        // we add the last clicked arrow before subtracting, to undo the
+        // effects of the last clicked arrow
+        if (this.lastClickedArrow) {
+            var lastClickedArrowVector = this.arrowGeoJSONToVector(this.lastClickedArrow);
+            var arrowVector = this.arrowGeoJSONToVector(arrow);
+            var resultVector = lastClickedArrowVector.add(arrowVector);
+
+            arrow.properties.orientation = resultVector.angle;
+            arrow.properties.length = resultVector.mag;
+        }
+
+        this.lastClickedArrow = arrow;
+        this.subtractArrowMagnitudeFromArrows(arrow);
+    };
+
     this.parseMidasJSON = function(midasJSON) {
         var midas = midasJSON.midas.split("\n");
-        var latLongMap = this.parseIGS08Stations(midasJSON.stationLatLongs);
+        var latLongMap = this.parseIGSStations(midasJSON.stationLatLongs);
 
         var features = { "points": [], "arrows": [] };
         for (var i = 0; i < midas.length; i++) {
@@ -278,7 +315,7 @@ function ThirdPartySourcesController(map) {
                     var type = stationInfo.type;
                     var popupHTML = '<h3>Station: ' + station + '<br/>' +
                         ' <a target="_blank" href="http://geodesy.unr.edu/NGLStationPages/stations/' + station + '.sta"> ' +
-                        ' <img src="http://geodesy.unr.edu/tsplots/' + type + '/TimeSeries/' + station + '.png" align="center" width=400 height=600 alt="' + station + 'Time Series Plot"/> </a>' +
+                        ' <img src="http://geodesy.unr.edu/tsplots/' + type + '/' + type + '/TimeSeries/' + station + '.png" align="center" width=400 height=600 alt="' + station + 'Time Series Plot"/> </a>' +
                         ' <p> <h5> Click plot for full station page. Positions in ' + type + ' reference frame. ';
 
                     // these numbers come from unr midas readme
@@ -291,10 +328,6 @@ function ThirdPartySourcesController(map) {
                         resultant.angle += 360;
                     }
 
-                    // mapbox only allows clockwise rotations. this math
-                    // gives us the angle to rotate by to achieve same angle as unit
-                    // circle angle that vector math gives us
-                    var mapboxRotateBy = 360 + 90 - resultant.angle;
                     // column 14 according to Midas readme
                     var uncertainty = parseFloat(fields[13]);
                     var stationName = fields[0];
@@ -308,15 +341,14 @@ function ThirdPartySourcesController(map) {
                         "properties": {
                             "v": upVelocity,
                             "u": uncertainty,
-                            "mag": resultant.mag,
-                            "angle": mapboxRotateBy,
                             "stationName": stationName,
                             "popupHTML": popupHTML
                         }
                     };
 
                     features.points.push(feature);
-                    var arrowLength = resultant.mag * 1000;
+                    var arrowLength = resultant.mag * this.midasArrowPixelsPerMeter;
+                    // console.log(resultant.mag + " " + arrowLength);
                     features.arrows.push(this.getArrowGeoJSON(coordinates, resultant.angle, arrowLength, i));
                 }
             }
@@ -325,9 +357,12 @@ function ThirdPartySourcesController(map) {
         return features;
     };
 
-
+    // TODO: these load/remove seismicity functions REALLY need to be refactored to one common function
     this.loadmidasGpsStationMarkers = function(loadVelocityArrows) {
-        showLoadingScreen("Getting Midas GPS Data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
         this.cancellableAjax.ajax({
             url: "/midas",
             success: function(response) {
@@ -347,7 +382,7 @@ function ThirdPartySourcesController(map) {
                     this.midasArrows = features.arrows;
                     mapboxStationFeatures.data.features = features.arrows;
                     this.map.addSource(layerID, mapboxStationFeatures);
-                    var before = this.getLayerOnTopOf(layerID);
+                    var before = this.map.getLayerOnTopOf(layerID);
                     this.map.addLayer({
                         "id": layerID,
                         "type": "line",
@@ -370,7 +405,7 @@ function ThirdPartySourcesController(map) {
                     mapboxStationFeatures.data.features = features.points;
                     this.map.addSource(layerID, mapboxStationFeatures);
                     var stops = this.map.colorScale.getMapboxStops();
-                    var before = this.getLayerOnTopOf(layerID);
+                    var before = this.map.getLayerOnTopOf(layerID);
                     this.map.addLayer({
                         "id": layerID,
                         "type": "circle",
@@ -418,24 +453,35 @@ function ThirdPartySourcesController(map) {
         return this.map.map.getSource("midas") && this.map.map.getLayer("midas");
     };
 
+    this.seismicityLoaded = function() {
+        return this.getAllSeismicityFeatures().length > 0;
+    };
+
     this.prepareForSeismicities = function(features) {
         this.setupColorScaleForSeismicities();
+
+        if (!features) {
+            features = this.currentFeatures;
+        }
         // in the future, should call a separate method to create only sliders and not all charts including sliders...
         this.map.seismicityGraphsController.setFeatures(features);
         var mapboxBounds = this.map.map.getBounds();
         this.map.seismicityGraphsController.setBbox([mapboxBounds._sw, mapboxBounds._ne]);
-        this.map.seismicityGraphsController.createAllCharts(this.currentSeismicityColoring, null, null);
+        this.map.seismicityGraphsController.createOrUpdateSliders(features);
         this.map.seismicityGraphsController.showSliders();
     };
 
     this.setupColorScaleForSeismicities = function() {
-        this.map.colorScale.show();
-        this.map.colorScale.setTitle("Depth (Km)");
-        this.map.colorScale.setMinMax(0, 50);
+        this.map.seismicityColorScale.show();
+        this.map.seismicityColorScale.setTitle("Depth (Km)");
+        this.map.seismicityColorScale.setMinMax(0, 50); // not necessary, as set features will override it
     };
 
     this.loadUSGSEarthquakeFeed = function() {
-        showLoadingScreen("Getting USGS Earthquake Data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
         this.cancellableAjax.ajax({
             url: "/USGSMonthlyFeed",
             success: function(response) {
@@ -450,34 +496,38 @@ function ThirdPartySourcesController(map) {
                     feature.properties["location"] = feature.properties.title;
                 });
 
+                this.currentFeatures = featureCollection.features;
+
                 var mapboxStationFeatures = {
                     type: "geojson",
                     cluster: false,
                     data: featureCollection
                 };
 
-                var colors = this.map.colorScale.jet;
-                var opacities = [0.2, 0.6, 1.0];
-                var opacityStops = this.stopsCalculator.getOpacityStops(1, 10, opacities);
+                var colors = this.map.seismicityColorScale.jet_r;
+                var depthStops = this.currentSeismicityColorStops;
+                var magStops = this.currentSeismicitySizeStops;
 
                 var layerID = "USGSEarthquake";
-                var before = this.getLayerOnTopOf(layerID);
+                var before = this.map.getLayerOnTopOf(layerID);
                 this.map.addSource(layerID, mapboxStationFeatures);
                 this.map.addLayer({
                     "id": layerID,
                     "type": "circle",
                     "source": layerID,
                     "paint": {
-                        "circle-opacity": {
-                            "property": 'mag',
-                            "stops": opacityStops
+                        "circle-color": {
+                            "property": "depth",
+                            "stops": depthStops,
+                            "type": "interval"
                         },
-                        "circle-color": "red",
-                        "circle-radius": 5
+                        "circle-radius": {
+                            "property": "mag",
+                            "stops": magStops,
+                            "type": "interval"
+                        }
                     }
                 }, before);
-
-                this.prepareForSeismicities(featureCollection.features);
 
                 hideLoadingScreen();
             }.bind(this),
@@ -497,12 +547,11 @@ function ThirdPartySourcesController(map) {
         this.map.removeSourceAndLayer(name);
     };
 
-    this.defaultCircleSizes = function() {
-        return [3, 5, 7, 9];
-    };
-
     this.loadIGEPNEarthquakeFeed = function() {
-        showLoadingScreen("Getting IGEPN Data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
         this.cancellableAjax.ajax({
             url: "/IGEPNEarthquakeFeed",
             success: function(response) {
@@ -539,6 +588,8 @@ function ThirdPartySourcesController(map) {
                     features.push(feature);
                 });
 
+                this.currentFeatures = features;
+
                 var mapboxStationFeatures = {
                     type: "geojson",
                     cluster: false,
@@ -548,13 +599,12 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
-                var colors = this.map.colorScale.jet_r;
+                var colors = this.map.seismicityColorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
-                var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(4, 6, magCircleSizes);
+                var magStops = this.currentSeismicitySizeStops;
 
                 var layerID = "IGEPNEarthquake";
-                var before = this.getLayerOnTopOf(layerID);
+                var before = this.map.getLayerOnTopOf(layerID);
                 this.map.addSource(layerID, mapboxStationFeatures);
                 this.map.addLayer({
                     "id": layerID,
@@ -573,8 +623,6 @@ function ThirdPartySourcesController(map) {
                         }
                     }
                 }, before);
-                this.map.colorScale.setTopAsMax(false);
-                this.prepareForSeismicities(features);
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -594,7 +642,10 @@ function ThirdPartySourcesController(map) {
     };
 
     this.loadHawaiiReloc = function() {
-        showLoadingScreen("Getting Hawaii Reloc Data", "ESCAPE to interrupt");
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
         this.cancellableAjax.ajax({
             url: "/HawaiiReloc",
             success: function(response) {
@@ -608,10 +659,11 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
-                var colors = this.map.colorScale.jet_r;
+                this.currentFeatures = features;
+
+                var colors = this.map.seismicityColorScale.jet_r;
                 var depthStops = this.currentSeismicityColorStops;
-                var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
+                var magStops = this.currentSeismicitySizeStops;
 
                 var layerID = "HawaiiReloc";
                 this.map.addSource(layerID, mapboxStationFeatures);
@@ -632,8 +684,6 @@ function ThirdPartySourcesController(map) {
                         }
                     }
                 });
-                this.map.colorScale.setTopAsMax(false);
-                this.prepareForSeismicities(features);
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -690,13 +740,117 @@ function ThirdPartySourcesController(map) {
         return features;
     };
 
+    this.parseLongValleyReloc = function(rawData) {
+        var pointLines = rawData.split("\n");
+        var features = [];
+        pointLines.forEach(function(pointLine) {
+            var attributes = pointLine.match(/\S+/g);
+            // in case empty line (usually last line)
+            if (!attributes) {
+                return;
+            }
+            // explanation of these indices: http://www.rsmas.miami.edu/personal/glin/Hawaii.html
+            // that link is actually wrong, she sent an email with correct indices
+            // maybe she'll update the link in the future.
+            var lng = parseFloat(attributes[8]);
+            var lat = parseFloat(attributes[7]);
+            var mag = parseFloat(attributes[10]);
+            var depth = parseFloat(attributes[9]);
+            var coordinates = [lng, lat];
+            var year = attributes[0];
+            var month = attributes[1];
+            var day = attributes[2];
+            var hour = attributes[3];
+            var minute = attributes[4];
+            var second = attributes[5];
+            var milliseconds = new Date(year, month, day, hour, minute, second).getTime();
+
+            var feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": coordinates
+                },
+                "properties": {
+                    "depth": depth,
+                    "mag": mag,
+                    "time": milliseconds
+                }
+            };
+
+            features.push(feature);
+        });
+
+        return features;
+    };
+
+    this.loadLongValleyReloc = function() {
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
+        this.cancellableAjax.ajax({
+            url: "/LongValleyReloc",
+            success: function(response) {
+                var features = this.parseLongValleyReloc(response);
+                var mapboxStationFeatures = {
+                    type: "geojson",
+                    cluster: false,
+                    data: {
+                        "type": "FeatureCollection",
+                        "features": features
+                    }
+                };
+
+                this.currentFeatures = features;
+
+                var colors = this.map.seismicityColorScale.jet_r;
+                var depthStops = this.currentSeismicityColorStops;
+                var magStops = this.currentSeismicitySizeStops;
+
+                var layerID = "LongValleyReloc";
+                this.map.addSource(layerID, mapboxStationFeatures);
+                this.map.addLayer({
+                    "id": layerID,
+                    "type": "circle",
+                    "source": layerID,
+                    "paint": {
+                        "circle-color": {
+                            "property": "depth",
+                            "stops": depthStops,
+                            "type": "interval"
+                        },
+                        "circle-radius": {
+                            "property": "mag",
+                            "stops": magStops,
+                            "type": "interval"
+                        }
+                    }
+                });
+                hideLoadingScreen();
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                hideLoadingScreen();
+                console.log("failed " + xhr.responseText);
+            }
+        }, function() {
+            hideLoadingScreen();
+            LongValleyRelocToggleButton.click();
+        });
+    };
+
+    this.removeLongValleyReloc = function() {
+        var layerID = "LongValleyReloc";
+        this.map.removeSourceAndLayer(layerID);
+    };
+
     this.removeHawaiiReloc = function() {
         var name = "HawaiiReloc";
 
         this.map.removeSourceAndLayer(name);
     };
 
-    this.parseIRISEarthquake = function(rawData) {
+    this.parseUSGSEventsEarthquake = function(rawData) {
         var lines = rawData.split("\n");
         var features = [];
 
@@ -710,6 +864,144 @@ function ThirdPartySourcesController(map) {
                 var mag = parseFloat(attributes[10]);
                 var coordinates = [long, lat];
                 var milliseconds = new Date(attributes[1]).getTime();
+                var location = attributes[12];
+
+                var feature = {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": coordinates
+                    },
+                    "properties": {
+                        "depth": depth,
+                        "mag": mag,
+                        "time": milliseconds,
+                        "location": location
+                    }
+                };
+
+                features.push(feature);
+            }
+        }
+
+        return features;
+    };
+
+    this.loadUSGSEventsEarthquake = function() {
+        var now = new Date();
+        var startDate = new Date();
+        startDate.setFullYear(now.getFullYear() - 2);
+        var nowString = now.toISOString().split('T')[0];
+        var startDateString = startDate.toISOString().split('T')[0];
+
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
+
+        this.USGSEventsURL = this.USGSEventsOptionsController.getURL();
+
+        this.cancellableAjax.ajax({
+            url: "/USGSEventsEarthquake/?url=" + encodeURIComponent(this.USGSEventsURL),
+            success: function(response) {
+                var features = this.parseUSGSEventsEarthquake(response);
+                var mapboxStationFeatures = {
+                    type: "geojson",
+                    cluster: false,
+                    data: {
+                        "type": "FeatureCollection",
+                        "features": features
+                    }
+                };
+
+                this.currentFeatures = features;
+
+                var colors = this.map.seismicityColorScale.jet_r;
+                var depthStops = this.currentSeismicityColorStops;
+                var magStops = this.currentSeismicitySizeStops;
+
+                var layerID = "USGSEventsEarthquake";
+                this.map.addSource(layerID, mapboxStationFeatures);
+                this.map.addLayer({
+                    "id": layerID,
+                    "type": "circle",
+                    "source": layerID,
+                    "paint": {
+                        "circle-color": {
+                            "property": "depth",
+                            "stops": depthStops,
+                            "type": "interval"
+                        },
+                        "circle-radius": {
+                            "property": "mag",
+                            "stops": magStops,
+                            "type": "interval"
+                        }
+                    }
+                });
+                this.map.seismicityColorScale.setTopAsMax(false);
+                hideLoadingScreen();
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                hideLoadingScreen();
+
+                // don't do the below if error is due to pressing escape key
+                if (xhr.responseText) {
+                    USGSEventsEarthquakeToggleButton.click();
+                    window.alert("Bad USGSEvents parameters. Here's the server's response:\n" + xhr.responseText);
+                }
+            }
+        }, function() {
+            hideLoadingScreen();
+            USGSEventsEarthquakeToggleButton.click();
+        });
+    };
+
+    this.removeUSGSEventsEarthquake = function() {
+        var name = "USGSEventsEarthquake";
+
+        this.map.removeSourceAndLayer(name);
+    };
+
+    // documentation: http://www.data.jma.go.jp/svd/eqev/data/bulletin/data/format/hypfmt_e.html
+    // NOTE: it was tricky due to how the fact that the documentation is 1 based indexing, and also due to
+    // the way substring in js works with up to but not including the endIndex...
+    this.parseJapanSeismicity = function(rawData) {
+        var lines = rawData.split("\n");
+        var features = [];
+
+        for (var i = 0; i < lines.length; i++) {
+            // spaces are 0. can't just assume we will get nice numbers like 012 which will return
+            // something when parsed... sometimes we can get "   ", etc which will return NaN.
+            var attributes = lines[i].split(" ").join("0");
+            if (attributes != "") {
+                // lat DMS to decimal degrees
+                var degrees = parseFloat(attributes.substring(21, 24));
+                var minutes = parseFloat(attributes.substring(24, 28));
+                var lat = this.map.DMSToDecimalDegrees(degrees, minutes, 0);
+
+                // lat DMS to decimal degrees
+                degrees = parseFloat(attributes.substring(32, 36));
+                minutes = parseFloat(attributes.substring(36, 40));
+                var long = this.map.DMSToDecimalDegrees(degrees, minutes, 0);
+
+                var depth = parseFloat(attributes.substring(44, 49)) / 100.0;
+                var mag = parseFloat(attributes.substring(52, 54)); // Magnitude 1 in documentation
+                var coordinates = [long, lat];
+                var dateStringUpToDay = attributes.substring(1, 9);
+
+                // date
+                var date = yyyymmddToDate(dateStringUpToDay);
+                var hour = parseFloat(attributes.substring(9, 11));
+                var minute = parseFloat(attributes.substring(11, 13));
+                var second = parseFloat(attributes.substring(13, 17));
+                // TODO: check if these times are okay... not sure if this is right
+                var JAPAN_STANDARD_TIME_OFFSET_FROM_UTC = 9;
+                date.setUTCHours(hour - 9);
+                date.setUTCMinutes(minute);
+                date.setUTCSeconds(second);
+
+                var milliseconds = date.getTime();
 
                 var feature = {
                     "type": "Feature",
@@ -731,18 +1023,19 @@ function ThirdPartySourcesController(map) {
         return features;
     };
 
-    this.loadIRISEarthquake = function() {
-        var now = new Date();
-        var startDate = new Date();
-        startDate.setFullYear(now.getFullYear() - 2);
-        var nowString = now.toISOString().split('T')[0];
-        var startDateString = startDate.toISOString().split('T')[0];
+    this.loadJapanSeismicity = function(dates) {
+        showLoadingScreen("Loading data", "Escape or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
+        // why do we have this in public folder yet we have a route for the volcano excel file...
+        // TODO: be consistent in this regard
+        var url = "/japan_seismicities/japan_seismicity_" + dates + ".txt";
 
-        showLoadingScreen("Getting IRIS Earthquake Data", "ESCAPE to interrupt");
         this.cancellableAjax.ajax({
-            url: "/IRISEarthquake/" + startDateString + "/" + nowString,
+            url: url,
             success: function(response) {
-                var features = this.parseIRISEarthquake(response);
+                var features = this.parseJapanSeismicity(response);
                 var mapboxStationFeatures = {
                     type: "geojson",
                     cluster: false,
@@ -752,12 +1045,13 @@ function ThirdPartySourcesController(map) {
                     }
                 };
 
-                var colors = this.map.colorScale.jet_r;
-                var depthStops = this.currentSeismicityColorStops;
-                var magCircleSizes = this.defaultCircleSizes();
-                var magStops = this.stopsCalculator.getMagnitudeStops(4, 10, magCircleSizes);
+                this.currentFeatures = features;
 
-                var layerID = "IRISEarthquake";
+                var colors = this.map.seismicityColorScale.jet_r;
+                var depthStops = this.currentSeismicityColorStops;
+                var magStops = this.currentSeismicitySizeStops;
+
+                var layerID = "japan_seismicity_" + dates;
                 this.map.addSource(layerID, mapboxStationFeatures);
                 this.map.addLayer({
                     "id": layerID,
@@ -776,41 +1070,54 @@ function ThirdPartySourcesController(map) {
                         }
                     }
                 });
-                this.map.colorScale.setTopAsMax(false);
-                this.prepareForSeismicities(features);
+                this.map.seismicityColorScale.setTopAsMax(false);
                 hideLoadingScreen();
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
                 hideLoadingScreen();
-                console.log("failed " + xhr.responseText);
-            }
+
+                // don't do the below if error is due to pressing escape key
+                if (xhr.responseText) {
+                    this.removeJapanSeismicities(dates);
+                    window.alert("Bad Japan Seismicity Dates" + xhr.responseText);
+                }
+            }.bind(this)
         }, function() {
             hideLoadingScreen();
-            irisEarthquakeToggleButton.click();
-        });
+            this.removeJapanSeismicities(dates);
+        }.bind(this));
     };
 
-    this.removeIRISEarthquake = function() {
-        var name = "IRISEarthquake";
-
+    this.removeJapanSeismicities = function(dates) {
+        var name = "japan_seismicity_" + dates;
         this.map.removeSourceAndLayer(name);
     };
 
+    this.loadedJapanSeismicityDates = function(dates) {
+        var name = "japan_seismicity_" + dates;
+
+        return this.map.map.getSource(name) && this.map.map.getLayer(name);
+    };
+
     this.featureToViewOptions = function(feature) {
-        if (!feature.layer) {
-            return null;
-        }
         // this is begging to be refactored. maybe a hash map with callbacks?
-        var layerID = feature.layer.id;
-        var layerSource = feature.layer.source;
+        var layerID = null;
+        var layerSource = null;
+        if (feature.layer) {
+            layerID = feature.layer.id;
+            layerSource = feature.layer.source;
+        }
         var itsAPoint = (layerSource === "insar_vector_source" || layerSource === "onTheFlyJSON");
         var itsAGPSFeature = (layerID === "gpsStations");
         var itsAMidasGPSFeature = (layerID === "midas");
         var itsAMidasHorizontalArrow = (layerID === "midas-arrows");
-        var itsASeismicityFeature = this.seismicities.includes(layerID);
+        var itsAMiniMapFeature = (layerID === "LatVLongPlotPoints");
+        var itsTheReferencePoint = (layerID === "ReferencePoint");
+        var itsASeismicityFeature = this.seismicities.includes(layerID) || feature.properties.depth; // all seismicities have depth, right?
 
         var cursor = (itsAPoint || itsAGPSFeature || itsAMidasGPSFeature ||
-                    itsASeismicityFeature || itsAMidasHorizontalArrow) ? 'pointer' : 'auto';
+            itsASeismicityFeature || itsAMidasHorizontalArrow || itsAMiniMapFeature ||
+            itsTheReferencePoint) ? 'pointer' : 'auto';
 
         var html = null;
         var coordinates = feature.geometry.coordinates;
@@ -820,9 +1127,14 @@ function ThirdPartySourcesController(map) {
         } else if (itsAMidasGPSFeature) {
             var velocityInCMYR = (feature.properties.v * 100).toFixed(4);
             var uncertainty = (feature.properties.u * 100).toFixed(4);
-            var html = feature.properties.stationName + "<br>" +
+            html = feature.properties.stationName + "<br>" +
                 velocityInCMYR + " +- " + uncertainty + " cm/yr"; // we work in cm. convert m to cm
-        } else if (itsASeismicityFeature) {
+        } else if (itsAMidasHorizontalArrow && feature.properties.isReference) {
+            coordinates = feature.geometry.coordinates[0];
+            html = "<p>Pseudo-reference station.</p><p>This velocity shown red has been subtracted from the others.</p>";
+        } else if (itsTheReferencePoint) {
+            html = "Reference Point";
+        } else if (itsASeismicityFeature || itsAMiniMapFeature) {
             html = "";
             var props = feature.properties;
             if (props.depth) {
@@ -832,7 +1144,7 @@ function ThirdPartySourcesController(map) {
                 html += "Mag: " + props.mag + "<br>";
             }
             if (props.time) {
-                html += new Date(props.time) + "<br>";
+                html += new Date(props.time).toISOString() + "<br>";
             }
             if (props.location) {
                 html += props.location;
@@ -851,18 +1163,26 @@ function ThirdPartySourcesController(map) {
         return featureViewOptions;
     };
 
-    this.recolorSeismicitiesOn = function(property, stops, type) {
-        this.currentSeismicityColorStops = stops;
-
+    this.modifySeismicitiesPaintProperty = function(paintAttribute, property, stops, type) {
         this.seismicities.forEach(function(layerID) {
             if (this.map.map.getLayer(layerID)) {
-                this.map.map.setPaintProperty(layerID, "circle-color", {
+                this.map.map.setPaintProperty(layerID, paintAttribute, {
                     "property": property,
                     "stops": stops,
                     "type": type
                 });
             }
         }.bind(this));
+    };
+
+    this.recolorSeismicitiesOn = function(property, stops, type) {
+        this.currentSeismicityColorStops = stops;
+        this.modifySeismicitiesPaintProperty("circle-color", property, stops, type);
+    };
+
+    this.resizeSeismicitiesOn = function(property, stops, type) {
+        this.currentSeismicitySizeStops = stops;
+        this.modifySeismicitiesPaintProperty("circle-radius", property, stops, type);
     };
 
     // updates conditions in filter with conditions in withFilter.
@@ -917,7 +1237,10 @@ function ThirdPartySourcesController(map) {
         this.seismicities.forEach(function(layerID) {
             if (this.map.map.getLayer(layerID)) {
                 var curFilter = this.map.map.getFilter(layerID);
-                // we update so filter doesn't continually grow when we keep on setting
+                // we update so callers of this method don't have to worry about whether
+                // the seismicity has a filter or not. for example our seismcity sliders
+                // set their own filters independent of each other, and without having to check
+                // whether there is already a filter on a given layer
                 if (curFilter) {
                     this.updateFilter(curFilter, filter);
                     this.map.map.setFilter(layerID, curFilter);
@@ -940,19 +1263,16 @@ function ThirdPartySourcesController(map) {
 
     this.recolorSeismicities = function(selectedColoring) {
         var stops = null;
-        var colors = this.map.colorScale.jet;
-        var min = this.map.colorScale.min;
-        var max = this.map.colorScale.max;
-        var type = "exponential";
+        var colors = this.map.seismicityColorScale.jet_r;
+        var min = this.map.seismicityColorScale.min;
+        var max = this.map.seismicityColorScale.max;
+        var type = "interval";
         if (selectedColoring === "time") {
-            this.map.colorScale.setTitle("Time (years)")
+            this.map.seismicityColorScale.setTitle("Time-colored")
             stops = this.stopsCalculator.getTimeStops(min, max, colors);
-            type = "interval"
         } else if (selectedColoring === "depth") {
-            colors = this.map.colorScale.jet_r;
-            this.map.colorScale.setTitle("Depth (Km)");
+            this.map.seismicityColorScale.setTitle("Depth-colored<br>[Km]");
             stops = this.stopsCalculator.getDepthStops(min, max, colors);
-            type = "interval";
         } else {
             throw new Error("Invalid dropdown selection");
         }
@@ -962,16 +1282,158 @@ function ThirdPartySourcesController(map) {
         this.recolorSeismicitiesOn(selectedColoring, stops, type);
     };
 
-    this.removeAll = function() {
-        this.layerOrder.forEach(function(layer) {
-            this.map.removeSourceAndLayer(layer);
+    this.resizeSeismicities = function(operation) {
+        var magCircleSizes = null;
+        var magCircleSizes = null;
+
+        if (operation === "shrink") {
+            magCircleSizes = this.shrunkCircleSizes;
+        } else if (operation === "expand") {
+            magCircleSizes = this.defaultCircleSizes;
+        } else {
+            throw new Error("Invalid operation selected");
+        }
+
+        var magStops = this.stopsCalculator.getMagnitudeStops(1, 11, magCircleSizes);
+        this.resizeSeismicitiesOn("mag", magStops, "interval");
+    };
+
+    this.getAllSeismicityFeatures = function() {
+        var features = [];
+
+        this.seismicities.forEach(function(seismicityID) {
+            var source = this.map.map.getSource(seismicityID);
+            if (source) {
+                features.pushArray(source._data.features);
+            }
         }.bind(this));
 
-        gpsStationsToggleButton.set("off");
-        midasStationsToggleButton.set("off");
-        usgsEarthquakeToggleButton.set("off");
-        IGEPNEarthquakeToggleButton.set("off");
-        HawaiiRelocToggleButton.set("off");
-        irisEarthquakeToggleButton.set("off");
+        // console.log(features);
+
+        return features;
+    };
+
+    this.setVisibilityForSeismicityLayers = function(visibility) {
+        this.seismicities.forEach(function(layerID) {
+            var layer = this.map.map.getLayer(layerID);
+            if (layer) {
+                this.map.map.setLayoutProperty(layerID, "visibility", visibility);
+            }
+        }.bind(this));
+    };
+
+    this.hideAllSeismicities = function() {
+        this.setVisibilityForSeismicityLayers("none");
+    };
+
+    this.showAllSeismicities = function() {
+        this.setVisibilityForSeismicityLayers("visible");
+    };
+
+    this.removeAll = function(except) {
+        if (gpsStationsToggleButton !== except) {
+            gpsStationsToggleButton.set("off", true);
+        }
+        if (midasStationsToggleButton !== except) {
+            midasStationsToggleButton.set("off", true);
+        }
+        if (usgsEarthquakeToggleButton !== except) {
+            usgsEarthquakeToggleButton.set("off", true);
+        }
+        if (IGEPNEarthquakeToggleButton !== except) {
+            IGEPNEarthquakeToggleButton.set("off", true);
+        }
+        /*if (HawaiiRelocToggleButton !== except) {
+            HawaiiRelocToggleButton.set("off", true);
+        }*/
+        if (USGSEventsEarthquakeToggleButton !== except) {
+            USGSEventsEarthquakeToggleButton.set("off", true);
+        }
+        if (midasEastNorthStationsToggleButton !== except) {
+            midasEastNorthStationsToggleButton.set("off", true);
+        }
+    };
+
+    this.layerOrderToCallbackMap = {
+        "USGS": this.loadUSGSEarthquakeFeed,
+        "USGSEvents": this.loadUSGSEventsEarthquake,
+        "IGEPNEarthquake": this.loadIGEPNEarthquakeFeed,
+        "LinHawaiiReloc": this.loadHawaiiReloc,
+        "LinLongValleyReloc": this.loadLongValleyReloc,
+        "UNRVerticalMidas": this.loadmidasGpsStationMarkers,
+        "UNRHorizontalMidas": this.loadmidasGpsStationMarkers,
+        "UNRGPS": this.addGPSStationMarkers
+    };
+
+    this.loadSourceFromString = function(sourceName) {
+        var callback = this.layerOrderToCallbackMap[sourceName];
+
+        if (!callback) {
+            throw new Error("Can't find that third party source (" + sourceName + ")");
+        }
+
+        callback = callback.bind(this);
+        if (sourceName === "UNRHorizontalMidas") {
+            callback(true);
+        } else {
+            callback();
+        }
+
+    };
+
+    this.populateSeismicityMagnitudeScale = function() {
+        var circleHtml = "<ul>";
+        var valuesHtml = "<ul>";
+
+        this.currentSeismicitySizeStops.forEach(function(curStop) {
+            var curMag = curStop[0];
+            var curSizeInPixels = curStop[1];
+
+            // the case numbers were chosen like so because mapbox interval coloring
+            // chooses the stop just less than the input
+            switch (curMag) {
+                case 2:
+                    valuesHtml += "<li><span class='magnitude-scale-value'><2</span></li>";
+                    circleHtml += "<li><div class='magnitude-scale-circle vertically-aligned' style='height: " + curSizeInPixels +
+                        "px; width: " + curSizeInPixels + "px'></div></li>";
+                    break;
+                case 3:
+                    valuesHtml += "<li><span class='magnitude-scale-value'>2-3</span></li>";
+                    circleHtml += "<li><div class='magnitude-scale-circle vertically-aligned' style='height: " + curSizeInPixels +
+                        "px; width: " + curSizeInPixels + "px'></div></li>";
+                    break;
+                case 4:
+                    valuesHtml += "<li><span class='magnitude-scale-value'>3-4</span></li>";
+                    circleHtml += "<li><div class='magnitude-scale-circle vertically-aligned' style='height: " + curSizeInPixels +
+                        "px; width: " + curSizeInPixels + "px'></div></li>";
+                    break;
+                case 5:
+                    valuesHtml += "<li><span class='magnitude-scale-value'>4-5</span></li>";
+                    circleHtml += "<li><div class='magnitude-scale-circle vertically-aligned' style='height: " + curSizeInPixels +
+                        "px; width: " + curSizeInPixels + "px'></div></li>";
+                    break;
+                case 6:
+                    valuesHtml += "<li><span class='magnitude-scale-value'>>5</span></li>";
+                    circleHtml += "<li><div class='magnitude-scale-circle vertically-aligned' style='height: " + curSizeInPixels +
+                        "px; width: " + curSizeInPixels + "px'></div></li>";
+                    break;
+                default:
+                    break;
+            }
+        });
+
+        circleHtml += "</ul>";
+        valuesHtml += "</ul>";
+        $("#magnitude-scale-circles").html(circleHtml);
+        $("#magnitude-scale-values").html(valuesHtml);
+    };
+
+    this.populateMidasHorizontalArrowScale = function() {
+        const CENTIMETERS = 5;
+        const DESIRED_PIXELS = CENTIMETERS / 100 * this.midasArrowPixelsPerMeter;
+
+        $("#arrow-length-value").html(CENTIMETERS + " cm/yr");
+        $("#arrow-image").css({ "width": DESIRED_PIXELS + "px", "height": "10px" });
     };
 }
+

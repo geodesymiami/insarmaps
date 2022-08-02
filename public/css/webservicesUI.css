@@ -1,0 +1,34 @@
+.input-and-label-container {
+	width: 50%;
+	float: left;
+}
+
+.form-group {
+	float: left;
+}
+
+#WKT-input-and-label-container {
+	width: 100%;
+}
+
+#WKT-input-and-label-container input {
+	width: 100% !important;
+}
+
+.custom-input-container {
+	border: none !important
+}
+
+.custom-input:empty:not(:focus):before{
+    content:attr(data-text)
+}
+
+#webservice-explanation-paragraph {
+	margin-bottom: 40px;
+}
+
+#webservice-explanation-paragraph > ul {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}

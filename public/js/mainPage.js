@@ -3,22 +3,20 @@ var dotToggleButton = null;
 var secondGraphToggleButton = null;
 var regressionToggleButton = null;
 var detrendToggleButton = null;
+var insarGraphSyncToggleButton = null;
 var topGraphToggleButton = null;
 var bottomGraphToggleButton = null;
-var contourToggleButton = null;
+var seismicityGraphSyncToggleButton = null;
 var gpsStationsToggleButton = null;
 var midasStationsToggleButton = null;
-var recentDatasetsToggleButton = null;
 var usgsEarthquakeToggleButton = null;
 var IGEPNEarthquakeToggleButton = null;
-var HawaiiRelocToggleButton = null;
+//var HawaiiRelocToggleButton = null;
+var LongValleyRelocToggleButton = null;
 var midasEastNorthStationsToggleButton = null;
-var irisEarthquakeToggleButton = null;
+var USGSEventsEarthquakeToggleButton = null;
+var referencePointToggleButton = null;
 var myMap = null;
-
-function getRootUrl() {
-    return window.location.origin ? window.location.origin + '/' : window.location.protocol + '/' + window.location.host + '/';
-}
 
 function DivState() {
     this.height = 0;
@@ -26,6 +24,13 @@ function DivState() {
     this.animating = false;
 }
 
+function unavcoNameToShorterName(area) {
+    var attributesController = new AreaAttributesController(myMap, area);
+    var areaAttributes = attributesController.getAllAttributes();
+    var first_frame = areaAttributes.first_frame ? areaAttributes.first_frame : areaAttributes.frame;
+
+    return (areaAttributes.mission + " " + areaAttributes.beam_mode + " " + areaAttributes.relative_orbit + " " + first_frame + " " + areaAttributes.flight_direction);
+}
 // TODO: make a popup super class and consolidate all popups in here
 // also, stick to either active class or minimized/maximized class to denote whether
 // popup is shown or not. right now, using one of the two has led to inconsistent code
@@ -37,7 +42,7 @@ function AreaAttributesPopup() {
     this.resetTabContents = function() {
         $("#downloads-tab").html("<p>Download to Unavco InSAR data products to be implemented.</p>");
         $("#reference-tab").html("<p>Reference to the papers to be added.</p>");
-        $("#figures-tab").html("<p>Figures to be added</p>")
+        $("#processing-report-tab").html("<p>Processing reports to be added</p>")
     };
 
     this.populate = function(area) {
@@ -64,7 +69,8 @@ function AreaAttributesPopup() {
             "look_direction": true,
             "atmos_correct_method": true,
             "unwrap_method": true,
-            "post_processing_method": true
+            "post_processing_method": true,
+            "CENTER_LINE_UTC": true
         };
 
         // set like object. don't put these in using the for loop, as we will
@@ -82,6 +88,14 @@ function AreaAttributesPopup() {
                 if (!(curKey in manuallyOrdered)) {
                     if (curKey in attributesToDisplay) {
                         var curValue = areaAttributes[curKey];
+                        if (curKey === "CENTER_LINE_UTC") {
+                            var now = new Date();
+                            now.setUTCHours(0);
+                            now.setUTCMinutes(0);
+                            now.setUTCMilliseconds(0);
+                            now.setUTCSeconds(parseFloat(curValue));
+                            curValue = now.toISOString().split("T")[1];
+                        }
 
                         tableHTML += "<tr><td value=" + curKey + ">" + curKey +
                             "</td>";
@@ -103,8 +117,7 @@ function AreaAttributesPopup() {
             }
         }
 
-        var first_frame = areaAttributes.first_frame ? areaAttributes.first_frame : areaAttributes.frame;
-        var name = areaAttributes.mission + " " + areaAttributes.relative_orbit + " " + first_frame + " " + areaAttributes.beam_mode + " " + areaAttributes.flight_direction;
+        var name = unavcoNameToShorterName(area);
 
         if (attributesController.areaHasPlotAttribute("plot.name")) {
             name = attributesController.getPlotAttribute("plot.name");
@@ -165,7 +178,7 @@ function AreaAttributesPopup() {
         if (attributesController.areaHasPlotAttribute("plot.title")) {
             var html = "<a href='#' id='preset-dataset-link'>" +
                 attributesController.getPlotAttribute("plot.title") + "</a>";
-            $("#figures-tab").html(html);
+            $("#processing-report-tab").html(html);
             $("#preset-dataset-link").on("click", function() {
                 attributesController.processPresetFigureAttributes();
             });
@@ -176,22 +189,43 @@ function AreaAttributesPopup() {
             var html = attributesController.getAttribute("referenceText") + " <a href='" + attributesController.getAttribute("referencePdfUrl") + "' target='_blank'>PDF</a>";
             $("#reference-tab").html(html);
         }
+        // TOOD: add me
+        if (attributesController.getAttribute("insarmaps_download_flag") == "yes") {
+            var unavcoName = attributesController.getAttribute("unavco_name");
+            var downloadHTML = "<a target='_blank' href='https://js-104-223.jetstream-cloud.org/data/HDF5EOS/" + area.properties.project_name + "/mintpy/" + unavcoName + ".he5'>Download .he5 file</a>";
+            $("#downloads-tab").html(downloadHTML);
+        }
+
+        var html = "<a target='_blank' href='https://js-104-223.jetstream-cloud.org/data/HDF5EOS/" + area.properties.project_name + "/mintpy/pic'>Click to access processing report</a>";
+        $("#processing-report-tab").html(html);
+
+        /*$.ajax({
+            url: "/driveFiles",
+            success: function(response) {
+                var fileIDs = response.files;
+                var fileID = null;
+                var fileName = attributesController.getAttribute("unavco_name") + ".he5";
+
+                for (var i = 0; i < fileIDs.length; i++) {
+                    var curName = fileIDs[i].name;
+                    if (curName === fileName) {
+                        fileID = fileIDs[i].id;
+                        break;
+                    }
+                }
+
+                if (fileID) {
+                    var html = "<a href='https://drive.google.com/uc?id=" + fileID + "&export=download' target='_blank'>Download HDF-EOS file</a>";
+                    $("#downloads-tab").html(html);
+                }
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.log("failed " + xhr.responseText);
+                this.lastRequest = null;
+            }
+        });*/
     };
 };
-
-function pysarSubsetToMapboxBounds(pysarSubset) {
-    var latLongLimits = pysarSubset.split(",");
-    var latLimits = latLongLimits[0].split(":");
-    var longLimits = latLongLimits[1].split(":");
-    var bottom = latLimits[0];
-    var top = latLimits[1];
-    var left = longLimits[0];
-    var right = longLimits[1];
-
-    var bounds = [left, bottom, right, top];
-
-    return bounds;
-}
 
 function goToTab(event, id) {
     // first clear any visible tab
@@ -222,6 +256,17 @@ function hideLoadingScreen() {
     }
 }
 
+function hideLoadingScreenWithClick(callback) {
+    $("#loading-screen.overlay-div").one("click", function() {
+        if ($("#loading-screen.overlay-div").hasClass("active")) {
+            $("#loading-screen.overlay-div").toggleClass("active");
+        }
+        if (callback) {
+            callback();
+        }
+    });
+}
+
 // enum-style object to denote toggle state
 var ToggleStates = {
     OFF: 0,
@@ -232,6 +277,7 @@ function ToggleButton(id, container, label) {
     var that = this;
     this.id = id;
     this.container = container;
+    this.label = label;
     this.toggleState = $(this.id).prop('checked') ? ToggleStates.ON :
         ToggleStates.OFF;
     this.onclick = null;
@@ -239,11 +285,11 @@ function ToggleButton(id, container, label) {
 
     this.create = function() {
         var html = "<div class='overlay-toggle'>\n";
-        if (label) {
-            html += "<label>" + label + "</label>\n";
+        if (this.label) {
+            html += "<label>" + this.label + "</label>\n";
         }
         html += "<input id='" + this.id + "' type='checkbox' name='overlayToggle'/></div>";
-        $("#" + container).append(html);
+        $("#" + this.container).append(html);
     };
 
     this.toggle = function() {
@@ -256,14 +302,23 @@ function ToggleButton(id, container, label) {
         }
     };
 
-    this.set = function(state) {
+    this.clickFunction = null;
+
+    this.set = function(state, execOnClick) {
         if (state == "on") {
             if (this.toggleState == ToggleStates.OFF) {
                 this.toggle();
+
+                if (execOnClick && this.clickFunction) {
+                    this.clickFunction();
+                }
             }
         } else if (state == "off") {
             if (this.toggleState == ToggleStates.ON) {
                 this.toggle();
+                if (execOnClick && this.clickFunction) {
+                    this.clickFunction();
+                }
             }
         } else {
             throw "invalid toggle option";
@@ -271,12 +326,13 @@ function ToggleButton(id, container, label) {
     };
 
     this.onclick = function(clickFunction) {
-        $("#" + this.id).on("click", function() {
+        $("#" + this.id).on("click", function(e) {
             // toggle states
             this.toggle();
 
             if (clickFunction) {
-                clickFunction();
+                this.clickFunction = clickFunction.bind(this);
+                this.clickFunction(this.toggleState);
             }
         }.bind(this));
     };
@@ -285,10 +341,47 @@ function ToggleButton(id, container, label) {
         $("#" + this.id).click();
     };
 
+    this.setDescription = function(description) {
+        if (this.container) {
+            var html = "<div class='circular-question-mark black-on-white-tooltip' data-toggle='tooltip' data-html='true' data-placement='right'";
+            html += " title=\"" + description + "\"><b>?</b></div>";
+            $(html).insertAfter($("#" + this.container + " input#" + this.id + ""));
+        }
+    };
+
     // add it to the DOM
     if (container) {
         this.create();
     }
+}
+
+function SeismicityToggleButton(id, container, label) {
+    this.id = id;
+    this.container = container;
+    this.label = label;
+
+    if (container) {
+        this.create();
+    }
+}
+
+function setupSeismicityToggleButton() {
+    SeismicityToggleButton.prototype.onclick = function(clickFunction) {
+        $("#" + this.id).on("click", function(e) {
+            // toggle states
+            this.toggle();
+
+            if (clickFunction) {
+                this.clickFunction = clickFunction.bind(this);
+
+                // allow multiple selection only if ctrl key is pressed
+                if (this.toggleState == ToggleStates.ON && !e.ctrlKey) {
+                    myMap.thirdPartySourcesController.removeAll(this);
+                }
+                this.clickFunction(this.toggleState);
+            }
+        }.bind(this));
+    };
 }
 
 function switchLayer(layer) {
@@ -302,35 +395,21 @@ function switchLayer(layer) {
     }
     var layerID = layer.target.id;
     myMap.setBaseMapLayer(layerID);
+    myMap.refreshDataset();
 }
 
 function setupToggleButtons() {
     /*TOGGLE BUTTON*/
     // TODO: the onclick callbacks are screaming to have the toggle state
     // passed into them...
-    overlayToggleButton = new ToggleButton("overlay-toggle-button", "overlay-options-toggles", "Data overlay");
-    overlayToggleButton.onclick(function() {
-        // on? add layers, otherwise remove them
-        if (overlayToggleButton.toggleState == ToggleStates.ON) {
-            if (!myMap.anAreaWasPreviouslyLoaded()) {
-                overlayToggleButton.set("off");
-                return;
-            }
+    overlayToggleButton = new ToggleButton("overlay-toggle-button", "overlay-options-toggles", "Insar");
+    overlayToggleButton.onclick(function(state) {
 
-            $("#overlay-slider").slider("value", 100);
-            myMap.addDataset(myMap.tileJSON);
-        } else {
-            if (myMap.pointsLoaded()) {
-                $("#overlay-slider").slider("value", 0);
-                myMap.removePoints();
-                myMap.removeTouchLocationMarkers();
-            }
-        }
     });
     // line connecting dots in chart on/off
     dotToggleButton = new ToggleButton("dot-toggle-button");
-    dotToggleButton.onclick(function() {
-        if (dotToggleButton.toggleState == ToggleStates.ON) {
+    dotToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
             myMap.graphsController.connectDots();
         } else {
             myMap.graphsController.disconnectDots();
@@ -339,7 +418,7 @@ function setupToggleButtons() {
 
     secondGraphToggleButton = new ToggleButton(
         "second-graph-toggle-button");
-    secondGraphToggleButton.onclick(function() {
+    secondGraphToggleButton.onclick(function(state) {
         if (secondGraphToggleButton.toggleState == ToggleStates.ON) {
             myMap.graphsController.prepareForSecondGraph();
         } else {
@@ -348,8 +427,8 @@ function setupToggleButtons() {
     });
 
     regressionToggleButton = new ToggleButton("regression-toggle-button");
-    regressionToggleButton.onclick(function() {
-        if (regressionToggleButton.toggleState == ToggleStates.ON) {
+    regressionToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
             myMap.graphsController.addRegressionLines();
         } else {
             myMap.graphsController.removeRegressionLines();
@@ -357,7 +436,7 @@ function setupToggleButtons() {
     });
 
     detrendToggleButton = new ToggleButton("detrend-toggle-button");
-    detrendToggleButton.onclick(function() {
+    detrendToggleButton.onclick(function(state) {
         if (detrendToggleButton.toggleState == ToggleStates.ON) {
             myMap.graphsController.detrendData();
         } else {
@@ -365,8 +444,30 @@ function setupToggleButtons() {
         }
     });
 
+    // POTENTIALLY REMOVE
+    // in case he changes his mind, i've uncommented this. he isn't sure yet whether
+    // we need this button or not
+    // insarGraphSyncToggleButton = new ToggleButton("insar-sync-toggle-button");
+    // insarGraphSyncToggleButton.onclick(function(state) {
+    //     if (state == ToggleStates.ON) {
+    //         if (!myMap.seismicityGraphsController.timeSlider) {
+    //             var features = myMap.thirdPartySourcesController.getAllSeismicityFeatures();
+    //             myMap.seismicityGraphsController.createOrUpdateSliders(features);
+    //         }
+    //     } else {
+    //         if (myMap.seismicityGraphsController.timeSlider) {
+    //             myMap.seismicityGraphsController.destroyAllSliders();
+    //         }
+    //     }
+    // });
+
+    // in case he changes his mind, i've uncommented this. he isn't sure yet whether
+    // we need this button or not
+    // seismicityGraphSyncToggleButton = new ToggleButton("seismicity-sync-toggle-button");
+    // seismicityGraphSyncToggleButton.onclick(null);
+
     topGraphToggleButton = new ToggleButton("top-graph-toggle-button");
-    topGraphToggleButton.onclick(function() {
+    topGraphToggleButton.onclick(function(state) {
         if (topGraphToggleButton.toggleState == ToggleStates.ON) {
             myMap.graphsController.selectedGraph = "Top Graph";
             bottomGraphToggleButton.set("off");
@@ -376,8 +477,8 @@ function setupToggleButtons() {
     });
     bottomGraphToggleButton = new ToggleButton(
         "bottom-graph-toggle-button");
-    bottomGraphToggleButton.onclick(function() {
-        if (bottomGraphToggleButton.toggleState == ToggleStates.ON) {
+    bottomGraphToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
             myMap.graphsController.selectedGraph = "Bottom Graph";
             topGraphToggleButton.set("off");
         } else {
@@ -385,100 +486,125 @@ function setupToggleButtons() {
         }
     });
 
-    contourToggleButton = new ToggleButton("contour-toggle-button", "overlay-options-toggles", "Contour Lines");
-    contourToggleButton.onclick(function() {
-        if (contourToggleButton.toggleState == ToggleStates.ON) {
-            myMap.addContourLines();
+    referencePointToggleButton = new ToggleButton("reference-point-toggle-button", "overlay-options-toggles", "Reference Point");
+    referencePointToggleButton.onclick(function(state) {
+        if (this.toggleState == ToggleStates.ON && myMap.pointsLoaded()) {
+            myMap.addReferencePoint(currentArea);
         } else {
-            myMap.removeContourLines();
+            myMap.removeReferencePoint();
         }
     });
 
     gpsStationsToggleButton = new ToggleButton("gps-stations-toggle-button", "overlay-options-toggles", "GPS Stations (UNR)");
-    gpsStationsToggleButton.onclick(function() {
-        if (gpsStationsToggleButton.toggleState == ToggleStates.ON) {
+    gpsStationsToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
             // gpsStations global variable from gpsStations.js
             myMap.thirdPartySourcesController.addGPSStationMarkers(gpsStations);
         } else {
             myMap.thirdPartySourcesController.removeGPSStationMarkers();
         }
     });
+    gpsStationsToggleButton.setDescription("GPS solutions provided by the University of Nevada Geodesy Lab at <a target='_blank' href='http://geodesy.unr.edu'>http://geodesy.unr.edu/</a>");
 
     midasEastNorthStationsToggleButton = new ToggleButton("midas-east-north-stations-toggle-button", "overlay-options-toggles", "MIDAS IGS08 Horizontal (UNR)");
-    midasEastNorthStationsToggleButton.onclick(function() {
+    midasEastNorthStationsToggleButton.onclick(function(state) {
         if (midasEastNorthStationsToggleButton.toggleState == ToggleStates.ON) {
-            if (myMap.pointsLoaded()) {
-                midasEastNorthStationsToggleButton.set("off");
-            } else {
-                myMap.thirdPartySourcesController.loadmidasGpsStationMarkers(true);
-                myMap.colorScale.show();
-            }
+            myMap.thirdPartySourcesController.loadmidasGpsStationMarkers(true);
         } else {
             myMap.thirdPartySourcesController.removemidasGpsStationMarkers(true);
-            if (!myMap.pointsLoaded()) {
-                myMap.colorScale.remove();
-            }
         }
     });
+
+    midasEastNorthStationsToggleButton.setDescription("MIDAS horizontal velocity field provided by the University of Nevada Geodesy Lab at <a target='_blank' href='http://geodesy.unr.edu'>http://geodesy.unr.edu/</a>");
 
     midasStationsToggleButton = new ToggleButton("midas-stations-toggle-button", "overlay-options-toggles", "MIDAS IGS08 Vertical (UNR)");
-    midasStationsToggleButton.onclick(function() {
-        if (midasStationsToggleButton.toggleState == ToggleStates.ON) {
-            if (myMap.pointsLoaded()) {
-                midasStationsToggleButton.set("off");
-            } else {
-                myMap.thirdPartySourcesController.loadmidasGpsStationMarkers(false);
-                myMap.colorScale.show();
-            }
+    midasStationsToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
+            myMap.thirdPartySourcesController.loadmidasGpsStationMarkers(false);
         } else {
             myMap.thirdPartySourcesController.removemidasGpsStationMarkers(false);
-            if (!myMap.pointsLoaded()) {
-                myMap.colorScale.remove();
-            }
         }
     });
 
-    usgsEarthquakeToggleButton = new ToggleButton("usgs-earthquake-toggle-button", "overlay-options-toggles", "USGS 30 Day Earthquake Feed");
-    usgsEarthquakeToggleButton.onclick(function() {
+    midasStationsToggleButton.setDescription("MIDAS vertical velocity field provided by the University of Nevada Geodesy Lab at <a target='_blank' href='http://geodesy.unr.edu'>http://geodesy.unr.edu/</a>");
+
+    usgsEarthquakeToggleButton = new SeismicityToggleButton("usgs-earthquake-toggle-button", "overlay-options-toggles", "USGS 30 Day Earthquake Feed");
+    usgsEarthquakeToggleButton.onclick(function(state) {
         if (usgsEarthquakeToggleButton.toggleState == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadUSGSEarthquakeFeed();
         } else {
-            myMap.colorScale.remove();
             myMap.thirdPartySourcesController.removeUSGSEarthquakeFeed();
         }
     });
 
-    IGEPNEarthquakeToggleButton = new ToggleButton("IGEPN-earthquake-toggle-button", "overlay-options-toggles", "IGEPN Earthquake Feed");
-    IGEPNEarthquakeToggleButton.onclick(function() {
+    usgsEarthquakeToggleButton.setDescription("Recent earthquakes from <a target='_blank' href='https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson'>https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_month.geojson/</a>");
+
+    USGSEventsEarthquakeToggleButton = new SeismicityToggleButton("USGSEvents-earthquake-toggle-button", "overlay-options-toggles", "USGS Events");
+    USGSEventsEarthquakeToggleButton.onclick(function(state) {
+        var $container = $(".wrap#USGSEvents-options-wrapper");
+        if (state == ToggleStates.ON) {
+            if (!$container.hasClass("active")) {
+                $container.addClass("active");
+            }
+        } else {
+            myMap.thirdPartySourcesController.removeUSGSEventsEarthquake();
+            if ($container.hasClass("active")) {
+                $container.removeClass("active");
+            }
+        }
+    });
+
+    USGSEventsEarthquakeToggleButton.setDescription("Full USGS events catalogs from <a target='_blank' href='http://earthquake.usgs.gov/fdsnws/event/1/'>http://earthquake.usgs.gov/fdsnws/event/1/</a>");
+
+    IGEPNEarthquakeToggleButton = new SeismicityToggleButton("IGEPN-earthquake-toggle-button", "overlay-options-toggles", "IGEPN 30 Day Earthquake Feed");
+    IGEPNEarthquakeToggleButton.onclick(function(state) {
         if (IGEPNEarthquakeToggleButton.toggleState == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadIGEPNEarthquakeFeed();
         } else {
-            myMap.colorScale.remove();
             myMap.thirdPartySourcesController.removeIGEPNEarthquakeFeed();
         }
     });
 
-    HawaiiRelocToggleButton = new ToggleButton("Hawaii-reloc-toggle-button", "overlay-options-toggles", "Hawaii Relocation (UM)");
-    HawaiiRelocToggleButton.onclick(function() {
-        if (HawaiiRelocToggleButton.toggleState == ToggleStates.ON) {
+    IGEPNEarthquakeToggleButton.setDescription("Recent earthquakes provided by the Instituto Geofisico, Quito, Ecuador at <a target='_blank' href='http://www.igepn.edu.ec/portal/eventos/www/events.xml'>http://www.igepn.edu.ec/portal/eventos/www/events.xml</a>");
+
+    /*HawaiiRelocToggleButton = new SeismicityToggleButton("Hawaii-reloc-toggle-button", "overlay-options-toggles", "Hawaii 1992-2008 Relocations");
+    HawaiiRelocToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
             myMap.thirdPartySourcesController.loadHawaiiReloc();
         } else {
-            myMap.colorScale.remove();
             myMap.thirdPartySourcesController.removeHawaiiReloc();
         }
     });
 
-    irisEarthquakeToggleButton = new ToggleButton("IRIS-earthquake-toggle-button", "overlay-options-toggles", "IRIS Earthquake");
-    irisEarthquakeToggleButton.onclick(function() {
-        if (irisEarthquakeToggleButton.toggleState == ToggleStates.ON) {
-            myMap.thirdPartySourcesController.loadIRISEarthquake();
+    HawaiiRelocToggleButton.setDescription("Relocated earthquakes provided by the University of Miami at <a target='_blank' href='http://www.rsmas.miami.edu/users/glin/Hawaii.html'>http://www.rsmas.miami.edu/users/glin/Hawaii.html</a>");*/
+
+    LongValleyRelocToggleButton = new SeismicityToggleButton("Long-Valley-reloc-toggle-button", "overlay-options-toggles", "Long Valley 1984-2014 Relocations.");
+    LongValleyRelocToggleButton.onclick(function(state) {
+        if (state == ToggleStates.ON) {
+            myMap.thirdPartySourcesController.loadLongValleyReloc();
         } else {
-            myMap.thirdPartySourcesController.removeIRISEarthquake();
+            myMap.thirdPartySourcesController.removeLongValleyReloc();
         }
     });
 
-    recentDatasetsToggleButton = new ToggleButton("recent-datasets-toggle-button")
-    recentDatasetsToggleButton.onclick(null);
+    LongValleyRelocToggleButton.setDescription("Relocated earthquakes provided by the University of Miami at <a target='_blank' href='http://www.rsmas.miami.edu/users/glin/Mammoth_Mountain.html'>http://www.rsmas.miami.edu/users/glin/Mammoth_Mountain.html/</a>");
+
+    // we really need a generic toggable base class :c. too much work for now
+    // for little gain
+    $("#recent-datasets-toggle-button").on("click", function() {
+        if ($(this).html() === "Last year") {
+            $(this).attr("data-original-title", "Show last year data");
+            $(this).html("All items");
+            $(this).removeClass("toggled");
+        } else {
+            $(this).attr("data-original-title", "Show all data");
+            $(this).html("Last year");
+            $(this).addClass("toggled");
+        }
+
+        new SearchFormController("search-form").search();
+        $("#frame-window-div-maximize-button").click();
+    });
 }
 
 function CountryGeocoder(mapboxAccessToken) {
@@ -503,74 +629,33 @@ function CountryGeocoder(mapboxAccessToken) {
     }
 }
 
-function search() {
-    var areas = myMap.allAreaFeatures;
-
-    if (!$('.wrap#select-area-wrap').hasClass('active')) {
-        $('.wrap#select-area-wrap').toggleClass('active');
-    }
-    if (areas != null) {
-        // TODO: dummy search for paper, add actual paper later on when we get attribute    
-        query = $("#search-input").val();
-        var geocoder = new CountryGeocoder(mapboxgl.accessToken);
-        geocoder.geocode(query, function(features) {
-            if (features.length > 0) {
-                var firstCountry = features[0];
-                var swCorner = [firstCountry.bbox[0], firstCountry.bbox[1]];
-                var neCorner = [firstCountry.bbox[2], firstCountry.bbox[3]];
-                var bbox = [swCorner, neCorner];
-                myMap.map.fitBounds(bbox);
-            }
-        });
-
-        // TODO: remove, this is placeholder
-        for (var i = 0; i < areas.length; i++) {
-            areas[i].properties.reference =
-                "Chaussard, E., Amelung, F., & Aoki, Y. (2013). Characterization of open and closed volcanic systems in Indonesia and Mexico using InSAR time‐series. Journal of Geophysical Research: Solid Earth, DOI: 10.1002/jgrb.50288";
-            // add mission so it's fuse searchable
-            areas[i].properties.mission = areas[i].properties.attributevalues[0];
-        }
-        // new sublist of areas that match query
-        var match_areas = [];
-
-        var fuse = new Fuse(areas, {
-            keys: ["properties.country",
-                "properties.unavco_name", "properties.region",
-                "properties.mission"
-            ]
-        });
-        var countries = fuse.search(query);
-        if (countries.length === 0) {
-            return;
-        }
-
-        var searcher = new SearchFormController("search-form");
-        searcher.populateSearchResultsTable(countries);
-    }
-}
-
 function slideFunction(event, ui) {
+    var newOpacity = ui.value / 100.0;
+    newOpacity *= newOpacity * newOpacity; // scale it, as the default scale is not very linear
     // start at 1 to avoid base map layer
     for (var i = 1; i <= currentArea.properties.num_chunks; i++) {
         var layerName = "chunk_" + i;
-        var newOpacity = ui.value / 100.0;
-        newOpacity *= newOpacity * newOpacity; // scale it, as the default scale is not very linear
 
         myMap.map.setPaintProperty(layerName, "circle-opacity", newOpacity);
+    }
+
+    if (myMap.map.getLayer("onTheFlyJSON")) {
+        myMap.map.setPaintProperty("onTheFlyJSON", "circle-opacity", newOpacity);
     }
 }
 
 function showBrowserAlert() {
-    var isChrome = !!window.chrome && !!window.chrome.webstore
+    var isChrome = !!window.chrome && !!window.chrome.webstore;
     if (!isChrome && !localStorage.getItem("showedBrowserAlert")) {
         alert("Warning: This website relies on Mapbox GL JS, which in turn relies on WebGL. As it stands," + " Google Chrome offers the best compatibility when browsing this site.");
-        localStorage.setItem("showedBrowserAlert", "true");
+        // try catch cause if can't set item due to private browsing, don't just crash the whole page
+        try {
+            localStorage.setItem("showedBrowserAlert", "true");
+        } catch (e) {}
     }
 }
 // when site loads, turn toggle on
-$(window).load(function() {
-    showBrowserAlert();
-
+$(window).on("load", function() {
     $(window).on('hashchange', function(e) {
         history.replaceState("", document.title, e.originalEvent.oldURL);
     });
@@ -586,8 +671,9 @@ $(window).load(function() {
     // and of graphs controllers
     GraphsController.prototype = new AbstractGraphsController();
     SeismicityGraphsController.prototype = new AbstractGraphsController();
-    CustomHighchartsSlider.prototype = new AbstractGraphsController();
+    CustomHighchartsSlider.prototype = new AbstractGraphsController();// TODO: a slider inheriting from a controller? seems weird. fix this inheritance to be more logical
     CustomSliderSeismicityController.prototype = new SeismicityGraphsController();
+    SeismicityToggleButton.prototype = new ToggleButton();
     myMap = new MapController(loadJSON);
     myMap.addMapToPage("map-container");
     GraphsController.prototype.map = myMap;
@@ -597,6 +683,7 @@ $(window).load(function() {
     setupCustomHighchartsSlider();
     setupCustomSliderSeismicityController()
     populateSearchAutocomplete();
+    setupSeismicityToggleButton();
 
     var layerList = document.getElementById('map-type-menu');
     var inputs = layerList.getElementsByTagName('input');
@@ -607,45 +694,181 @@ $(window).load(function() {
 
     setupToggleButtons();
 
-    $("#color-on-dropdown").change(function() {
-        var selectedColoring = $(this).val();
-        if (selectedColoring === "displacement") {
-            if (!currentArea) {
+    $("#hide-show-seismicities-button").on("click", function() {
+        if ($(this).attr("data-original-title") === "Hide") {
+            myMap.thirdPartySourcesController.hideAllSeismicities();
+            $(this).attr("data-original-title", "Show");
+            $(this).css("opacity", 0.7);
+        } else {
+            myMap.thirdPartySourcesController.showAllSeismicities();
+            $(this).attr("data-original-title", "Hide");
+            $(this).css("opacity", 1.0);
+        }
+    });
+
+    $("#hide-show-insar-button").on("click", function() {
+        if ($(this).attr("data-original-title") === "Show") {
+            if (!myMap.anAreaWasPreviouslyLoaded()) {
+                overlayToggleButton.set("off");
                 return;
             }
 
-            var dates = convertStringsToDateArray(propertyToJSON(currentArea.properties.decimal_dates));
-            var startDate = dates[0];
-            var endDate = dates[dates.length - 1];
-            if (myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
-                startDate = dates[myMap.selector.minIndex];
-                endDate = dates[myMap.selector.maxIndex];
+            $("#overlay-slider").slider("value", 100);
+            myMap.loadDatasetFromFeature(currentArea);
+            $(this).attr("data-original-title", "Hide");
+            $(this).css("opacity", 1.0);
+        } else {
+            if (myMap.pointsLoaded()) {
+                $("#overlay-slider").slider("value", 0);
+                myMap.removePoints();
+                myMap.removeTouchLocationMarkers();
+                $(this).attr("data-original-title", "Show");
+                $(this).css("opacity", 0.7);
+            }
+        }
+    });
+
+    // use on click to allow for selection of same value
+    // in anonymous function to have safe scope for lastIndex
+    (function() {
+        var lastIndex = 0;
+        $("#japan-seismicity-select").on("click", function() {
+            // if else allows desired behavior of triggering actions even when same value in dropdown
+            // is selected, but not triggering action when initially clicking the dropdown arrow to show
+            // the dropdown menu.
+            if (this.selectedIndex == lastIndex) {
+                lastIndex = 0;
+            } else {
+                lastIndex = this.selectedIndex;
+                // last option is remove all japan seismicities
+                if (this.selectedIndex == this.length - 1) {
+                    $("#japan-seismicity-select option").each(function(selection) {
+                        myMap.thirdPartySourcesController.removeJapanSeismicities($(this).val());
+                    });
+                } else {
+                    var selection = $(this).val();
+                    if (myMap.thirdPartySourcesController.loadedJapanSeismicityDates(selection)) {
+                        myMap.thirdPartySourcesController.removeJapanSeismicities(selection);
+                    } else {
+                        myMap.thirdPartySourcesController.loadJapanSeismicity(selection);
+                    }
+                }
+            }
+        });
+    })();
+
+    $("#toggle-insar-circle-size-button").on("click", function() {
+        if (myMap.highResMode()) {
+            window.alert("This dataset is already high resolution, and pixels are already actual size at high zoom levels");
+            return;
+        }
+        if ($(this).html() === "Actual Size") {
+            $(this).attr("data-original-title", "Reset size of insar points");
+            $(this).html("Reset Size");
+            myMap.setInsarActualPixelSize(currentArea, null);
+        } else if ($(this).html() === "Reset Size") {
+            $(this).attr("data-original-title", "Resize insar points to their actual size. Resets on zoom change");
+            $(this).html("Actual Size");
+            myMap.setInsarDefaultPixelSize(currentArea);
+        } else {
+            throw "Something went wrong";
+        }
+    });
+
+    $("#USGSEvents-options-minimize-button").on("click", function() {
+        var $container = $(".wrap#USGSEvents-options-wrapper");
+
+        if ($container.hasClass("active")) {
+            $container.removeClass("active");
+        }
+
+        if (!myMap.map.getLayer("USGSEventsEarthquake")) {
+            USGSEventsEarthquakeToggleButton.set("off");
+        }
+    });
+
+    $("#USGSEvents-options-submit-button").on("click", function() {
+        myMap.thirdPartySourcesController.removeUSGSEventsEarthquake(); // in case it is enabled
+        myMap.thirdPartySourcesController.loadUSGSEventsEarthquake();
+
+        // minimize the window after submit
+        var $container = $(".wrap#USGSEvents-options");
+        if ($container.hasClass("active")) {
+            $container.removeClass("active");
+        }
+    });
+
+    $("#color-scale .color-scale-text-div").on("click", function() {
+        var selectedColoring = null;
+        var title = $(this).attr("data-original-title");
+
+        myMap.colorScale.setTopAsMax(true);
+        if (myMap.pointsLoaded()) {
+            if (!currentArea) {
+                return;
+            }
+            var dates = myMap.selector.getCurrentStartEndDateFromArea(currentArea);
+
+            if (title === "Color on displacement") {
+                myMap.colorDatasetOnDisplacement(dates.startDate, dates.endDate);
+                $(this).attr("data-original-title", "Color on velocity");
+            } else if (title === "Color on velocity") {
+                myMap.colorDatasetOnVelocity(dates.startDate, dates.endDate);
+                myMap.showInsarLayers();
+                $(this).attr("data-original-title", "Color on displacement");
+            }
+        }
+    });
+
+    $("#seismicity-color-scale .color-scale-text-div").on("click", function() {
+        var selectedColoring = null;
+        var title = $(this).attr("data-original-title");
+
+        myMap.seismicityColorScale.setTopAsMax(false);
+        var curMode = myMap.getCurrentMode();
+        if (curMode === "seismicity") {
+            $seismicityColoringButtons = $(".seismicity-chart-set-coloring-button");
+            if (title === "Color on time") {
+                selectedColoring = "time";
+                $(this).attr("data-original-title", "Color on depth");
+                myMap.seismicityColorScale.setInDateMode(true);
+                myMap.seismicityColorScale.setMinMax(myMap.seismicityGraphsController.timeRange.min, myMap.seismicityGraphsController.timeRange.max);
+                $seismicityColoringButtons.attr("data-original-title", "Color on time")
+                $seismicityColoringButtons.click();
+            } else if (title === "Color on depth") {
+                selectedColoring = "depth";
+                $(this).attr("data-original-title", "Color on time");
+                myMap.seismicityColorScale.setInDateMode(false);
+                myMap.seismicityColorScale.setMinMax(myMap.seismicityGraphsController.depthRange.min, myMap.seismicityGraphsController.depthRange.max);
+                $seismicityColoringButtons.attr("data-original-title", "Color on depth")
+                $seismicityColoringButtons.click();
             }
 
-            myMap.colorDatasetOnDisplacement(startDate, endDate);
-        } else if (selectedColoring === "velocity") {
-            myMap.colorDatasetOnVelocity();
+            myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
+        }
+    });
+
+    $(".color-scale .color-scale-picture-div > .hidden-colorscale-click-area").on("click", function() {
+        var scale = null;
+        var mode = myMap.getCurrentMode();
+
+        scale = myMap.colorScale;
+
+        var min = scale.min;
+        var max = scale.max;
+        var selectedColoring = $(".color-scale .color-scale-text-div").attr("data-original-title") === "Color on time" ?
+            "depth" : "time";
+        if ($(this).attr("data-original-title") === "Halve scale") {
+            min /= 2;
+            max /= 2;
+            scale.setMinMax(min, max);
         } else {
-            throw new Error("Invalid dropdown selection");
+            min *= 2;
+            max *= 2;
+            scale.setMinMax(min, max);
         }
-    });
 
-    $("#seismicity-color-on-dropdown").change(function() {
-        var selectedColoring = $(this).val();
-        if (selectedColoring === "time") {
-            myMap.colorScale.setTopAsMax(true);
-            myMap.colorScale.setInDateMode(true);
-        } else if (selectedColoring === "depth") {
-            myMap.colorScale.setInDateMode(false);
-            myMap.colorScale.setTopAsMax(false);
-        }
-        myMap.thirdPartySourcesController.recolorSeismicities(selectedColoring);
-        myMap.seismicityGraphsController.recreateAllCharts(selectedColoring);
-    });
-
-    $("#minimap-color-on-dropdown").change(function() {
-         var selectedColoring = $(this).val();
-         myMap.seismicityGraphsController.setMinimapColoring(selectedColoring);
+        scale.scaleChangeCallback(min, max);
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {
@@ -669,36 +892,68 @@ $(window).load(function() {
         }
     });
 
+    $(".draggable").draggable({
+        start: function(event, ui) {
+            $(this).addClass("disable-transitions");
+            // we rely on auto height, but we need to explicitly set the height on drag
+            // otherwise, we can have infinitely growing divs
+            $(this).css("height", $(this).height() + "px");
+        },
+        stop: function(event, ui) {
+            $(this).removeClass("disable-transitions");
+        }
+    });
+
     // set up tooltips on graph div and area attributes div
-    $(".wrap#charts").tooltip("disable");
-    $(".wrap#area-attributes-div").tooltip("disable");
+    // $(".wrap#charts").tooltip("disable");
+    // $(".wrap#area-attributes-div").tooltip("disable");
+
+    $(".maximize-button").on("click", function() {
+        if (!$(this).hasClass("dont-hide-on-click")) {
+            $(this).addClass("hidden");
+        }
+    });
 
     $("#graph-div-minimize-button").on("click", function() {
-        var container = $(".wrap#charts");
-        if (container.hasClass("maximized")) {
+        $(this).css("display", "none");
+        $("#graph-div-maximize-button").css("display", "block");
+        var $container = $(".wrap#charts");
+        if ($container.hasClass("maximized")) {
             $("#graph-div-maximize-button").css("display", "block");
-            container.removeClass("active");
-            container.removeClass("maximized");
-            container.addClass("minimized");
+            myMap.removeTouchLocationMarkers();
+            $("#hide-when-only-show-sliders").css("display", "none");
         }
+
+        if ($container.hasClass("show-seismicity-sliders")) {
+            $container.removeClass("show-seismicity-sliders");
+            $("#seismicity-chart-sliders").addClass("no-display");
+        }
+
+        var newPosCSS = {
+            left: "0%",
+            bottom: "0%",
+            top: "initial"
+        };
+
+        var miniSliderHeight = $("#insar-chart-slider").height();
+        $container.removeClass("maximized").addClass("minimized")
+        .addClass("only-show-slider").height(miniSliderHeight).css(newPosCSS);
     });
 
     $("#graph-div-maximize-button").on("click", function() {
         var container = $(".wrap#charts");
-        if (container.hasClass("minimized")) {
+
+        if (container.hasClass("minimized") && myMap.pointClicked()) {
             $(this).css("display", "none");
+            $("#graph-div-minimize-button").css("display", "block");
             container.css("display", "block");
             container.addClass("active");
             container.removeClass("minimized");
             container.addClass("maximized");
 
-            if (!myMap.pointClicked()) {
-                $("#chartContainer").html("<h2>Select a timeseries point</h2>")
-            }
+            $(".wrap#charts").resizable("enable");
+            $(".wrap#charts").draggable("enable");
         }
-
-        $(".wrap#charts").resizable("enable");
-        $(".wrap#charts").draggable("enable");
     });
 
     $("#area-attributes-div-maximize-button").on("click", function(
@@ -714,57 +969,66 @@ $(window).load(function() {
             areaAttributesPopup.minimize(true);
         }
     });
-    // TODO: these minimize buttons are dying to be put into a class
-    // to reduce redundant code
-    $("#search-form-and-results-minimize-button").on("click", function() {
-        // heights in percent
-        var container = $("#search-form-and-results-container");
-        if (container.hasClass("maximized")) {
-            $("#search-form-and-results-maximize-button").css("display", "block");
-            container.css("display", "none");
-            container.removeClass("maximized");
-            container.addClass("minimized");
-        }
+
+    $("#frame-window-div-maximize-button").on("click", function(
+        event) {
+        $("#search-form-results-table > tbody").removeClass("hidden");
+        $("#frame-window-div-minimize-button").removeClass("hidden");
+        $("#search-form-and-results-container").addClass("maximized").removeClass("minimized");
+    });
+
+    $("#frame-window-div-minimize-button").on("click", function(
+        event) {
+        $("#search-form-results-table > tbody").addClass("hidden");
+        $("#frame-window-div-maximize-button").removeClass("hidden");
+        $(this).addClass("hidden");
+        $("#search-form-and-results-container").addClass("minimized").removeClass("maximized");
 
         // minimize subset swath if it is up
         $subsetSwathPopup = $("#subset-swath-popup");
         if ($subsetSwathPopup.hasClass("active")) {
             $subsetSwathPopup.removeClass("active");
         }
-
-        myMap.map.resize();
     });
 
-    $("#search-form-and-results-maximize-button").on("click", function() {
-        var container = $("#search-form-and-results-container");
-        if (container.hasClass("minimized")) {
-            $(this).css("display", "none");
-            container.css("display", "block");
-            container.removeClass("minimized");
-            container.addClass("maximized");
-        }
-    });
+    // frame window minimized on mobile by default
+    if (browsingThroughMobileDevice()) {
+        $("#search-form-results-table > tbody").addClass("hidden");
+        $("#frame-window-div-maximize-button").removeClass("hidden");
+        $("#frame-window-div-minimize-button").addClass("hidden");
+    }
 
-    // TODO: again, these minimize buttons are dying to be abstracted into a class along with
+    // TODO: these minimize buttons are dying to be abstracted into a class along with
     // other toggable, 2 state items
     $("#seismicity-charts-minimize-button").on("click", function() {
-        var $container = $("#seismicity-charts");
+        var $container = $(".wrap#seismicity-charts");
         if ($container.hasClass("active")) {
             $container.removeClass("active");
             $("#seismicity-charts-maximize-button").css("display", "block");
+            myMap.selector.removeSelectionPolygon();
         }
     });
 
     $("#seismicity-charts-maximize-button").on("click", function() {
-        var $container = $("#seismicity-charts");
-        if (!$container.hasClass("active")) {
+        var $container = $(".wrap#seismicity-charts");
+        if (!$container.hasClass("active") && !myMap.seismicityGraphsController.crossSectionChartsVisible()) {
             $container.addClass("active");
-            $("#seismicity-charts-maximize-button").css("display", "none");
+            $(this).css("display", "none");
+
+            // charts destroyed? add message saying user needs to select bounding box
+            if ($("#depth-vs-long-graph").find(".highcharts-container").length == 0) {
+                // we use visibility and not display for the contents because there seems to be a race
+                // condition between browser rendering the contents of the div and highcharts
+                // creating the plots. This leads to some plots being cut off (I guess highcharts begins)
+                // creating before browser has rendered. I'm no expert so this is just a conjecture.
+                $(".wrap#seismicity-charts > .content").css("visibility", "hidden");
+                $("#seismicity-wrap-placeholder-text").css("display", "block");
+            }
         }
     });
 
     $("#seismicity-chart-sliders-minimize-button").on("click", function() {
-        var $container = $("#seismicity-chart-sliders");
+        var $container = $(".wrap#seismicity-chart-sliders");
         if ($container.hasClass("active")) {
             $container.removeClass("active");
             $("#seismicity-chart-sliders-maximize-button").css("display", "block");
@@ -772,26 +1036,98 @@ $(window).load(function() {
     });
 
     $("#seismicity-chart-sliders-maximize-button").on("click", function() {
-        var $container = $("#seismicity-chart-sliders");
+        var $container = $(".wrap#seismicity-chart-sliders");
         if (!$container.hasClass("active")) {
             $container.addClass("active");
-            $("#seismicity-chart-sliders-maximize-button").css("display", "none");
+            $(this).css("display", "none");
         }
     });
 
-    $("#set-slider-ranges-button").on("click", function() {
-        myMap.seismicityGraphsController.zoomSlidersToCurrentRange();
+    // this website is begging for a toggable abstract class...
+    $(".seismicity-chart-set-coloring-button").on("click", function() {
+        var selectedColoring = null;
+        var targetGraph = $(this).data().chartType;
+        var tooltipValue = $(this).attr("data-original-title");
+        if (tooltipValue === "Color on time") {
+            selectedColoring = "time";
+            $(this).html("Time-colored");
+            $(this).attr("data-original-title", "Color on depth");
+        } else { // depth class or no class we take as depth coloring
+            selectedColoring = "depth";
+            $(this).html("Depth-colored<br>[Km]");
+            $(this).attr("data-original-title", "Color on time");
+        }
+        myMap.seismicityGraphsController.seismicityColorings[targetGraph] = selectedColoring;
+        myMap.seismicityGraphsController.createChart(selectedColoring, targetGraph, null, null);
     });
 
-    $("#reset-slider-ranges-button").on("click", function() {
-        myMap.seismicityGraphsController.resetSliderRanges();
+    $("#switch-to-distribution-button").on("click", function() {
+        var tooltipValue = $(this).attr("data-original-title");
+        if (tooltipValue === "Switch to distribution") {
+            $(this).attr("data-original-title", "Switch to cumulative");
+            $(this).html("Distribution");
+        } else {
+            $(this).attr("data-original-title", "Switch to distribution");
+            $(this).html("Cumulative");
+        }
+
+        // this chart takes of care of checking this button's state so we don't have to pass in the state
+        // and refactor alot of code. But maybe it's more elegant to pass it in... might refactor in future
+        myMap.seismicityGraphsController.createChart(null, "cumulative-events-vs-date-graph", null, null);
     });
+
+    $("#cross-section-charts-maximize-button").on("click", function() {
+        var $container = $(".wrap#cross-section-charts");
+        if (!$container.hasClass("active") && !myMap.seismicityGraphsController.chartsVisible()) {
+            $container.addClass("active");
+            $(this).css("display", "none");
+            myMap.selector.createOnlyCrossSectionPlots(null);
+        }
+    });
+
+    $("#cross-section-charts-minimize-button").on("click", function() {
+        var $container = $(".wrap#cross-section-charts");
+        if ($container.hasClass("active")) {
+            $container.removeClass("active");
+            $("#cross-section-charts-maximize-button").css("display", "block");
+        }
+    });
+
+    $(".slider-range-button").on("click", function() {
+        var sliderName = $(this).data().sliderType;
+        myMap.seismicityGraphsController.zoomSliderToCurrentRange(sliderName);
+    });
+
+    $(".slider-reset-button").on("click", function() {
+        var sliderName = $(this).data().sliderType;
+        myMap.seismicityGraphsController.resetSliderRange(sliderName);
+    });
+
+    // POTENTIALLY REMOVE
+    // $("#set-insar-time-range-to-seismicity-button").on("click", function() {
+    //     if (myMap.selector.minIndex != -1 && myMap.selector.maxIndex != -1) {
+    //         var insarDates = myMap.graphsController.graphSettings["chartContainer"].navigatorEvent;
+    //         var seismicityDates = myMap.seismicityGraphsController.timeRange;
+    //         // make sure insardates are within seismicity dates, capping them at seismicity extremes otherwise
+    //         var minMilliseconds = seismicityDates.min;
+    //         var maxMilliseconds = seismicityDates.max;
+    //         if (insarDates.max < maxMilliseconds && insarDates.max > minMilliseconds) {
+    //             maxMilliseconds = insarDates.max;
+    //         }
+    //         if (insarDates.min > minMilliseconds && insarDates.min < maxMilliseconds) {
+    //             minMilliseconds = insarDates.min;
+    //         }
+
+    //         myMap.seismicityGraphsController.timeSlider.setMinMax(minMilliseconds, maxMilliseconds);
+    //     }
+    // });
 
     // chart div resizable
     $(".wrap#charts").resizable({
         animateDuration: "fast",
         animateEasing: "linear",
         start: function(event, ui) {
+            $(this).addClass("disable-transitions");
             var chart = $("#chartContainer").highcharts();
             var chart2 = $("#chartContainer2").highcharts();
             if (chart !== undefined) {
@@ -802,34 +1138,15 @@ $(window).load(function() {
             }
         },
         stop: function(event, ui) {
+            $(this).removeClass("disable-transitions");
             myMap.graphsController.resizeChartContainers();
-
             myMap.graphsController.recreateGraphs();
-        }
-    }).draggable({
-        start: function(event, ui) {
-            var chart = $("#chartContainer").highcharts();
-            var chart2 = $("#chartContainer2").highcharts();
-            if (chart !== undefined) {
-                chart.destroy();
-            }
-            if (chart2 !== undefined) {
-                chart2.destroy();
-            }
         },
-        stop: function(event, ui) {
-            myMap.graphsController.resizeChartContainers();
-            myMap.graphsController.recreateGraphs();
+        resize: function(event, ui) {
+            if ($(this).hasClass("minimized")) {
+                $(this).mouseup();
+            }
         }
-    });
-
-    $("#reset-button").on("click", function() {
-        myMap.reset();
-
-        myMap.map.flyTo({
-            center: myMap.startingCoords,
-            zoom: myMap.startingZoom
-        });
     });
 
     $("#information-button").on("click", function() {
@@ -840,28 +1157,67 @@ $(window).load(function() {
         $("#information-div.overlay-div").toggleClass("active");
     });
 
-    $(function() {
-        $('[data-toggle="tooltip"]').tooltip().click(function() {
-            $('.tooltip').fadeOut('fast', function() {
-                $('.tooltip').remove();
-            });
+    // setup tooltips
+    $("[data-toggle='tooltip']").not($(".circular-question-mark")).tooltip({ trigger: "hover" });
+
+    // for question mark seismicity tooltips, allow hovering over them in case
+    // there is a link
+    $(".circular-question-mark").tooltip({ trigger: "manual" }).hover(function() {
+        var that = this;
+        $(this).tooltip("show");
+        $(".tooltip").on("mouseleave", function() {
+            $(that).tooltip('hide');
         });
+    }, function() {
+        var that = this;
+        setTimeout(function() {
+            if (!$(".tooltip:hover").length) {
+                $(that).tooltip("hide");
+            }
+        }, 300);
     });
 
-    $("#polygon-button").on("click", function() {
+    $("#square-selector-button").on("click", function() {
         myMap.selector.toggleMode();
     });
 
     // TODO: need to consolidate this if has class pattern into Toggable Class
     // We can also have a class for square selector type square buttons if he wants more
     $("#dataset-frames-toggle-button").on("click", function() {
+        var $container = $("#search-form-and-results-container");
         if ($(this).hasClass("toggled")) {
             myMap.loadSwathsInCurrentViewport(true);
-            $(this).attr("data-original-title", "Hide Swaths");
+            $(this).attr("data-original-title", "Hide swaths");
             $(this).removeClass("toggled");
+            if ($container.hasClass("minimized")) {
+                $container.css("display", "block");
+                $container.removeClass("minimized");
+                $container.addClass("maximized");
+            }
         } else {
             myMap.removeAreaMarkers();
-            $(this).attr("data-original-title", "Show Swaths");
+            $(this).attr("data-original-title", "Show swaths");
+            $(this).addClass("toggled");
+            if ($container.hasClass("maximized")) {
+                $container.css("display", "none");
+                $container.removeClass("maximized");
+                $container.addClass("minimized");
+            }
+            var $subsetSwathPopup = $("#subset-swath-popup");
+            if ($subsetSwathPopup.hasClass("active")) {
+                $subsetSwathPopup.removeClass("active");
+            }
+        }
+    });
+
+    $("#contour-toggle-button").on("click", function() {
+        if ($(this).hasClass("toggled")) {
+            myMap.removeContourLines();
+            $(this).attr("data-original-title", "Add contour lines");
+            $(this).removeClass("toggled");
+        } else {
+            myMap.addContourLines();
+            $(this).attr("data-original-title", "Remove contour lines");
             $(this).addClass("toggled");
         }
     });
@@ -887,12 +1243,12 @@ $(window).load(function() {
     });
 
     // enter key triggers go button for search
-    $("#search-input").keyup(function(event) {
-        var ENTER_KEY = 13;
+    $("#search-input").keypress(function(event) {
+        const ENTER_KEY = 13;
 
-        if (event.keyCode == ENTER_KEY) {
+        if (event.keyCode == ENTER_KEY && $(this).val()) {
             search();
-            $("#search-form-and-results-maximize-button").click();
+            $("#frame-window-div-maximize-button").click();
         }
     });
 
@@ -923,22 +1279,29 @@ $(window).load(function() {
         }
     });
 
-    $("#login-logout-button").on('click', function() {
-        if ($("#login-logout-button").hasClass("logged-in")) {
-            window.location = "/auth/logout";
-        } else {
-            window.location = "/auth/login";
-        }
-    });
-
-    $("#webservices-ui-button").on("click", function() {
-        window.location = "/WebServicesUI";
-    });
-
     $("#download-as-text-button").click(function() {
         window.open("/textFile/" + currentArea.properties.unavco_name +
             "/" + currentPoint);
     });
 
+    // jQuery datepicker for crossbrowser consistency
+    $(".date-input").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        dateFormat: "yy-M-d"
+    });
+
+    $("#magnitude-scale").on("click", function() {
+        if ($(this).attr("data-original-title") === "Shrink relative scale") {
+            $(this).attr("data-original-title", "Expand relative scale");
+            myMap.thirdPartySourcesController.resizeSeismicities("shrink");
+            // everything else is expand
+        } else {
+            $(this).attr("data-original-title", "Shrink relative scale");
+            myMap.thirdPartySourcesController.resizeSeismicities("expand");
+        }
+
+        myMap.thirdPartySourcesController.populateSeismicityMagnitudeScale();
+    });
     // $("#search-form-results-table").tablesorter();
 });

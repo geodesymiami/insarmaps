@@ -52,6 +52,8 @@ function AreaAttributesController(map, area) {
         }
 
         fullAttributes["unavco_name"] = unavco_name;
+        fullAttributes["decimal_dates"] = this.datesArray;
+        fullAttributes["string_dates"] = propertyToJSON(this.area.properties.string_dates);
 
         return fullAttributes;
     };
@@ -67,6 +69,9 @@ function AreaAttributesController(map, area) {
     };
 
     this.processDatesAndColoring = function(plotAttributes) {
+        if (!plotAttributes || plotAttributes.length == 0) {
+            return;
+        }
         var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
         var min = colorScaleOpts[0];
         var max = colorScaleOpts[1];
@@ -99,11 +104,11 @@ function AreaAttributesController(map, area) {
 
     this.processPresetFigureAttributes = function() {
         var plotAttributes = this.attributes.plotAttributes;
-        if (plotAttributes) {
+        if (plotAttributes && plotAttributes.length > 0) {
             if (this.areaHasPlotAttribute("plot.colorscale")) {
                 var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
-                var min = colorScaleOpts[0];
-                var max = colorScaleOpts[1];
+                var min = parseInt(colorScaleOpts[0]);
+                var max = parseInt(colorScaleOpts[1]);
                 var units = colorScaleOpts[2]; // we ignore this
                 var scaleType = colorScaleOpts[3];
                 this.map.colorScale.setScale(scaleType);
@@ -124,19 +129,21 @@ function AreaAttributesController(map, area) {
 
     this.processAttributes = function() {
         var plotAttributes = this.attributes.plotAttributes;
-        if (plotAttributes) {
+        if (plotAttributes && plotAttributes.length > 0) {
             if (plotAttributes[0]["plot.colorscale"]) {
                 var colorScaleOpts = plotAttributes[0]["plot.colorscale"].split(",");
-                var min = colorScaleOpts[0];
-                var max = colorScaleOpts[1];
+                var min = parseInt(colorScaleOpts[0]);
+                var max = parseInt(colorScaleOpts[1]);
                 var units = colorScaleOpts[2]; // we ignore this
                 var scaleType = colorScaleOpts[3];
                 this.map.colorScale.setScale(scaleType);
-                this.map.colorScale.setMinMax(min, max);
+                if (!(getUrlVar("minScale") && getUrlVar("maxScale"))) {
+                    this.map.colorScale.setMinMax(min, max);
+                }
             }
 
             this.map.refreshDataset();
-            this.map.colorScale.setTitle("LOS Velocity [cm/yr]");
+            this.map.colorScale.setTitle("LOS Velocity<br>[cm/yr]");
         }
     };
 
@@ -150,7 +157,7 @@ function AreaAttributesController(map, area) {
     };
 
     this.areaHasPlotAttribute = function(plotAttribute) {
-        if (!this.attributes.plotAttributes) {
+        if (!this.attributes.plotAttributes || this.attributes.plotAttributes.length == 0) {
             return null;
         }
 

@@ -1,0 +1,5 @@
+TODO: install these into setup.sh maybe?
+
+postgres for php
+curl for php
+

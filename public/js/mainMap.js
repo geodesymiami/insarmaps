@@ -18,106 +18,29 @@ var firstToggle = true;
 var myPolygon = null;
 var areaAttributesPopup = new AreaAttributesPopup();
 
-// take an array of displacement values and return velocity standard deviation (confuses the heck out of me)
-var getStandardDeviation = function(displacements, slope) {
-    var v_std = 0.0;
-    for (i = 0; i < displacements.length; i++) {
-        v_std += (Math.abs(slope - displacements[i]) * Math.abs(slope - displacements[i]));
-    }
-    return Math.sqrt(v_std / (displacements.length - 1));
-}
-
-// falk's date string is in format yyyymmdd - ex: 20090817 
-var customDateStringToJSDate = function(dateString) {
-    var year = dateString.substr(0, 4);
-    var month = dateString.substr(4, 2);
-    var day = dateString.substr(6, 2);
-    return new Date(year, month - 1, day);
-}
-
-// take an array of these string dates and return an array of date objects
-var convertStringsToDateArray = function(date_string_array) {
-    var date_array = [];
-    for (var i = 0; i < date_string_array.length; i++) {
-        date_array.push(customDateStringToJSDate(date_string_array[i].toString()));
-    }
-    return date_array;
-}
-
-// find how many days have elapsed in a date object
-var getDaysElapsed = function(date) {
-    var date2 = new Date(date.getFullYear(), 01, 1);
-    var timeDiff = Math.abs(date.getTime() - date2.getTime());
-    return Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
-}
-
-// take displacements, decimal dates, and slope of linear regression line
-// returns array of numbers = (displacements - slope * decimal dates)
-var getlinearDetrend = function(displacements, decimal_dates, slope) {
-    detrend_array = [];
-    for (i = 0; i < decimal_dates.length; i++) {
-        detrend = displacements[i] - (slope * (decimal_dates[i] - decimal_dates[0]))
-        detrend_array.push(detrend);
-    }
-    return detrend_array;
-}
-
-var dateToDecimal = function(date) {
-    return date.getFullYear() + getDaysElapsed(date) / 365;
-}
-
-// convert date in decimal - for example, 20060131 is Jan 31, 2006
-// 31 days have passed so decimal format = [2006 + (31/365)] = 2006.0849
-// take an array of date objects and return an array of date decimals
-var convertDatesToDecimalArray = function(date_array) {
-    var decimals = [];
-    for (i = 0; i < date_array.length; i++) {
-        decimals.push(dateToDecimal(date_array[i]));
-    }
-    return decimals;
-}
-
-// takes displacements and dates, returns slope and y intercept in array
-function calcLinearRegression(displacements, decimal_dates) {
-    data = [];
-    for (i = 0; i < decimal_dates.length; i++) {
-        // data.push([displacements[i], decimal_dates[i]]);
-        data.push([decimal_dates[i], displacements[i]]);
-    }
-    var result = regression('linear', data);
-    return result;
-}
-
-// takes slope, y-intercept; decimal_dates and chart_data(displacement) must
-// this.start and end around bounds of the sliders
-function getRegressionChartData(slope, y, decimal_dates, chart_data) {
-    var data = [];
-    var first_date = chart_data[0][0];
-    var first_reg_displacement = slope * decimal_dates[0] + y;
-    var last_date = chart_data[chart_data.length - 1][0];
-    var last_reg_displacement = slope * decimal_dates[decimal_dates.length - 1] + y;
-    data.push([first_date, first_reg_displacement]);
-    data.push([last_date, last_reg_displacement]);
-    return data;
-}
-
-// returns an array of [date, displacement] objects
-function getDisplacementChartData(displacements, dates) {
-    var data = [];
-    for (i = 0; i < dates.length; i++) {
-        var year = parseInt(dates[i].toString().substr(0, 4));
-        var month = parseInt(dates[i].toString().substr(4, 2));
-        var day = parseInt(dates[i].toString().substr(6, 2));
-        data.push([Date.UTC(year, month - 1, day), displacements[i]]);
-    }
-    return data;
-}
-
 function MapController(loadJSONFunc) {
     // my mapbox api key
     mapboxgl.accessToken = "pk.eyJ1Ijoia2pqajExMjIzMzQ0IiwiYSI6ImNpbDJqYXZ6czNjdWd2eW0zMTA2aW1tNXUifQ.cPofQqq5jqm6l4zix7k6vw";
     this.startingZoom = 1.6;
+    this.datasetZoom = 8.0;
     this.startingCoords = [0, 30];
+
+    this.insarActualPixelSize = false;
+    // default zoom and radii of circle geojson features
+    this.radiusStops = [
+        [5, 2],
+        [8, 2],
+        [13, 8],
+        [21, 16],
+        [34, 32]
+    ];
+    this.highResRadiusStops = [
+        [5, 2],
+        [8, 2],
+        [13, 8],
+        [21, 4],
+        [34, 2]
+    ];
     // the map
     this.map = null;
     this.geoJSONSource = null;
@@ -142,27 +65,51 @@ function MapController(loadJSONFunc) {
     this.zoomOutZoom = 7.0;
     this.graphsController = new GraphsController(this);
     this.areas = null;
-    this.areaFeatures = null;
-    this.allAreaFeatures = null;
-    this.colorScale = new ColorScale(-2.00, 2.00, "color-scale");
-    this.colorScale.onScaleChange(function(minValue, maxValue) {
-        // if they are loaded, refresh them. if aren't loaded, nothing
-        // will happen
-        this.refreshDataset();
-        this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
-        var selectedColoring = $("#seismicity-color-on-dropdown").val();
-        this.thirdPartySourcesController.recolorSeismicities(selectedColoring);
+    this.allAreas = null;
+    var COLOR_SCALE_MIN = parseFloat($("#color-scale .bottom-scale-value").val());
+    var COLOR_SCALE_MAX = parseFloat($("#color-scale .top-scale-value").val());
+    this.insarColorScaleValues = { min: COLOR_SCALE_MIN, max: COLOR_SCALE_MAX };
+    this.colorScale = new ColorScale(COLOR_SCALE_MIN, COLOR_SCALE_MAX, "color-scale");
+    this.colorScale.onScaleChange(function(newMin, newMax) {
+        var curMode = this.getCurrentMode();
 
-        // if time is selected, convert to milliseconds
-        if (selectedColoring == "time") {
-            this.seismicityGraphsController.createChart(selectedColoring, "depth-vs-long-graph", null, null);
-            this.seismicityGraphsController.createChart(selectedColoring, "lat-vs-depth-graph", null, null);
-        } else {
-            this.seismicityGraphsController.createChart(selectedColoring, "cumulative-events-vs-date-graph", null, null);
-            this.seismicityGraphsController.createChart(selectedColoring, "lat-vs-long-graph", null, null);
+        if (curMode) { // no mode (ie essentially empty map)
+            if (this.pointsLoaded()) {
+                var dates = this.selector.getCurrentStartEndDateFromArea(currentArea);
+                this.insarColorScaleValues.min = newMin;
+                this.insarColorScaleValues.max = newMax;
+                this.refreshDataset(dates.startDate, dates.endDate);
+            } else if (curMode === "gps") {
+                this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
+            }
+            appendOrReplaceUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + newMin);
+            appendOrReplaceUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + newMax);
+        }
+    }.bind(this));
+    this.seismicityColorScale = new ColorScale(COLOR_SCALE_MIN, COLOR_SCALE_MAX, "seismicity-color-scale");
+    this.seismicityColorScale.onScaleChange(function(newMin, newMax) {
+        var curMode = this.getCurrentMode();
+
+        if (curMode) { // no mode (ie essentially empty map)
+            if (curMode === "gps") {
+                this.thirdPartySourcesController.refreshmidasGpsStationMarkers();
+            } else if (curMode === "seismicity") {
+                if (!this.seismicityColorScale.inDateMode) {
+                    this.seismicityGraphsController.depthSlider.setMinMax(newMin, newMax);
+                } else {
+                    this.seismicityGraphsController.timeSlider.setMinMax(newMin, newMax);
+                }
+                this.thirdPartySourcesController.recolorSeismicities(this.thirdPartySourcesController.currentSeismicityColoring);
+            }
         }
     }.bind(this));
     this.colorOnDisplacement = false;
+    // set current coloring mode based on url
+    if (urlOptions && urlOptions.startingDatasetOptions &&
+        (urlOptions.startingDatasetOptions.minScale ||
+        urlOptions.startingDatasetOptions.maxScale)) {
+        this.colorOnDisplacement = true;
+    }
     this.lastAreasRequest = null;
 
     this.areaMarkerLayer = new AreaMarkerLayer(this);
@@ -194,6 +141,9 @@ function MapController(loadJSONFunc) {
 
     this.previousZoom = this.startingZoom;
 
+    this.lastMode = null;
+    this.datasetCurrentlyRecolored = false;
+
     this.addSource = function(id, source) {
         this.sources.set(id, source);
         this.map.addSource(id, source);
@@ -202,6 +152,166 @@ function MapController(loadJSONFunc) {
     this.removeSource = function(id) {
         this.sources.delete(id);
         this.map.removeSource(id);
+    };
+
+    // old datasets have more than one, new ones should only have one, so consider renaming insar layer eventually.
+    // higher index layerID's come below lower indexed ones
+    this.layerOrders = (function() {
+        const FIRST_INSAR_CHUNK = "chunk_1";
+        var allLayers = [this.thirdPartySourcesController.layerOrder, ["ReferencePoint", "Top Graph", "Bottom Graph", "onTheFlyJSON", FIRST_INSAR_CHUNK]];
+
+        var layerOrders = [];
+        allLayers.forEach(function(layersArray) {
+            layerOrders = layerOrders.concat(layersArray);
+        });
+
+        return layerOrders;
+    }).bind(this)();
+
+    this.getLayerOnTopOf = function(layer) {
+        for (var i = this.layerOrders.length - 1; i >= 0; i--) {
+            if (this.layerOrders[i] === layer) {
+                var j = i - 1;
+                while (!this.map.getLayer(this.layerOrders[j]) && j > -1) {
+                    j--;
+                }
+
+                return j == -1 ? null : this.layerOrders[j];
+            }
+        }
+
+        return null;
+    };
+
+    // determine which color scales to show, etc when a layer, and potentially
+    // mode, changes
+    this.afterLayersChanged = function(layerThatWasChanged) {
+        var curMode = this.getCurrentMode();
+
+        // do nothing if it was a swath, regardless of mode, as swaths don't change our mode
+        if (layerThatWasChanged.includes("swath-area-")) {
+            return;
+        }
+
+        if (this.pointsLoaded() || (curMode && curMode === "seismicity")) {
+            $(".maximize-buttons-container").removeClass("hidden");
+        } else {
+            $(".maximize-buttons-container").addClass("hidden");
+        }
+
+        $("#magnitude-scale").removeClass("active");
+        $("#arrow-length-scale").removeClass("active");
+        // this is all quick and dirty.
+        // TODO: it needs cleaning up, as what started as an elegant solution has quickly turned into a behemoth
+        if (!curMode) { // no mode (ie essentially empty map)
+            this.seismicityGraphsController.destroyAllCharts();
+            this.seismicityGraphsController.hideChartContainers();
+            $(".wrap#charts").removeClass("active");
+            this.selector.removeSelectionPolygon();
+            $("#seismicity-maximize-buttons-container").removeClass("active");
+            $("#insar-maximize-buttons-container").addClass("active");
+            this.colorScale.remove();
+            this.seismicityColorScale.remove();
+            this.loadAreaMarkersThroughButton();
+        } else {
+            // no seismicity loaded? hide charts. use getTopMostSeismicitySource
+            // instead of thirdpartysourcescontroller method which gives us all seismicities
+            // cause this seems less resource heavy
+            if (!this.getTopMostSeismicitySource()) {
+                this.seismicityGraphsController.destroyAllCharts();
+                this.seismicityGraphsController.hideChartContainers();
+            }
+            if (curMode !== "insar") {
+                $("#insar-maximize-buttons-container").removeClass("active");
+            }
+            if (curMode !== "seismicity") {
+                this.selector.removeSelectionPolygon();
+                $("#seismicity-maximize-buttons-container").removeClass("active");
+                $("#square-selector-button").attr("data-original-title", "Select Points");
+                if (curMode === "insar") {
+                    if (this.lastMode == curMode) {
+                        return;
+                    }
+
+                    $hideShowInsarButton = $("#hide-show-insar-button");
+                    if ($hideShowInsarButton.attr("data-original-title") === "Show") {
+                        $hideShowInsarButton.attr("data-original-title", "Hide");
+                        $hideShowInsarButton.css("opacity", 1.0);
+                    }
+                    this.loadAreaMarkersThroughButton();
+                    $("#insar-maximize-buttons-container").addClass("active");
+                    this.colorScale.setTopAsMax(true);
+                    this.colorScale.setInDateMode(false);
+                    this.colorScale.initVisualScale();
+                    if (this.pointsLoaded()) {
+                        $("#insar-seismicity-color-scales-container").css("display", "block");
+                        this.colorScale.show();
+                        this.colorScale.setTitle("LOS Velocity<br>[cm/yr]");
+                    } else {
+                        $("#insar-seismicity-color-scales-container").css("display", "none");
+                        this.colorScale.remove();
+                    }
+                    $("#color-scale .color-scale-text-div").attr("data-original-title", "Color on displacement");
+                } else if (curMode === "gps") {
+                    var layerIDs = this.getLayerIDsInCurrentMode();
+                    this.removeAreaMarkersThroughButton();
+                    if (layerIDs.includes("midas-arrows")) {
+                        $("#arrow-length-scale").addClass("active");
+                        this.thirdPartySourcesController.populateMidasHorizontalArrowScale();
+                    }
+                    if (layerIDs.includes("midas")) {
+                        $("#insar-seismicity-color-scales-container").css("display", "block");
+                        this.colorScale.show();
+                        this.colorScale.setTitle("Vertical Velocity cm/yr");
+                    } else {
+                        $("#insar-seismicity-color-scales-container").css("display", "none");
+                        this.colorScale.remove();
+                    }
+                }
+                // seismicity
+            } else {
+                this.thirdPartySourcesController.populateSeismicityMagnitudeScale();
+                $("#magnitude-scale").addClass("active");
+                if (layerThatWasChanged !== "seismicitySelectedArea") {
+                    // remove swaths
+                    this.removeAreaMarkersThroughButton();
+                    $("#square-selector-button").attr("data-original-title", "Select Seismicity");
+                    $("#seismicity-color-scale .color-scale-text-div").attr("data-original-title", "Color on time");
+                    this.seismicityColorScale.setTopAsMax(false);
+                    $("#seismicity-maximize-buttons-container").addClass("active");
+
+                    // don't prepare for seismicities if layer that was changed was on the fly as it means
+                    // that we simply received new on the fly json, possibly from a call from the seismicity sliders...
+                    // if we prepareforseismicities and the call was from a slider, the slider's start and end ranges
+                    // get overriden
+                    if (layerThatWasChanged !== "onTheFlyJSON") {
+                        this.prepareForSeismicities();
+                    }
+                }
+            }
+        }
+
+        this.lastMode = curMode;
+    };
+
+    this.prepareForSeismicities = function() {
+        var features = this.thirdPartySourcesController.getAllSeismicityFeatures();
+        // don't prepare for seismicities if layer that was changed was on the fly as it means
+        // that we simply received new on the fly json, possibly from a call from the seismicity sliders...
+        // if we prepareforseismicities and the call was from a slider, the slider's start and end ranges
+        // get overriden
+        if (features.length) {
+            $hideShowSeismicitiesButton = $("#hide-show-seismicities-button");
+            if ($hideShowSeismicitiesButton.attr("data-original-title") === "Show") {
+                $hideShowSeismicitiesButton.click();
+            }
+
+            features.sort(function(feature1, feature2) {
+                return feature1.properties.time - feature2.properties.time;
+            });
+            // handles setting up color scale for seismicity etc.
+            this.thirdPartySourcesController.prepareForSeismicities(features);
+        }
     };
 
     this.addLayer = function(newLayer, before) {
@@ -220,11 +330,15 @@ function MapController(loadJSONFunc) {
             this.layers_.set(newLayer.id, newLayer);
         }
         this.map.addLayer(newLayer, before);
+        this.afterLayersChanged(newLayer.id);
     };
 
-    this.removeLayer = function(id) {
+    this.removeLayer = function(id, callAfterLayersChanged = true) {
         this.layers_.delete(id);
         this.map.removeLayer(id);
+        if (callAfterLayersChanged) {
+            this.afterLayersChanged(id);
+        }
     };
 
     this.getInsarLayers = function() {
@@ -240,20 +354,61 @@ function MapController(loadJSONFunc) {
         return null;
     };
 
+    this.hideInsarLayers = function() {
+        var insarLayers = this.getInsarLayers();
+        insarLayers.forEach(function(layerID) {
+            this.map.setLayoutProperty(layerID, "visibility", "none");
+        }.bind(this));
+    };
+
+    this.showInsarLayers = function() {
+        var insarLayers = this.getInsarLayers();
+        insarLayers.forEach(function(layerID) {
+            this.map.setLayoutProperty(layerID, "visibility", "visible");
+        }.bind(this));
+    };
+
+    this.insarLayersHidden = function() {
+        var insarLayers = this.getInsarLayers();
+        var allHidden = true;
+
+        insarLayers.forEach(function(layerID) {
+            if (this.map.getLayoutProperty(layerID, "visibility") === "visible") {
+                allHidden = false;
+            }
+        }.bind(this));
+
+        return allHidden;
+    };
+
+    this.getTopMostSeismicitySource = function() {
+        var allSources = Array.from(this.sources);
+
+        for (var i = allSources.length - 1; i >= 0; i--) {
+            var source = allSources[i][0];
+            if (this.thirdPartySourcesController.seismicities.includes(source)) {
+                return source;
+            }
+        }
+
+        // otherwise
+        return null;
+    };
+
     this.getCurrentMode = function() {
         var allSources = Array.from(this.sources);
 
         for (var i = allSources.length - 1; i >= 0; i--) {
-            var latestMode = allSources[i][0];
-            if (this.thirdPartySourcesController.seismicities.includes(latestMode)) {
+            var source = allSources[i][0];
+            if (this.thirdPartySourcesController.seismicities.includes(source)) {
                 return "seismicity";
             }
 
-            if (this.thirdPartySourcesController.gps.includes(latestMode)) {
+            if (this.thirdPartySourcesController.gps.includes(source)) {
                 return "gps";
             }
 
-            if (latestMode === "insar_vector_source") {
+            if (source === "insar_vector_source") {
                 return "insar";
             }
         }
@@ -263,33 +418,30 @@ function MapController(loadJSONFunc) {
     };
 
     this.getLayerIDsInCurrentMode = function() {
-        var allSources = Array.from(this.sources);
+        var mode = this.getCurrentMode();
 
-        for (var i = allSources.length - 1; i >= 0; i--) {
-            var latestMode = allSources[i][0];
-            if (this.thirdPartySourcesController.seismicities.includes(latestMode)) {
-                var activeLayers = [];
-                this.thirdPartySourcesController.seismicities.forEach(function(layerID) {
-                    if (this.map.getLayer(layerID)) {
-                        activeLayers.push(layerID);
-                    }
-                }.bind(this));
-                return activeLayers;
-            }
+        if (mode === "seismicity") {
+            var activeLayers = [];
+            this.thirdPartySourcesController.seismicities.forEach(function(layerID) {
+                if (this.map.getLayer(layerID)) {
+                    activeLayers.push(layerID);
+                }
+            }.bind(this));
+            return activeLayers;
+        }
 
-            if (this.thirdPartySourcesController.gps.includes(latestMode)) {
-                var activeLayers = [];
-                this.thirdPartySourcesController.gps.forEach(function(layerID) {
-                    if (this.map.getLayer(layerID)) {
-                        activeLayers.push(layerID);
-                    }
-                }.bind(this));
-                return this.thirdPartySourcesController.gps;
-            }
+        if (mode === "gps") {
+            var activeLayers = [];
+            this.thirdPartySourcesController.gps.forEach(function(layerID) {
+                if (this.map.getLayer(layerID)) {
+                    activeLayers.push(layerID);
+                }
+            }.bind(this));
+            return activeLayers;
+        }
 
-            if (latestMode === "insar_vector_source") {
-                return this.getInsarLayers();
-            }
+        if (mode === "insar") {
+            return this.getInsarLayers();
         }
 
         // otherwise
@@ -310,7 +462,7 @@ function MapController(loadJSONFunc) {
 
     // an alternative: http://wiki.openstreetmap.org/wiki/Zoom_levels
     // don't know if formula applies to gl js projection, though
-    this.calculateDegreesPerPixelAtCurrentZoom = function(lat) {
+    this.calculateDegreesPerPixelAtCurrentZoom = function() {
         var deltaPixels = 100.0;
         var point1Projected = { x: 0.0, y: 0.0 };
         var point2Projected = { x: 0.0, y: deltaPixels };
@@ -327,13 +479,25 @@ function MapController(loadJSONFunc) {
     };
 
     this.clickOnAPoint = function(e) {
-        var features = this.map.queryRenderedFeatures(e.point);
+        var features = null;
+
+        if (e) {
+            features = this.map.queryRenderedFeatures(e.point);
+        } else  {
+            features = this.map.queryRenderedFeatures();
+        }
 
         if (!features.length) {
             return;
         }
 
         var feature = features[0];
+
+        if (feature.properties.p) {
+            var lngLat = this.map.unproject(e.point);
+            appendOrReplaceUrlVar(/&pointLat=-?\d*\.?\d*/, "&pointLat=" + lngLat.lat.toFixed(5));
+            appendOrReplaceUrlVar(/&pointLon=-?\d*\.?\d*/, "&pointLon=" + lngLat.lng.toFixed(5));
+        }
         var id = feature.layer.id;
 
         if (id === "gpsStations" || id === "midas") {
@@ -347,7 +511,7 @@ function MapController(loadJSONFunc) {
         }
 
         if (this.getCurrentMode() === "gps" && id === "midas-arrows") {
-            this.thirdPartySourcesController.subtractArrowMagnitudeFromArrows(feature);
+            this.thirdPartySourcesController.handleClickOnArrowFeature(feature);
         }
 
         // clicked on area marker, reload a new area.
@@ -360,8 +524,14 @@ function MapController(loadJSONFunc) {
             return;
         }
 
-        var long = feature.geometry.coordinates[0];
-        var lat = feature.geometry.coordinates[1];
+        var long, lat = -1;
+        if (feature.geometry.type == "Point") {
+            long = feature.geometry.coordinates[0];
+            lat = feature.geometry.coordinates[1];
+        } else if (feature._geometry.type == "Polygon") {
+            long = feature.geometry.coordinates[0][0][0];
+            lat = feature.geometry.coordinates[0][0][1];
+        }
         var pointNumber = feature.properties.p;
 
         currentPoint = pointNumber;
@@ -370,9 +540,14 @@ function MapController(loadJSONFunc) {
             return;
         }
 
-        var title = pointNumber.toString();
+        var areaName = currentArea.properties.unavco_name;
+
+        // show link to current clicked point in webservices
+        var html = "<a target='_blank' href='" + getRootUrl() + "WebServices?dataset=" + areaName + "&point=" + pointNumber + "'>View JSON for current clicked point</a>";
+        $("#current-point-webservices-link").html(html);
+
         var query = {
-            "area": currentArea.properties.unavco_name,
+            "area": areaName,
             "pointNumber": pointNumber
         };
 
@@ -417,18 +592,61 @@ function MapController(loadJSONFunc) {
             }
         });
 
-        var pointDetailsHtml = lat.toFixed(5) + ", " + long.toFixed(5);
+        var pointDetailsHtml = lat.toFixed(3) + ", " + long.toFixed(3);
 
-        $("#point-details").html(pointDetailsHtml);
+        $("#point-details > .row > #clicked-point-lat-lng").html(pointDetailsHtml);
 
         $("#search-form-and-results-minimize-button").click();
+        $("#graph-div-minimize-button").css("display", "block");
+        $("#graph-div-maximize-button").css("display", "none");
 
         // load displacements from server, and then show on graph
-        loadJSONFunc(query, "point", function(response) {
-            $("#graph-div-maximize-button").click();
-
+        loadJSONFunc(query, "/point", function(response) {
             var json = JSON.parse(response);
-            this.graphsController.JSONToGraph(json, chartContainer, e);
+
+            // only draw graph after window finishes maximize animation
+            var animationEvents = "webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend";
+            var onAnimationEnd = function(event) {
+                if (!this.pointsLoaded()) {
+                    return;
+                }
+                // dont resize charts if animation event triggered but we are displaying insar mini slider...
+                // TODO: this animation stuff really needs to be refactored, it is frightening currently and very hackish
+                if (!$("#charts").hasClass("only-show-slider")) {
+                    this.graphsController.resizeChartContainers();
+                }
+                // make sure the chart exists and hasn't been deleted. we need this cause what if this event
+                // never fires, but we click on a new dataset, and this causes the div which contains all sliders
+                // to change size/animate? we could just remove this event when we select a new dataset, but I don't feel
+                // like copying animation events and removal code etc again... i also dont feel like making animationevents
+                // nor the callback global variables when a simple if will fix the issues/exceptions...
+                if (this.graphsController.chartExists(chartContainer)) {
+                    this.graphsController.JSONToGraph(currentArea, json, chartContainer, e);
+                }
+                $("#charts").off(animationEvents, null, onAnimationEnd);
+            }.bind(this);
+            $("#charts").one(animationEvents, onAnimationEnd);
+            // why isn't graphsController handling these showing of the graph divs
+            // TODO: refactor
+            $("#graph-div-maximize-button").click();
+            var height = "70%";
+            if (window.matchMedia("(max-width: 590px)").matches) {
+                height = "100%";
+            }
+            $("#charts").removeClass("only-show-slider").height(height);
+            $hideWhenOnlyShowSliders = $("#hide-when-only-show-sliders").css("display", "block");
+            if (this.thirdPartySourcesController.seismicityLoaded()) {
+                $hideWhenOnlyShowSliders.addClass("show-seismicity-sliders");
+                $("#map-options").addClass("show-seismicity-sliders");
+            } else {
+                $hideWhenOnlyShowSliders.removeClass("show-seismicity-sliders");
+                $("#map-options").removeClass("show-seismicity-sliders");
+            }
+
+            // if graph isn't animating, we still want to draw chart. this means if it is animating,
+            // it will draw twice, but logic to prevent this would have made code messy for a premature
+            // optimization...
+            this.graphsController.JSONToGraph(currentArea, json, chartContainer, e);
 
             // request elevation of point from google api
             var elevationGetter = new google.maps.ElevationService;
@@ -437,8 +655,8 @@ function MapController(loadJSONFunc) {
             }, function(results, status) {
                 if (status === google.maps.ElevationStatus.OK) {
                     // redundant but to avoid race conditions between two successive clicks
-                    $("#point-details").html(pointDetailsHtml);
-                    $("#point-details").append("<br>Elevation: " + results[0].elevation.toFixed(0) + " meters");
+                    $("#point-details > .row > #clicked-point-lat-lng").html(pointDetailsHtml);
+                    $("#point-details > .row > #clicked-point-lat-lng").append("<br>Elevation: " + results[0].elevation.toFixed(0) + " meters");
                 } else {
                     console.log(status);
                 }
@@ -498,32 +716,185 @@ function MapController(loadJSONFunc) {
     };
 
     this.pointClicked = function() {
-        return this.map.getLayer("Top Graph") || this.map.getLayer("Bottom Graph");
+        return this.map.getLayer("Top Graph") !== undefined || this.map.getLayer("Bottom Graph") !== undefined;
     };
 
     this.getSubsetFeatures = function(feature) {
-        var attributesController = new AreaAttributesController(this, feature);
-
-        // if we have data_footprint, then show all data footprints associated
-        // with this area's scene_footprint
-        var scene_footprint = attributesController.getAttribute("scene_footprint");
-        var subsetFeatures = this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint];
+        var subsetFeatures = this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[this.getAreaID(feature)];
 
         return subsetFeatures;
     };
 
+    this.getAreaID = function(area) {
+        var attributesController = new AreaAttributesController(this, area);
+        var attributes = attributesController.getAllAttributes();
+
+        var areaID = attributes.mission + attributes.relative_orbit + attributes.flight_direction + (attributes.first_frame ? attributes.first_frame : attributes.frame);
+
+        return areaID;
+    };
+
     this.addSubsetSwaths = function(feature, populateSearchTable) {
         var subsetFeatures = this.getSubsetFeatures(feature);
+
         if (subsetFeatures) {
             subsetFeatures = subsetFeatures.slice(0); // clone it to prevent infinite loop when we add to the hashmap
+            var minMax = findMinMaxOfArray(subsetFeatures, function(feature1, feature2) {
+                var unavcoNameFields1 = feature1.properties.unavco_name.split("_").length;
+                var unavcoNameFields2 = feature2.properties.unavco_name.split("_").length;
+
+                return unavcoNameFields1 - unavcoNameFields2;
+            });
+            var minNumFields = minMax.min.properties.unavco_name.split("_").length;
+            subsetFeatures.forEach(function(feature) {
+                // ignore smallest, or "master", non-subset feature(s). these features will use their regular
+                // scene_footprint to be added to the map. the others will use their data_footprint. we put
+                // data_footprint of non-master features into scene_footprint since addSwathsFromJSON reads
+                // the scene_footprint.
+                if (feature.properties.unavco_name.split("_").length != minNumFields) {
+                    var dataFootprint = feature.properties.extra_attributes.data_footprint;
+                    feature.properties.extra_attributes.scene_footprint = dataFootprint;
+                }
+
+            });
             var json = {
                 "areas": subsetFeatures
             };
-            this.addSwathsFromJSON(json, null, populateSearchTable);
+            this.addSwathsFromJSON(json, null, populateSearchTable, true);
         }
     };
 
-    this.loadDataSetFromFeature = function(feature, initialZoom) {
+    this.getPermissibleMinMax = function(min, max) {
+        var absMax = Math.abs(max);
+        var absMin = Math.abs(min);
+        var limit = absMax > absMin ? absMax : absMin;
+        // he said take 50% of limit
+        limit *= 0.5;
+        var permissibleValues = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2, 3, 4, 5,
+                                 6, 7, 8, 9, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150,
+                                 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+        var permissibleValueIndex = binarySearch(permissibleValues, limit, function(val1, val2) {
+            return val2 - val1;
+        });
+
+        if (permissibleValueIndex.found) {
+            return permissibleValues[permissibleValueIndex.index];
+        }
+
+        // not found
+        var idx = permissibleValueIndex.index;
+        if (idx == 0) {
+           // only compare this index and one to the right
+           var diffCur = Math.abs(limit - permissibleValues[idx]);
+           var diffRight = Math.abs(limit - permissibleValues[idx + 1]);
+
+           return diffCur < diffRight ? permissibleValues[idx] : permissibleValues[idx + 1];
+        }
+
+        if (idx == permissibleValues.length) {
+            // last idx
+            return permissibleValues[idx - 1];
+        }
+
+        if (idx == permissibleValues.length - 1) {
+           // only compare this index (it's last one) and one to the left
+           var diffCur = Math.abs(limit - permissibleValues[idx]);
+           var diffLeft = Math.abs(limit - permissibleValues[idx - 1]);
+
+           return diffCur < diffLeft ? permissibleValues[idx] : permissibleValues[idx - 1];
+        }
+
+        // otherwise, compare values to the left and to the right and choose closest one
+        var diffCur = Math.abs(limit - permissibleValues[idx]);
+        var diffRight = Math.abs(limit - permissibleValues[idx + 1]);
+        var diffLeft = Math.abs(limit - permissibleValues[idx - 1]);
+        var closest =  diffCur < diffRight ? { diff: diffCur, val: permissibleValues[idx] } : { diff: diffRight, val: permissibleValues[idx + 1] };
+
+        return closest.diff < diffLeft ? closest.val : permissibleValues[idx - 1];
+    };
+
+    this.loadDatasetFromFeature = function(feature, initialZoom) {
+        var attributesController = new AreaAttributesController(this, feature);
+        var minScale = null;
+        var maxScale = null;
+        if (urlOptions) {
+            minScale = parseFloat(urlOptions.startingDatasetOptions.minScale);
+            maxScale = parseFloat(urlOptions.startingDatasetOptions.maxScale);
+
+            // if we have min and max in url, use those
+            if (minScale && maxScale) {
+                delete urlOptions.startingDatasetOptions.minScale;
+                delete urlOptions.startingDatasetOptions.maxScale;
+                var negLimit = minScale;
+                var posLimit = maxScale;
+                this.doNowOrOnceRendered(function() {
+                    this.colorScale.setMinMax(posLimit, negLimit);
+                    var dates = this.selector.getCurrentStartEndDateFromArea(currentArea);
+                    this.refreshDataset(dates.startDate, dates.endDate);
+                }.bind(this));
+            }
+            var colorscale = urlOptions.startingDatasetOptions.colorscale;
+            if (colorscale) {
+                var dates = this.selector.getCurrentStartEndDateFromArea(feature);
+                // don't need to delete urlOptions start and end Date. they are deleted in chart
+                // load event after properly set
+                var startDate = null;
+                var endDate = null;
+                var minDate = urlOptions.startingDatasetOptions.startDate;
+                if (minDate) {
+                    startDate = yyyymmddToDate(minDate);
+                } else {
+                    startDate = dates.startDate;
+                }
+                var maxDate = urlOptions.startingDatasetOptions.endDate;
+                if (maxDate) {
+                    endDate = yyyymmddToDate(maxDate);
+                } else {
+                    endDate = dates.endDate;
+                }
+                var colorscale = urlOptions.startingDatasetOptions.colorscale;
+
+                this.doNowOrOnceRendered(function() {
+                    if (colorscale === "velocity") {
+                        this.colorDatasetOnVelocity(startDate, endDate);
+                    } else if (colorscale == "displacement") {
+                        this.colorDatasetOnDisplacement(startDate, endDate);
+                    }
+                    delete urlOptions.startingDatasetOptions.colorscale;
+                }.bind(this));
+            }
+        }
+        $.ajax({
+            url: "/preLoad",
+            type: "post",
+            async: true,
+            data: {
+                datasetUnavcoName: attributesController.getAttribute("unavco_name"),
+            },
+            success: function(response) {
+                // if we have min and max in url, use those, so don't calculate these color scale values
+                if (!(minScale && maxScale)) {
+                    // * 100.0 to convert from m to cm
+                    var min = parseFloat(response[0].m) * 100.0;
+                    var max = parseFloat(response[1].m) * 100.0;
+                    var limit = this.getPermissibleMinMax(min, max);
+                    var posLimit = limit;
+                    var negLimit = -limit;
+
+                    this.doNowOrOnceRendered(function() {
+                        this.colorScale.setMinMax(posLimit, negLimit);
+                        appendOrReplaceUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + negLimit);
+                        appendOrReplaceUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + posLimit);
+
+                        var dates = this.selector.getCurrentStartEndDateFromArea(currentArea);
+                        this.refreshDataset(dates.startDate, dates.endDate);
+                    }.bind(this));
+                }
+            }.bind(this),
+            error: function(xhr, ajaxOptions, thrownError) {
+                console.log("failed: " + xhr.responseText);
+            }
+        });
         var tileJSON = {
             "minzoom": 0,
             "maxzoom": 14,
@@ -532,7 +903,7 @@ function MapController(loadJSONFunc) {
             ],
             "bounds": null,
             "tiles": [
-                "http://129.171.60.12:8888/" + feature.properties.unavco_name +
+                "https://insarmaps.miami.edu:8888/" + feature.properties.unavco_name +
                 "/{z}/{x}/{y}.pbf"
             ],
             "vector_layers": []
@@ -545,8 +916,6 @@ function MapController(loadJSONFunc) {
 
         currentArea = feature;
 
-        // make streets toggle button be only checked one
-        $("#streets").prop("checked", true);
         for (var i = 1; i <= feature.properties.num_chunks; i++) {
             var layer = { "id": "chunk_" + i, "description": "", "minzoom": 0, "maxzoom": 14, "fields": { "c": "Number", "m": "Number", "p": "Number" } };
             tileJSON.vector_layers.push(layer);
@@ -555,11 +924,12 @@ function MapController(loadJSONFunc) {
         areaAttributesPopup.show(feature);
 
         this.colorScale.show();
+        $("#search-form-and-results-minimize-button").click();
 
         // when we click, we don't reset the highlight of modified markers one final time
         this.areaMarkerLayer.resetHighlightsOfAllMarkers();
         // get a recolor selector
-        var button = $("#polygon-button");
+        var button = $("#square-selector-button");
         button.attr("data-original-title", "Select Points");
         this.selector.disableSelectMode(); // in case it is selected
         this.selector.removeEventListeners(); // remove old event listeners
@@ -570,23 +940,24 @@ function MapController(loadJSONFunc) {
 
         this.colorScale.defaultValues(); // set default values in case they were modified by another area
         this.selector.reset(currentArea);
-        $("#color-on-dropdown").val("velocity");
-        this.colorScale.setTitle("LOS Velocity [cm/yr]");
+        this.colorScale.setTitle("LOS Velocity<br>[cm/yr]");
 
-        this.thirdPartySourcesController.removemidasGpsStationMarkers();
-        midasStationsToggleButton.set("off");
-
-        this.addDataset(tileJSON);
+        this.addDataset(tileJSON, feature);
+        this.graphsController.destroyGraphs();
+        $("#charts").addClass("only-show-slider").addClass("active");
+        $("#hide-when-only-show-sliders").css("display", "none");
+        this.graphsController.createInsarSliderForDataset(currentArea);
+        if (initialZoom) {
+            this.zoomOutZoom = initialZoom - 4;
+        }
 
         this.map.once("data", function(event) {
-            this.removeAreaMarkers();
-
-            overlayToggleButton.set("on");
+            this.removeAreaMarkersThroughButton();
 
             // in case it's up
             this.gpsStationPopup.remove();
             window.setTimeout(function() {
-                var zoom = 8.0;
+                var zoom = this.datasetZoom;
 
                 // quickly switching between areas? don't reset zoom
                 if (this.anAreaWasPreviouslyLoaded()) {
@@ -600,28 +971,46 @@ function MapController(loadJSONFunc) {
                 // first time a dataset is selected
                 this.tileJSON = tileJSON;
 
-                var centerOfDataset = feature.properties.centerOfDataset;
+                var centerOfDataset = feature.geometry.coordinates;
 
-                if (typeof centerOfDataset === "string") {
-                    centerOfDataset = JSON.parse(centerOfDataset);
+                // don't fly to center of dataset if this option is false in the url... this allows
+                // user to control whether to use their specified starting coordinates after loading a dataset
+                // to focus on a volcano for example
+                if (!(urlOptions && urlOptions.startingDatasetOptions.flyToDatasetCenter === "false")) {
+                    this.map.flyTo({
+                        center: centerOfDataset,
+                        zoom: zoom
+                    });
                 }
 
-                var long = centerOfDataset[0];
-                var lat = centerOfDataset[1];
-
-                this.map.flyTo({
-                    center: [long, lat],
-                    zoom: zoom
-                });
-
-                var attributesController = new AreaAttributesController(this, feature);
                 attributesController.processAttributes();
                 this.areaMarkerLayer.setAreaRowHighlighted(feature.properties.unavco_name);
+                if (urlOptions) {
+                    var pointLat = urlOptions.startingDatasetOptions.pointLat;
+                    var pointLon = urlOptions.startingDatasetOptions.pointLon;
+                    if (pointLat && pointLon) {
+                        delete urlOptions.startingDatasetOptions.pointLat;
+                        delete urlOptions.startingDatasetOptions.pointLon;
+                        var point = this.map.project([pointLon, pointLat]);
+                        this.leftClickOnAPoint({ point: point });
+                    }
+                }
+                updateUrlState(this);
                 // in case someone called loading screen
                 hideLoadingScreen();
             }.bind(this), 1000);
         }.bind(this));
-    };
+
+        if (!localStorage.getItem("colorScaleTip")) {
+            alert("Click on colorscale to adjust scale.");
+            // try catch cause if can't set item due to private browsing, don't just crash the whole page
+            try {
+                localStorage.setItem("colorScaleTip", "true");
+            } catch (e) {}
+        }
+        document.getElementsByTagName("title")[0].innerHTML = "Insar Viewer - University of Miami "
+                                        + attributesController.getAttribute("unavco_name");
+        };
 
     this.clickOnAnAreaMarker = function(e) {
         var features = this.map.queryRenderedFeatures(e.point);
@@ -646,43 +1035,45 @@ function MapController(loadJSONFunc) {
                 this.determineZoomOutZoom();
 
                 var feature = frameFeature;
-
-                var unavco_name = feature.properties.unavco_name;
-                var project_name = feature.properties.project_name;
-                var lat = feature.geometry.coordinates[0];
-                var long = feature.geometry.coordinates[1];
-                var num_chunks = feature.properties.num_chunks;
-                var attributeKeys = feature.properties.attributekeys;
-                var attributeValues = feature.properties.attributevalues;
-
-                var markerID = feature.properties.layerID;
-
-                this.loadDataSetFromFeature(feature);
+                // set coordinates to center of dataset
+                feature.geometry.coordinates = JSON.parse(feature.properties.centerOfDataset);
+                this.loadDatasetFromFeature(feature);
             }
         }
     };
 
     this.getMapBaseStyle = function(tileset) {
-        var layers = [];
-        var layer = {
+        var layers = [{
             "id": "simple-tiles",
             "type": "raster",
             "source": "raster-tiles",
             "minzoom": 0,
             "maxzoom": 22
-        };
+        }];
 
-        layers.push(layer);
+        // simplest solution to mapbox.streets being deprecated - use static tiles API for mapbox streets
+        // otherwise, many things break because we base alot of logic on the base map being raster
+        var rasterTileSource = {
+                "type": "raster",
+                "url": "mapbox://" + tileset,
+                "tileSize": 256
+        };
+        if (tileset === "mapbox.streets") {
+            rasterTileSource = {
+                "type": "raster",
+                "tiles": [
+                    "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=" + mapboxgl.accessToken
+                ],
+                "tileSize": 256
+            };
+        }
+
         var style = {
             version: 8,
             sprite: getRootUrl() + "maki/makiIcons",
             glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
             sources: {
-                "raster-tiles": {
-                    "type": "raster",
-                    "url": "mapbox://" + tileset,
-                    "tileSize": 256
-                },
+                "raster-tiles": rasterTileSource,
                 'Mapbox Terrain V2': {
                     type: 'vector',
                     url: 'mapbox://mapbox.mapbox-terrain-v2'
@@ -713,6 +1104,14 @@ function MapController(loadJSONFunc) {
             baseStyle.sources[sourceID] = source;
         });
 
+        // remove when functionality made available to third parties
+        if (mapType === "google-satellite") {
+            delete sources["raster-tiles"]["url"];
+            sources["raster-tiles"]["tiles"] = [
+                "https://mt.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+            ];
+        }
+
         baseStyle.layers = [];
         this.layers_.forEach(function(layer, layerID) {
             baseStyle.layers.push(layer);
@@ -721,20 +1120,159 @@ function MapController(loadJSONFunc) {
         this.map.setStyle(styleAndLayer.style);
     };
 
+    this.getActualSizeGeoJSON = function(features) {
+        var pointLayers = this.getInsarLayers();
+        if (!features) {
+            // if ontheflyjson is enabled, insar layers are not rendered
+            if (this.map.getLayer("onTheFlyJSON")) {
+                features = this.map.queryRenderedFeatures({ layers: ["onTheFlyJSON"] });
+            } else {
+                features = this.map.queryRenderedFeatures({ layers: pointLayers });
+            }
+        }
+        var attributesController = new AreaAttributesController(this, currentArea);
+        var x_step = parseFloat(attributesController.getAttribute("X_STEP"));
+        var y_step = parseFloat(attributesController.getAttribute("Y_STEP"));
+
+        var geoJSONData = {
+            "type": "FeatureCollection",
+            "features": []
+        };
+
+        features.forEach(function(feature) {
+            var long = feature.geometry.coordinates[0];
+            var lat = feature.geometry.coordinates[1];
+            geoJSONData.features.push({
+                "type": "Feature",
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [
+                        [
+                            [long, lat], [long + x_step, lat], [long + x_step, lat + y_step],
+                            [long, lat + y_step], [long, lat]
+                        ]
+                    ]
+                },
+                "properties": {
+                    "m": feature.properties.m,
+                    "p": feature.properties.p
+                }
+            });
+        });
+
+        return geoJSONData;
+    };
+
+    this.updateActualSizePixels = function() {
+        this.map.getSource("onTheFlyJSON").setData(this.getActualSizeGeoJSON());
+    };
+
+    this.setInsarActualPixelSize = function(area, stops) {
+        this.insarActualPixelSize = true;
+        this.selector.recolorDataset();
+    };
+
+    this.setInsarDefaultPixelSize = function(area) {
+        this.insarActualPixelSize = false;
+        if (this.map.getSource("onTheFlyJSON")) {
+            if (this.datasetCurrentlyRecolored) {
+                this.selector.recolorDataset();
+            } else {
+                this.removeSourceAndLayer("onTheFlyJSON");
+                this.showInsarLayers();
+            }
+        }
+    };
+
+    this.addReferencePoint = function(area) {
+        var attributesController = new AreaAttributesController(this, area);
+        var oldRefLon = attributesController.getAttribute("ref_lon");
+        var newRefLon = attributesController.getAttribute("REF_LON");
+        var oldRefLat = attributesController.getAttribute("ref_lat");
+        var newRefLat = attributesController.getAttribute("REF_LAT");
+        if ((oldRefLon && oldRefLat) || (newRefLon && newRefLat)) {
+            var refLon = null;
+            var refLat = null;
+            if (oldRefLon && oldRefLat) {
+                refLon = oldRefLon;
+                refLat = oldRefLat;
+            } else {
+                refLon = newRefLon;
+                refLat = newRefLat;
+            }
+
+            var referencePointSource = {
+                type: "geojson",
+                cluster: false,
+                data: {
+                    "type": "FeatureCollection",
+                    "features": [{
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [refLon, refLat]
+                        },
+                    }]
+                }
+            };
+            var id = "ReferencePoint";
+            var before = this.getLayerOnTopOf(id);
+
+            this.addSource(id, referencePointSource);
+            this.addLayer({
+                "id": id,
+                "type": "circle",
+                "source": id,
+                "paint": {
+                    "circle-color": "black",
+                    "circle-radius": {
+                        stops: this.radiusStops
+                    }
+                }
+            }, before);
+        }
+    };
+
+    this.removeReferencePoint = function() {
+        if (this.map.getSource("ReferencePoint")) {
+            this.removeSourceAndLayer("ReferencePoint");
+        }
+    };
+
+    this.highResMode = function() {
+        var attributesController = new AreaAttributesController(this, currentArea);
+        var x_step = parseFloat(attributesController.getAttribute("X_STEP"));
+        var y_step = parseFloat(attributesController.getAttribute("Y_STEP"));
+
+        return isNaN(x_step) || isNaN(y_step);
+    };
+
     // extremas: current min = -0.02 (blue), current max = 0.02 (red)
-    this.addDataset = function(data) {
+    this.addDataset = function(data, feature) {
         this.colorScale.setTopAsMax(true);
+        var colorOn = getUrlVar("colorscale");
         this.colorOnDisplacement = false;
-        var stops = this.colorScale.getMapboxStops();
+        if (colorOn && colorOn === "displacement") {
+            this.colorOnDisplacement = true;
+        }
+        var colorStops = this.colorScale.getMapboxStops();
 
         this.addSource('insar_vector_source', {
             type: 'vector',
             tiles: data['tiles'],
             minzoom: data['minzoom'],
             maxzoom: data['maxzoom'],
-            bounds: data['bounds']
+            // TODO: implement, but not really needed as mapbox (in newer releases) doesnt throw exceptions
+            // when map viewport is outside available mbtiles coverage
+            // bounds: data['bounds']
         });
 
+        var before = this.getLayerOnTopOf("chunk_1");
+        var stops = this.radiusStops;
+        if (this.highResMode()) {
+            // TODO: calculate so radius corersponds to approximately 5 meters
+            stops = this.highResRadiusStops;
+        }
         data['vector_layers'].forEach(function(el) {
             var layer = {
                 id: el['id'],
@@ -747,23 +1285,41 @@ function MapController(loadJSONFunc) {
                 paint: {
                     'circle-color': {
                         property: 'm',
-                        stops: stops
+                        stops: colorStops
                     },
                     'circle-radius': {
                         // for an explanation of this array see here:
                         // https://www.mapbox.com/blog/data-driven-styling/
-                        stops: [
-                            [5, 2],
-                            [8, 2],
-                            [13, 8],
-                            [21, 16],
-                            [34, 32]
-                        ]
+                        stops: stops
                     }
                 }
             }
-            this.addLayer(layer);
+            // set USGS events form start and end dates to that of the current insar dates
+            var attributesController = new AreaAttributesController(this, feature);
+            var firstDate = new Date(attributesController.getAttribute("first_date"));
+            var lastDate = new Date(attributesController.getAttribute("last_date"));
+            var now = new Date();
+
+            var dateDiffFromNow = now - lastDate;
+            var yearsElapsed = dateDiffFromNow / MILLISECONDS_PER_YEAR;
+            if (yearsElapsed < 1.0) {
+                lastDate = now;
+            }
+            var centerLineUTC = attributesController.getAttribute("CENTER_LINE_UTC");
+            if (centerLineUTC) {
+                this.thirdPartySourcesController.USGSEventsOptionsController.UTCTime = centerLineUTC;
+            } else {
+                this.thirdPartySourcesController.USGSEventsOptionsController.UTCTime = "0";
+            }
+            this.thirdPartySourcesController.USGSEventsOptionsController.populateDateInputsFromDates(firstDate, lastDate);
+
+            this.addLayer(layer, before);
         }.bind(this));
+
+        if (referencePointToggleButton.toggleState == ToggleStates.ON) {
+            this.addReferencePoint(feature);
+        }
+        $("#charts").height("auto");
     };
 
     this.polygonToLineString = function(polygonGeoJSON) {
@@ -779,13 +1335,7 @@ function MapController(loadJSONFunc) {
         return lineStringGeoJSON;
     };
 
-    this.addSwathsFromJSON = function(json, toExclude, populateSearchTable) {
-        var areaMarker = {
-            type: "geojson",
-            cluster: false,
-            clusterRadius: 10,
-            data: {}
-        };
+    this.addSwathsFromJSON = function(json, toExclude, populateSearchTable, addAllSubsets) {
         var features = [];
 
         var attributesController = new AreaAttributesController(this, json.areas[0]);
@@ -793,7 +1343,7 @@ function MapController(loadJSONFunc) {
 
         this.areaMarkerLayer.emptyLayers();
         // clear the map so we can add new keys and values to it
-        this.areaMarkerLayer.mapSceneAndDataFootprints = {};
+        this.areaMarkerLayer.mapAreaIDsWithFeatureObjects = {};
 
         for (var i = 0; i < json.areas.length; i++) {
             var area = json.areas[i];
@@ -810,8 +1360,8 @@ function MapController(loadJSONFunc) {
 
             var properties = area.properties;
 
-            var id = "areas" + properties.unavco_name;
-            var polygonID = "areas" + properties.unavco_name + "fill"
+            var id = "swath-area-" + properties.unavco_name;
+            var polygonID = "swath-area-" + properties.unavco_name + "fill"
             var center = area.properties.centerOfDataset ?
                 area.properties.centerOfDataset : area.geometry.coordinates;
 
@@ -837,23 +1387,30 @@ function MapController(loadJSONFunc) {
             };
 
             var siblingAlreadyThere = false;
+            var areaID = this.getAreaID(area);
+
             if (attributesController.areaHasAttribute("data_footprint")) {
                 var data_footprint = attributesController.getAttribute("data_footprint");
                 // make the scene footprint the previous data_footprint and delete the data_footprint
-                var featureClone = JSON.parse(JSON.stringify(feature));
-                featureClone.properties.extra_attributes.scene_footprint = data_footprint;
-                featureClone.properties.extra_attributes.data_footprint = null;
+                var areaClone = JSON.parse(JSON.stringify(area));
 
-                if (!this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint]) {
-                    this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint] = [featureClone];
-                } else {
-                    siblingAlreadyThere = true;
-                    this.areaMarkerLayer.mapSceneAndDataFootprints[scene_footprint].push(featureClone);
+                // we are adding the subsets, there is no need to know anymore whether a feature has subsets
+                // so the map will be empty (since we empty on entering this method). not having this if causes us
+                // to never be able click on a subset and load an area with the new way we determine subsets.
+                // there were other alternatives such as checking if a feature has subsets AND the current feature
+                // in question is the "master" subset swath but this was a quicker solution.
+                if (!addAllSubsets) {
+                    if (!this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID]) {
+                        this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID] = [areaClone];
+                    } else {
+                        siblingAlreadyThere = true;
+                        this.areaMarkerLayer.mapAreaIDsWithFeatureObjects[areaID].push(areaClone);
+                    }
                 }
             }
 
-            if (!siblingAlreadyThere) {
-                features.push(feature);
+            if (!siblingAlreadyThere || addAllSubsets) {
+                features.push(area);
 
                 var swathWidth = 3;
                 var swath = new Swath(this, attributes.mission, swathWidth, feature, id);
@@ -869,14 +1426,10 @@ function MapController(loadJSONFunc) {
         if (populateSearchTable) {
             searchFormController.populateSearchResultsTable(features);
         }
-        this.areaFeatures = features;
-        populateSearchAutocomplete();
 
-        // add the markers representing the available areas
-        areaMarker.data = {
-            "type": "FeatureCollection",
-            "features": features
-        };
+        // update current map areas
+        this.areas = features;
+        populateSearchAutocomplete();
 
         return features;
     };
@@ -891,11 +1444,11 @@ function MapController(loadJSONFunc) {
             url: "/areas",
             success: function(response) {
                 var json = response;
-                if (!this.areas) {
-                    this.areas = json;
+                if (!this.allAreas) {
+                    this.allAreas = json.areas;
                 }
 
-                var features = this.addSwathsFromJSON(json, toExclude, true);
+                var features = this.addSwathsFromJSON(json, toExclude, true, false);
 
                 if (after) {
                     after(features);
@@ -912,14 +1465,34 @@ function MapController(loadJSONFunc) {
         this.loadAreaMarkersExcluding(null, after);
     };
 
+    // TODO: might want to rename this since they are now swaths...
     this.removeAreaMarkers = function() {
+        // avoid race condition if there is an ajax request currently in progress and we are on a SLOW internet
+        // connection
+        if (this.lastAreasRequest) {
+            this.lastAreasRequest.abort();
+            this.lastAreasRequest = null;
+        }
         this.areaMarkerLayer.emptyLayers();
-        this.areaFeatures = [];
+    };
+
+    this.removeAreaMarkersThroughButton = function() {
+        $button = $("#dataset-frames-toggle-button");
+        if (!$button.hasClass("toggled")) {
+            $button.click();
+        }
+    };
+
+    this.loadAreaMarkersThroughButton = function(after) {
+        $button = $("#dataset-frames-toggle-button");
+        if ($button.hasClass("toggled")) {
+            $button.click();
+        }
     };
 
     // until mapbox api gives us a way to determine when all points of mbtiles
     // have finished fully rendering.
-    this.onDatasetRendered = function(callback) {
+    this.onRendered = function(callback) {
         var renderHandler = function() {
             if (this.map.loaded()) {
                 callback(renderHandler);
@@ -928,51 +1501,130 @@ function MapController(loadJSONFunc) {
         this.map.on("render", renderHandler);
     };
 
+    // can't just call mapbox once as when it first fires, map isn't guaranteed to be loaded
+    this.onceRendered = function(callback) {
+        var renderHandler = function() {
+            if (this.map.loaded()) {
+                callback();
+                this.map.off("render", renderHandler);
+            }
+        }.bind(this);
+        this.map.on("render", renderHandler);
+    };
+
+    this.doNowOrOnceRendered = function(callback) {
+        if (this.map.loaded()) {
+            callback();
+        } else {
+            this.onceRendered(function() {
+                callback();
+            }.bind(this));
+        }
+    };
+
     this.loadSwathsInCurrentViewport = function(populateTable) {
         var bounds = this.map.getBounds();
         var bbox = [bounds._ne, bounds._sw];
         this.areaFilterSelector.filterAreasInBrowser(bbox, populateTable);
+    };
 
+    this.processURLOptions = function() {
+        if (!urlOptions) {
+            return;
+        }
+        var options = urlOptions.startingDatasetOptions;
+
+        if (options.startDataset) {
+            var exists = false;
+            for (var i = 0; i < this.allAreas.length; i++) {
+                if (this.allAreas[i].properties.unavco_name === options.startDataset) {
+                    exists = true;
+                    showLoadingScreen("Loading requested dataset...", null);
+                    this.loadDatasetFromFeature(this.allAreas[i], urlOptions.startingView.zoom);
+                    break;
+                }
+            }
+            if (!exists) {
+                window.alert(options.startDataset + " does not exist.");
+            }
+        } else if (options.onlyShowDatasets) {
+            var datasetsToShow = options.onlyShowDatasets.split(",");
+            var areasToShow = [];
+            this.allAreas.forEach(function(area) {
+                if (datasetsToShow.includes(area.properties.unavco_name)) {
+                    areasToShow.push(area);
+                }
+            });
+            // i suppose it's not elegant to just re-add them and we could do something
+            // like tell server to only return some areas, or something else, but this is quick, and it works.
+            // and to be honest, changing it, while more elegant, seems like micro optimzation since this was so quick
+            // to implement.
+            this.allAreas = areasToShow;
+            this.areas = areasToShow
+            var json = {
+                "areas": areasToShow
+            };
+            this.addSwathsFromJSON(json, null, true, false);
+        }
+
+        if (options.loadSeismicity) {
+            var sourceNames = options.loadSeismicity.split(",");
+            sourceNames.forEach(function(sourceName) {
+                this.thirdPartySourcesController.loadSourceFromString(sourceName);
+            }.bind(this));
+        }
     };
 
     this.addMapToPage = function(containerID) {
-        var startingOptions = urlOptions.startingView;
-        try {
-            this.startingCoords = new mapboxgl.LngLat(startingOptions.lng, startingOptions.lat);
-            this.startingZoom = parseFloat(startingOptions.zoom);
-        } catch (error) {
-            this.startingZoom = 1.6;
-            this.startingCoords = [0, 30];
+        var startingOptions = null;
+        var minZoom = 0; // default as per gl js api
+        if (urlOptions) {
+            startingOptions = urlOptions.startingView;
         }
+        var startingCoords = this.startingCoords;
+        var startingZoom = this.startingZoom;
+        try {
+            startingCoords = new mapboxgl.LngLat(startingOptions.lng, startingOptions.lat);
+            startingZoom = parseFloat(startingOptions.zoom);
+            // use the dataset zoom as the starting zoom if it was specified
+            this.datasetZoom = startingZoom;
+            // prevent zoom out if specified
+            if (urlOptions.startingDatasetOptions.zoomOut === "false") {
+                minZoom = startingZoom;
+            }
+        } catch (error) {}
 
         this.map = new mapboxgl.Map({
             container: containerID, // container id
-            center: this.startingCoords, // this.starting position
-            zoom: this.startingZoom, // this.starting zoom
+            center: startingCoords, // this.starting position
+            zoom: startingZoom, // this.starting zoom
+            minZoom: minZoom,
             attributionControl: false
         }).addControl(new mapboxgl.AttributionControl({
             compact: true
         }));
 
         this.map.once("load", function() {
+            // populate usgs events with current viewport
+            var bounds = this.map.getBounds();
+            var sw = bounds._sw.lat.toFixed(2) + ", " + bounds._sw.lng.toFixed(2);
+            var ne = bounds._ne.lat.toFixed(2) + ", " + bounds._ne.lng.toFixed(2);
+            $("#usgs-events-current-viewport").html("sw: " + sw + ", ne: " + ne);
+
             this.colorScale.initVisualScale();
+            this.seismicityColorScale.initVisualScale();
             this.map.getCanvas().style.cursor = 'auto';
             this.selector = new FeatureSelector();
             this.selector.map = this;
-            this.selector.associatedButton = $("#polygon-button");
+            this.selector.associatedButton = $("#square-selector-button");
             this.selector.prepareEventListeners();
-            this.loadAreaMarkers(function(areaFeatures) {
-                this.allAreaFeatures = areaFeatures;
-                var options = urlOptions.startingDatasetOptions;
-                if (options.startDataset) {
-                    for (var i = 0; i < areaFeatures.length; i++) {
-                        if (areaFeatures[i].properties.unavco_name === options.startDataset) {
-                            showLoadingScreen("Loading requested dataset...", null);
-                            this.loadDataSetFromFeature(areaFeatures[i], options.zoom);
-                            break;
-                        }
-                    }
+            this.loadAreaMarkers(function(areas) {
+                this.areas = areas;
+                if (!urlOptions) {
+                    return;
                 }
+                this.processURLOptions();
+
             }.bind(this));
             this.areaFilterSelector = new AreaFilterSelector();
             this.areaFilterSelector.map = this;
@@ -981,6 +1633,18 @@ function MapController(loadJSONFunc) {
         this.setBaseMapLayer("streets");
 
         this.map.addControl(new mapboxgl.NavigationControl());
+        var geoLocator = new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true,
+                timeout: 30000 // 30 secs
+            },
+            trackUserLocation: true
+        });
+        geoLocator.on("error", function(error) {
+            var errStr = "There was an error activating the gps feature.\nHere is the error:\n\n\"" + error.message + "\"\n\nPlease try again.";
+            window.alert(errStr);
+        });
+        this.map.addControl(geoLocator);
 
         // disable rotation gesture
         this.map.dragRotate.disable();
@@ -988,12 +1652,17 @@ function MapController(loadJSONFunc) {
         this.map.boxZoom.disable();
 
         this.leftClickOnAPoint = this.leftClickOnAPoint.bind(this);
-        this.map.on('click', this.leftClickOnAPoint);
-        this.map.on('click', function() { fullyHideSearchBars(); });
+        this.map.on('click', function(e) {
+            fullyHideSearchBars();
+            this.leftClickOnAPoint(e);
+        }.bind(this));
 
         //this.map.on("contextmenu", this.rightClickOnAPoint);
 
         this.map.on('mousemove', function(e) {
+            var lat = e.lngLat.lat.toFixed(3);
+            var lng = e.lngLat.lng.toFixed(3);
+            $("#point-details > .row > #mouse-move-lat-lng").html(lat + ", " + lng);
             var features = this.map.queryRenderedFeatures(e.point);
 
             // mouse not under a marker, clear all popups
@@ -1021,6 +1690,16 @@ function MapController(loadJSONFunc) {
                     $(".show-children-button#" + rowID).mouseover();
                     searchFormController.populateSubsetPopup(frameFeature, subsetFeatures);
                 }
+                var nameParts = frameFeature.properties.unavco_name.split("_");
+                var html = frameFeature.properties.unavco_name;
+                if (nameParts[nameParts.length - 1] === "XXXXXXXX") {
+                    var lastDate = new AreaAttributesController(this, frameFeature).getAttribute("last_date");
+                    html += "<br>Last Date: " + lastDate;
+                }
+
+                this.gpsStationNamePopup.setLngLat(e.lngLat)
+                    .setHTML(html)
+                    .addTo(this.map);
             } else if (!this.selector.selecting()) {
                 var featureViewOptions = this.thirdPartySourcesController.featureToViewOptions(features[0]);
                 if (featureViewOptions.coordinates) {
@@ -1039,11 +1718,14 @@ function MapController(loadJSONFunc) {
         this.map.on('zoomend', function() {
             var currentZoom = this.map.getZoom();
 
-            if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
-                this.loadSwathsInCurrentViewport(true);
-            }
+            var mode = this.getCurrentMode();
+
             // reshow area markers once we zoom out enough
-            if (currentZoom < this.zoomOutZoom) {
+            // add a small negative epsilon to account for rounding errors...
+            // example if we set an initial map zoom of 6, zoomend gets called with
+            // a zoom of 5.9999999999999996 etc which makes the map instantly reset when
+            // initial zoom is supplied
+            if (currentZoom < (this.zoomOutZoom - 1e-8)) {
                 if (this.pointsLoaded()) {
                     this.reset();
                     // otherwise, points aren't loaded, but area previously was active
@@ -1054,25 +1736,45 @@ function MapController(loadJSONFunc) {
                 }
             }
 
+            if (this.map.getSource("onTheFlyJSON") && !this.pointClicked()) {
+                var pointLayers = this.getInsarLayers();
+                this.onceRendered(function() {
+                    this.selector.recolorDataset();
+                    this.onceRendered(function() {
+                        this.hideInsarLayers();;
+                    }.bind(this));
+                }.bind(this));
+                showLoadingScreen("Rendering at new zoom level", null);
+                this.showInsarLayers();
+            }
+
+            if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled") && mode !== "seismicity") {
+                this.loadSwathsInCurrentViewport(true);
+            }
+
             if (!this.selector.recoloring()) {
                 if (this.selector.inSelectMode()) {
                     this.selector.disableSelectMode();
                 }
-
-                if (this.colorOnDisplacement) {
-                    this.colorDatasetOnVelocity();
-                }
-            }
-
-            if (this.map.getSource("onTheFlyJSON")) {
-                this.removeSourceAndLayer("onTheFlyJSON");
             }
 
             if (this.thirdPartySourcesController.midasArrows) {
                 this.thirdPartySourcesController.updateArrowLengths();
             }
 
+            if (mode === "seismicity") {
+                this.seismicityGraphsController.createCrossSectionCharts(null, null, null);
+            }
+
             this.previousZoom = currentZoom;
+        }.bind(this));
+
+        this.map.on("moveend", function(e) {
+            var bounds = this.map.getBounds();
+            var sw = bounds._sw.lat.toFixed(2) + ", " + bounds._sw.lng.toFixed(2);
+            var ne = bounds._ne.lat.toFixed(2) + ", " + bounds._ne.lng.toFixed(2);
+            $("#usgs-events-current-viewport").html("sw: " + sw + ", ne: " + ne);
+            updateUrlState(this);
         }.bind(this));
 
         this.map.on("dragend", function(e) {
@@ -1084,36 +1786,69 @@ function MapController(loadJSONFunc) {
                 source: "recenter"
             });
 
-            if (this.areas && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
+            var mode = this.getCurrentMode();
+
+            if (mode === "seismicity") {
+                this.seismicityGraphsController.createCrossSectionCharts(null, null, null);
+            } else if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
                 this.loadSwathsInCurrentViewport(true);
             }
         }.bind(this));
     };
 
     this.colorDatasetOnDisplacement = function(startDate, endDate) {
+        // if we were coloring on velocity, we change the color scale
+        // in such a way that the dataset retains the same colors as the current
+        // velocity coloring
+        if (!this.colorOnDisplacement) {
+            this.colorOnDisplacement = true;
+            var yearsDiff = (endDate - startDate) / MILLISECONDS_PER_YEAR;
+            var min = this.colorScale.min * yearsDiff;
+            var max = this.colorScale.max * yearsDiff;
+            var limit = this.getPermissibleMinMax(min, max);
+            this.colorScale.setMinMax(-limit, limit);
+            this.colorScale.scaleChangeCallback(-limit, limit);
+        }
         this.colorOnDisplacement = true;
-        this.selector.recolorOnDisplacement(startDate, endDate, "Recoloring in progress... for fast zoom, switch to velocity or disable or deselect on the fly coloring", "ESCAPE to interrupt");
-        this.colorScale.setTitle("LOS Displacement (cm)");
+        this.refreshDataset(startDate, endDate);
+        this.colorScale.setTitle("LOS Displacement<br>[cm]", "Color on velocity");
+        appendOrReplaceUrlVar(/&colorscale=(velocity|displacement)/, "&colorscale=displacement");
     };
 
-    this.colorDatasetOnVelocity = function() {
-        this.colorOnDisplacement = false;
-        if (this.map.getSource("onTheFlyJSON")) {
-            this.removeSource("onTheFlyJSON");
-            this.removeLayer("onTheFlyJSON");
+    this.colorDatasetOnVelocity = function(startDate, endDate) {
+        // if we were coloring on displacement, we change the color scale
+        // in such a way that the dataset retains the same colors as the current
+        // displacement coloring
+        if (this.colorOnDisplacement) {
+            this.colorOnDisplacement = false;
+            var yearsDiff = (endDate - startDate) / MILLISECONDS_PER_YEAR;
+            var min = this.colorScale.min / yearsDiff;
+            var max = this.colorScale.max / yearsDiff;
+            var limit = this.getPermissibleMinMax(min, max);
+            this.colorScale.setMinMax(-limit, limit);
+            this.colorScale.scaleChangeCallback(-limit, limit);
         }
-        this.colorScale.setTitle("LOS Velocity [cm/yr]");
+        this.colorOnDisplacement = false;
+        this.refreshDataset(startDate, endDate);
+        this.colorScale.setTitle("LOS Velocity<br>[cm/yr]", "Color on displacement");
+        appendOrReplaceUrlVar(/&colorscale=(velocity|displacement)/, "&colorscale=velocity");
     };
 
     this.pointsLoaded = function() {
-        return this.map.getSource("insar_vector_source") != null;
+        for (var i = 1; currentArea && i <= currentArea.properties.num_chunks; i++) {
+            if (this.map.getLayer("chunk_" + i)) {
+                return true;
+            }
+        }
+
+        return false;
     };
 
     this.areaSwathsLoaded = function() {
         // we always have areas0 at minimum if areas swaths loaded
         // how to avoid checking points loaded? remove area sources when
         // we click on a point
-        return !this.areaMarkerLayer.empty() && !this.pointsLoaded();
+        return !this.areaMarkerLayer.isEmpty() && !this.pointsLoaded();
     };
 
     this.anAreaWasPreviouslyLoaded = function() {
@@ -1125,15 +1860,17 @@ function MapController(loadJSONFunc) {
             return;
         }
 
-        this.removeSource("insar_vector_source");
 
         for (var i = 1; i <= currentArea.properties.num_chunks; i++) {
             this.removeLayer("chunk_" + i);
         }
+        this.removeSource("insar_vector_source");
 
         if (this.map.getSource("onTheFlyJSON")) {
             this.removeSourceAndLayer("onTheFlyJSON");
         }
+
+        this.removeReferencePoint();
     }
 
     this.removeTouchLocationMarkers = function() {
@@ -1172,9 +1909,15 @@ function MapController(loadJSONFunc) {
         if (!this.thirdPartySourcesController.midasLoaded()) {
             this.colorScale.remove();
         }
+
+        // also make sure seismicity isn't loaded and remove seismicity color scale if not
+        if (!this.thirdPartySourcesController.seismicityLoaded()) {
+            this.seismicityColorScale.remove();
+        }
     };
 
     this.reset = function() {
+        this.areas = this.allAreas;
         this.removePoints();
         currentArea = null;
         this.removeTouchLocationMarkers();
@@ -1185,16 +1928,24 @@ function MapController(loadJSONFunc) {
         this.gpsStationNamePopup.remove();
 
         this.thirdPartySourcesController.removeAll();
+        this.thirdPartySourcesController.USGSEventsOptionsController.UTCTime = "0";
 
         this.colorDatasetOnVelocity();
+        if ($("#dataset-frames-toggle-button").hasClass("toggled")) {
+            $("#dataset-frames-toggle-button").click();
+        }
 
-        this.loadAreaMarkers(null);
+        var json = {
+            "areas": this.allAreas
+        };
+        this.addSwathsFromJSON(json, null, true, false);
 
         this.removeAreaPopups();
-        $("#search-form-and-results-minimize-button").click();
+        $("#search-form-and-results-container").css("display", "block");
+        $("#charts").removeClass("active");
         this.seismicityGraphsController.hideChartContainers();
 
-        $("#point-details").empty();
+        $("#point-details > .row > #clicked-point-lat-lng").empty();
 
         overlayToggleButton.set("off");
         this.tileJSON = null;
@@ -1315,20 +2066,41 @@ function MapController(loadJSONFunc) {
         return name;
     };
 
-    this.refreshDataset = function() {
-        var stops = this.colorScale.getMapboxStops();
-
-        this.layers_.forEach(function(layer, layerID) {
-            if (this.map.getPaintProperty(layerID, "circle-color")) {
-                this.map.setPaintProperty(layerID, "circle-color", {
-                    "property": 'm',
-                    "stops": stops
-                });
-            }
-        }.bind(this));
+    this.refreshDataset = function(startDate, endDate) {
+        var stops = null;
+        if (!this.colorOnDisplacement) {
+            stops = this.colorScale.getMapboxStops();
+        } else {
+            var yearsDiff = (endDate - startDate) / MILLISECONDS_PER_YEAR;
+            var min = this.insarColorScaleValues.min / yearsDiff;
+            var max = this.insarColorScaleValues.max / yearsDiff;
+            stops = this.colorScale.getCustomStops(min, max);
+        }
+        var insarLayers = this.getInsarLayers();
+        if (insarLayers) {
+            insarLayers.forEach(function(layerID) {
+                if (this.map.getPaintProperty(layerID, "circle-color")) {
+                    this.map.setPaintProperty(layerID, "circle-color", {
+                        "property": 'm',
+                        "stops": stops
+                    });
+                }
+            }.bind(this));
+        }
 
         if (this.map.getLayer("onTheFlyJSON")) {
-            this.map.setPaintProperty("onTheFlyJSON", "circle-color", {
+            var property = null;
+            try {
+                this.map.getPaintProperty("onTheFlyJSON", "circle-color");
+            } catch (e) {
+                property = "fill-color";
+            }
+            try {
+                this.map.getPaintProperty("onTheFlyJSON", "fill-color");
+            } catch (e) {
+                property = "circle-color";
+            }
+            this.map.setPaintProperty("onTheFlyJSON", property, {
                 "property": 'm',
                 "stops": stops
             });
@@ -1336,18 +2108,36 @@ function MapController(loadJSONFunc) {
     };
 
     this.removeSourceAndLayer = function(name) {
+        var removedLayer = false;
+        // in removeLayer, pass in false so afterLayersChanged isn't called inside that
+        // method. why? because afterLayersChanged relies on getCurrentMode, which in turn
+        // relies on the order of sources on the map. thus, if we remove the layer first
+        // and then call afterlayers changed, it will create an inconsistency if the layer
+        // has been removed, but the corresponding source still hasn't. we can't base
+        // getCurrentMode on the order of layers beacause we dont stack layers on top of each other
+        // but arrange them in a specified order such that some layers might never be the topmost layer
+        // if added last but there is another layer enabled which supercedes that layer on the map stack.
+        // TODO: consider renaming afterLayersChanged to something like setCurrentMapMode and don't call it
+        // in either removeLayer or setLayer... either call it in both or neither...
+        if (this.map.getLayer(name)) {
+            this.removeLayer(name, false);
+            removedLayer = true;
+        }
         if (this.map.getSource(name)) {
             this.removeSource(name);
         }
 
-        if (this.map.getLayer(name)) {
-            this.removeLayer(name);
+        if (removedLayer) {
+            this.afterLayersChanged(name);
         }
     };
 
     // if after is supplied, it must hide loading screen
     this.subsetDataset = function(bbox, after) {
-        showLoadingScreen("Subsetting Dataset", "ESCAPE to interrupt");
+        showLoadingScreen("Subsetting Dataset", "ESCAPE or click/tap this box to interrupt");
+        hideLoadingScreenWithClick(function() {
+            this.cancellableAjax.cancel();
+        }.bind(this));
         // too many vector layers leads to browser running out of memory
         // when we set filter
         if (this.tileJSON.vector_layers.length > 1) {
@@ -1391,7 +2181,7 @@ function MapController(loadJSONFunc) {
                     if (this.map.loaded()) {
                         after();
                     } else {
-                        this.onDatasetRendered(function(callback) {
+                        this.onRendered(function(callback) {
                             this.map.off("render", callback);
                             after();
                         }.bind(this));
@@ -1407,11 +2197,14 @@ function MapController(loadJSONFunc) {
             hideLoadingScreen();
         });
     };
+
+    this.DMSToDecimalDegrees = function(degrees, minutes, seconds) {
+        return degrees + (minutes / 60.0) + (seconds / 3600.0);
+    };
 }
 
 
-// function to use AJAX to load json from that same website - I looked online and AJAX is basically just used
-// to asynchronously load data using javascript from a server, in our case, our local website
+// function to use AJAX to load json from that same website - TODO: remove me and use jquery
 function loadJSON(arg, param, callback) {
     var fullQuery = param + "/"
 
@@ -1419,7 +2212,6 @@ function loadJSON(arg, param, callback) {
         fullQuery += arg[key] + "/"
     }
 
-    console.log(fullQuery);
     var xobj = new XMLHttpRequest();
     xobj.overrideMimeType("application/json");
     xobj.open('GET', fullQuery, true); // Replace 'my_data' with the path to your file

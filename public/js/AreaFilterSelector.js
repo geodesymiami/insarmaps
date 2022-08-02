@@ -34,7 +34,7 @@ function setUpAreaFilterSelector() {
 
                 myMap.removeAreaMarkers();
                 var exclude = currentArea ? [currentArea.properties.unavco_name] : null
-                myMap.addSwathsFromJSON(json, exclude, true);
+                myMap.addSwathsFromJSON(json, exclude, true, false);
                 this.lastAjaxRequest = null;
             }.bind(this),
             error: function(xhr, ajaxOptions, thrownError) {
@@ -54,9 +54,15 @@ function setUpAreaFilterSelector() {
             "type": "FeatureCollection",
             "features": [polygon]
         };
+
+        var featuresToSearch = this.map.allAreas;
+        // if we are displaying only data a year old or less
+        if ($("#recent-datasets-toggle-button").hasClass("toggled")) {
+            featuresToSearch = new SearchFormController("search-form").getDatasetsMoreRecentThan(featuresToSearch, 1.0);;
+        }
         var points = {
             "type": "FeatureCollection",
-            "features": this.map.areas.areas
+            "features": featuresToSearch
         };
 
         var ptsWithin = turf.within(points, searchWithin);
@@ -64,9 +70,10 @@ function setUpAreaFilterSelector() {
             var json = {
                 "areas": ptsWithin.features
             };
+
             var filter = currentArea ? [currentArea.properties.unavco_name] : null;
 
-            this.map.addSwathsFromJSON(json, filter, populateTable);
+            this.map.addSwathsFromJSON(json, filter, populateTable, false);
             if (currentArea) {
                 this.map.areaMarkerLayer.setAreaRowHighlighted(currentArea.properties.unavco_name);
             }

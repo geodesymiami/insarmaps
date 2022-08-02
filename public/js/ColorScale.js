@@ -2,9 +2,12 @@ function MapboxStopsCalculator() {
     this.inputsFromMinAndMax = function(min, max, increment) {
         var currentValue = min;
         var output = [];
+        // handles increment == 0 or increment == value too small for it to be
+        // added to min
+        var incrementTooSmallForJS = (min + increment) == min;
 
         // prevent endless loop if min == max or increment == 0
-        if (min == max || increment <= 0) {
+        if (min == max || incrementTooSmallForJS) {
             output.push(min);
             return output;
         }
@@ -31,7 +34,7 @@ function MapboxStopsCalculator() {
             stops.push(curStop);
         }
 
-        // for large output incremnets not a multiple of output array length, we can get
+        // for large output increments not a multiple of output array length, we can get
         // blue shift, especially for categorical scales. thus, always add the last value to
         // make sure even on these types of scales we get the full gamut of colors. if output
         // increment == 1 for example, it doesn't matter as we full red color at
@@ -89,33 +92,21 @@ function MapboxStopsCalculator() {
 
     // assume order so use binary search
     this.getOutputIndexFromInputStop = function(stops, input) {
-        var first = 0,
-            last = stops.length - 1;
-        var middle, cmp = 0;
+        var searchResults = binarySearch(stops, input, function(val1, val2) {
+            return val2 - val1[0];
+        });
 
-        while (!(first > last)) {
-            // floor due to js's strange integer/float casting
-            middle = Math.floor((first + last) / 2);
-
-            cmp = input - stops[middle][0];
-
-            if (cmp == 0) {
-                return middle;
-            }
-            if (cmp < 0) {
-                last = middle - 1;
-            } else {
-                first = middle + 1;
-            }
+        if (searchResults.found) {
+            return searchResults.index;
         }
 
         // if we don't find it, return value of stops just before our input
-        cmp = input - stops[middle][0];
+        cmp = input - stops[searchResults.index][0];
         var toReturn = -1;
         if (cmp < 0) {
-            toReturn = middle - 1;
+            toReturn = searchResults.index - 1;
         } else {
-            toReturn = middle;
+            toReturn = searchResults.index;
         }
 
         // make sure we are in bounds of array
@@ -329,31 +320,56 @@ function ColorScale(min, max, divID) {
     ];
 
     this.currentScale = this.jet;
+    this.currentScaleString = "jet";
 
     // in cm
     this.min = min;
     this.max = max;
 
-    this.setScale = function(scale) {
+    this.stringToScale = function(scale) {
         if (scale == "jet") {
-            this.currentScale = this.jet;
-        } else if (scale == "zishiCustom") {
-            this.currentScale = this.zishiCustom;
-        } else if (scale == "jet_r") {
-            this.currentScale = this.jet_r;
-        } else if (scale == "hsv") {
-            this.currentScale = this.hsv;
-        } else if (scale == "bwr") {
-            this.currentScale = this.bwr;
-        } else {
-            throw "Invalid Color Scale (" + scale + ") selected";
+            return this.jet;
         }
+        if (scale == "zishiCustom") {
+            return this.zishiCustom;
+        }
+        if (scale == "jet_r") {
+            return this.jet_r;
+        }
+        if (scale == "hsv") {
+            return this.hsv;
+        }
+        if (scale == "bwr") {
+            return this.bwr;
+        }
+        throw "Invalid Color Scale (" + scale + ") selected";
+    };
+
+    this.topIsMax = true;
+
+    this.setScale = function(scale) {
+        this.currentScale = this.stringToScale(scale);
+        this.currentScaleString = scale;
 
         var imgSrc = "/img/" + scale + "_scale.PNG";
         $("#" + this.divID + " .color-scale-picture-div > img").attr("src", imgSrc);
     };
 
-    this.topIsMax = true;
+    // doesn't return the raw scale per se, but the scale that it APPEARS to be using
+    // so a jet scale with topIsMax of false would actually be a jet_r in terms of values...
+    this.getCurrentScale = function() {
+        var scale = this.currentScaleString;
+        // set forward scale to reverse and vice versa
+        if (!this.topIsMax) {
+            if (scale.includes("_r")) {
+                scale = scale.split("_r")[0];
+            } else {
+                scale += "_r";
+            }
+        }
+
+        return this.stringToScale(scale);
+    };
 
     this.setTopAsMax = function(setAsMax) {
         this.topIsMax = setAsMax;
@@ -368,42 +384,51 @@ function ColorScale(min, max, divID) {
         if (this.inDateMode) {
             $("#" + this.divID + " .scale-values .form-group > input").each(function() {
                 var classVal = $(this).attr("class");
-                $input = $("<input type='date' class='" + classVal + "'/>").insertBefore(this);
+                $input = $("<input type='text' class='" + classVal + "'/>").insertBefore(this);
                 if (!$input.hasClass("date-input")) {
                     $input.addClass("date-input");
                 }
+                // re add jquery datepicker
+                $input.datepicker({
+                    changeMonth: true,
+                    changeYear: true,
+                    dateFormat: "yy-M-d"
+                });
             }).remove();
+            $("#" + this.divID + " .scale-values").css("width", "90px");
         } else {
             $("#" + this.divID + " .scale-values .form-group > input").each(function() {
+                $(this).datepicker("destroy");
                 var classVal = $(this).attr("class");
                 $input = $("<input type='number' class='" + classVal + "'/>").insertBefore(this);
                 if ($input.hasClass("date-input")) {
                     $input.removeClass("date-input");
                 }
             }).remove();
+            $("#" + this.divID + " .scale-values").css("width", "50px");
         }
 
         // register callbacks again
-        this.onScaleChange(this.scaleChangeCallback);
+        if (this.scaleChangeCallback) {
+            this.onScaleChange(this.scaleChangeCallback);
+        }
     };
 
     this.initVisualScale = function() {
         this.setMinMax(this.min, this.max);
     };
 
-    this.dateToString = function(dateMilliseconds) {
+    this.millisecondsToString = function(dateMilliseconds) {
         var date = new Date(dateMilliseconds);
-        var day = ("0" + date.getDate()).slice(-2);
-        var month = ("0" + (date.getMonth() + 1)).slice(-2);
 
-        return date.getFullYear() + "-" + (month) + "-" + (day);
+        return $.datepicker.formatDate("yy-M-d", date);
     };
 
     this.setMin = function(min) {
         this.min = min;
-        var minString = this.min;
+        var minString = this.min.toFixed(1);
         if (this.inDateMode) {
-            minString = this.dateToString(this.min);
+            minString = this.millisecondsToString(this.min);
         }
 
         if (this.topIsMax) {
@@ -415,9 +440,9 @@ function ColorScale(min, max, divID) {
 
     this.setMax = function(max) {
         this.max = max;
-        var maxString = this.max;
+        var maxString = this.max.toFixed(1);
         if (this.inDateMode) {
-            maxString = this.dateToString(this.max);
+            maxString = this.millisecondsToString(this.max);
         }
 
         if (this.topIsMax) {
@@ -446,8 +471,16 @@ function ColorScale(min, max, divID) {
         return this.stopsCalculator.colorsToMapboxStops(this.min, this.max, this.currentScale);
     };
 
-    this.setTitle = function(title) {
-        $("#" + this.divID + " > .color-scale-text-div").html(title);
+    this.getCustomStops = function(min, max) {
+        return this.stopsCalculator.colorsToMapboxStops(min, max, this.currentScale);
+    };
+
+    this.setTitle = function(title, tooltip) {
+        var $colorScaleTextDiv = $("#" + this.divID + " > .color-scale-text-div");
+        $colorScaleTextDiv.html(title);
+        if (tooltip) {
+            $colorScaleTextDiv.attr("data-original-title", tooltip); 
+        }
     };
 
     this.show = function() {
@@ -468,22 +501,15 @@ function ColorScale(min, max, divID) {
 
     this.onScaleChange = function(callback) {
         $("#" + this.divID + " .scale-values .form-group > input").keypress(function(e) {
-            var ENTER_KEY = 13;
+            const ENTER_KEY = 13;
 
             if (e.which == ENTER_KEY) {
                 var bottomValue = $("#" + this.divID + " .bottom-scale-value").val();
                 var topValue = $("#" + this.divID + " .top-scale-value").val();
                 if (this.inDateMode) {
-                    // yyyy-mm-dd is always the value we get (however the display depends)
-                    // on user locale: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/date
-                    // we need this incantation rather than just doing new Date(bottomValue) because
-                    // of how html5 vs js dates work: https://stackoverflow.com/questions/9509360/datepicker-date-off-by-one-day
-                    var splitTop = bottomValue.split("-");
-                    var splitBot = topValue.split("-");
-
                     // -1 because js date is 0 based.
-                    var minMilliseconds = new Date(splitBot[0], splitBot[1] - 1, splitBot[2]).getTime();
-                    var maxMilliseconds = new Date(splitTop[0], splitTop[1] - 1, splitTop[2]).getTime();
+                    var minMilliseconds = $.datepicker.parseDate("yy-M-d", bottomValue).getTime();
+                    var maxMilliseconds = $.datepicker.parseDate("yy-M-d", topValue).getTime();
                     this.setMinMax(minMilliseconds, maxMilliseconds);
                 } else {
                     this.setMinMax(parseFloat(bottomValue), parseFloat(topValue));
@@ -496,3 +522,4 @@ function ColorScale(min, max, divID) {
         this.scaleChangeCallback = callback;
     };
 }
+

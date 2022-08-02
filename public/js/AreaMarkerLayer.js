@@ -1,5 +1,3 @@
-// abstract multiple area marker layers into one master layer object
-// TODO: work with swaths rather than id's
 function AreaMarkerLayer(map) {
     var that = this;
 
@@ -7,7 +5,7 @@ function AreaMarkerLayer(map) {
     this.modifiedLayers = [];
     this.map = map;
 
-    this.mapSceneAndDataFootprints = {};
+    this.mapAreaIDsWithFeatureObjects = {};
 
     this.addSwath = function(swath) {
         this.swaths.push(swath);
@@ -53,7 +51,7 @@ function AreaMarkerLayer(map) {
 
     this.setAreaRowHighlighted = function(row) {
         var $row = $("." + row + "-search-row");
-        var rowColor = "rgba(0, 86, 173, 0.5)"
+        var rowColor = "rgba(0, 86, 173, 0.5)";
         if (!$row.hasClass("highlighted")) {
             $row.addClass("highlighted");
             $row.css({ "background-color": rowColor });
@@ -74,7 +72,7 @@ function AreaMarkerLayer(map) {
         }
 
         $("#search-form-results-table > tbody > tr, #subset-swath-table > tbody > tr").each(function() {
-            if (!excluding || $(this).attr("class") != excluding.properties.unavco_name + "-search-row") {
+            if (!excluding || $(this).attr("class").split(" highlighted")[0] != excluding.properties.unavco_name + "-search-row") {
                 $(this).css({ "background-color": "white" });
                 $(this).removeClass("highlighted");
             }
@@ -110,7 +108,7 @@ function AreaMarkerLayer(map) {
         this.modifiedLayers = [];
     };
 
-    this.empty = function() {
+    this.isEmpty = function() {
         return this.swaths.length == 0;
     };
 }
