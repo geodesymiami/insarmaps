@@ -277,11 +277,20 @@ function setupFeatureSelector() {
                         var arrayBuffer = response;
 
                         if (arrayBuffer) {
+                            // the data comes as follows: the dates come first, followed by a large array
+                            // of all the displacements for all the points, sequentially
+                            // each feature above is sorted, and server returns dates by the
+                            // point ID in sorted order as well. we use minIndex and maxIndex
+                            // to allocate (maxIndex - minIndex) + 1 displacements to each point
                             var json = new Float64Array(arrayBuffer);
-                            console.log("Received points");
+                            var step = this.maxIndex - this.minIndex + 1;
+                            var decimal_dates = json.slice(0, step);
                             for (var i = 0; i < geoJSONData.features.length; i++) {
                                 var curFeature = geoJSONData.features[i];
-                                curFeature.properties.m = parseFloat(json[i])
+                                var displacements = json.slice(step * (i + 1), step * (i + 2));
+                                var result = calcLinearRegression(displacements, decimal_dates);
+                                var slope = result["equation"][0];
+                                curFeature.properties.m = slope;
                             }
 
 
