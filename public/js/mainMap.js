@@ -18,6 +18,7 @@ var firstToggle = true;
 var myPolygon = null;
 var areaAttributesPopup = new AreaAttributesPopup();
 
+// TODO: I feel that this needs to be split up eventually into multiple files
 function MapController(loadJSONFunc) {
     // my mapbox api key
     mapboxgl.accessToken = "pk.eyJ1Ijoia2pqajExMjIzMzQ0IiwiYSI6ImNpbDJqYXZ6czNjdWd2eW0zMTA2aW1tNXUifQ.cPofQqq5jqm6l4zix7k6vw";
@@ -104,6 +105,7 @@ function MapController(loadJSONFunc) {
         }
     }.bind(this));
     this.colorOnDisplacement = false;
+    this.selectingReferencePoint = false;
     // set current coloring mode based on url
     if (urlOptions && urlOptions.startingDatasetOptions &&
         (urlOptions.startingDatasetOptions.minScale ||
@@ -551,58 +553,69 @@ function MapController(loadJSONFunc) {
             "pointNumber": pointNumber
         };
 
-        var chartContainer = "chartContainer";
-        var clickMarker = this.clickLocationMarker;
-        var markerSymbol = "cross";
+        if (!this.selectingReferencePoint) {
+            var chartContainer = "chartContainer";
+            var clickMarker = this.clickLocationMarker;
+            var markerSymbol = "cross";
 
-        if (this.graphsController.selectedGraph == "Bottom Graph") {
-            chartContainer = "chartContainer2";
-            clickMarker = this.clickLocationMarker2;
-            markerSymbol += "Red";
-        }
-
-        var layerID = this.graphsController.selectedGraph;
-
-        clickMarker.data = {
-            "type": "FeatureCollection",
-            "features": [{
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [long, lat]
-                },
-                "properties": {
-                    "marker-symbol": markerSymbol
-                }
-            }]
-        };
-
-        // show cross on clicked point
-        if (this.map.getLayer(layerID)) {
-            this.removeSourceAndLayer(layerID);
-        }
-
-        this.addSource(layerID, clickMarker);
-        this.addLayer({
-            "id": layerID,
-            "type": "symbol",
-            "source": layerID,
-            "layout": {
-                "icon-image": "{marker-symbol}-15",
+            if (this.graphsController.selectedGraph == "Bottom Graph") {
+                chartContainer = "chartContainer2";
+                clickMarker = this.clickLocationMarker2;
+                markerSymbol += "Red";
             }
-        });
 
-        var pointDetailsHtml = lat.toFixed(3) + ", " + long.toFixed(3);
+            var layerID = this.graphsController.selectedGraph;
 
-        $("#point-details > .row > #clicked-point-lat-lng").html(pointDetailsHtml);
+            clickMarker.data = {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [long, lat]
+                    },
+                    "properties": {
+                        "marker-symbol": markerSymbol
+                    }
+                }]
+            };
 
-        $("#search-form-and-results-minimize-button").click();
-        $("#graph-div-minimize-button").css("display", "block");
-        $("#graph-div-maximize-button").css("display", "none");
+            // show cross on clicked point
+            if (this.map.getLayer(layerID)) {
+                this.removeSourceAndLayer(layerID);
+            }
 
+            this.addSource(layerID, clickMarker);
+            this.addLayer({
+                "id": layerID,
+                "type": "symbol",
+                "source": layerID,
+                "layout": {
+                    "icon-image": "{marker-symbol}-15",
+                }
+            });
+
+            var pointDetailsHtml = lat.toFixed(3) + ", " + long.toFixed(3);
+
+            $("#point-details > .row > #clicked-point-lat-lng").html(pointDetailsHtml);
+
+            $("#search-form-and-results-minimize-button").click();
+            $("#graph-div-minimize-button").css("display", "block");
+            $("#graph-div-maximize-button").css("display", "none");
+
+        }
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "/point", function(response) {
             var json = JSON.parse(response);
+
+            if (this.selectingReferencePoint) {
+                // convert from m to cm
+                var displacements = json.displacements.map(function(displacement) {
+                    return 100 * displacement;
+                });
+                this.addReferencePointFromClick(lat, long, displacements);
+                return;
+            }
 
             // only draw graph after window finishes maximize animation
             var animationEvents = "webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend";
@@ -1184,7 +1197,51 @@ function MapController(loadJSONFunc) {
         }
     };
 
-    this.addReferencePoint = function(area) {
+    this.addReferencePointSourceAndLayer = function(lat, lon) {
+        var referencePointSource = {
+            type: "geojson",
+            cluster: false,
+            data: {
+                "type": "FeatureCollection",
+                "features": [{
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [lon, lat]
+                    },
+                }]
+            }
+        };
+        var id = "ReferencePoint";
+        var before = this.getLayerOnTopOf(id);
+
+        this.addSource(id, referencePointSource);
+        this.addLayer({
+            "id": id,
+            "type": "circle",
+            "source": id,
+            "paint": {
+                "circle-color": "black",
+                "circle-radius": {
+                    stops: this.radiusStops
+                }
+            }
+        }, before);
+    };
+
+    this.addReferencePointFromClick = function(lat, lon, displacement_array) {
+        this.addReferencePointSourceAndLayer(lat, lon);
+        this.selector.refreshDatasetWithNewReferencePoint(displacement_array);
+    };
+
+    this.doneSelectingReferencePoint = function() {
+        this.selectingReferencePoint = false;
+        if ($("#contour-toggle-button").hasClass("toggled")) {
+            $("#contour-toggle-button").click();
+        }
+    };
+
+    this.addReferencePointFromArea = function(area) {
         var attributesController = new AreaAttributesController(this, area);
         var oldRefLon = attributesController.getAttribute("ref_lon");
         var newRefLon = attributesController.getAttribute("REF_LON");
@@ -1201,35 +1258,7 @@ function MapController(loadJSONFunc) {
                 refLat = newRefLat;
             }
 
-            var referencePointSource = {
-                type: "geojson",
-                cluster: false,
-                data: {
-                    "type": "FeatureCollection",
-                    "features": [{
-                        type: 'Feature',
-                        geometry: {
-                            type: 'Point',
-                            coordinates: [refLon, refLat]
-                        },
-                    }]
-                }
-            };
-            var id = "ReferencePoint";
-            var before = this.getLayerOnTopOf(id);
-
-            this.addSource(id, referencePointSource);
-            this.addLayer({
-                "id": id,
-                "type": "circle",
-                "source": id,
-                "paint": {
-                    "circle-color": "black",
-                    "circle-radius": {
-                        stops: this.radiusStops
-                    }
-                }
-            }, before);
+            this.addReferencePointSourceAndLayer(refLat, refLon);
         }
     };
 
@@ -1317,7 +1346,7 @@ function MapController(loadJSONFunc) {
         }.bind(this));
 
         if (referencePointToggleButton.toggleState == ToggleStates.ON) {
-            this.addReferencePoint(feature);
+            this.addReferencePointFromArea(feature);
         }
         $("#charts").height("auto");
     };

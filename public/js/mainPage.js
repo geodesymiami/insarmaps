@@ -489,7 +489,7 @@ function setupToggleButtons() {
     referencePointToggleButton = new ToggleButton("reference-point-toggle-button", "overlay-options-toggles", "Reference Point");
     referencePointToggleButton.onclick(function(state) {
         if (this.toggleState == ToggleStates.ON && myMap.pointsLoaded()) {
-            myMap.addReferencePoint(currentArea);
+            myMap.addReferencePointFromArea(currentArea);
         } else {
             myMap.removeReferencePoint();
         }
@@ -1218,6 +1218,19 @@ $(window).on("load", function() {
         } else {
             myMap.addContourLines();
             $(this).attr("data-original-title", "Remove contour lines");
+            $(this).addClass("toggled");
+        }
+    });
+
+    $("#select-reference-point-toggle-button").on("click", function() {
+        if ($(this).hasClass("toggled")) {
+            myMap.removeReferencePoint();
+            myMap.selectingReferencePoint = false;
+            $(this).attr("data-original-title", "Select reference point");
+            $(this).removeClass("toggled");
+        } else {
+            myMap.selectingReferencePoint = true;
+            $(this).attr("data-original-title", "Remove reference point");
             $(this).addClass("toggled");
         }
     });

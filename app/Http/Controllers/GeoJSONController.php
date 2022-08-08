@@ -122,6 +122,7 @@ class GeoJSONController extends Controller {
         $points = Input::get("points");
         $minIndex = Input::get("arrayMinIndex");
         $maxIndex = Input::get("arrayMaxIndex");
+        $returnDisplacements = Input::get("getDisplacements") === "true" ? true : false;
 
         try {
             $json = [];
@@ -158,7 +159,13 @@ class GeoJSONController extends Controller {
             $phpDecimalDates = array_slice($phpDecimalDates, $minIndex, $length);
             $decimal_dates = $this->arrayFormatter->PHPToPostgresArrayString($phpDecimalDates);
 
-            $query = "SELECT displacements FROM (SELECT unnest(d) AS displacements FROM (";
+            $query = NULL;
+            if ($returnDisplacements) {
+                $query = "SELECT displacements FROM (SELECT unnest(d) AS displacements FROM (";
+            } else {
+                // return velocities
+                $query = "SELECT regr_slope(displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest('" . $decimal_dates . "'::double precision[]) AS dates, groupNumber FROM (";
+            }
             $query .= "WITH points(point) AS (VALUES";
 
             for ($i = 0; $i < $pointsArrayLen - 1; $i++) {
@@ -172,16 +179,26 @@ class GeoJSONController extends Controller {
             // add last ANY values without comma. it fails when this last value is a ? prepared value... something about not being able to compare to text... investigate but i have no idea.
             $tableID = $dateInfos[0]->id;
             $curPointNum = $pointsArray[$i];
-            $query = $query . '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], ROW_NUMBER() OVER() AS groupNumber FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point) ORDER BY p ASC) AS displacements) AS z';
-
-            $displacements = DB::select(DB::raw($query));
-            $json = [];
-            foreach ($phpDecimalDates as $date) {
-                array_push($json, $date);
+            if ($returnDisplacements) {
+                $query .= '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], ROW_NUMBER() OVER() AS groupNumber FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point) ORDER BY p ASC) AS displacements) AS z';
+            } else {
+                $query .= '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], ROW_NUMBER() OVER() AS groupNumber FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point) ORDER BY p ASC) AS displacements) AS z GROUP BY groupNumber ORDER BY groupNumber ASC';
             }
 
-            foreach ($displacements as $displacement) {
-                array_push($json, $displacement->displacements);
+            $queryRes = DB::select(DB::raw($query));
+            $json = [];
+            if ($returnDisplacements) {
+                foreach ($phpDecimalDates as $date) {
+                    array_push($json, $date);
+                }
+
+                foreach ($queryRes as $displacement) {
+                    array_push($json, $displacement->displacements);
+                }
+            } else {
+                foreach ($queryRes as $slope) {
+                    array_push($json, $slope->regr_slope);
+                }
             }
             $binary = pack("d*", ...$json);
 

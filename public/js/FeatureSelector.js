@@ -146,7 +146,7 @@ function setupFeatureSelector() {
         this.recolorDatasetWithBoundingBoxAndMultiplier(null, multiplier, loadingTextTop, loadingTextBottom);
     };
 
-    FeatureSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingTextTop, loadingTextBottom) {
+    FeatureSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingTextTop, loadingTextBottom, refDisplacements=null) {
         // let the caller check if a coloring is in progress. otherwise user has to sometimes
         //  wait if they cancel a recoloring and want to do another one
 
@@ -271,7 +271,8 @@ function setupFeatureSelector() {
                     data: {
                         points: query,
                         arrayMinIndex: this.minIndex,
-                        arrayMaxIndex: this.maxIndex
+                        arrayMaxIndex: this.maxIndex,
+                        getDisplacements: this.map.selectingReferencePoint
                     },
                     success: function(response) {
                         var arrayBuffer = response;
@@ -287,10 +288,17 @@ function setupFeatureSelector() {
                             var decimal_dates = json.slice(0, step);
                             for (var i = 0; i < geoJSONData.features.length; i++) {
                                 var curFeature = geoJSONData.features[i];
-                                var displacements = json.slice(step * (i + 1), step * (i + 2));
-                                var result = calcLinearRegression(displacements, decimal_dates);
-                                var slope = result["equation"][0];
-                                curFeature.properties.m = slope;
+                                if (this.map.selectingReferencePoint) {
+                                    var displacements = json.slice(step * (i + 1), step * (i + 2));
+                                    displacements = displacements.map(function(displacement, idx) {
+                                        return displacement - refDisplacements[idx];
+                                    });
+                                    var result = calcLinearRegression(displacements, decimal_dates);
+                                    var slope = result["equation"][0];
+                                    curFeature.properties.m = slope;
+                                } else {
+                                    curFeature.properties.m = json[i];
+                                }
                             }
 
 
@@ -351,6 +359,7 @@ function setupFeatureSelector() {
                         }
 
                         mapboxgl.clearStorage()
+                        this.map.doneSelectingReferencePoint();
                         this.recoloringInProgress = false;
                         this.map.onceRendered(function() {
                             // since we remove and add the oonTheFlyJSON layer
@@ -390,6 +399,10 @@ function setupFeatureSelector() {
 
     FeatureSelector.prototype.recolorDataset = function() {
         this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt");
+    };
+
+    FeatureSelector.prototype.refreshDatasetWithNewReferencePoint = function(displacements) {
+        this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt", displacements);
     };
 
     FeatureSelector.prototype.recoloring = function() {
