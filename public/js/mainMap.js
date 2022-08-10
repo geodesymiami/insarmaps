@@ -609,11 +609,7 @@ function MapController(loadJSONFunc) {
             var json = JSON.parse(response);
 
             if (this.selectingReferencePoint) {
-                // convert from m to cm
-                var displacements = json.displacements.map(function(displacement) {
-                    return 100 * displacement;
-                });
-                this.addReferencePointFromClick(lat, long, displacements);
+                this.addReferencePointFromClick(lat, long, json.displacements);
                 return;
             }
 
