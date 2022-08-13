@@ -495,7 +495,7 @@ function MapController(loadJSONFunc) {
 
         var feature = features[0];
 
-        if (feature.properties.p) {
+        if (feature.properties.p && !this.selectingReferencePoint) {
             var lngLat = this.map.unproject(e.point);
             appendOrReplaceUrlVar(/&pointLat=-?\d*\.?\d*/, "&pointLat=" + lngLat.lat.toFixed(5));
             appendOrReplaceUrlVar(/&pointLon=-?\d*\.?\d*/, "&pointLon=" + lngLat.lng.toFixed(5));
