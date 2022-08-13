@@ -264,6 +264,8 @@ function setupFeatureSelector() {
                 }.bind(this));
                 features = null;
 
+                var referencePointSource = this.map.map.getSource("ReferencePoint");
+
                 this.cancellableAjax.xmlHTTPRequestAjax({
                     url: "/points",
                     type: "post",
@@ -272,7 +274,7 @@ function setupFeatureSelector() {
                         points: query,
                         arrayMinIndex: this.minIndex,
                         arrayMaxIndex: this.maxIndex,
-                        getDisplacements: this.map.selectingReferencePoint
+                        getDisplacements: this.map.selectingReferencePoint || (referencePointSource != null)
                     },
                     success: function(response) {
                         var arrayBuffer = response;
@@ -288,7 +290,7 @@ function setupFeatureSelector() {
                             var decimal_dates = json.slice(0, step);
                             for (var i = 0; i < geoJSONData.features.length; i++) {
                                 var curFeature = geoJSONData.features[i];
-                                if (this.map.selectingReferencePoint) {
+                                if (this.map.selectingReferencePoint || (referencePointSource != null)) {
                                     var displacements = json.slice(step * (i + 1), step * (i + 2));
                                     displacements = displacements.map(function(displacement, idx) {
                                         return displacement - refDisplacements[idx];
@@ -398,7 +400,8 @@ function setupFeatureSelector() {
     };
 
     FeatureSelector.prototype.recolorDataset = function() {
-        this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt");
+        this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt",
+                                                        this.map.referenceDisplacements);
     };
 
     FeatureSelector.prototype.refreshDatasetWithNewReferencePoint = function(displacements) {

@@ -145,6 +145,7 @@ function MapController(loadJSONFunc) {
 
     this.lastMode = null;
     this.datasetCurrentlyRecolored = false;
+    this.referenceDisplacements = null;
 
     this.addSource = function(id, source) {
         this.sources.set(id, source);
@@ -160,7 +161,7 @@ function MapController(loadJSONFunc) {
     // higher index layerID's come below lower indexed ones
     this.layerOrders = (function() {
         const FIRST_INSAR_CHUNK = "chunk_1";
-        var allLayers = [this.thirdPartySourcesController.layerOrder, ["ReferencePoint", "Top Graph", "Bottom Graph", "onTheFlyJSON", FIRST_INSAR_CHUNK]];
+        var allLayers = [this.thirdPartySourcesController.layerOrder, ["DBReferencePoint", "ReferencePoint", "Top Graph", "Bottom Graph", "onTheFlyJSON", FIRST_INSAR_CHUNK]];
 
         var layerOrders = [];
         allLayers.forEach(function(layersArray) {
@@ -609,7 +610,8 @@ function MapController(loadJSONFunc) {
             var json = JSON.parse(response);
 
             if (this.selectingReferencePoint) {
-                this.addReferencePointFromClick(lat, long, json.displacements);
+                this.referenceDisplacements = json.displacements;
+                this.addReferencePointFromClick(lat, long, this.referenceDisplacements);
                 return;
             }
 
@@ -1259,8 +1261,12 @@ function MapController(loadJSONFunc) {
     };
 
     this.removeReferencePoint = function() {
+        if (this.map.getSource("DBReferencePoint")) {
+            this.removeSourceAndLayer("DBReferencePoint");
+        }
         if (this.map.getSource("ReferencePoint")) {
             this.removeSourceAndLayer("ReferencePoint");
+            this.selector.recolorDataset();
         }
     };
 
