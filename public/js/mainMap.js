@@ -481,7 +481,7 @@ function MapController(loadJSONFunc) {
         return deltaDegrees / deltaPixels;
     };
 
-    this.clickOnAPoint = function(e) {
+    this.clickOnAPoint = function(e, selectingReferencePoint) {
         var features = null;
 
         if (e) {
@@ -496,10 +496,15 @@ function MapController(loadJSONFunc) {
 
         var feature = features[0];
 
-        if (feature.properties.p && !this.selectingReferencePoint) {
+        if (feature.properties.p) {
             var lngLat = this.map.unproject(e.point);
-            appendOrReplaceUrlVar(/&pointLat=-?\d*\.?\d*/, "&pointLat=" + lngLat.lat.toFixed(5));
-            appendOrReplaceUrlVar(/&pointLon=-?\d*\.?\d*/, "&pointLon=" + lngLat.lng.toFixed(5));
+            if (selectingReferencePoint) {
+                appendOrReplaceUrlVar(/&refPointLat=-?\d*\.?\d*/, "&refPointLat=" + lngLat.lat.toFixed(5));
+                appendOrReplaceUrlVar(/&refPointLon=-?\d*\.?\d*/, "&refPointLon=" + lngLat.lng.toFixed(5));
+            } else {
+                appendOrReplaceUrlVar(/&pointLat=-?\d*\.?\d*/, "&pointLat=" + lngLat.lat.toFixed(5));
+                appendOrReplaceUrlVar(/&pointLon=-?\d*\.?\d*/, "&pointLon=" + lngLat.lng.toFixed(5));
+            }
         }
         var id = feature.layer.id;
 
@@ -554,7 +559,7 @@ function MapController(loadJSONFunc) {
             "pointNumber": pointNumber
         };
 
-        if (!this.selectingReferencePoint) {
+        if (!selectingReferencePoint) {
             var chartContainer = "chartContainer";
             var clickMarker = this.clickLocationMarker;
             var markerSymbol = "cross";
@@ -614,7 +619,7 @@ function MapController(loadJSONFunc) {
                 }.bind(this));
             }
 
-            if (this.selectingReferencePoint) {
+            if (selectingReferencePoint) {
                 this.referenceDisplacements = json.displacements;
                 this.addReferencePointFromClick(lat, long, this.referenceDisplacements);
                 return;
@@ -721,8 +726,8 @@ function MapController(loadJSONFunc) {
         return null;
     };
 
-    this.leftClickOnAPoint = function(e) {
-        this.clickOnAPoint(e);
+    this.leftClickOnAPoint = function(e, selectingReferencePoint) {
+        this.clickOnAPoint(e, selectingReferencePoint);
     };
 
     this.rightClickOnAPoint = function(e) {
@@ -1008,7 +1013,15 @@ function MapController(loadJSONFunc) {
                         delete urlOptions.startingDatasetOptions.pointLat;
                         delete urlOptions.startingDatasetOptions.pointLon;
                         var point = this.map.project([pointLon, pointLat]);
-                        this.leftClickOnAPoint({ point: point });
+                        this.leftClickOnAPoint({ point: point }, false);
+                    }
+                    var refPointLat = urlOptions.startingDatasetOptions.refPointLat;
+                    var refPointLon = urlOptions.startingDatasetOptions.refPointLon;
+                    if (refPointLat && refPointLon) {
+                        delete urlOptions.startingDatasetOptions.refPointLat;
+                        delete urlOptions.startingDatasetOptions.refPointLon;
+                        var point = this.map.project([refPointLon, refPointLat]);
+                        this.leftClickOnAPoint({ point: point }, true);
                     }
                 }
                 updateUrlState(this);
@@ -1246,8 +1259,9 @@ function MapController(loadJSONFunc) {
 
     this.doneSelectingReferencePoint = function() {
         this.selectingReferencePoint = false;
-        if ($("#contour-toggle-button").hasClass("toggled")) {
-            $("#contour-toggle-button").click();
+        if (!$("#select-reference-point-toggle-button").hasClass("toggled")) {
+            $("#select-reference-point-toggle-button").addClass("toggled");
+            $("#select-reference-point-toggle-button").attr("data-original-title", "Remove reference point");
         }
     };
 
@@ -1703,7 +1717,7 @@ function MapController(loadJSONFunc) {
         this.leftClickOnAPoint = this.leftClickOnAPoint.bind(this);
         this.map.on('click', function(e) {
             fullyHideSearchBars();
-            this.leftClickOnAPoint(e);
+            this.leftClickOnAPoint(e, this.selectingReferencePoint);
         }.bind(this));
 
         //this.map.on("contextmenu", this.rightClickOnAPoint);

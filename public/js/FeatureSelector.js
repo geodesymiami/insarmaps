@@ -361,7 +361,9 @@ function setupFeatureSelector() {
                         }
 
                         mapboxgl.clearStorage()
-                        this.map.doneSelectingReferencePoint();
+                        if (this.map.selectingReferencePoint) {
+                            this.map.doneSelectingReferencePoint();
+                        }
                         this.recoloringInProgress = false;
                         this.map.onceRendered(function() {
                             // since we remove and add the oonTheFlyJSON layer

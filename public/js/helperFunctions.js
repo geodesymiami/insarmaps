@@ -149,6 +149,8 @@ function updateUrlState(map) {
         pushStateString += "?flyToDatasetCenter=false" + "&startDataset=" + currentArea.properties.unavco_name;
         var pointLat = getUrlVar("pointLat");
         var pointLon = getUrlVar("pointLon");
+        var refPointLat = getUrlVar("refPointLat");
+        var refPointLon = getUrlVar("refPointLon");
         var urlMinScale = getUrlVar("minScale");
         var urlMaxScale = getUrlVar("maxScale");
         var urlMinSliderDate = getUrlVar("startDate");
@@ -159,6 +161,12 @@ function updateUrlState(map) {
         }
         if (pointLon) {
             pushStateString += "&pointLon=" + pointLon;
+        }
+        if (refPointLat) {
+            pushStateString += "&refPointLat=" + refPointLat;
+        }
+        if (refPointLon) {
+            pushStateString += "&refPointLon=" + refPointLon;
         }
         if (urlMinScale) {
             pushStateString += "&minScale=" + urlMinScale;
