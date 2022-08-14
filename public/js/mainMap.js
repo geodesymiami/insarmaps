@@ -608,6 +608,11 @@ function MapController(loadJSONFunc) {
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "/point", function(response) {
             var json = JSON.parse(response);
+            if (this.map.getSource("ReferencePoint") != null) {
+                json.displacements = json.displacements.map(function(displacement, idx) {
+                    return displacement - this.referenceDisplacements[idx];
+                }.bind(this));
+            }
 
             if (this.selectingReferencePoint) {
                 this.referenceDisplacements = json.displacements;
@@ -1227,9 +1232,16 @@ function MapController(loadJSONFunc) {
         }, before);
     };
 
+
     this.addReferencePointFromClick = function(lat, lon, displacement_array) {
         this.addReferencePointSourceAndLayer(lat, lon);
         this.selector.refreshDatasetWithNewReferencePoint(displacement_array);
+        // graphsController works in CM, not M
+        var refDisplacementsCM = displacement_array.map(function(displacement) {
+            return 100 * displacement;
+        });
+        this.graphsController.removeReferenceValuesFromDisplacements(refDisplacementsCM);
+        this.graphsController.recreateGraphs();
     };
 
     this.doneSelectingReferencePoint = function() {
@@ -1267,6 +1279,12 @@ function MapController(loadJSONFunc) {
         if (this.map.getSource("ReferencePoint")) {
             this.removeSourceAndLayer("ReferencePoint");
             this.selector.recolorDataset();
+            // graphsController works in CM, not M
+            var refDisplacementsCM = this.referenceDisplacements.map(function(displacement) {
+                return 100 * displacement;
+            });
+            this.graphsController.addReferenceValuesToDisplacements(refDisplacementsCM);
+            this.graphsController.recreateGraphs();
         }
     };
 
