@@ -290,6 +290,8 @@ function setupGraphsController() {
             text: graphOpts.subtitle.text
         });
 
+        chart.series[0].setData(graphSettings.chart_data);
+
         if (regressionToggleButton.toggleState == ToggleStates.ON) {
             this.addRegressionLines();
         }
@@ -1032,6 +1034,7 @@ function setupGraphsController() {
                     var curDisplacements = graphSettings[key]["displacement_array"];
                     var updatedDisplacements = curDisplacements.map(updateFunction);
                     graphSettings[key]["displacement_array"] = updatedDisplacements;
+                    graphSettings[key]["chart_data"] = getDisplacementChartData(updatedDisplacements, graphSettings[key]["date_string_array"]);
                 }
             }
         }
