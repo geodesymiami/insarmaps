@@ -1230,7 +1230,7 @@ $(window).on("load", function() {
             $(this).removeClass("toggled");
         } else {
             myMap.selectingReferencePoint = true;
-            $(this).attr("data-original-title", "Remove reference point");
+            $(this).attr("data-original-title", "Reset reference point");
             $(this).addClass("toggled");
         }
     });

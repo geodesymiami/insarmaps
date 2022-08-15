@@ -1262,7 +1262,7 @@ function MapController(loadJSONFunc) {
         this.selectingReferencePoint = false;
         if (!$("#select-reference-point-toggle-button").hasClass("toggled")) {
             $("#select-reference-point-toggle-button").addClass("toggled");
-            $("#select-reference-point-toggle-button").attr("data-original-title", "Remove reference point");
+            $("#select-reference-point-toggle-button").attr("data-original-title", "Reset reference point");
         }
     };
 
