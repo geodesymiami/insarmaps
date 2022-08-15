@@ -1230,6 +1230,7 @@ function MapController(loadJSONFunc) {
         };
         var id = "ReferencePoint";
         var before = this.getLayerOnTopOf(id);
+        var stops = this.radiusStops.map(function(x) { return [x[0], x[1] * 0.5] } );
 
         this.addSource(id, referencePointSource);
         this.addLayer({
@@ -1239,7 +1240,7 @@ function MapController(loadJSONFunc) {
             "paint": {
                 "circle-color": "black",
                 "circle-radius": {
-                    stops: this.radiusStops
+                    stops: stops
                 }
             }
         }, before);
