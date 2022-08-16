@@ -143,11 +143,6 @@
                     <img src="/img/swathIcon.png" alt="swathIcon.png" style="width: 20px; height: 20px">
                 </button>
             </div>
-            <div>
-                <button class="btn btn-primary-outline map-button no-padding" data-toggle="tooltip" data-placement="right" title="Select reference point" id="select-reference-point-toggle-button">
-                    RF
-                </button>
-            </div>
             <div id="select-layer-button-div">
                 <button class="btn btn-primary-outline map-button" data-toggle="tooltip" data-placement="right" title="More options" id="select-layer-button">
                     <img src="/img/layerSwitchIcon.png" alt="layerSwitchIcon.png" style="width: 20px; height: 20px">
@@ -179,7 +174,12 @@
                         <option value="remove">Remove</option>
                     </select>
                     <br>
-                    <button class="btn btn-primary-outline" id="toggle-insar-circle-size-button" data-toggle="tooltip" title="Resize insar points to their actual size. Resets on zoom change">Actual Size</button>
+                    <div>
+                        <button class="btn btn-primary-outline map-button no-padding" data-toggle="tooltip" data-placement="right" title="Select reference point" id="select-reference-point-toggle-button">
+                            RF
+                        </button>
+                        <button class="btn btn-primary-outline" id="toggle-insar-circle-size-button" data-toggle="tooltip" title="Resize insar points to their actual size. Resets on zoom change">Actual Size</button>
+                    </div>
                     <div class="wrap wrap-transitions draggable" id="USGSEvents-options-wrapper">
                         <div id="USGSEvents-options">
                             <div class="top-right-buttons">
