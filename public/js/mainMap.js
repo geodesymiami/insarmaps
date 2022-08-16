@@ -1663,6 +1663,20 @@ function MapController(loadJSONFunc) {
         }
     };
 
+    this.updateOnTheFlyIfThere = function() {
+        if (this.map.getSource("onTheFlyJSON")) {
+            var pointLayers = this.getInsarLayers();
+            this.onceRendered(function() {
+                this.selector.recolorDataset();
+                this.onceRendered(function() {
+                    this.hideInsarLayers();;
+                }.bind(this));
+            }.bind(this));
+            showLoadingScreen("Rendering at new zoom level", null);
+            this.showInsarLayers();
+        }
+    };
+
     this.addMapToPage = function(containerID) {
         var startingOptions = null;
         var minZoom = 0; // default as per gl js api
@@ -1824,17 +1838,7 @@ function MapController(loadJSONFunc) {
                 }
             }
 
-            if (this.map.getSource("onTheFlyJSON") && !this.pointClicked()) {
-                var pointLayers = this.getInsarLayers();
-                this.onceRendered(function() {
-                    this.selector.recolorDataset();
-                    this.onceRendered(function() {
-                        this.hideInsarLayers();;
-                    }.bind(this));
-                }.bind(this));
-                showLoadingScreen("Rendering at new zoom level", null);
-                this.showInsarLayers();
-            }
+            this.updateOnTheFlyIfThere();
 
             if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled") && mode !== "seismicity") {
                 this.loadSwathsInCurrentViewport(true);
@@ -1862,6 +1866,7 @@ function MapController(loadJSONFunc) {
             var sw = bounds._sw.lat.toFixed(2) + ", " + bounds._sw.lng.toFixed(2);
             var ne = bounds._ne.lat.toFixed(2) + ", " + bounds._ne.lng.toFixed(2);
             $("#usgs-events-current-viewport").html("sw: " + sw + ", ne: " + ne);
+            this.updateOnTheFlyIfThere();
             updateUrlState(this);
         }.bind(this));
 
