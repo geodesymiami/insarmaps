@@ -1022,6 +1022,9 @@ function MapController(loadJSONFunc) {
                         delete urlOptions.startingDatasetOptions.refPointLon;
                         var point = this.map.project([refPointLon, refPointLat]);
                         this.leftClickOnAPoint({ point: point }, true);
+                        referencePointToggleButton.set("on", false);
+                        $("#select-reference-point-toggle-button").attr("data-original-title", "Reset reference point");
+                        $("#select-reference-point-toggle-button").addClass("toggled");
                     }
                 }
                 updateUrlState(this);
@@ -1213,7 +1216,7 @@ function MapController(loadJSONFunc) {
         }
     };
 
-    this.addReferencePointSourceAndLayer = function(lat, lon) {
+    this.addReferencePointSourceAndLayer = function(id, lat, lon) {
         var referencePointSource = {
             type: "geojson",
             cluster: false,
@@ -1228,27 +1231,31 @@ function MapController(loadJSONFunc) {
                 }]
             }
         };
-        var id = "ReferencePoint";
-        var before = this.getLayerOnTopOf(id);
-        var stops = this.radiusStops.map(function(x) { return [x[0], x[1] * 0.5] } );
+        var source = this.map.getSource(id);
+        if (source) {
+            source.setData(referencePointSource.data);
+        } else {
+            var before = this.getLayerOnTopOf(id);
+            var stops = this.radiusStops.map(function(x) { return [x[0], x[1] * 0.5] } );
 
-        this.addSource(id, referencePointSource);
-        this.addLayer({
-            "id": id,
-            "type": "circle",
-            "source": id,
-            "paint": {
-                "circle-color": "black",
-                "circle-radius": {
-                    stops: stops
+            this.addSource(id, referencePointSource);
+            this.addLayer({
+                "id": id,
+                "type": "circle",
+                "source": id,
+                "paint": {
+                    "circle-color": "black",
+                    "circle-radius": {
+                        stops: stops
+                    }
                 }
-            }
-        }, before);
+            }, before);
+        }
     };
 
 
     this.addReferencePointFromClick = function(lat, lon, displacement_array) {
-        this.addReferencePointSourceAndLayer(lat, lon);
+        this.addReferencePointSourceAndLayer("ReferencePoint", lat, lon);
         this.selector.refreshDatasetWithNewReferencePoint(displacement_array);
         // graphsController works in CM, not M
         var refDisplacementsCM = displacement_array.map(function(displacement) {
@@ -1283,7 +1290,24 @@ function MapController(loadJSONFunc) {
                 refLat = newRefLat;
             }
 
-            this.addReferencePointSourceAndLayer(refLat, refLon);
+            this.addReferencePointSourceAndLayer("DBReferencePoint", refLat, refLon);
+        }
+    };
+
+    this.displayReferencePoint = function() {
+        var customReferencePointSource = this.map.getSource("ReferencePoint");
+        if (customReferencePointSource == null) {
+            this.addReferencePointFromArea(currentArea);
+        } else {
+            this.map.setLayoutProperty("ReferencePoint", "visibility", "visible");
+        }
+    };
+
+    this.hideReferencePoint = function() {
+        if (this.map.getSource("DBReferencePoint")) {
+            this.removeSourceAndLayer("DBReferencePoint");
+        } else if (this.map.getSource("ReferencePoint")) {
+            this.map.setLayoutProperty("ReferencePoint", "visibility", "none");
         }
     };
 
