@@ -119,7 +119,7 @@ function addUrlVarIfNotThere(varName, varToAppend) {
     if (!getUrlVar(varName)) {
         var optionsString = window.location.href.split(window.location.origin)[1];
         optionsString += varToAppend;
-        window.history.replaceState({}, "lat_lon", optionsString);
+        window.history.replaceState({}, "url_state", optionsString);
     }
 }
 
@@ -131,7 +131,14 @@ function appendOrReplaceUrlVar(varRegex, varToAppend) {
     } else {
         optionsString = optionsString.replace(varRegex, varToAppend);
     }
-    window.history.replaceState({}, "lat_lon", optionsString);
+    window.history.replaceState({}, "url_state", optionsString);
+}
+
+function removeURLVar(varRegex) {
+    var optionsString = window.location.href.split(window.location.origin)[1];
+    optionsString = optionsString.replace(varRegex, "");
+
+    window.history.replaceState({}, "url_state", optionsString);
 }
 
 // TODO: it's much cleaner now. we're really only changing the first part with /start/
@@ -184,7 +191,7 @@ function updateUrlState(map) {
             pushStateString += "&colorscale=" + colorOn;
         }
     }
-    window.history.replaceState({}, "lat_lon", pushStateString);
+    window.history.replaceState({}, "url_state", pushStateString);
 }
 
 // see: https://stackoverflow.com/questions/1379553/how-might-i-find-the-largest-number-contained-in-a-javascript-array. this is fastest method of finding min and max in array

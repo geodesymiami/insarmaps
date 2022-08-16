@@ -1324,6 +1324,8 @@ function MapController(loadJSONFunc) {
             });
             this.graphsController.addReferenceValuesToDisplacements(refDisplacementsCM);
             this.graphsController.recreateGraphs();
+            removeURLVar(/&refPointLat=-?\d*\.?\d*/);
+            removeURLVar(/&refPointLon=-?\d*\.?\d*/);
         }
     };
 
