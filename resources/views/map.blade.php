@@ -175,11 +175,14 @@
                     </select>
                     <br>
                     <div>
-                        <button class="btn btn-primary-outline map-button no-padding" data-toggle="tooltip" data-placement="right" title="Select reference point" id="select-reference-point-toggle-button">
-                            RF
+                        <button class="btn btn-primary-outline" data-toggle="tooltip" data-placement="right" title="Select reference point" id="select-reference-point-toggle-button">
+                            Select Reference Point
                         </button>
-                        <button class="btn btn-primary-outline" id="toggle-insar-circle-size-button" data-toggle="tooltip" title="Resize insar points to their actual size. Resets on zoom change">Actual Size</button>
+                        <button class="btn btn-primary-outline" data-toggle="tooltip" data-placement="right" title="Reset reference point" id="reset-reference-point-toggle-button">
+                            Reset Reference Point
+                        </button>
                     </div>
+                    <button class="btn btn-primary-outline" id="toggle-insar-circle-size-button" data-toggle="tooltip" title="Resize insar points to their actual size. Resets on zoom change">Actual Size</button>
                     <div class="wrap wrap-transitions draggable" id="USGSEvents-options-wrapper">
                         <div id="USGSEvents-options">
                             <div class="top-right-buttons">

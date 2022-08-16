@@ -626,6 +626,7 @@ function MapController(loadJSONFunc) {
                 if (this.map.getSource("DBReferencePoint")) {
                     this.removeSourceAndLayer("DBReferencePoint");
                 }
+                referencePointToggleButton.set("on", false);
                 return;
             }
 
@@ -1027,8 +1028,6 @@ function MapController(loadJSONFunc) {
                         var point = this.map.project([refPointLon, refPointLat]);
                         this.leftClickOnAPoint({ point: point }, true);
                         referencePointToggleButton.set("on", false);
-                        $("#select-reference-point-toggle-button").attr("data-original-title", "Reset reference point");
-                        $("#select-reference-point-toggle-button").addClass("toggled");
                     }
                 }
                 updateUrlState(this);
@@ -1271,10 +1270,6 @@ function MapController(loadJSONFunc) {
 
     this.doneSelectingReferencePoint = function() {
         this.selectingReferencePoint = false;
-        if (!$("#select-reference-point-toggle-button").hasClass("toggled")) {
-            $("#select-reference-point-toggle-button").addClass("toggled");
-            $("#select-reference-point-toggle-button").attr("data-original-title", "Reset reference point");
-        }
     };
 
     this.addReferencePointFromArea = function(area) {

@@ -488,7 +488,6 @@ function setupToggleButtons() {
 
     referencePointToggleButton = new ToggleButton("reference-point-toggle-button", "overlay-options-toggles", "Reference Point");
     referencePointToggleButton.onclick(function(state) {
-        var selectReferencePointButton = $("#select-reference-point-toggle-button");
         if (this.toggleState == ToggleStates.ON && myMap.pointsLoaded()) {
             myMap.displayReferencePoint();
         } else {
@@ -1224,20 +1223,15 @@ $(window).on("load", function() {
     });
 
     $("#select-reference-point-toggle-button").on("click", function() {
-        if ($(this).hasClass("toggled")) {
-            myMap.removeReferencePoint();
-            myMap.selectingReferencePoint = false;
-            $(this).attr("data-original-title", "Select reference point");
-            $(this).removeClass("toggled");
-            // this will show DB reference point since custom reference point is gone by now
-            if (referencePointToggleButton.toggleState == ToggleStates.ON) {
-                myMap.displayReferencePoint();
-            }
-        } else {
-            myMap.selectingReferencePoint = true;
-            $(this).attr("data-original-title", "Reset reference point");
-            $(this).addClass("toggled");
-            referencePointToggleButton.set("on", false);
+        myMap.selectingReferencePoint = true;
+    });
+
+    $("#reset-reference-point-toggle-button").on("click", function() {
+        myMap.removeReferencePoint();
+        myMap.selectingReferencePoint = false;
+        // this will show DB reference point since custom reference point is gone by now
+        if (referencePointToggleButton.toggleState == ToggleStates.ON) {
+            myMap.displayReferencePoint();
         }
     });
 
