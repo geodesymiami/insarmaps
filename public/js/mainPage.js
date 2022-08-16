@@ -1229,7 +1229,10 @@ $(window).on("load", function() {
             myMap.selectingReferencePoint = false;
             $(this).attr("data-original-title", "Select reference point");
             $(this).removeClass("toggled");
-            referencePointToggleButton.set("off", false);
+            // this will show DB reference point since custom reference point is gone by now
+            if (referencePointToggleButton.toggleState == ToggleStates.ON) {
+                myMap.displayReferencePoint();
+            }
         } else {
             myMap.selectingReferencePoint = true;
             $(this).attr("data-original-title", "Reset reference point");

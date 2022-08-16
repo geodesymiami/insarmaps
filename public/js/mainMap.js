@@ -622,6 +622,10 @@ function MapController(loadJSONFunc) {
             if (selectingReferencePoint) {
                 this.referenceDisplacements = json.displacements;
                 this.addReferencePointFromClick(lat, long, this.referenceDisplacements);
+                // in case DB reference point is showing
+                if (this.map.getSource("DBReferencePoint")) {
+                    this.removeSourceAndLayer("DBReferencePoint");
+                }
                 return;
             }
 
@@ -1312,9 +1316,6 @@ function MapController(loadJSONFunc) {
     };
 
     this.removeReferencePoint = function() {
-        if (this.map.getSource("DBReferencePoint")) {
-            this.removeSourceAndLayer("DBReferencePoint");
-        }
         if (this.map.getSource("ReferencePoint")) {
             this.removeSourceAndLayer("ReferencePoint");
             this.selector.recolorDataset();
