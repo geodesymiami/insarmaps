@@ -794,8 +794,6 @@ function MapController(loadJSONFunc) {
         var absMax = Math.abs(max);
         var absMin = Math.abs(min);
         var limit = absMax > absMin ? absMax : absMin;
-        // he said take 50% of limit
-        limit *= 0.5;
         var permissibleValues = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2, 3, 4, 5,
                                  6, 7, 8, 9, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150,
                                  200, 300, 400, 500, 600, 700, 800, 900, 1000];
@@ -903,7 +901,12 @@ function MapController(loadJSONFunc) {
                     // * 100.0 to convert from m to cm
                     var min = parseFloat(response[0].m) * 100.0;
                     var max = parseFloat(response[1].m) * 100.0;
-                    var limit = this.getPermissibleMinMax(min, max);
+                    var absMax = Math.abs(max);
+                    var absMin = Math.abs(min);
+                    var limit = absMax > absMin ? absMax : absMin;
+                    // he said take 50% of limit
+                    limit *= 0.5;
+                    var limit = this.getPermissibleMinMax(-limit, limit);
                     var posLimit = limit;
                     var negLimit = -limit;
 
