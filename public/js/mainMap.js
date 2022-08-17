@@ -1727,7 +1727,7 @@ function MapController(loadJSONFunc) {
                     return;
                 }
                 this.processURLOptions();
-
+                this.loadSwathsInCurrentViewport(true);
             }.bind(this));
             this.areaFilterSelector = new AreaFilterSelector();
             this.areaFilterSelector.map = this;
