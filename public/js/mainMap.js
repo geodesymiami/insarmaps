@@ -621,7 +621,7 @@ function MapController(loadJSONFunc) {
                 if (this.map.getSource("DBReferencePoint")) {
                     this.removeSourceAndLayer("DBReferencePoint");
                 }
-                referencePointToggleButton.set("on", false);
+                referencePointToggleButton.set("on", true);
                 return;
             }
 
