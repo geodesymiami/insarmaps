@@ -592,6 +592,7 @@ function MapController(loadJSONFunc) {
             }
 
             this.addSource(layerID, clickMarker);
+            var before = this.getLayerOnTopOf(layerID);
             this.addLayer({
                 "id": layerID,
                 "type": "symbol",
@@ -599,7 +600,7 @@ function MapController(loadJSONFunc) {
                 "layout": {
                     "icon-image": "{marker-symbol}-15",
                 }
-            });
+            }, before);
 
             var pointDetailsHtml = lat.toFixed(3) + ", " + long.toFixed(3);
 
