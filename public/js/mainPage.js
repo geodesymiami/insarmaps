@@ -1224,6 +1224,7 @@ $(window).on("load", function() {
 
     $("#select-reference-point-toggle-button").on("click", function() {
         myMap.selectingReferencePoint = true;
+        $(this).css("opacity", 0.7);
     });
 
     $("#reset-reference-point-toggle-button").on("click", function() {

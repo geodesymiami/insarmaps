@@ -175,10 +175,10 @@
                     </select>
                     <br>
                     <div>
-                        <button class="btn btn-primary-outline" data-toggle="tooltip" data-placement="right" title="Select reference point" id="select-reference-point-toggle-button">
+                        <button class="btn btn-primary-outline" data-placement="right" title="Select reference point" id="select-reference-point-toggle-button">
                             Select Reference Point
                         </button>
-                        <button class="btn btn-primary-outline" data-toggle="tooltip" data-placement="right" title="Reset reference point" id="reset-reference-point-toggle-button">
+                        <button class="btn btn-primary-outline" data-placement="right" title="Reset reference point" id="reset-reference-point-toggle-button">
                             Reset Reference Point
                         </button>
                     </div>

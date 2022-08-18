@@ -622,6 +622,7 @@ function MapController(loadJSONFunc) {
                     this.removeSourceAndLayer("DBReferencePoint");
                 }
                 referencePointToggleButton.set("on", true);
+                $("#select-reference-point-toggle-button").css("opacity", 1.0);
                 return;
             }
 
