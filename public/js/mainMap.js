@@ -1444,8 +1444,16 @@ function MapController(loadJSONFunc) {
             attributesController.setArea(area);
             var attributes = attributesController.getAllAttributes();
 
-            var scene_footprint = attributesController.getAttribute("scene_footprint");
-            var polygonGeoJSON = Terraformer.WKT.parse(scene_footprint);
+            var footprint = attributesController.getAttribute("scene_footprint");
+            if (attributesController.areaHasAttribute("mintpy.subset.lalo")) {
+                // needed as high res datasets have mintpy.subset.lalo but no data_footprint
+                // TODO: FIX
+                var dataFootprint = attributesController.getAttribute("data_footprint");
+                if (dataFootprint) {
+                    footprint = dataFootprint;
+                }
+            }
+            var polygonGeoJSON = Terraformer.WKT.parse(footprint);
             var lineStringGeoJSON = this.polygonToLineString(polygonGeoJSON);
 
             var properties = area.properties;
