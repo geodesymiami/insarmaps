@@ -614,12 +614,6 @@ function MapController(loadJSONFunc) {
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "/point", function(response) {
             var json = JSON.parse(response);
-            if (this.map.getSource("ReferencePoint") != null) {
-                json.displacements = json.displacements.map(function(displacement, idx) {
-                    return displacement - this.referenceDisplacements[idx];
-                }.bind(this));
-            }
-
             if (selectingReferencePoint) {
                 this.referenceDisplacements = json.displacements;
                 this.addReferencePointFromClick(lat, long, this.referenceDisplacements);
@@ -629,6 +623,12 @@ function MapController(loadJSONFunc) {
                 }
                 referencePointToggleButton.set("on", false);
                 return;
+            }
+
+            if (this.map.getSource("ReferencePoint") != null) {
+                json.displacements = json.displacements.map(function(displacement, idx) {
+                    return displacement - this.referenceDisplacements[idx];
+                }.bind(this));
             }
 
             // only draw graph after window finishes maximize animation
