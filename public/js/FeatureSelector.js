@@ -143,7 +143,7 @@ function setupFeatureSelector() {
         var yearsElapsed = (endDecimalDate - startDecimalDate) / millisecondsPerYear;
         var multiplier = 1.0 / yearsElapsed;
 
-        this.recolorDatasetWithBoundingBoxAndMultiplier(null, multiplier, loadingTextTop, loadingTextBottom);
+        this.recolorDatasetWithBoundingBoxAndMultiplier(null, multiplier, loadingTextTop, loadingTextBottom, this.map.referenceDisplacements);
     };
 
     FeatureSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingTextTop, loadingTextBottom, refDisplacements=null) {
@@ -265,6 +265,8 @@ function setupFeatureSelector() {
                 features = null;
 
                 var referencePointSource = this.map.map.getSource("ReferencePoint");
+                var minIndex = this.minIndex;
+                var maxIndex = this.maxIndex;
 
                 this.cancellableAjax.xmlHTTPRequestAjax({
                     url: "/points",
@@ -272,12 +274,18 @@ function setupFeatureSelector() {
                     async: true,
                     data: {
                         points: query,
-                        arrayMinIndex: this.minIndex,
-                        arrayMaxIndex: this.maxIndex,
+                        arrayMinIndex: minIndex,
+                        arrayMaxIndex: maxIndex,
                         getDisplacements: this.map.selectingReferencePoint || (referencePointSource != null)
                     },
                     success: function(response) {
                         var arrayBuffer = response;
+                        if (!(minIndex == this.minIndex && maxIndex == this.maxIndex)) {
+                            // the minIndex and maxIndex used for the query are not equal
+                            // to the current selector's min and max Index. means another
+                            // recoloring has occurred and this data is now stale
+                            return;
+                        }
 
                         if (arrayBuffer) {
                             // the data comes as follows: the dates come first, followed by a large array
