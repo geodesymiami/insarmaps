@@ -1965,7 +1965,8 @@ function MapController(loadJSONFunc) {
             this.removeSourceAndLayer("onTheFlyJSON");
         }
 
-        this.removeReferencePoint();
+        this.removeSourceAndLayer("DBReferencePoint");
+        this.removeSourceAndLayer("ReferencePoint");
     }
 
     this.removeTouchLocationMarkers = function() {
