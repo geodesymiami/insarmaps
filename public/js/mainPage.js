@@ -814,7 +814,9 @@ $(window).on("load", function() {
                 $(this).attr("data-original-title", "Color on velocity");
             } else if (title === "Color on velocity") {
                 myMap.colorDatasetOnVelocity(dates.startDate, dates.endDate);
-                myMap.showInsarLayers();
+                if (!myMap.insarActualPixelSize) {
+                    myMap.showInsarLayers();
+                }
                 $(this).attr("data-original-title", "Color on displacement");
             }
         }
