@@ -294,12 +294,15 @@ function setupFeatureSelector() {
                             // point ID in sorted order as well. we use minIndex and maxIndex
                             // to allocate (maxIndex - minIndex) + 1 displacements to each point
                             var json = new Float64Array(arrayBuffer);
-                            var step = this.maxIndex - this.minIndex + 1;
+                            var step = maxIndex - minIndex + 1;
                             var decimal_dates = json.slice(0, step);
-                            refDisplacements = refDisplacements.slice(minIndex, maxIndex + 1);
+                            var referenceRecoloring = this.map.selectingReferencePoint || (referencePointSource != null);
+                            if (referenceRecoloring) {
+                                refDisplacements = refDisplacements.slice(minIndex, maxIndex + 1);
+                            }
                             for (var i = 0; i < geoJSONData.features.length; i++) {
                                 var curFeature = geoJSONData.features[i];
-                                if (this.map.selectingReferencePoint || (referencePointSource != null)) {
+                                if (referenceRecoloring) {
                                     var displacements = json.slice(step * (i + 1), step * (i + 2));
                                     displacements = displacements.map(function(displacement, idx) {
                                         return displacement - refDisplacements[idx];
