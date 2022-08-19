@@ -112,7 +112,7 @@ function AreaAttributesController(map, area) {
                 var units = colorScaleOpts[2]; // we ignore this
                 var scaleType = colorScaleOpts[3];
                 this.map.colorScale.setScale(scaleType);
-                this.map.colorScale.setMinMax(min, max);
+                this.map.colorScale.setMinMax(min, max, true);
 
                 if (this.areaHasPlotAttribute("plot.subset.lalo")) {
                     var pysarSubset = this.getPlotAttribute("plot.subset.lalo");
@@ -138,7 +138,7 @@ function AreaAttributesController(map, area) {
                 var scaleType = colorScaleOpts[3];
                 this.map.colorScale.setScale(scaleType);
                 if (!(getUrlVar("minScale") && getUrlVar("maxScale"))) {
-                    this.map.colorScale.setMinMax(min, max);
+                    this.map.colorScale.setMinMax(min, max, true);
                 }
             }
 

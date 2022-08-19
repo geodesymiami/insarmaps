@@ -861,14 +861,12 @@ $(window).on("load", function() {
         if ($(this).attr("data-original-title") === "Halve scale") {
             min /= 2;
             max /= 2;
-            scale.setMinMax(min, max);
+            scale.setMinMax(min, max, true);
         } else {
             min *= 2;
             max *= 2;
-            scale.setMinMax(min, max);
+            scale.setMinMax(min, max, true);
         }
-
-        scale.scaleChangeCallback(min, max);
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {
