@@ -411,12 +411,22 @@ function setupFeatureSelector() {
     };
 
     FeatureSelector.prototype.recolorDataset = function() {
-        this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt",
-                                                        this.map.referenceDisplacements);
+        if (this.map.colorOnDisplacement) {
+            var dates = this.getCurrentStartEndDateFromArea(currentArea);
+            this.recolorOnDisplacement(dates.startDate, dates.endDate, "Recoloring...", "ESCAPE or click/tap this box to interrupt");
+        } else {
+            this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt",
+                                                            this.map.referenceDisplacements);
+        }
     };
 
     FeatureSelector.prototype.refreshDatasetWithNewReferencePoint = function(displacements) {
-        this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt", displacements);
+        if (this.map.colorOnDisplacement) {
+            var dates = this.getCurrentStartEndDateFromArea(currentArea);
+            this.recolorOnDisplacement(dates.startDate, dates.endDate, "Recoloring...", "ESCAPE or click/tap this box to interrupt");
+        } else {
+            this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt", displacements);
+        }
     };
 
     FeatureSelector.prototype.recoloring = function() {
