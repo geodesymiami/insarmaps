@@ -296,6 +296,7 @@ function setupFeatureSelector() {
                             var json = new Float64Array(arrayBuffer);
                             var step = this.maxIndex - this.minIndex + 1;
                             var decimal_dates = json.slice(0, step);
+                            refDisplacements = refDisplacements.slice(minIndex, maxIndex + 1);
                             for (var i = 0; i < geoJSONData.features.length; i++) {
                                 var curFeature = geoJSONData.features[i];
                                 if (this.map.selectingReferencePoint || (referencePointSource != null)) {
