@@ -854,9 +854,7 @@ function MapController(loadJSONFunc) {
                 var negLimit = minScale;
                 var posLimit = maxScale;
                 this.doNowOrOnceRendered(function() {
-                    this.colorScale.setMinMax(posLimit, negLimit);
-                    var dates = this.selector.getCurrentStartEndDateFromArea(currentArea);
-                    this.refreshDataset(dates.startDate, dates.endDate);
+                    this.colorScale.setMinMax(posLimit, negLimit, true);
                 }.bind(this));
             }
             var colorscale = urlOptions.startingDatasetOptions.colorscale;
@@ -913,12 +911,7 @@ function MapController(loadJSONFunc) {
                     var negLimit = -limit;
 
                     this.doNowOrOnceRendered(function() {
-                        this.colorScale.setMinMax(posLimit, negLimit);
-                        appendOrReplaceUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + negLimit);
-                        appendOrReplaceUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + posLimit);
-
-                        var dates = this.selector.getCurrentStartEndDateFromArea(currentArea);
-                        this.refreshDataset(dates.startDate, dates.endDate);
+                        this.colorScale.setMinMax(posLimit, negLimit, true);
                     }.bind(this));
                 }
             }.bind(this),
@@ -1910,8 +1903,7 @@ function MapController(loadJSONFunc) {
             var min = this.colorScale.min * yearsDiff;
             var max = this.colorScale.max * yearsDiff;
             var limit = this.getPermissibleMinMax(min, max);
-            this.colorScale.setMinMax(-limit, limit);
-            this.colorScale.scaleChangeCallback(-limit, limit);
+            this.colorScale.setMinMax(-limit, limit, true);
         }
         this.colorOnDisplacement = true;
         this.refreshDataset(startDate, endDate);
@@ -1929,8 +1921,7 @@ function MapController(loadJSONFunc) {
             var min = this.colorScale.min / yearsDiff;
             var max = this.colorScale.max / yearsDiff;
             var limit = this.getPermissibleMinMax(min, max);
-            this.colorScale.setMinMax(-limit, limit);
-            this.colorScale.scaleChangeCallback(-limit, limit);
+            this.colorScale.setMinMax(-limit, limit, true);
         }
         this.colorOnDisplacement = false;
         this.refreshDataset(startDate, endDate);
