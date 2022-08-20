@@ -1692,8 +1692,13 @@ function MapController(loadJSONFunc) {
         try {
             startingCoords = new mapboxgl.LngLat(startingOptions.lng, startingOptions.lat);
             startingZoom = parseFloat(startingOptions.zoom);
-            // use the dataset zoom as the starting zoom if it was specified
-            this.datasetZoom = startingZoom;
+            if (urlOptions.startingDatasetOptions.startDataset) {
+                // use the dataset zoom as the starting zoom if it was specified
+                // but only if there's a startDataset (prevents flying to
+                // a more zoomed out view and resetting the map when a zoom has been
+                // specified in the url, but no startDataset)
+                this.datasetZoom = startingZoom;
+            }
             // prevent zoom out if specified
             if (urlOptions.startingDatasetOptions.zoomOut === "false") {
                 minZoom = startingZoom;
