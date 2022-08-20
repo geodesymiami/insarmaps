@@ -980,7 +980,7 @@ function MapController(loadJSONFunc) {
 
             // in case it's up
             this.gpsStationPopup.remove();
-            window.setTimeout(function() {
+            this.onceRendered(function() {
                 var zoom = this.datasetZoom;
 
                 // quickly switching between areas? don't reset zoom
@@ -1031,7 +1031,7 @@ function MapController(loadJSONFunc) {
                 updateUrlState(this);
                 // in case someone called loading screen
                 hideLoadingScreen();
-            }.bind(this), 1000);
+            }.bind(this));
         }.bind(this));
 
         if (!localStorage.getItem("colorScaleTip")) {
