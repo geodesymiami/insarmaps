@@ -927,7 +927,7 @@ function MapController(loadJSONFunc) {
             ],
             "bounds": null,
             "tiles": [
-                "https://insarmaps.miami.edu:8888/" + feature.properties.unavco_name +
+                MBTILES_SERVER + feature.properties.unavco_name +
                 "/{z}/{x}/{y}.pbf"
             ],
             "vector_layers": []

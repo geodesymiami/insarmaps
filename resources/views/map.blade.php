@@ -593,6 +593,7 @@
     </div>
     <script type="text/javascript">
     var urlOptions = {!! json_encode($urlOptions) !!};
+    const MBTILES_SERVER = "{!! env("MBTILES_SERVER") !!}";
     </script>
     <link rel="stylesheet" href="/css/slideout.css" />
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js'></script>
