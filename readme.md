@@ -211,7 +211,19 @@ Add this line to the top of the file (make sure it is not commented with a leadi
 	Then restart apache:
     ```sudo service apache2 restart```
 
-24. Then, edit the .env file with the appropriate credentials TODO including mbtiles server adding... and mention neeed trailing slash:
-
-
+24. Then, edit the .env file with the appropriate credentials:
+	```sudo vi .env```
+	Make sure to edit the ```DB_CONNECTION``` line to say ```DB_CONNECTION=pgsql```
+	Then, fill in these lines:
+	```
+	DB_HOST=
+	DB_PORT=
+	DB_DATABASE=
+	DB_USERNAME=
+	DB_PASSWORD=
+	```
+	With the proper values corresopnding to the postgresql server.
+	Finally, add this line:
+	```MBTILES_SERVER=```
+	With the address of the mbtiles server. The address must end with a trailing ```/```.
 
