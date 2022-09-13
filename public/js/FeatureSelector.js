@@ -143,10 +143,10 @@ function setupFeatureSelector() {
         var yearsElapsed = (endDecimalDate - startDecimalDate) / millisecondsPerYear;
         var multiplier = 1.0 / yearsElapsed;
 
-        this.recolorDatasetWithBoundingBoxAndMultiplier(null, multiplier, loadingTextTop, loadingTextBottom);
+        this.recolorDatasetWithBoundingBoxAndMultiplier(null, multiplier, loadingTextTop, loadingTextBottom, this.map.referenceDisplacements);
     };
 
-    FeatureSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingTextTop, loadingTextBottom) {
+    FeatureSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingTextTop, loadingTextBottom, refDisplacements=null) {
         // let the caller check if a coloring is in progress. otherwise user has to sometimes
         //  wait if they cancel a recoloring and want to do another one
 
@@ -264,24 +264,55 @@ function setupFeatureSelector() {
                 }.bind(this));
                 features = null;
 
+                var referencePointSource = this.map.map.getSource("ReferencePoint");
+                var minIndex = this.minIndex;
+                var maxIndex = this.maxIndex;
+
                 this.cancellableAjax.xmlHTTPRequestAjax({
                     url: "/points",
                     type: "post",
                     async: true,
                     data: {
                         points: query,
-                        arrayMinIndex: this.minIndex,
-                        arrayMaxIndex: this.maxIndex
+                        arrayMinIndex: minIndex,
+                        arrayMaxIndex: maxIndex,
+                        getDisplacements: this.map.selectingReferencePoint || (referencePointSource != null)
                     },
                     success: function(response) {
                         var arrayBuffer = response;
+                        if (!(minIndex == this.minIndex && maxIndex == this.maxIndex)) {
+                            // the minIndex and maxIndex used for the query are not equal
+                            // to the current selector's min and max Index. means another
+                            // recoloring has occurred and this data is now stale
+                            return;
+                        }
 
                         if (arrayBuffer) {
+                            // the data comes as follows: the dates come first, followed by a large array
+                            // of all the displacements for all the points, sequentially
+                            // each feature above is sorted, and server returns dates by the
+                            // point ID in sorted order as well. we use minIndex and maxIndex
+                            // to allocate (maxIndex - minIndex) + 1 displacements to each point
                             var json = new Float64Array(arrayBuffer);
-                            console.log("Received points");
+                            var step = maxIndex - minIndex + 1;
+                            var decimal_dates = json.slice(0, step);
+                            var referenceRecoloring = this.map.selectingReferencePoint || (referencePointSource != null);
+                            if (referenceRecoloring) {
+                                refDisplacements = refDisplacements.slice(minIndex, maxIndex + 1);
+                            }
                             for (var i = 0; i < geoJSONData.features.length; i++) {
                                 var curFeature = geoJSONData.features[i];
-                                curFeature.properties.m = parseFloat(json[i])
+                                if (referenceRecoloring) {
+                                    var displacements = json.slice(step * (i + 1), step * (i + 2));
+                                    displacements = displacements.map(function(displacement, idx) {
+                                        return displacement - refDisplacements[idx];
+                                    });
+                                    var result = calcLinearRegression(displacements, decimal_dates);
+                                    var slope = result["equation"][0];
+                                    curFeature.properties.m = slope;
+                                } else {
+                                    curFeature.properties.m = json[i];
+                                }
                             }
 
 
@@ -342,6 +373,9 @@ function setupFeatureSelector() {
                         }
 
                         mapboxgl.clearStorage()
+                        if (this.map.selectingReferencePoint) {
+                            this.map.doneSelectingReferencePoint();
+                        }
                         this.recoloringInProgress = false;
                         this.map.onceRendered(function() {
                             // since we remove and add the oonTheFlyJSON layer
@@ -380,7 +414,22 @@ function setupFeatureSelector() {
     };
 
     FeatureSelector.prototype.recolorDataset = function() {
-        this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt");
+        if (this.map.colorOnDisplacement) {
+            var dates = this.getCurrentStartEndDateFromArea(currentArea);
+            this.recolorOnDisplacement(dates.startDate, dates.endDate, "Recoloring...", "ESCAPE or click/tap this box to interrupt");
+        } else {
+            this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt",
+                                                            this.map.referenceDisplacements);
+        }
+    };
+
+    FeatureSelector.prototype.refreshDatasetWithNewReferencePoint = function(displacements) {
+        if (this.map.colorOnDisplacement) {
+            var dates = this.getCurrentStartEndDateFromArea(currentArea);
+            this.recolorOnDisplacement(dates.startDate, dates.endDate, "Recoloring...", "ESCAPE or click/tap this box to interrupt");
+        } else {
+            this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt", displacements);
+        }
     };
 
     FeatureSelector.prototype.recoloring = function() {

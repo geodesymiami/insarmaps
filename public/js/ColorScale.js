@@ -424,7 +424,7 @@ function ColorScale(min, max, divID) {
         return $.datepicker.formatDate("yy-M-d", date);
     };
 
-    this.setMin = function(min) {
+    this.setMin = function(min, executeScaleChangeCallback=false) {
         this.min = min;
         var minString = this.min.toFixed(1);
         if (this.inDateMode) {
@@ -436,9 +436,13 @@ function ColorScale(min, max, divID) {
         } else {
             $("#" + this.divID + " .top-scale-value").val(minString);
         }
+
+        if (executeScaleChangeCallback && this.scaleChangeCallback) {
+            this.scaleChangeCallback(this.min, this.max);
+        }
     };
 
-    this.setMax = function(max) {
+    this.setMax = function(max, executeScaleChangeCallback=false) {
         this.max = max;
         var maxString = this.max.toFixed(1);
         if (this.inDateMode) {
@@ -450,15 +454,23 @@ function ColorScale(min, max, divID) {
         } else {
             $("#" + this.divID + " .bottom-scale-value").val(maxString);
         }
+
+        if (executeScaleChangeCallback && this.scaleChangeCallback) {
+            this.scaleChangeCallback(this.min, this.max);
+        }
     };
 
-    this.setMinMax = function(val1, val2) {
+    this.setMinMax = function(val1, val2, executeScaleChangeCallback=false) {
         if (val1 >= val2) {
-            this.setMin(val2);
-            this.setMax(val1);
+            this.setMin(val2, false);
+            this.setMax(val1, false);
         } else {
-            this.setMin(val1);
-            this.setMax(val2);
+            this.setMin(val1, false);
+            this.setMax(val2, false);
+        }
+
+        if (executeScaleChangeCallback && this.scaleChangeCallback) {
+            this.scaleChangeCallback(this.min, this.max);
         }
     };
 

@@ -1203,6 +1203,7 @@ TODO: ask him, as exactly matching physically will take logic, and if he doesnt 
 
 .mapboxgl-popup {
     opacity: 0.8;
+    overflow-wrap: break-word;
     /*width: 170px;*/
 }
 

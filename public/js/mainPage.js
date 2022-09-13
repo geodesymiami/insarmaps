@@ -489,9 +489,9 @@ function setupToggleButtons() {
     referencePointToggleButton = new ToggleButton("reference-point-toggle-button", "overlay-options-toggles", "Reference Point");
     referencePointToggleButton.onclick(function(state) {
         if (this.toggleState == ToggleStates.ON && myMap.pointsLoaded()) {
-            myMap.addReferencePoint(currentArea);
+            myMap.displayReferencePoint();
         } else {
-            myMap.removeReferencePoint();
+            myMap.hideReferencePoint();
         }
     });
 
@@ -814,7 +814,9 @@ $(window).on("load", function() {
                 $(this).attr("data-original-title", "Color on velocity");
             } else if (title === "Color on velocity") {
                 myMap.colorDatasetOnVelocity(dates.startDate, dates.endDate);
-                myMap.showInsarLayers();
+                if (!myMap.insarActualPixelSize) {
+                    myMap.showInsarLayers();
+                }
                 $(this).attr("data-original-title", "Color on displacement");
             }
         }
@@ -861,14 +863,12 @@ $(window).on("load", function() {
         if ($(this).attr("data-original-title") === "Halve scale") {
             min /= 2;
             max /= 2;
-            scale.setMinMax(min, max);
+            scale.setMinMax(min, max, true);
         } else {
             min *= 2;
             max *= 2;
-            scale.setMinMax(min, max);
+            scale.setMinMax(min, max, true);
         }
-
-        scale.scaleChangeCallback(min, max);
     });
 
     $('.slideout-menu-toggle').on('click', function(event) {
@@ -1219,6 +1219,20 @@ $(window).on("load", function() {
             myMap.addContourLines();
             $(this).attr("data-original-title", "Remove contour lines");
             $(this).addClass("toggled");
+        }
+    });
+
+    $("#select-reference-point-toggle-button").on("click", function() {
+        myMap.selectingReferencePoint = true;
+        $(this).css("opacity", 0.7);
+    });
+
+    $("#reset-reference-point-toggle-button").on("click", function() {
+        myMap.removeReferencePoint();
+        myMap.selectingReferencePoint = false;
+        // this will show DB reference point since custom reference point is gone by now
+        if (referencePointToggleButton.toggleState == ToggleStates.ON) {
+            myMap.displayReferencePoint();
         }
     });
 

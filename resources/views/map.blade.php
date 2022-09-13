@@ -174,6 +174,14 @@
                         <option value="remove">Remove</option>
                     </select>
                     <br>
+                    <div>
+                        <button class="btn btn-primary-outline" data-placement="right" title="Select reference point" id="select-reference-point-toggle-button">
+                            Select Reference Point
+                        </button>
+                        <button class="btn btn-primary-outline" data-placement="right" title="Reset reference point" id="reset-reference-point-toggle-button">
+                            Reset Reference Point
+                        </button>
+                    </div>
                     <button class="btn btn-primary-outline" id="toggle-insar-circle-size-button" data-toggle="tooltip" title="Resize insar points to their actual size. Resets on zoom change">Actual Size</button>
                     <div class="wrap wrap-transitions draggable" id="USGSEvents-options-wrapper">
                         <div id="USGSEvents-options">
@@ -585,6 +593,7 @@
     </div>
     <script type="text/javascript">
     var urlOptions = {!! json_encode($urlOptions) !!};
+    const MBTILES_SERVER = "{!! env("MBTILES_SERVER") !!}";
     </script>
     <link rel="stylesheet" href="/css/slideout.css" />
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js'></script>

@@ -18,6 +18,7 @@ var firstToggle = true;
 var myPolygon = null;
 var areaAttributesPopup = new AreaAttributesPopup();
 
+// TODO: I feel that this needs to be split up eventually into multiple files
 function MapController(loadJSONFunc) {
     // my mapbox api key
     mapboxgl.accessToken = "pk.eyJ1Ijoia2pqajExMjIzMzQ0IiwiYSI6ImNpbDJqYXZ6czNjdWd2eW0zMTA2aW1tNXUifQ.cPofQqq5jqm6l4zix7k6vw";
@@ -104,6 +105,7 @@ function MapController(loadJSONFunc) {
         }
     }.bind(this));
     this.colorOnDisplacement = false;
+    this.selectingReferencePoint = false;
     // set current coloring mode based on url
     if (urlOptions && urlOptions.startingDatasetOptions &&
         (urlOptions.startingDatasetOptions.minScale ||
@@ -143,6 +145,7 @@ function MapController(loadJSONFunc) {
 
     this.lastMode = null;
     this.datasetCurrentlyRecolored = false;
+    this.referenceDisplacements = null;
 
     this.addSource = function(id, source) {
         this.sources.set(id, source);
@@ -158,7 +161,7 @@ function MapController(loadJSONFunc) {
     // higher index layerID's come below lower indexed ones
     this.layerOrders = (function() {
         const FIRST_INSAR_CHUNK = "chunk_1";
-        var allLayers = [this.thirdPartySourcesController.layerOrder, ["ReferencePoint", "Top Graph", "Bottom Graph", "onTheFlyJSON", FIRST_INSAR_CHUNK]];
+        var allLayers = [this.thirdPartySourcesController.layerOrder, ["DBReferencePoint", "ReferencePoint", "Top Graph", "Bottom Graph", "onTheFlyJSON", FIRST_INSAR_CHUNK]];
 
         var layerOrders = [];
         allLayers.forEach(function(layersArray) {
@@ -478,7 +481,7 @@ function MapController(loadJSONFunc) {
         return deltaDegrees / deltaPixels;
     };
 
-    this.clickOnAPoint = function(e) {
+    this.clickOnAPoint = function(e, selectingReferencePoint) {
         var features = null;
 
         if (e) {
@@ -495,8 +498,13 @@ function MapController(loadJSONFunc) {
 
         if (feature.properties.p) {
             var lngLat = this.map.unproject(e.point);
-            appendOrReplaceUrlVar(/&pointLat=-?\d*\.?\d*/, "&pointLat=" + lngLat.lat.toFixed(5));
-            appendOrReplaceUrlVar(/&pointLon=-?\d*\.?\d*/, "&pointLon=" + lngLat.lng.toFixed(5));
+            if (selectingReferencePoint) {
+                appendOrReplaceUrlVar(/&refPointLat=-?\d*\.?\d*/, "&refPointLat=" + lngLat.lat.toFixed(5));
+                appendOrReplaceUrlVar(/&refPointLon=-?\d*\.?\d*/, "&refPointLon=" + lngLat.lng.toFixed(5));
+            } else {
+                appendOrReplaceUrlVar(/&pointLat=-?\d*\.?\d*/, "&pointLat=" + lngLat.lat.toFixed(5));
+                appendOrReplaceUrlVar(/&pointLon=-?\d*\.?\d*/, "&pointLon=" + lngLat.lng.toFixed(5));
+            }
         }
         var id = feature.layer.id;
 
@@ -551,58 +559,78 @@ function MapController(loadJSONFunc) {
             "pointNumber": pointNumber
         };
 
-        var chartContainer = "chartContainer";
-        var clickMarker = this.clickLocationMarker;
-        var markerSymbol = "cross";
+        if (!selectingReferencePoint) {
+            var chartContainer = "chartContainer";
+            var clickMarker = this.clickLocationMarker;
+            var markerSymbol = "cross";
 
-        if (this.graphsController.selectedGraph == "Bottom Graph") {
-            chartContainer = "chartContainer2";
-            clickMarker = this.clickLocationMarker2;
-            markerSymbol += "Red";
-        }
-
-        var layerID = this.graphsController.selectedGraph;
-
-        clickMarker.data = {
-            "type": "FeatureCollection",
-            "features": [{
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": [long, lat]
-                },
-                "properties": {
-                    "marker-symbol": markerSymbol
-                }
-            }]
-        };
-
-        // show cross on clicked point
-        if (this.map.getLayer(layerID)) {
-            this.removeSourceAndLayer(layerID);
-        }
-
-        this.addSource(layerID, clickMarker);
-        this.addLayer({
-            "id": layerID,
-            "type": "symbol",
-            "source": layerID,
-            "layout": {
-                "icon-image": "{marker-symbol}-15",
+            if (this.graphsController.selectedGraph == "Bottom Graph") {
+                chartContainer = "chartContainer2";
+                clickMarker = this.clickLocationMarker2;
+                markerSymbol += "Red";
             }
-        });
 
-        var pointDetailsHtml = lat.toFixed(3) + ", " + long.toFixed(3);
+            var layerID = this.graphsController.selectedGraph;
 
-        $("#point-details > .row > #clicked-point-lat-lng").html(pointDetailsHtml);
+            clickMarker.data = {
+                "type": "FeatureCollection",
+                "features": [{
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [long, lat]
+                    },
+                    "properties": {
+                        "marker-symbol": markerSymbol
+                    }
+                }]
+            };
 
-        $("#search-form-and-results-minimize-button").click();
-        $("#graph-div-minimize-button").css("display", "block");
-        $("#graph-div-maximize-button").css("display", "none");
+            // show cross on clicked point
+            if (this.map.getLayer(layerID)) {
+                this.removeSourceAndLayer(layerID);
+            }
 
+            this.addSource(layerID, clickMarker);
+            var before = this.getLayerOnTopOf(layerID);
+            this.addLayer({
+                "id": layerID,
+                "type": "symbol",
+                "source": layerID,
+                "layout": {
+                    "icon-image": "{marker-symbol}-15",
+                }
+            }, before);
+
+            var pointDetailsHtml = lat.toFixed(3) + ", " + long.toFixed(3);
+
+            $("#point-details > .row > #clicked-point-lat-lng").html(pointDetailsHtml);
+
+            $("#search-form-and-results-minimize-button").click();
+            $("#graph-div-minimize-button").css("display", "block");
+            $("#graph-div-maximize-button").css("display", "none");
+
+        }
         // load displacements from server, and then show on graph
         loadJSONFunc(query, "/point", function(response) {
             var json = JSON.parse(response);
+            if (selectingReferencePoint) {
+                this.referenceDisplacements = json.displacements;
+                this.addReferencePointFromClick(lat, long, this.referenceDisplacements);
+                // in case DB reference point is showing
+                if (this.map.getSource("DBReferencePoint")) {
+                    this.removeSourceAndLayer("DBReferencePoint");
+                }
+                referencePointToggleButton.set("on", true);
+                $("#select-reference-point-toggle-button").css("opacity", 1.0);
+                return;
+            }
+
+            if (this.map.getSource("ReferencePoint") != null) {
+                json.displacements = json.displacements.map(function(displacement, idx) {
+                    return displacement - this.referenceDisplacements[idx];
+                }.bind(this));
+            }
 
             // only draw graph after window finishes maximize animation
             var animationEvents = "webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend";
@@ -705,8 +733,8 @@ function MapController(loadJSONFunc) {
         return null;
     };
 
-    this.leftClickOnAPoint = function(e) {
-        this.clickOnAPoint(e);
+    this.leftClickOnAPoint = function(e, selectingReferencePoint) {
+        this.clickOnAPoint(e, selectingReferencePoint);
     };
 
     this.rightClickOnAPoint = function(e) {
@@ -768,8 +796,6 @@ function MapController(loadJSONFunc) {
         var absMax = Math.abs(max);
         var absMin = Math.abs(min);
         var limit = absMax > absMin ? absMax : absMin;
-        // he said take 50% of limit
-        limit *= 0.5;
         var permissibleValues = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2, 3, 4, 5,
                                  6, 7, 8, 9, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, 150,
                                  200, 300, 400, 500, 600, 700, 800, 900, 1000];
@@ -828,9 +854,7 @@ function MapController(loadJSONFunc) {
                 var negLimit = minScale;
                 var posLimit = maxScale;
                 this.doNowOrOnceRendered(function() {
-                    this.colorScale.setMinMax(posLimit, negLimit);
-                    var dates = this.selector.getCurrentStartEndDateFromArea(currentArea);
-                    this.refreshDataset(dates.startDate, dates.endDate);
+                    this.colorScale.setMinMax(posLimit, negLimit, true);
                 }.bind(this));
             }
             var colorscale = urlOptions.startingDatasetOptions.colorscale;
@@ -877,17 +901,17 @@ function MapController(loadJSONFunc) {
                     // * 100.0 to convert from m to cm
                     var min = parseFloat(response[0].m) * 100.0;
                     var max = parseFloat(response[1].m) * 100.0;
-                    var limit = this.getPermissibleMinMax(min, max);
+                    var absMax = Math.abs(max);
+                    var absMin = Math.abs(min);
+                    var limit = absMax > absMin ? absMax : absMin;
+                    // he said take 50% of limit
+                    limit *= 0.5;
+                    var limit = this.getPermissibleMinMax(-limit, limit);
                     var posLimit = limit;
                     var negLimit = -limit;
 
                     this.doNowOrOnceRendered(function() {
-                        this.colorScale.setMinMax(posLimit, negLimit);
-                        appendOrReplaceUrlVar(/&minScale=-?\d*\.?\d*/, "&minScale=" + negLimit);
-                        appendOrReplaceUrlVar(/&maxScale=-?\d*\.?\d*/, "&maxScale=" + posLimit);
-
-                        var dates = this.selector.getCurrentStartEndDateFromArea(currentArea);
-                        this.refreshDataset(dates.startDate, dates.endDate);
+                        this.colorScale.setMinMax(posLimit, negLimit, true);
                     }.bind(this));
                 }
             }.bind(this),
@@ -903,7 +927,7 @@ function MapController(loadJSONFunc) {
             ],
             "bounds": null,
             "tiles": [
-                "https://insarmaps.miami.edu:8888/" + feature.properties.unavco_name +
+                MBTILES_SERVER + feature.properties.unavco_name +
                 "/{z}/{x}/{y}.pbf"
             ],
             "vector_layers": []
@@ -956,7 +980,7 @@ function MapController(loadJSONFunc) {
 
             // in case it's up
             this.gpsStationPopup.remove();
-            window.setTimeout(function() {
+            this.onceRendered(function() {
                 var zoom = this.datasetZoom;
 
                 // quickly switching between areas? don't reset zoom
@@ -992,13 +1016,22 @@ function MapController(loadJSONFunc) {
                         delete urlOptions.startingDatasetOptions.pointLat;
                         delete urlOptions.startingDatasetOptions.pointLon;
                         var point = this.map.project([pointLon, pointLat]);
-                        this.leftClickOnAPoint({ point: point });
+                        this.leftClickOnAPoint({ point: point }, false);
+                    }
+                    var refPointLat = urlOptions.startingDatasetOptions.refPointLat;
+                    var refPointLon = urlOptions.startingDatasetOptions.refPointLon;
+                    if (refPointLat && refPointLon) {
+                        delete urlOptions.startingDatasetOptions.refPointLat;
+                        delete urlOptions.startingDatasetOptions.refPointLon;
+                        var point = this.map.project([refPointLon, refPointLat]);
+                        this.leftClickOnAPoint({ point: point }, true);
+                        referencePointToggleButton.set("on", false);
                     }
                 }
                 updateUrlState(this);
                 // in case someone called loading screen
                 hideLoadingScreen();
-            }.bind(this), 1000);
+            }.bind(this));
         }.bind(this));
 
         if (!localStorage.getItem("colorScaleTip")) {
@@ -1184,7 +1217,60 @@ function MapController(loadJSONFunc) {
         }
     };
 
-    this.addReferencePoint = function(area) {
+    this.addReferencePointSourceAndLayer = function(id, lat, lon) {
+        var referencePointSource = {
+            type: "geojson",
+            cluster: false,
+            data: {
+                "type": "FeatureCollection",
+                "features": [{
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [lon, lat]
+                    },
+                }]
+            }
+        };
+        var source = this.map.getSource(id);
+        if (source) {
+            source.setData(referencePointSource.data);
+        } else {
+            var before = this.getLayerOnTopOf(id);
+            var stops = this.radiusStops.map(function(x) { return [x[0], x[1] * 0.5] } );
+
+            this.addSource(id, referencePointSource);
+            this.addLayer({
+                "id": id,
+                "type": "circle",
+                "source": id,
+                "paint": {
+                    "circle-color": "black",
+                    "circle-radius": {
+                        stops: stops
+                    }
+                }
+            }, before);
+        }
+    };
+
+
+    this.addReferencePointFromClick = function(lat, lon, displacement_array) {
+        this.addReferencePointSourceAndLayer("ReferencePoint", lat, lon);
+        this.selector.refreshDatasetWithNewReferencePoint(displacement_array);
+        // graphsController works in CM, not M
+        var refDisplacementsCM = displacement_array.map(function(displacement) {
+            return 100 * displacement;
+        });
+        this.graphsController.removeReferenceValuesFromDisplacements(refDisplacementsCM);
+        this.graphsController.recreateGraphs();
+    };
+
+    this.doneSelectingReferencePoint = function() {
+        this.selectingReferencePoint = false;
+    };
+
+    this.addReferencePointFromArea = function(area) {
         var attributesController = new AreaAttributesController(this, area);
         var oldRefLon = attributesController.getAttribute("ref_lon");
         var newRefLon = attributesController.getAttribute("REF_LON");
@@ -1201,41 +1287,39 @@ function MapController(loadJSONFunc) {
                 refLat = newRefLat;
             }
 
-            var referencePointSource = {
-                type: "geojson",
-                cluster: false,
-                data: {
-                    "type": "FeatureCollection",
-                    "features": [{
-                        type: 'Feature',
-                        geometry: {
-                            type: 'Point',
-                            coordinates: [refLon, refLat]
-                        },
-                    }]
-                }
-            };
-            var id = "ReferencePoint";
-            var before = this.getLayerOnTopOf(id);
+            this.addReferencePointSourceAndLayer("DBReferencePoint", refLat, refLon);
+        }
+    };
 
-            this.addSource(id, referencePointSource);
-            this.addLayer({
-                "id": id,
-                "type": "circle",
-                "source": id,
-                "paint": {
-                    "circle-color": "black",
-                    "circle-radius": {
-                        stops: this.radiusStops
-                    }
-                }
-            }, before);
+    this.displayReferencePoint = function() {
+        var customReferencePointSource = this.map.getSource("ReferencePoint");
+        if (customReferencePointSource == null) {
+            this.addReferencePointFromArea(currentArea);
+        } else {
+            this.map.setLayoutProperty("ReferencePoint", "visibility", "visible");
+        }
+    };
+
+    this.hideReferencePoint = function() {
+        if (this.map.getSource("DBReferencePoint")) {
+            this.removeSourceAndLayer("DBReferencePoint");
+        } else if (this.map.getSource("ReferencePoint")) {
+            this.map.setLayoutProperty("ReferencePoint", "visibility", "none");
         }
     };
 
     this.removeReferencePoint = function() {
         if (this.map.getSource("ReferencePoint")) {
             this.removeSourceAndLayer("ReferencePoint");
+            this.selector.recolorDataset();
+            // graphsController works in CM, not M
+            var refDisplacementsCM = this.referenceDisplacements.map(function(displacement) {
+                return 100 * displacement;
+            });
+            this.graphsController.addReferenceValuesToDisplacements(refDisplacementsCM);
+            this.graphsController.recreateGraphs();
+            removeURLVar(/&refPointLat=-?\d*\.?\d*/);
+            removeURLVar(/&refPointLon=-?\d*\.?\d*/);
         }
     };
 
@@ -1317,7 +1401,7 @@ function MapController(loadJSONFunc) {
         }.bind(this));
 
         if (referencePointToggleButton.toggleState == ToggleStates.ON) {
-            this.addReferencePoint(feature);
+            this.addReferencePointFromArea(feature);
         }
         $("#charts").height("auto");
     };
@@ -1354,8 +1438,16 @@ function MapController(loadJSONFunc) {
             attributesController.setArea(area);
             var attributes = attributesController.getAllAttributes();
 
-            var scene_footprint = attributesController.getAttribute("scene_footprint");
-            var polygonGeoJSON = Terraformer.WKT.parse(scene_footprint);
+            var footprint = attributesController.getAttribute("scene_footprint");
+            if (attributesController.areaHasAttribute("mintpy.subset.lalo")) {
+                // needed as high res datasets have mintpy.subset.lalo but no data_footprint
+                // TODO: FIX
+                var dataFootprint = attributesController.getAttribute("data_footprint");
+                if (dataFootprint) {
+                    footprint = dataFootprint;
+                }
+            }
+            var polygonGeoJSON = Terraformer.WKT.parse(footprint);
             var lineStringGeoJSON = this.polygonToLineString(polygonGeoJSON);
 
             var properties = area.properties;
@@ -1575,6 +1667,20 @@ function MapController(loadJSONFunc) {
         }
     };
 
+    this.updateOnTheFlyIfThere = function() {
+        if (this.map.getSource("onTheFlyJSON")) {
+            var pointLayers = this.getInsarLayers();
+            this.onceRendered(function() {
+                this.selector.recolorDataset();
+                this.onceRendered(function() {
+                    this.hideInsarLayers();;
+                }.bind(this));
+            }.bind(this));
+            showLoadingScreen("Rendering at new zoom level", null);
+            this.showInsarLayers();
+        }
+    };
+
     this.addMapToPage = function(containerID) {
         var startingOptions = null;
         var minZoom = 0; // default as per gl js api
@@ -1586,8 +1692,13 @@ function MapController(loadJSONFunc) {
         try {
             startingCoords = new mapboxgl.LngLat(startingOptions.lng, startingOptions.lat);
             startingZoom = parseFloat(startingOptions.zoom);
-            // use the dataset zoom as the starting zoom if it was specified
-            this.datasetZoom = startingZoom;
+            if (urlOptions.startingDatasetOptions.startDataset) {
+                // use the dataset zoom as the starting zoom if it was specified
+                // but only if there's a startDataset (prevents flying to
+                // a more zoomed out view and resetting the map when a zoom has been
+                // specified in the url, but no startDataset)
+                this.datasetZoom = startingZoom;
+            }
             // prevent zoom out if specified
             if (urlOptions.startingDatasetOptions.zoomOut === "false") {
                 minZoom = startingZoom;
@@ -1624,7 +1735,7 @@ function MapController(loadJSONFunc) {
                     return;
                 }
                 this.processURLOptions();
-
+                this.loadSwathsInCurrentViewport(true);
             }.bind(this));
             this.areaFilterSelector = new AreaFilterSelector();
             this.areaFilterSelector.map = this;
@@ -1654,7 +1765,7 @@ function MapController(loadJSONFunc) {
         this.leftClickOnAPoint = this.leftClickOnAPoint.bind(this);
         this.map.on('click', function(e) {
             fullyHideSearchBars();
-            this.leftClickOnAPoint(e);
+            this.leftClickOnAPoint(e, this.selectingReferencePoint);
         }.bind(this));
 
         //this.map.on("contextmenu", this.rightClickOnAPoint);
@@ -1736,17 +1847,7 @@ function MapController(loadJSONFunc) {
                 }
             }
 
-            if (this.map.getSource("onTheFlyJSON") && !this.pointClicked()) {
-                var pointLayers = this.getInsarLayers();
-                this.onceRendered(function() {
-                    this.selector.recolorDataset();
-                    this.onceRendered(function() {
-                        this.hideInsarLayers();;
-                    }.bind(this));
-                }.bind(this));
-                showLoadingScreen("Rendering at new zoom level", null);
-                this.showInsarLayers();
-            }
+            this.updateOnTheFlyIfThere();
 
             if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled") && mode !== "seismicity") {
                 this.loadSwathsInCurrentViewport(true);
@@ -1774,6 +1875,7 @@ function MapController(loadJSONFunc) {
             var sw = bounds._sw.lat.toFixed(2) + ", " + bounds._sw.lng.toFixed(2);
             var ne = bounds._ne.lat.toFixed(2) + ", " + bounds._ne.lng.toFixed(2);
             $("#usgs-events-current-viewport").html("sw: " + sw + ", ne: " + ne);
+            this.updateOnTheFlyIfThere();
             updateUrlState(this);
         }.bind(this));
 
@@ -1806,8 +1908,7 @@ function MapController(loadJSONFunc) {
             var min = this.colorScale.min * yearsDiff;
             var max = this.colorScale.max * yearsDiff;
             var limit = this.getPermissibleMinMax(min, max);
-            this.colorScale.setMinMax(-limit, limit);
-            this.colorScale.scaleChangeCallback(-limit, limit);
+            this.colorScale.setMinMax(-limit, limit, true);
         }
         this.colorOnDisplacement = true;
         this.refreshDataset(startDate, endDate);
@@ -1825,8 +1926,7 @@ function MapController(loadJSONFunc) {
             var min = this.colorScale.min / yearsDiff;
             var max = this.colorScale.max / yearsDiff;
             var limit = this.getPermissibleMinMax(min, max);
-            this.colorScale.setMinMax(-limit, limit);
-            this.colorScale.scaleChangeCallback(-limit, limit);
+            this.colorScale.setMinMax(-limit, limit, true);
         }
         this.colorOnDisplacement = false;
         this.refreshDataset(startDate, endDate);
@@ -1870,7 +1970,8 @@ function MapController(loadJSONFunc) {
             this.removeSourceAndLayer("onTheFlyJSON");
         }
 
-        this.removeReferencePoint();
+        this.removeSourceAndLayer("DBReferencePoint");
+        this.removeSourceAndLayer("ReferencePoint");
     }
 
     this.removeTouchLocationMarkers = function() {

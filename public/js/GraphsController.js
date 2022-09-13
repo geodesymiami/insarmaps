@@ -290,6 +290,8 @@ function setupGraphsController() {
             text: graphOpts.subtitle.text
         });
 
+        chart.series[0].setData(graphSettings.chart_data);
+
         if (regressionToggleButton.toggleState == ToggleStates.ON) {
             this.addRegressionLines();
         }
@@ -1022,6 +1024,32 @@ function setupGraphsController() {
         }.bind(this));
 
         this.setNavigatorHandlers("insar-chart-slider", "#charts");
+    };
+
+    GraphsController.prototype.updateDisplacements = function(refDisplacements, updateFunction) {
+        var graphSettings = this.graphSettings;
+        for (var key in graphSettings) {
+            if (graphSettings.hasOwnProperty(key)) {
+                if (graphSettings[key]["displacement_array"] != null) {
+                    var curDisplacements = graphSettings[key]["displacement_array"];
+                    var updatedDisplacements = curDisplacements.map(updateFunction);
+                    graphSettings[key]["displacement_array"] = updatedDisplacements;
+                    graphSettings[key]["chart_data"] = getDisplacementChartData(updatedDisplacements, graphSettings[key]["date_string_array"]);
+                }
+            }
+        }
+    };
+
+    GraphsController.prototype.addReferenceValuesToDisplacements = function(refDisplacements) {
+        this.updateDisplacements(refDisplacements, function(displacement, idx) {
+            return displacement + refDisplacements[idx];
+        }.bind(this));
+    };
+
+    GraphsController.prototype.removeReferenceValuesFromDisplacements = function(refDisplacements) {
+        this.updateDisplacements(refDisplacements, function(displacement, idx) {
+            return displacement - refDisplacements[idx];
+        }.bind(this));
     };
 
     GraphsController.prototype.destroyGraphs = function() {
