@@ -16,7 +16,7 @@ class UsersTableSeeder extends Seeder
             'name' => "insarmaps",
             'email' => "insarmaps".'@insarmaps.com',
             'isAdmin' => 1,
-            'password' => bcrypt('rsmastest')
+            'password' => bcrypt('insarmaps')
         ]]);
     }
 }
