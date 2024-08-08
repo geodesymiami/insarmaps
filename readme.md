@@ -15,6 +15,14 @@ To run using docker, two convenience scripts have been provided.
 3. Followed by:
     ```./run_docker.sh```
 
+4. The default username and password for the postgresql database are both ```insaradmin```
+
+5. The default username for the insarmaps server is ```insarmaps```, and the default password is ```insarmaps@insarmaps.com```
+
+6. As an example, here is how to upload data to the docker image:
+
+    ```json_mbtiles2insarmaps.py --num-workers 8 -u insaradmin -p insaradmin --host 172.17.0.2 -P insarmaps -U insarmaps@insarmaps.com --json_folder ../data/JSON/ --mbtiles_file ../data/JSON/S1_IW1_128_0596_0597_20160605_XXXXXXXX_S00887_S00783_W091208_W091105.mbtiles```
+
 # Installation instructions (manually)
 Below are installation instructions to install the web app and all its prerequisites. This was tested on ubuntu 22.04, but should work on Windows/Mac/Other linux distributions by utilizing the equivalent commands in those systems.
 
