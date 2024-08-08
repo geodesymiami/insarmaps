@@ -11,6 +11,7 @@ service postgresql start
 if ! test -f /var/lib/postgresql/16/main/INITD; then
     su postgres -c "psql -d postgres -c 'CREATE DATABASE pgis;'"
     su postgres -c "psql -c \"CREATE ROLE insaradmin WITH LOGIN PASSWORD 'insaradmin'\""
+    su postgres -c "psql -c \"ALTER DATABASE pgis OWNER TO insaradmin;\""
     su postgres -c "psql -d pgis -f database/recreate_db/db_create.sql"
     php artisan  db:seed  --class=UsersTableSeeder
 
