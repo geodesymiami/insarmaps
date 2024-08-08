@@ -46,19 +46,19 @@ RUN mv tileserver-php /var/www/html/tileserver
 RUN chown -R root:www-data /var/www/html/tileserver
 RUN chmod -R g+rw /var/www/html/tileserver
 
-COPY tileserver.conf /etc/apache2/sites-available/tileserver.conf
+COPY ./docker/tileserver.conf /etc/apache2/sites-available/tileserver.conf
 RUN a2ensite tileserver
-COPY 000-default.conf /etc/apache2/sites-enabled/000-default.conf
+COPY ./docker/000-default.conf /etc/apache2/sites-enabled/000-default.conf
 
 RUN mkdir /var/www/html/insarmaps
 WORKDIR /var/www/html/insarmaps
 COPY . .
 
-RUN cp .env_docker .env
+RUN cp ./docker/.env_docker .env
 
 RUN ./setup.sh
 
-COPY docker.htaccess public/.htaccess
+COPY ./docker/docker.htaccess public/.htaccess
 
 # Create a volume for persistent data
 #VOLUME /var/lib/postgresql/16/main
@@ -67,5 +67,5 @@ EXPOSE 5432
 EXPOSE 80
 EXPOSE 8888
 
-CMD /var/www/html/insarmaps/configure_servers.sh
+CMD /var/www/html/insarmaps/docker/configure_servers.sh
 
