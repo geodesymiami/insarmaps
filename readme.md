@@ -4,7 +4,18 @@ This is web application allows viewing of InSAR displacement time-series, the au
 
 It is built using the [Laravel](http://laravel.com/docs) PHP framework.
 
-# Installation instructions
+# Installation instructions (docker)
+To run using docker, two convenience scripts have been provided.
+
+1. Make sure Docker is installed and working: (https://www.youtube.com/watch?v=cqbh-RneBlk)
+
+2. Run:
+    ```./init_docker.sh```
+
+3. Followed by:
+    ```./run_docker.sh```
+
+# Installation instructions (manually)
 Below are installation instructions to install the web app and all its prerequisites. This was tested on ubuntu 22.04, but should work on Windows/Mac/Other linux distributions by utilizing the equivalent commands in those systems.
 
 1. Make sure packages are up to date:
