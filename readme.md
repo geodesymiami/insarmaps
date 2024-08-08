@@ -4,7 +4,28 @@ This is web application allows viewing of InSAR displacement time-series, the au
 
 It is built using the [Laravel](http://laravel.com/docs) PHP framework.
 
-# Installation instructions
+# Installation instructions (docker)
+To run using docker, two convenience scripts have been provided.
+
+1. Make sure Docker is installed and working: (https://www.youtube.com/watch?v=cqbh-RneBlk)
+
+2. Run:
+    ```./init_docker.sh```
+
+3. Followed by:
+    ```./run_docker.sh```
+
+4. The default username and password for the postgresql database are both ```insaradmin```
+
+5. The default username for the insarmaps server is ```insarmaps```, and the default password is ```insarmaps@insarmaps.com```
+
+6. The server can be found at ```localhost```
+
+7. As an example, here is how to upload data to the docker image:
+
+    ```json_mbtiles2insarmaps.py --num-workers 8 -u insaradmin -p insaradmin --host localhost -P insarmaps -U insarmaps@insarmaps.com --json_folder ../data/JSON/ --mbtiles_file ../data/JSON/S1_IW1_128_0596_0597_20160605_XXXXXXXX_S00887_S00783_W091208_W091105.mbtiles```
+
+# Installation instructions (manually)
 Below are installation instructions to install the web app and all its prerequisites. This was tested on ubuntu 22.04, but should work on Windows/Mac/Other linux distributions by utilizing the equivalent commands in those systems.
 
 1. Make sure packages are up to date:
