@@ -14,16 +14,32 @@ To run using docker, two convenience scripts have been provided.
 
 3. Followed by:
     ```./run_docker.sh```
-
+This script needs to be running while using the docker container. Consider using a tmux window which make
 4. The default username and password for the postgresql database are both ```insaradmin```
 
 5. The default username for the insarmaps server is ```insarmaps```, and the default password is ```insarmaps@insarmaps.com```
 
 6. The server can be found at ```localhost```
 
-7. As an example, here is how to upload data to the docker image:
+7. Get the test data:
+```
+wget https://zenodo.org/records/13294290/files/testdata_Galapagos.tar.gz
+tar xvzf testdata_Galapagos.tar.gz
+cd testdata_Galapagos
+```
+8. Run the example:
+```
+json_mbtiles2insarmaps.py --num-workers 8 -u insaradmin -p insaradmin --host localhost -P insarmaps -U insarmaps@insarmaps.com --json_folder ./JSON/ --mbtiles_file ./JSON/S1_IW1_128_0596_0597_20160605_XXXXXXXX_S00887_S00783_W091208_W091105.mbtiles
+```
+9. If it is working you will see this velocity map.
+   - http://localhost
+   - http://localhost/start/-0.8204/-91.1266/11.5000?flyToDatasetCenter=false&startDataset=S1_IW1_128_0596_0597_20160605_XXXXXXXX_S00887_S00783_W091208_W091105&minScale=-30&maxScale=30
+ <img width="400" alt="image" src="https://github.com/user-attachments/assets/47710607-b966-4d8d-92af-af0e13725678">
 
-    ```json_mbtiles2insarmaps.py --num-workers 8 -u insaradmin -p insaradmin --host localhost -P insarmaps -U insarmaps@insarmaps.com --json_folder ../data/JSON/ --mbtiles_file ../data/JSON/S1_IW1_128_0596_0597_20160605_XXXXXXXX_S00887_S00783_W091208_W091105.mbtiles```
+10. On MacOS you may need to change in your `~/.docker/config.json` `credsStore` from `desktop` to `osxkeychain` as suggested [here](https://forums.docker.com/t/error-failed-to-solve-error-getting-credentials-err-exit-status-1-out/136124/4).
+
+11. If running on a remote server, replace `localhost` with the IP number of that server. In `/var/www/html/insarmaps/.env` replace  the last line from `MBTILES_SERVER=http://localhost:8888/`
+to `MBTILES_SERVER=http://149.165.174.11:8888/`
 
 # Installation instructions (manually)
 Below are installation instructions to install the web app and all its prerequisites. This was tested on ubuntu 22.04, but should work on Windows/Mac/Other linux distributions by utilizing the equivalent commands in those systems.
