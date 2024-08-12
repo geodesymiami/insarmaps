@@ -3,7 +3,8 @@ service apache2 start
 chown postgres:postgres /var/lib/postgresql/16/main
 
 sed -i "s/localhost/${server_ip}/" /var/www/html/insarmaps/.env
-sed -i "s/\$config\['dataRoot'\] = '';/\$config['dataRoot'] = '/var/lib/postgresql/16/main';/" /var/www/html/tileserver/tileserver.php
+cleaned_postgres_dir=$(echo "/var/lib/postgresql/16/main" | sed 's/[&\/]/\\&/g')
+sed -i "s/\$config\['dataRoot'\] = '';/\$config['dataRoot'] = '${cleaned_postgres_dir}';/" /var/www/html/tileserver/tileserver.php
 # first time? - set up new cluster with initdb in our persistent directory
 if ! test -f /var/lib/postgresql/16/main/INITD; then
     su postgres -c "/usr/lib/postgresql/16/bin/initdb /var/lib/postgresql/16/main"
