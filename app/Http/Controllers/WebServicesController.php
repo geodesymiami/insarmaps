@@ -92,6 +92,10 @@ class WebServicesController extends Controller {
         $this->arrayFormatter = new PostgresArrayFormatter();
         $this->dateFormatter = new DateFormatter();
         $this->requestFormatter = new RequestFormatter();
+        self::$MBTILES_PATH = env("MBTILES_DIR");
+        if (self::$MBTILES_PATH === null) {
+            self::$MBTILES_PATH = "/var/www/html/tileserver";
+        }
     }
 
     /**
