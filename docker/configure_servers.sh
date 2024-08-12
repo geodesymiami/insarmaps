@@ -1,5 +1,4 @@
 service apache2 start
-service ssh start
 
 chown postgres:postgres /var/lib/postgresql/16/main
 # first time? - set up new cluster with initdb in our persistent directory
