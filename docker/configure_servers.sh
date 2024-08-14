@@ -1,7 +1,13 @@
 service apache2 start
-service ssh start
 
 chown postgres:postgres /var/lib/postgresql/16/main
+chgrp -R www-data /mbtiles_dir
+chmod g+w /mbtiles_dir
+
+mbtiles_dir=$(echo "/mbtiles_dir" | sed 's/[&\/]/\\&/g')
+sed -i "s/localhost:8888\//${server_ip}:8888\/${mbtiles_dir}\//" /var/www/html/insarmaps/.env
+sed -i "s/MBTILES_DIR=\/mbtiles_dir/MBTILES_DIR=${mbtiles_dir}/" /var/www/html/insarmaps/.env
+sed -i "s/\$config\['dataRoot'\] = '';/\$config['dataRoot'] = '${mbtiles_dir}';/" /var/www/html/tileserver/tileserver.php
 # first time? - set up new cluster with initdb in our persistent directory
 if ! test -f /var/lib/postgresql/16/main/INITD; then
     su postgres -c "/usr/lib/postgresql/16/bin/initdb /var/lib/postgresql/16/main"
