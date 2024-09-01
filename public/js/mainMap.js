@@ -1217,6 +1217,18 @@ function MapController(loadJSONFunc) {
         }
     };
 
+    this.updateInsarPixelSize = function(size) {
+        if (this.map.getSource("onTheFlyJSON")) {
+            this.map.setPaintProperty("onTheFlyJSON", "circle-radius", size);
+        }
+        var insarLayers = this.getInsarLayers();
+        if (insarLayers) {
+            insarLayers.forEach(function(layerID) {
+                this.map.setPaintProperty(layerID, "circle-radius", size);
+            }.bind(this));
+        }
+    };
+
     this.addReferencePointSourceAndLayer = function(id, lat, lon) {
         var referencePointSource = {
             type: "geojson",

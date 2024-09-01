@@ -114,9 +114,13 @@
                 </div>
             </div>
             <div id="overlay-options-wrapper">
-                <div id="overlay-options">
+                <div class="overlay-options">
                     <label>Opacity:</label>
-                    <div id="overlay-slider"></div>
+                    <div class="overlay-sliders" id="opacity-slider"></div>
+                </div>
+                <div class="overlay-options">
+                    <label id=pixel-size-label>Pixel Size:</label>
+                    <div class="overlay-sliders" id="point-size-slider"></div>
                 </div>
             </div>
             <div>

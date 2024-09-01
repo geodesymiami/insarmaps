@@ -375,11 +375,11 @@ div.menu {
     opacity: 0.7
 }
 
-#overlay-slider {
+.overlay-sliders {
     height: 10px;
     width: 50px;
     bottom: 0px;
-    background: coral;
+    background: coral !important;
 }
 
 .overlay-div {
@@ -585,7 +585,7 @@ div.menu {
     text-align: left;
 }
 
-#overlay-options {
+.overlay-options {
     font-family: 'Open Sans', sans-serif;
     z-index: 99;
     border-radius: 4px;
