@@ -346,7 +346,7 @@ div.menu {
     top: 10px;
     left: 0px;
     z-index: 99;
-    max-width: 80%;
+    max-width: 854px;
 }
 
 #top-map-buttons > * {
@@ -354,6 +354,7 @@ div.menu {
     border-radius: 5px;
     float: left;
     z-index: 99;
+    min-height: 34px;
 }
 
 #top-map-buttons > .btn {
