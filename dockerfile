@@ -50,6 +50,9 @@ COPY ./docker/tileserver.conf /etc/apache2/sites-available/tileserver.conf
 RUN a2ensite tileserver
 COPY ./docker/000-default.conf /etc/apache2/sites-enabled/000-default.conf
 
+RUN a2enmod ssl
+RUN a2enmod headers
+
 RUN mkdir /var/www/html/insarmaps
 WORKDIR /var/www/html/insarmaps
 COPY . .
@@ -66,6 +69,7 @@ COPY ./docker/docker.htaccess public/.htaccess
 EXPOSE 5432
 EXPOSE 80
 EXPOSE 8888
+EXPOSE 443
 
 CMD /var/www/html/insarmaps/docker/configure_servers.sh
 
