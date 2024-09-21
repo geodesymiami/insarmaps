@@ -5,7 +5,7 @@ chgrp -R www-data /mbtiles_dir
 chmod g+w /mbtiles_dir
 
 mbtiles_dir=$(echo "/mbtiles_dir" | sed 's/[&\/]/\\&/g')
-sed -i "s/http:\/\/localhost:8888\//https:\/\/${server_ip}:8888\/${mbtiles_dir}\//" /var/www/html/insarmaps/.env
+sed -i "s/http:\/\/localhost:8888\//http:\/\/${server_ip}:8888\/${mbtiles_dir}\//" /var/www/html/insarmaps/.env
 sed -i "s/MBTILES_DIR=\/mbtiles_dir/MBTILES_DIR=${mbtiles_dir}/" /var/www/html/insarmaps/.env
 sed -i "s/\$config\['dataRoot'\] = '';/\$config['dataRoot'] = '${mbtiles_dir}';/" /var/www/html/tileserver/tileserver.php
 # first time? - set up new cluster with initdb in our persistent directory
