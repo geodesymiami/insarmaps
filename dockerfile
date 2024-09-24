@@ -6,7 +6,11 @@ RUN apt-get update
 RUN apt-get install -y software-properties-common
 RUN add-apt-repository -y ppa:ondrej/php
 RUN apt-get update && apt-get install -y \
-    php7.3 libapache2-mod-php7.3 php7.3-common php7.3-curl php7.3-xml php7.3-zip php7.3-pgsql php7.3-cli sqlite3 php7.3-sqlite3 git postgresql postgresql-contrib postgis
+    php7.3 libapache2-mod-php7.3 php7.3-common php7.3-curl php7.3-xml php7.3-zip php7.3-pgsql php7.3-cli sqlite3 php7.3-sqlite3 git
+
+# TODO: update to newer postgresql after figuring out why 16 breaks recoloring
+RUN apt-get install -y postgresql-common && yes '' | /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+RUN apt-get update && apt-get install -y postgresql-9.2 postgresql-contrib postgis
 
 RUN a2enmod php7.3
 RUN a2enmod rewrite
