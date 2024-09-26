@@ -6,11 +6,7 @@ RUN apt-get update
 RUN apt-get install -y software-properties-common
 RUN add-apt-repository -y ppa:ondrej/php
 RUN apt-get update && apt-get install -y \
-    php7.3 libapache2-mod-php7.3 php7.3-common php7.3-curl php7.3-xml php7.3-zip php7.3-pgsql php7.3-cli sqlite3 php7.3-sqlite3 git
-
-# TODO: update to newer postgresql after figuring out why 16 breaks recoloring
-RUN apt-get install -y postgresql-common && yes '' | /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
-RUN apt-get update && apt-get install -y postgresql-9.6 postgresql-contrib postgis
+    php7.3 libapache2-mod-php7.3 php7.3-common php7.3-curl php7.3-xml php7.3-zip php7.3-pgsql php7.3-cli sqlite3 php7.3-sqlite3 postgresql postgresql-contrib postgis git vim tmux
 
 RUN a2enmod php7.3
 RUN a2enmod rewrite
@@ -21,17 +17,10 @@ RUN sed -i 's/upload_max_filesize = .*/upload_max_filesize = 20G/' /etc/php/7.3/
 
 RUN mkdir /postgresql_data
 
-# for postgresql 16
-#RUN sed -i "s/data_directory = '\/var\/lib\/postgresql\/16\/main'/data_directory = '\/postgresql_data'/" /etc/postgresql/16/main/postgresql.conf
-#RUN sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/16/main/postgresql.conf
-#RUN sed -i "s/local   all             postgres                                peer/local   all             all                                peer/" /etc/postgresql/16/main/pg_hba.conf
-#RUN sed -i "s/host    all             all             127.0.0.1\/32            scram-sha-256/host    all             all             0.0.0.0\/0            scram-sha-256/" /etc/postgresql/16/main/pg_hba.conf
-
-# for postgresql 9.6
-RUN sed -i "s/data_directory = '\/var\/lib\/postgresql\/9.6\/main'/data_directory = '\/postgresql_data'/" /etc/postgresql/9.6/main/postgresql.conf
-RUN sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/9.6/main/postgresql.conf
-RUN sed -i "s/local   all             postgres                                peer/local   all             all                                peer/" /etc/postgresql/9.6/main/pg_hba.conf
-RUN sed -i "s/host    all             all             127.0.0.1\/32            md5/host    all             all             0.0.0.0\/0            md5/" /etc/postgresql/9.6/main/pg_hba.conf
+RUN sed -i "s/data_directory = '\/var\/lib\/postgresql\/16\/main'/data_directory = '\/postgresql_data'/" /etc/postgresql/16/main/postgresql.conf
+RUN sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/16/main/postgresql.conf
+RUN sed -i "s/local   all             postgres                                peer/local   all             all                                peer/" /etc/postgresql/16/main/pg_hba.conf
+RUN sed -i "s/host    all             all             127.0.0.1\/32            scram-sha-256/host    all             all             0.0.0.0\/0            scram-sha-256/" /etc/postgresql/16/main/pg_hba.conf
 
 RUN sed -i "s/Listen 80/Listen 80\nListen 8888/" /etc/apache2/ports.conf
 
