@@ -22,7 +22,7 @@ RUN sed -i 's/upload_max_filesize = .*/upload_max_filesize = 20G/' /etc/php/7.3/
 RUN mkdir /postgresql_data
 
 # for postgresql 16
-#RUN sed -i "s/data_directory = '\/var\/lib\/postgresql\/9.2\/main'/data_directory = '\/postgresql_data'/" /etc/postgresql/16/main/postgresql.conf
+#RUN sed -i "s/data_directory = '\/var\/lib\/postgresql\/16\/main'/data_directory = '\/postgresql_data'/" /etc/postgresql/16/main/postgresql.conf
 #RUN sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/16/main/postgresql.conf
 #RUN sed -i "s/local   all             postgres                                peer/local   all             all                                peer/" /etc/postgresql/16/main/pg_hba.conf
 #RUN sed -i "s/host    all             all             127.0.0.1\/32            scram-sha-256/host    all             all             0.0.0.0\/0            scram-sha-256/" /etc/postgresql/16/main/pg_hba.conf
