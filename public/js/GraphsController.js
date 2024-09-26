@@ -1946,7 +1946,7 @@ function setupCustomSliderSeismicityController() {
                 "features": features
             };
 
-            features = turf.within(points, searchWithin).features;
+            features = turf.pointsWithinPolygon(points, searchWithin).features;
         }
 
         var filteredFeatures = features.filter(function(feature) {

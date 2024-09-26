@@ -114,9 +114,13 @@
                 </div>
             </div>
             <div id="overlay-options-wrapper">
-                <div id="overlay-options">
+                <div class="overlay-options">
                     <label>Opacity:</label>
-                    <div id="overlay-slider"></div>
+                    <div class="overlay-sliders" id="opacity-slider"></div>
+                </div>
+                <div class="overlay-options">
+                    <label id=pixel-size-label>Pixel Size:</label>
+                    <div class="overlay-sliders" id="point-size-slider"></div>
                 </div>
             </div>
             <div>
@@ -596,8 +600,8 @@
     const MBTILES_SERVER = "{!! env("MBTILES_SERVER") !!}";
     </script>
     <link rel="stylesheet" href="/css/slideout.css" />
-    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.js'></script>
-    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.2/mapbox-gl.css' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css' rel='stylesheet' />
     <script src='https://npmcdn.com/@turf/turf/turf.min.js'></script>
     <script src="https://unpkg.com/terraformer@1.0.8"></script>
     <script src="https://unpkg.com/terraformer-wkt-parser@1.1.2"></script>

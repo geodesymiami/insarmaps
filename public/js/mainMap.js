@@ -175,7 +175,7 @@ function MapController(loadJSONFunc) {
         for (var i = this.layerOrders.length - 1; i >= 0; i--) {
             if (this.layerOrders[i] === layer) {
                 var j = i - 1;
-                while (!this.map.getLayer(this.layerOrders[j]) && j > -1) {
+                while (j > -1 && !this.map.getLayer(this.layerOrders[j])) {
                     j--;
                 }
 
@@ -1214,6 +1214,18 @@ function MapController(loadJSONFunc) {
                 this.removeSourceAndLayer("onTheFlyJSON");
                 this.showInsarLayers();
             }
+        }
+    };
+
+    this.updateInsarPixelSize = function(size) {
+        if (this.map.getSource("onTheFlyJSON")) {
+            this.map.setPaintProperty("onTheFlyJSON", "circle-radius", size);
+        }
+        var insarLayers = this.getInsarLayers();
+        if (insarLayers) {
+            insarLayers.forEach(function(layerID) {
+                this.map.setPaintProperty(layerID, "circle-radius", size);
+            }.bind(this));
         }
     };
 

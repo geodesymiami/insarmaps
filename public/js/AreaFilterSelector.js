@@ -65,7 +65,7 @@ function setUpAreaFilterSelector() {
             "features": featuresToSearch
         };
 
-        var ptsWithin = turf.within(points, searchWithin);
+        var ptsWithin = turf.pointsWithinPolygon(points, searchWithin);
         if (ptsWithin.features.length > 0) {
             var json = {
                 "areas": ptsWithin.features

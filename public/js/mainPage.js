@@ -629,7 +629,7 @@ function CountryGeocoder(mapboxAccessToken) {
     }
 }
 
-function slideFunction(event, ui) {
+function opacitySlideFunction(event, ui) {
     var newOpacity = ui.value / 100.0;
     newOpacity *= newOpacity * newOpacity; // scale it, as the default scale is not very linear
     // start at 1 to avoid base map layer
@@ -642,6 +642,12 @@ function slideFunction(event, ui) {
     if (myMap.map.getLayer("onTheFlyJSON")) {
         myMap.map.setPaintProperty("onTheFlyJSON", "circle-opacity", newOpacity);
     }
+}
+
+function pixelSizeSlideFunction(event, ui) {
+    var newPixelSize = ui.value / 10.0;
+    $("#pixel-size-label").html("Pixel Size: " + newPixelSize);
+    myMap.updateInsarPixelSize(newPixelSize);
 }
 
 function showBrowserAlert() {
@@ -713,13 +719,13 @@ $(window).on("load", function() {
                 return;
             }
 
-            $("#overlay-slider").slider("value", 100);
+            $("#opacity-slider").slider("value", 100);
             myMap.loadDatasetFromFeature(currentArea);
             $(this).attr("data-original-title", "Hide");
             $(this).css("opacity", 1.0);
         } else {
             if (myMap.pointsLoaded()) {
-                $("#overlay-slider").slider("value", 0);
+                $("#opacity-slider").slider("value", 0);
                 myMap.removePoints();
                 myMap.removeTouchLocationMarkers();
                 $(this).attr("data-original-title", "Show");
@@ -1237,20 +1243,38 @@ $(window).on("load", function() {
     });
 
     $(function() {
-        $("#overlay-slider").slider({
+        $("#opacity-slider").slider({
             value: 100,
             change: function(event, ui) {
                 // call change only if too many layers, to avoid lag
                 if (currentArea && currentArea.properties.num_chunks >
                     NUM_CHUNKS) {
-                    slideFunction(event, ui);
+                    opacitySlideFunction(event, ui);
                 }
             },
             slide: function(event, ui) {
                 // call slide only if sufficiently small amount of layers, otherwise lag
                 if (currentArea && currentArea.properties.num_chunks <=
                     NUM_CHUNKS) {
-                    slideFunction(event, ui);
+                    opacitySlideFunction(event, ui);
+                }
+            }
+        });
+
+        $("#point-size-slider").slider({
+            value: 100,
+            change: function(event, ui) {
+                // call change only if too many layers, to avoid lag
+                if (currentArea && currentArea.properties.num_chunks >
+                    NUM_CHUNKS) {
+                    pixelSizeSlideFunction(event, ui);
+                }
+            },
+            slide: function(event, ui) {
+                // call slide only if sufficiently small amount of layers, otherwise lag
+                if (currentArea && currentArea.properties.num_chunks <=
+                    NUM_CHUNKS) {
+                    pixelSizeSlideFunction(event, ui);
                 }
             }
         });
