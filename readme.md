@@ -165,8 +165,10 @@ Below are installation instructions to install the web app and all its prerequis
     ```
 
 10. Install postgresql and postgis. It must be postgresql version 9.6:
-    ```sudo apt install -y postgresql-common && yes '' | /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh```
-    ```sudo apt update && apt install postgresql-9.6 postgresql-contrib postgis```
+    ```
+    sudo apt install -y postgresql-common && yes '' | /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+    sudo apt update && apt install postgresql-9.6 postgresql-contrib postgis
+    ```
 
 11. Create a new postgres user named insaradmin, answer yes to the user being superuser:
     ```sudo -u postgres createuser --interactive```
