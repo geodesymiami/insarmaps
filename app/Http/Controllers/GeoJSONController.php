@@ -164,7 +164,7 @@ class GeoJSONController extends Controller {
                 $query = "SELECT displacements FROM (SELECT unnest(d) AS displacements FROM (";
             } else {
                 // return velocities
-                $query = "SELECT regr_slope(displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest('" . $decimal_dates . "'::double precision[]) AS dates, groupNumber FROM (";
+                $query = "SELECT regr_slope(displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest('" . $decimal_dates . "'::double precision[]) AS dates, point FROM (";
             }
             $query .= "WITH points(point) AS (VALUES";
 
@@ -180,9 +180,9 @@ class GeoJSONController extends Controller {
             $tableID = $dateInfos[0]->id;
             $curPointNum = $pointsArray[$i];
             if ($returnDisplacements) {
-                $query .= '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], ROW_NUMBER() OVER() AS groupNumber FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point) ORDER BY p ASC) AS displacements) AS z';
+                $query .= '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], point FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point)) AS displacements) AS z';
             } else {
-                $query .= '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], ROW_NUMBER() OVER() AS groupNumber FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point) ORDER BY p ASC) AS displacements) AS z GROUP BY groupNumber ORDER BY groupNumber ASC';
+                $query .= '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], point FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point)) AS displacements) AS z GROUP BY point ORDER BY point ASC';
             }
 
             $queryRes = DB::select(DB::raw($query));
