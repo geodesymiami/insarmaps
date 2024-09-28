@@ -10,7 +10,7 @@ sed -i "s/MBTILES_DIR=\/mbtiles_dir/MBTILES_DIR=${mbtiles_dir}/" /var/www/html/i
 sed -i "s/\$config\['dataRoot'\] = '';/\$config['dataRoot'] = '${mbtiles_dir}';/" /var/www/html/tileserver/tileserver.php
 # first time? - set up new cluster with initdb in our persistent directory
 if ! test -f /postgresql_data/INITD; then
-    su postgres -c "/usr/lib/postgresql/9.6/bin/initdb /postgresql_data"
+    su postgres -c "/usr/lib/postgresql/16/bin/initdb /postgresql_data"
 fi
 service postgresql start
 
