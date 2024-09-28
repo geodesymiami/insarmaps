@@ -75,5 +75,14 @@ EXPOSE 80
 EXPOSE 8888
 EXPOSE 443
 
+WORKDIR /root
+RUN git clone https://github.com/stackTom/config_files.git
+RUN ls -al
+WORKDIR /root/config_files
+RUN ./install.sh
+RUN git config --global user.name "INSERT"
+RUN git config --global user.email "INSERT@INSERT.com"
+WORKDIR /var/www/html/insarmaps
+
 CMD /var/www/html/insarmaps/docker/configure_servers.sh
 
