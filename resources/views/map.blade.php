@@ -187,29 +187,29 @@
                         </button>
                     </div>
                     <button class="btn btn-primary-outline" id="toggle-insar-circle-size-button" data-toggle="tooltip" title="Resize insar points to their actual size. Resets on zoom change">Actual Size</button>
-                    <div class="wrap wrap-transitions draggable" id="USGSEvents-options-wrapper">
-                        <div id="USGSEvents-options">
-                            <div class="top-right-buttons">
-                                <button type="button" class="minimize-button" data-dismiss="modal" id="USGSEvents-options-minimize-button"></button>
-                            </div>
-                            <div class="content">
-                                <div id="usgs-events-current-viewport"></div>
-                                <label>Start Date</label>
-                                <input type="text" class="form-control start-date" />
-                                <label>End Date</label>
-                                <input type="text" class="form-control end-date" />
-                                <label>Min Magnitude</label>
-                                <input type="number" class="form-control min-magnitude" value="4" />
-                                <label>Max Magnitude</label>
-                                <input type="number" class="form-control max-magnitude" value="10" />
-                                <label>Min Depth</label>
-                                <input type="number" class="form-control min-depth" value="0" />
-                                <label>Max Depth</label>
-                                <input type="number" class="form-control max-depth" value="30" />
-                                <button class="btn btn-info" id="USGSEvents-options-submit-button">Submit</button>
-                            </div>
-                        </div>
-                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="wrap wrap-transitions draggable" id="USGSEvents-options-wrapper">
+            <div id="USGSEvents-options">
+                <div class="top-right-buttons">
+                    <button type="button" class="minimize-button" data-dismiss="modal" id="USGSEvents-options-minimize-button"></button>
+                </div>
+                <div class="content">
+                    <div id="usgs-events-current-viewport"></div>
+                    <label>Start Date</label>
+                    <input type="text" class="form-control start-date" />
+                    <label>End Date</label>
+                    <input type="text" class="form-control end-date" />
+                    <label>Min Magnitude</label>
+                    <input type="number" class="form-control min-magnitude" value="4" />
+                    <label>Max Magnitude</label>
+                    <input type="number" class="form-control max-magnitude" value="10" />
+                    <label>Min Depth</label>
+                    <input type="number" class="form-control min-depth" value="0" />
+                    <label>Max Depth</label>
+                    <input type="number" class="form-control max-depth" value="30" />
+                    <button class="btn btn-info" id="USGSEvents-options-submit-button">Submit</button>
                 </div>
             </div>
         </div>
