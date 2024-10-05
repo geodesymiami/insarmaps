@@ -288,7 +288,6 @@ function setupFeatureSelector() {
                     },
                     success: function(response) {
                         var arrayBuffer = response;
-                        console.log(response);
                         if (!(minIndex == this.minIndex && maxIndex == this.maxIndex)) {
                             // the minIndex and maxIndex used for the query are not equal
                             // to the current selector's min and max Index. means another
