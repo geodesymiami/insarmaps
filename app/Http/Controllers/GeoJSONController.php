@@ -119,6 +119,7 @@ class GeoJSONController extends Controller {
     }
 
     public function getPoints() {
+        $area = Input::get("area");
         $points = Input::get("points");
         $minIndex = Input::get("arrayMinIndex");
         $maxIndex = Input::get("arrayMaxIndex");
@@ -126,17 +127,10 @@ class GeoJSONController extends Controller {
 
         try {
             $json = [];
-
             $json["displacements"] = [];
             $decimal_dates = NULL;
             $string_dates = NULL;
 
-            $parameters = explode("/", $points);
-            $area = $parameters[0];
-            $offset = count($parameters) - 2;
-            $pointsArray = array_slice($parameters, 1, $offset);
-
-            $pointsArrayLen = count($pointsArray);
             $permissionController = new PermissionsController();
             $queryToFilterAreas = $permissionController->getAndQueryForFindingPermittedAreas(Auth::id());
             $query = 'SELECT decimaldates, stringdates, id FROM area WHERE area.unavco_name = ?';
@@ -146,7 +140,7 @@ class GeoJSONController extends Controller {
             $dateInfos = DB::select($query, $preparedValues);
 
             // no dateinfos means either area wasn't found or user doesn't have permission for this area.
-            if (count($dateInfos) == 0 || !$this->arrayAllInts($pointsArray)) {
+            if (count($dateInfos) == 0) {
                 return response()->json(["Error Getting Points"]);
             }
 
@@ -166,23 +160,17 @@ class GeoJSONController extends Controller {
                 // return velocities
                 $query = "SELECT regr_slope(displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest('" . $decimal_dates . "'::double precision[]) AS dates, point FROM (";
             }
-            $query .= "WITH points(point) AS (VALUES";
-
-            for ($i = 0; $i < $pointsArrayLen - 1; $i++) {
-                $curPointNum = $pointsArray[$i];
-                $query = $query . "(" . $curPointNum . "),";
-            }
+            $query .= "WITH points(point) AS (VALUES" . $points;
 
             // postgres doesn't used 0 based indexing...sigh
             $minIndex++;
             $maxIndex++;
             // add last ANY values without comma. it fails when this last value is a ? prepared value... something about not being able to compare to text... investigate but i have no idea.
             $tableID = $dateInfos[0]->id;
-            $curPointNum = $pointsArray[$i];
             if ($returnDisplacements) {
-                $query .= '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], point FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point)) AS displacements) AS z';
+                $query .= ') SELECT d[' . $minIndex . ':' . $maxIndex . '], point FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point)) AS displacements) AS z';
             } else {
-                $query .= '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], point FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point)) AS displacements) AS z GROUP BY point ORDER BY point ASC';
+                $query .= ') SELECT d[' . $minIndex . ':' . $maxIndex . '], point FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point)) AS displacements) AS z GROUP BY point ORDER BY point ASC';
             }
 
             $queryRes = DB::select(DB::raw($query));
