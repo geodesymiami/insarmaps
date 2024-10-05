@@ -266,7 +266,6 @@ function setupFeatureSelector() {
                 }.bind(this));
                 features = null;
 
-                var referencePointSource = this.map.map.getSource("ReferencePoint");
                 var minIndex = this.minIndex;
                 var maxIndex = this.maxIndex;
                 var referenceDisplacements = null;
@@ -410,7 +409,8 @@ function setupFeatureSelector() {
             var dates = this.getCurrentStartEndDateFromArea(currentArea);
             this.recolorOnDisplacement(dates.startDate, dates.endDate, "Recoloring...", "ESCAPE or click/tap this box to interrupt");
         } else {
-            if (this.map.selectingReferencePoint) {
+            var nonDefaultReferencePoint = this.map.selectingReferencePoint || this.map.map.getSource("ReferencePoint") != null;
+            if (nonDefaultReferencePoint) {
                 this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt",
                                                             this.map.referenceDisplacements);
             } else {
