@@ -269,6 +269,11 @@ function setupFeatureSelector() {
                 var referencePointSource = this.map.map.getSource("ReferencePoint");
                 var minIndex = this.minIndex;
                 var maxIndex = this.maxIndex;
+                var referenceDisplacements = null;
+                if (refDisplacements !== null) {
+                    // postgresql array literal
+                    referenceDisplacements = "{" + refDisplacements.toString() + "}";
+                }
 
                 this.cancellableAjax.xmlHTTPRequestAjax({
                     url: "/points",
@@ -279,7 +284,8 @@ function setupFeatureSelector() {
                         points: query,
                         arrayMinIndex: minIndex,
                         arrayMaxIndex: maxIndex,
-                        getDisplacements: this.map.selectingReferencePoint || (referencePointSource != null)
+                        getDisplacements: this.map.selectingReferencePoint || (referencePointSource != null),
+                        referenceDisplacements: referenceDisplacements
                     },
                     success: function(response) {
                         var arrayBuffer = response;
@@ -297,25 +303,9 @@ function setupFeatureSelector() {
                             // point ID in sorted order as well. we use minIndex and maxIndex
                             // to allocate (maxIndex - minIndex) + 1 displacements to each point
                             var json = new Float64Array(arrayBuffer);
-                            var step = maxIndex - minIndex + 1;
-                            var decimal_dates = json.slice(0, step);
-                            var referenceRecoloring = this.map.selectingReferencePoint || (referencePointSource != null);
-                            if (referenceRecoloring) {
-                                refDisplacements = refDisplacements.slice(minIndex, maxIndex + 1);
-                            }
                             for (var i = 0; i < geoJSONData.features.length; i++) {
                                 var curFeature = geoJSONData.features[i];
-                                if (referenceRecoloring) {
-                                    var displacements = json.slice(step * (i + 1), step * (i + 2));
-                                    displacements = displacements.map(function(displacement, idx) {
-                                        return displacement - refDisplacements[idx];
-                                    });
-                                    var result = calcLinearRegression(displacements, decimal_dates);
-                                    var slope = result["equation"][0];
-                                    curFeature.properties.m = slope;
-                                } else {
-                                    curFeature.properties.m = json[i];
-                                }
+                                curFeature.properties.m = json[i];
                             }
 
 

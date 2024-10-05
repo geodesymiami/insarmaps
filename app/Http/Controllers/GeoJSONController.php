@@ -123,7 +123,7 @@ class GeoJSONController extends Controller {
         $points = Input::get("points");
         $minIndex = Input::get("arrayMinIndex");
         $maxIndex = Input::get("arrayMaxIndex");
-        $returnDisplacements = Input::get("getDisplacements") === "true" ? true : false;
+        $subtractReference = Input::get("referenceDisplacements");
 
         try {
             $json = [];
@@ -154,10 +154,10 @@ class GeoJSONController extends Controller {
             $decimal_dates = $this->arrayFormatter->PHPToPostgresArrayString($phpDecimalDates);
 
             $query = NULL;
-            if ($returnDisplacements) {
-                $query = "SELECT displacements FROM (SELECT unnest(d) AS displacements FROM (";
+            if ($subtractReference != "null") {
+                $reference_displacements = Input::get("referenceDisplacements");
+                $query = "SELECT regr_slope(displacements - reference_displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest('" . $decimal_dates . "'::double precision[]) AS dates, unnest('" . $reference_displacements . "'::double precision[]) as reference_displacements, point FROM (";
             } else {
-                // return velocities
                 $query = "SELECT regr_slope(displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest('" . $decimal_dates . "'::double precision[]) AS dates, point FROM (";
             }
             $query .= "WITH points(point) AS (VALUES" . $points;
@@ -167,26 +167,12 @@ class GeoJSONController extends Controller {
             $maxIndex++;
             // add last ANY values without comma. it fails when this last value is a ? prepared value... something about not being able to compare to text... investigate but i have no idea.
             $tableID = $dateInfos[0]->id;
-            if ($returnDisplacements) {
-                $query .= ') SELECT d[' . $minIndex . ':' . $maxIndex . '], point FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point)) AS displacements) AS z';
-            } else {
-                $query .= ') SELECT d[' . $minIndex . ':' . $maxIndex . '], point FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point)) AS displacements) AS z GROUP BY point ORDER BY point ASC';
-            }
+            $query .= ') SELECT d[' . $minIndex . ':' . $maxIndex . '], point FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point)) AS displacements) AS z GROUP BY point ORDER BY point ASC';
 
             $queryRes = DB::select(DB::raw($query));
             $json = [];
-            if ($returnDisplacements) {
-                foreach ($phpDecimalDates as $date) {
-                    array_push($json, $date);
-                }
-
-                foreach ($queryRes as $displacement) {
-                    array_push($json, $displacement->displacements);
-                }
-            } else {
-                foreach ($queryRes as $slope) {
-                    array_push($json, $slope->regr_slope);
-                }
+            foreach ($queryRes as $slope) {
+                array_push($json, $slope->regr_slope);
             }
             $binary = pack("d*", ...$json);
 
