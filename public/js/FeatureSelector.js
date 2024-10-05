@@ -410,8 +410,12 @@ function setupFeatureSelector() {
             var dates = this.getCurrentStartEndDateFromArea(currentArea);
             this.recolorOnDisplacement(dates.startDate, dates.endDate, "Recoloring...", "ESCAPE or click/tap this box to interrupt");
         } else {
-            this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt",
+            if (this.map.selectingReferencePoint) {
+                this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt",
                                                             this.map.referenceDisplacements);
+            } else {
+                this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt", null);
+            }
         }
     };
 
