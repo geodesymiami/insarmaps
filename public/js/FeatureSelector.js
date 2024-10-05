@@ -185,7 +185,7 @@ function setupFeatureSelector() {
 
                 var featuresMap = [];
 
-                var query = currentArea.properties.unavco_name + "/";
+                var query = "(";
 
                 // may be placebo effect, but seems to speed up query from db. also
                 // sort by p in ascending order so we match displacements with the features
@@ -204,7 +204,7 @@ function setupFeatureSelector() {
                     if (featuresMap[curFeatureKey] != null) {
                         continue;
                     }
-                    query += features[i].properties.p.toString() + "/";
+                    query += features[i].properties.p.toString() + "),(";
                     featuresMap[curFeatureKey] = "1";
 
                     if (this.map.highResMode() || !this.map.insarActualPixelSize) {
@@ -254,6 +254,8 @@ function setupFeatureSelector() {
                     }
                 }
 
+                query = query.substring(0, query.length - 2);
+
                 //console.log("in here it is " + geoJSONData.features.length + " features is " + features.length);
                 //console.log(query);
                 this.recoloringInProgress = true;
@@ -273,6 +275,7 @@ function setupFeatureSelector() {
                     type: "post",
                     async: true,
                     data: {
+                        area: currentArea.properties.unavco_name,
                         points: query,
                         arrayMinIndex: minIndex,
                         arrayMaxIndex: maxIndex,
