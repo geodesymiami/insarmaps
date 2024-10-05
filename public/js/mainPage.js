@@ -1269,6 +1269,7 @@ $(window).on("load", function() {
                     NUM_CHUNKS) {
                     pixelSizeSlideFunction(event, ui);
                 }
+                $(this).addClass("wasDragged");
             },
             slide: function(event, ui) {
                 // call slide only if sufficiently small amount of layers, otherwise lag
@@ -1276,6 +1277,7 @@ $(window).on("load", function() {
                     NUM_CHUNKS) {
                     pixelSizeSlideFunction(event, ui);
                 }
+                $(this).addClass("wasDragged");
             }
         });
     });

@@ -313,6 +313,17 @@ function setupFeatureSelector() {
                             var max = this.map.insarColorScaleValues.max * multiplier;
                             var stops = this.map.colorScale.stopsCalculator.colorsToMapboxStops(min, max, this.map.colorScale.currentScale);
                             var radii = this.map.highResMode() ? this.map.highResRadiusStops: this.map.radiusStops;
+                            var circleRadiusJSON = null;
+                            var pixelSlider = $("#point-size-slider");
+                            if (pixelSlider.hasClass("wasDragged")) {
+                                circleRadiusJSON = pixelSlider.slider("option", "value") / 10.0;
+                            } else {
+                                circleRadiusJSON = {
+                                    // for an explanation of this array see here:
+                                    // https://www.mapbox.com/blog/data-driven-styling/
+                                    stops: radii
+                                }
+                            }
                             if (geoJSONSource) {
                                 geoJSONSource.setData(geoJSONData);
                             } else {
@@ -339,11 +350,7 @@ function setupFeatureSelector() {
                                             property: 'm',
                                             stops: stops
                                         },
-                                        'circle-radius': {
-                                            // for an explanation of this array see here:
-                                            // https://www.mapbox.com/blog/data-driven-styling/
-                                            stops: radii
-                                        }
+                                        'circle-radius': circleRadiusJSON
                                     }
                                 }, before);
                             } else {
