@@ -87,6 +87,7 @@ class GeoJSONController extends Controller {
             $string_dates = $dateInfo->stringdates;
         }
 
+        // the table name doesn't have to be prepared or checked because it's received from the DB
         $query = 'SELECT *, st_astext(wkb_geometry) from "' . $dateInfos[0]->id . '" where p = ?';
 
         $points = DB::select($query, [$pointNumber]);
@@ -118,9 +119,25 @@ class GeoJSONController extends Controller {
         return true;
     }
 
+    // only allows (, ), commas, and integers
+    private function noSQLInjectionInPointValues($pointValuesStr) {
+        for ($i = 0; $i < strlen($pointValuesStr); $i++){
+            $ch = $pointValuesStr[$i];
+            if ($ch != "(" && $ch != ")" && $ch != "," && !is_numeric($ch)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function getPoints() {
         $area = Input::get("area");
         $points = Input::get("points");
+        if (!$this-> noSQLInjectionInPointValues($points)) {
+            return response()->json(["Error Getting Points"]);
+        }
+
         $minIndex = Input::get("arrayMinIndex");
         $maxIndex = Input::get("arrayMaxIndex");
         $subtractReference = Input::get("referenceDisplacements");
@@ -154,11 +171,15 @@ class GeoJSONController extends Controller {
             $decimal_dates = $this->arrayFormatter->PHPToPostgresArrayString($phpDecimalDates);
 
             $query = NULL;
+            $preparedValues = [];
             if ($subtractReference != "null") {
                 $reference_displacements = Input::get("referenceDisplacements");
-                $query = "SELECT regr_slope(displacements - reference_displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest('" . $decimal_dates . "'::double precision[]) AS dates, unnest('" . $reference_displacements . "'::double precision[]) as reference_displacements, point FROM (";
+                $query = "SELECT regr_slope(displacements - reference_displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest(?::double precision[]) AS dates, unnest(?::double precision[]) as reference_displacements, point FROM (";
+                array_push($preparedValues, $decimal_dates);
+                array_push($preparedValues, $reference_displacements);
             } else {
-                $query = "SELECT regr_slope(displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest('" . $decimal_dates . "'::double precision[]) AS dates, point FROM (";
+                $query = "SELECT regr_slope(displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest(?::double precision[]) AS dates, point FROM (";
+                array_push($preparedValues, $decimal_dates);
             }
             $query .= "WITH points(point) AS (VALUES" . $points;
 
@@ -166,10 +187,13 @@ class GeoJSONController extends Controller {
             $minIndex++;
             $maxIndex++;
             // add last ANY values without comma. it fails when this last value is a ? prepared value... something about not being able to compare to text... investigate but i have no idea.
+            // $tableID doesn't have to be prepared or checked because it's received from the DB
             $tableID = $dateInfos[0]->id;
-            $query .= ') SELECT d[' . $minIndex . ':' . $maxIndex . '], point FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point)) AS displacements) AS z GROUP BY point ORDER BY point ASC';
+            $query .= ') SELECT d[?:?], point FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point)) AS displacements) AS z GROUP BY point ORDER BY point ASC';
+            array_push($preparedValues, $minIndex);
+            array_push($preparedValues, $maxIndex);
 
-            $queryRes = DB::select(DB::raw($query));
+            $queryRes = DB::select($query, $preparedValues);
             $json = [];
             foreach ($queryRes as $slope) {
                 array_push($json, $slope->regr_slope);
