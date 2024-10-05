@@ -135,7 +135,8 @@ class GeoJSONController extends Controller {
         $area = Input::get("area");
         $points = Input::get("points");
         if (!$this-> noSQLInjectionInPointValues($points)) {
-            return response()->json(["Error Getting Points"]);
+            abort(400, 'Invalid point values.');
+            return NULL;
         }
 
         $minIndex = Input::get("arrayMinIndex");
@@ -204,7 +205,8 @@ class GeoJSONController extends Controller {
                 "Content-Type" => "application/octet-stream",
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
-            return response()->json(["Error Getting Points"]);
+            abort(400, 'Error in query');
+            return NULL;
         }
     }
 
