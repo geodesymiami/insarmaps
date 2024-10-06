@@ -193,7 +193,6 @@ function setupFeatureSelector() {
                     return a.properties.p - b.properties.p;
                 });
 
-
                 for (var i = 0; i < features.length; i++) {
                     var long = features[i].geometry.coordinates[0];
                     var lat = features[i].geometry.coordinates[1];
@@ -326,6 +325,8 @@ function setupFeatureSelector() {
                             }
                             if (geoJSONSource) {
                                 geoJSONSource.setData(geoJSONData);
+                                var curGeoJSONSource = this.map.sources.get("onTheFlyJSON");
+                                curGeoJSONSource["data"] = geoJSONData;
                             } else {
                                 this.map.onceRendered(function() {
                                     this.map.hideInsarLayers();
