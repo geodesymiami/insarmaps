@@ -1226,6 +1226,8 @@ function MapController(loadJSONFunc) {
     this.updateInsarPixelSize = function(size) {
         if (this.map.getSource("onTheFlyJSON")) {
             this.map.setPaintProperty("onTheFlyJSON", "circle-radius", size);
+            var layer = this.layers_.get("onTheFlyJSON");
+            layer["paint"]["circle-radius"] = size;
         }
         var insarLayers = this.getInsarLayers();
         if (insarLayers) {
