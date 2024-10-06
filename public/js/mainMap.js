@@ -1225,6 +1225,9 @@ function MapController(loadJSONFunc) {
         if (insarLayers) {
             insarLayers.forEach(function(layerID) {
                 this.map.setPaintProperty(layerID, "circle-radius", size);
+                var layer = this.layers_.get(layerID);
+                layer["paint"]["circle-radius"] = size;
+                this.layers_.set(layerID, layer);
             }.bind(this));
         }
     };
