@@ -361,6 +361,9 @@ function MapController(loadJSONFunc) {
         var insarLayers = this.getInsarLayers();
         insarLayers.forEach(function(layerID) {
             this.map.setLayoutProperty(layerID, "visibility", "none");
+            var layer = this.layers_.get(layerID);
+            layer["layout"]["visibility"] = "none";
+            this.layers_.set(layerID, layer);
         }.bind(this));
     };
 
@@ -368,6 +371,9 @@ function MapController(loadJSONFunc) {
         var insarLayers = this.getInsarLayers();
         insarLayers.forEach(function(layerID) {
             this.map.setLayoutProperty(layerID, "visibility", "visible");
+            var layer = this.layers_.get(layerID);
+            layer["layout"]["visibility"] = "visible";
+            this.layers_.set(layerID, layer);
         }.bind(this));
     };
 
