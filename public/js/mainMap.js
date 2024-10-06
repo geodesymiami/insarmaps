@@ -363,7 +363,6 @@ function MapController(loadJSONFunc) {
             this.map.setLayoutProperty(layerID, "visibility", "none");
             var layer = this.layers_.get(layerID);
             layer["layout"]["visibility"] = "none";
-            this.layers_.set(layerID, layer);
         }.bind(this));
     };
 
@@ -373,7 +372,6 @@ function MapController(loadJSONFunc) {
             this.map.setLayoutProperty(layerID, "visibility", "visible");
             var layer = this.layers_.get(layerID);
             layer["layout"]["visibility"] = "visible";
-            this.layers_.set(layerID, layer);
         }.bind(this));
     };
 
@@ -1235,7 +1233,6 @@ function MapController(loadJSONFunc) {
                 this.map.setPaintProperty(layerID, "circle-radius", size);
                 var layer = this.layers_.get(layerID);
                 layer["paint"]["circle-radius"] = size;
-                this.layers_.set(layerID, layer);
             }.bind(this));
         }
     };
