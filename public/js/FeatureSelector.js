@@ -271,7 +271,7 @@ function setupFeatureSelector() {
                 var referenceDisplacements = null;
                 if (refDisplacements !== null) {
                     // postgresql array literal
-                    referenceDisplacements = "{" + refDisplacements.toString() + "}";
+                    referenceDisplacements = "{" + refDisplacements.slice(minIndex, maxIndex + 1).toString() + "}";
                 }
 
                 this.cancellableAjax.xmlHTTPRequestAjax({
