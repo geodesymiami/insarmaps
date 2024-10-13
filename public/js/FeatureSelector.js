@@ -1,6 +1,10 @@
 function FeatureSelector() {
     this.recoloringInProgress = false;
     this.selectionPolygonActive = false;
+    this.previouslycoloredFeatures = null;
+    this.newFeaturesToColor = null;
+    this.recoloredAtMinIndex = -1;
+    this.recoloredAtMaxIndex = -1;
 }
 
 function setupFeatureSelector() {
@@ -148,11 +152,10 @@ function setupFeatureSelector() {
 
     FeatureSelector.prototype.recolorDatasetWithBoundingBoxAndMultiplier = function(box, multiplier, loadingTextTop, loadingTextBottom, refDisplacements=null) {
         // let the caller check if a coloring is in progress. otherwise user has to sometimes
-        //  wait if they cancel a recoloring and want to do another one
+        // wait if they cancel a recoloring and want to do another one
 
         // get the names of all the layers
         var pointLayers = ["onTheFlyJSON"];
-        var features = null;
         if (!this.map.insarLayersHidden()) {
             pointLayers = this.map.getInsarLayers();
         }
@@ -166,17 +169,24 @@ function setupFeatureSelector() {
             requestAnimationFrame(function() {
                 if (box) {
                     var pixelBoundingBox = [this.map.map.project(box[0]), this.map.map.project(box[1])];
-                    features = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
+                    this.newFeaturesToColor = this.map.map.queryRenderedFeatures(pixelBoundingBox, { layers: pointLayers });
                     // no bounding box
                 } else {
-                    features = this.map.map.queryRenderedFeatures({ layers: pointLayers });
+                    this.newFeaturesToColor = this.map.map.queryRenderedFeatures({ layers: pointLayers });
                 }
 
+                // may be placebo effect, but seems to speed up query from db. also
+                // sort by p in ascending order so we match displacements with the features
+                this.newFeaturesToColor.sort(function(a, b) {
+                    return a.properties.p - b.properties.p;
+                });
+
                 this.lastbbox = this.bbox;
-                if (!features || features.length == 0) {
+                if ((!this.newFeaturesToColor || this.newFeaturesToColor.length == 0 || !this.featuresToRecolorChanged()) && this.previouslycoloredFeatures !== null) {
                     hideLoadingScreen();
                     return;
                 }
+                this.previouslycoloredFeatures = this.newFeaturesToColor;
 
                 var geoJSONData = {
                     "type": "FeatureCollection",
@@ -187,29 +197,23 @@ function setupFeatureSelector() {
 
                 var query = "(";
 
-                // may be placebo effect, but seems to speed up query from db. also
-                // sort by p in ascending order so we match displacements with the features
-                features.sort(function(a, b) {
-                    return a.properties.p - b.properties.p;
-                });
-
-                for (var i = 0; i < features.length; i++) {
-                    var long = features[i].geometry.coordinates[0];
-                    var lat = features[i].geometry.coordinates[1];
-                    var curFeatureKey = features[i].properties.p.toString();
+                for (var i = 0; i < this.newFeaturesToColor.length; i++) {
+                    var long = this.newFeaturesToColor[i].geometry.coordinates[0];
+                    var lat = this.newFeaturesToColor[i].geometry.coordinates[1];
+                    var curFeatureKey = this.newFeaturesToColor[i].properties.p.toString();
 
                     // mapbox gives us duplicate tiles (see documentation to see how query rendered features works)
                     // yet we only want unique features, not duplicates
                     if (featuresMap[curFeatureKey] != null) {
                         continue;
                     }
-                    query += features[i].properties.p.toString() + "),(";
+                    query += this.newFeaturesToColor[i].properties.p.toString() + "),(";
                     featuresMap[curFeatureKey] = "1";
 
                     if (this.map.highResMode() || !this.map.insarActualPixelSize) {
-                        if (features[i].geometry.type == "Polygon") {
-                            long = features[i].geometry.coordinates[0][0][0];
-                            lat = features[i].geometry.coordinates[0][0][1];
+                        if (this.newFeaturesToColor[i].geometry.type == "Polygon") {
+                            long = this.newFeaturesToColor[i].geometry.coordinates[0][0][0];
+                            lat = this.newFeaturesToColor[i].geometry.coordinates[0][0][1];
                         }
                         geoJSONData.features.push({
                             "type": "Feature",
@@ -219,15 +223,15 @@ function setupFeatureSelector() {
                             },
                             "properties": {
                                 "m": 0,
-                                "p": features[i].properties.p
+                                "p": this.newFeaturesToColor[i].properties.p
                             }
                         });
                     } else {
                         var coordinates = null;
-                        if (features[i].geometry.type == "Polygon") {
+                        if (this.newFeaturesToColor[i].geometry.type == "Polygon") {
                             // when we query only the current onTheFlyJSON, we might get polygons or points.
                             // not a problem when we query the mbtiles insar layer as we only get points then
-                            coordinates = features[i].geometry.coordinates;
+                            coordinates = this.newFeaturesToColor[i].geometry.coordinates;
                         } else {
                             var attributesController = new AreaAttributesController(this.map, currentArea);
                             var x_step = parseFloat(attributesController.getAttribute("X_STEP"));
@@ -247,7 +251,7 @@ function setupFeatureSelector() {
                             },
                             "properties": {
                                 "m": 0,
-                                "p": features[i].properties.p
+                                "p": this.newFeaturesToColor[i].properties.p
                             }
                         });
                     }
@@ -260,13 +264,14 @@ function setupFeatureSelector() {
                 this.recoloringInProgress = true;
                 hideLoadingScreenWithClick(function() {
                     geoJSONData = null;
-                    features = null;
+                    this.newFeaturesToColor = null;
                     this.cancellableAjax.cancel();
                 }.bind(this));
-                features = null;
 
                 var minIndex = this.minIndex;
                 var maxIndex = this.maxIndex;
+                this.recoloredAtMinIndex = this.minIndex;
+                this.recoloredAtMaxIndex = this.maxIndex;
                 var referenceDisplacements = null;
                 if (refDisplacements !== null) {
                     // postgresql array literal
@@ -410,6 +415,31 @@ function setupFeatureSelector() {
     FeatureSelector.prototype.doneRecoloring = function() {
         hideLoadingScreen();
         this.recoloringInProgress = false;
+    };
+
+    FeatureSelector.prototype.pointsEqual = function(p1, p2) {
+        return p1["properties"]["p"] == p2["properties"]["p"];
+    };
+
+    FeatureSelector.prototype.featuresToRecolorChanged = function() {
+        if (this.previouslycoloredFeatures === null) {
+            return false;
+        }
+
+        if (this.recoloredAtMinIndex == this.minIndex && this.recoloredAtMaxIndex == this.maxIndex) {
+            if (this.previouslycoloredFeatures.length == this.newFeaturesToColor.length) {
+                var p1 = this.previouslycoloredFeatures[0];
+                var p2 = this.previouslycoloredFeatures[this.previouslycoloredFeatures.length - 1];
+                var p3 = this.newFeaturesToColor[0];
+                var p4 = this.newFeaturesToColor[this.newFeaturesToColor.length - 1];
+
+                if (this.pointsEqual(p1, p3) && this.pointsEqual(p2, p4)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     };
 
     FeatureSelector.prototype.recolorDataset = function() {
