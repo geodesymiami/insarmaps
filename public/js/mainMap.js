@@ -106,6 +106,7 @@ function MapController(loadJSONFunc) {
     }.bind(this));
     this.colorOnDisplacement = false;
     this.selectingReferencePoint = false;
+    this.removingReferencePoint = false;
     // set current coloring mode based on url
     if (urlOptions && urlOptions.startingDatasetOptions &&
         (urlOptions.startingDatasetOptions.minScale ||
@@ -1288,6 +1289,10 @@ function MapController(loadJSONFunc) {
 
     this.doneSelectingReferencePoint = function() {
         this.selectingReferencePoint = false;
+    };
+
+    this.doneRemovingReferencePoint = function() {
+        this.removingReferencePoint = false;
     };
 
     this.addReferencePointFromArea = function(area) {

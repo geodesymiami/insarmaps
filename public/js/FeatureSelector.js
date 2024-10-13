@@ -379,6 +379,8 @@ function setupFeatureSelector() {
                         mapboxgl.clearStorage()
                         if (this.map.selectingReferencePoint) {
                             this.map.doneSelectingReferencePoint();
+                        } else if (this.map.removingReferencePoint) {
+                            this.map.doneRemovingReferencePoint();
                         }
                         this.recoloringInProgress = false;
                         this.map.onceRendered(function() {
@@ -426,15 +428,17 @@ function setupFeatureSelector() {
             return false;
         }
 
-        if (this.recoloredAtMinIndex == this.minIndex && this.recoloredAtMaxIndex == this.maxIndex) {
-            if (this.previouslycoloredFeatures.length == this.newFeaturesToColor.length) {
-                var p1 = this.previouslycoloredFeatures[0];
-                var p2 = this.previouslycoloredFeatures[this.previouslycoloredFeatures.length - 1];
-                var p3 = this.newFeaturesToColor[0];
-                var p4 = this.newFeaturesToColor[this.newFeaturesToColor.length - 1];
+        if (!this.map.selectingReferencePoint && !this.map.removingReferencePoint) {
+            if (this.recoloredAtMinIndex == this.minIndex && this.recoloredAtMaxIndex == this.maxIndex) {
+                if (this.previouslycoloredFeatures.length == this.newFeaturesToColor.length) {
+                    var p1 = this.previouslycoloredFeatures[0];
+                    var p2 = this.previouslycoloredFeatures[this.previouslycoloredFeatures.length - 1];
+                    var p3 = this.newFeaturesToColor[0];
+                    var p4 = this.newFeaturesToColor[this.newFeaturesToColor.length - 1];
 
-                if (this.pointsEqual(p1, p3) && this.pointsEqual(p2, p4)) {
-                    return false;
+                    if (this.pointsEqual(p1, p3) && this.pointsEqual(p2, p4)) {
+                        return false;
+                    }
                 }
             }
         }
