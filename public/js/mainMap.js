@@ -1890,16 +1890,14 @@ function MapController(loadJSONFunc) {
             this.previousZoom = currentZoom;
         }.bind(this));
 
-        this.map.on("moveend", function(e) {
+        this.map.on("dragend", function(e) {
             var bounds = this.map.getBounds();
             var sw = bounds._sw.lat.toFixed(2) + ", " + bounds._sw.lng.toFixed(2);
             var ne = bounds._ne.lat.toFixed(2) + ", " + bounds._ne.lng.toFixed(2);
             $("#usgs-events-current-viewport").html("sw: " + sw + ", ne: " + ne);
             this.updateOnTheFlyIfThere();
             updateUrlState(this);
-        }.bind(this));
 
-        this.map.on("dragend", function(e) {
             if (e.source === "recenter") {
                 return;
             }
