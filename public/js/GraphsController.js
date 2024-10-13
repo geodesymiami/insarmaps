@@ -982,7 +982,7 @@ function setupGraphsController() {
 
     GraphsController.prototype.recolorInsarFromDates = function(e, dates) {
         var selector = this.map.selector;
-        if (selector.minIndex == 0 && selector.maxIndex == dates.length - 1 && !this.map.nonDefaultReferencePoint()) {
+        if (selector.fullDateRangeSelected(currentArea) && !this.map.nonDefaultReferencePoint()) {
             this.map.removeSourceAndLayer("onTheFlyJSON");
             this.map.showInsarLayers();
             return;

@@ -310,6 +310,12 @@ function SquareSelector() {
         this.maxIndex = dates.length - 1;
     };
 
+    this.fullDateRangeSelected = function(area) {
+        var dates = propertyToJSON(area.properties.decimal_dates);
+
+        return this.minIndex == 0 && this.maxIndex == dates.length - 1;
+    };
+
     // mapbox gives us duplicate tiles (see documentation to see how query rendered features works)
     // yet we only want unique features, not duplicates
     this.getUniqueFeatures = function(features) {

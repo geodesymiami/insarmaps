@@ -1336,7 +1336,18 @@ function MapController(loadJSONFunc) {
     this.removeReferencePoint = function() {
         if (this.map.getSource("ReferencePoint")) {
             this.removeSourceAndLayer("ReferencePoint");
-            this.selector.recolorDataset();
+
+            // TODO should the below logic just be inside FeatureSelector?
+            // would eliminate duplicate code in recolorInsarFromDates() inside
+            // GraphsController, but I feel like FeatureSelector shouldn't deal
+            // with showing insar layers unless error or user cancels recoloring
+            var selector = this.selector;
+            if (selector.fullDateRangeSelected(currentArea)  && !this.nonDefaultReferencePoint()) {
+                this.removeSourceAndLayer("onTheFlyJSON");
+                this.showInsarLayers();
+            } else {
+                this.selector.recolorDataset();
+            }
             // graphsController works in CM, not M
             var refDisplacementsCM = this.referenceDisplacements.map(function(displacement) {
                 return 100 * displacement;
