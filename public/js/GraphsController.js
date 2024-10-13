@@ -414,6 +414,7 @@ function setupGraphsController() {
                         if (selector.lastbbox == selector.bbox && selector.lastMinIndex == selector.minIndex && selector.lastMaxIndex == selector.maxIndex) {
                             return;
                         }
+
                         this.recolorInsarFromDates(e, date_array);
                     }.bind(this)
                 },
@@ -981,6 +982,11 @@ function setupGraphsController() {
 
     GraphsController.prototype.recolorInsarFromDates = function(e, dates) {
         var selector = this.map.selector;
+        if (selector.minIndex == 0 && selector.maxIndex == dates.length - 1 && !this.map.nonDefaultReferencePoint()) {
+            this.map.removeSourceAndLayer("onTheFlyJSON");
+            this.map.showInsarLayers();
+            return;
+        }
         if (selector.minIndex != -1 && selector.maxIndex != -1) {
             if (this.map.colorOnDisplacement) {
                 var startDate = new Date(dates[this.map.selector.minIndex]);

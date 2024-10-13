@@ -447,7 +447,7 @@ function setupFeatureSelector() {
             var dates = this.getCurrentStartEndDateFromArea(currentArea);
             this.recolorOnDisplacement(dates.startDate, dates.endDate, "Recoloring...", "ESCAPE or click/tap this box to interrupt");
         } else {
-            var nonDefaultReferencePoint = this.map.selectingReferencePoint || this.map.map.getSource("ReferencePoint") != null;
+            var nonDefaultReferencePoint = this.map.nonDefaultReferencePoint();
             if (nonDefaultReferencePoint) {
                 this.recolorDatasetWithBoundingBoxAndMultiplier(this.bbox, 1, "Recoloring in progress...", "ESCAPE or click/tap this box to interrupt",
                                                             this.map.referenceDisplacements);

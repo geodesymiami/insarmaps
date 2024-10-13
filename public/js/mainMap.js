@@ -1343,6 +1343,10 @@ function MapController(loadJSONFunc) {
         }
     };
 
+    this.nonDefaultReferencePoint = function() {
+        return this.selectingReferencePoint || this.map.getSource("ReferencePoint") != null;
+    };
+
     this.highResMode = function() {
         var attributesController = new AreaAttributesController(this, currentArea);
         var x_step = parseFloat(attributesController.getAttribute("X_STEP"));
