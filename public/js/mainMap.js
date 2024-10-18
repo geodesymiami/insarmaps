@@ -1721,6 +1721,33 @@ function MapController(loadJSONFunc) {
         }
     };
 
+    this.afterDoneMoving = function() {
+        var bounds = this.map.getBounds();
+        var sw = bounds._sw.lat.toFixed(2) + ", " + bounds._sw.lng.toFixed(2);
+        var ne = bounds._ne.lat.toFixed(2) + ", " + bounds._ne.lng.toFixed(2);
+        $("#usgs-events-current-viewport").html("sw: " + sw + ", ne: " + ne);
+        this.updateOnTheFlyIfThere();
+        updateUrlState(this);
+
+        var mode = this.getCurrentMode();
+
+        if (mode === "seismicity") {
+            this.seismicityGraphsController.createCrossSectionCharts(null, null, null);
+        } else if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
+            this.loadSwathsInCurrentViewport(true);
+        }
+
+        if (!this.selector.recoloring()) {
+            if (this.selector.inSelectMode()) {
+                this.selector.disableSelectMode();
+            }
+        }
+
+        if (this.thirdPartySourcesController.midasArrows) {
+            this.thirdPartySourcesController.updateArrowLengths();
+        }
+    };
+
     this.addMapToPage = function(containerID) {
         var startingOptions = null;
         var minZoom = 0; // default as per gl js api
@@ -1869,8 +1896,6 @@ function MapController(loadJSONFunc) {
         this.map.on('zoomend', function() {
             var currentZoom = this.map.getZoom();
 
-            var mode = this.getCurrentMode();
-
             // reshow area markers once we zoom out enough
             // add a small negative epsilon to account for rounding errors...
             // example if we set an initial map zoom of 6, zoomend gets called with
@@ -1887,37 +1912,12 @@ function MapController(loadJSONFunc) {
                 }
             }
 
-            this.updateOnTheFlyIfThere();
-
-            if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled") && mode !== "seismicity") {
-                this.loadSwathsInCurrentViewport(true);
-            }
-
-            if (!this.selector.recoloring()) {
-                if (this.selector.inSelectMode()) {
-                    this.selector.disableSelectMode();
-                }
-            }
-
-            if (this.thirdPartySourcesController.midasArrows) {
-                this.thirdPartySourcesController.updateArrowLengths();
-            }
-
-            if (mode === "seismicity") {
-                this.seismicityGraphsController.createCrossSectionCharts(null, null, null);
-            }
+            this.afterDoneMoving();
 
             this.previousZoom = currentZoom;
         }.bind(this));
 
         this.map.on("dragend", function(e) {
-            var bounds = this.map.getBounds();
-            var sw = bounds._sw.lat.toFixed(2) + ", " + bounds._sw.lng.toFixed(2);
-            var ne = bounds._ne.lat.toFixed(2) + ", " + bounds._ne.lng.toFixed(2);
-            $("#usgs-events-current-viewport").html("sw: " + sw + ", ne: " + ne);
-            this.updateOnTheFlyIfThere();
-            updateUrlState(this);
-
             if (e.source === "recenter") {
                 return;
             }
@@ -1927,12 +1927,7 @@ function MapController(loadJSONFunc) {
             });
 
             var mode = this.getCurrentMode();
-
-            if (mode === "seismicity") {
-                this.seismicityGraphsController.createCrossSectionCharts(null, null, null);
-            } else if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
-                this.loadSwathsInCurrentViewport(true);
-            }
+            this.afterDoneMoving();
         }.bind(this));
     };
 
