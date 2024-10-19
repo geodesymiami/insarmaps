@@ -87,6 +87,7 @@ class GeoJSONController extends Controller {
             $string_dates = $dateInfo->stringdates;
         }
 
+        // the table name doesn't have to be prepared or checked because it's received from the DB
         $query = 'SELECT *, st_astext(wkb_geometry) from "' . $dateInfos[0]->id . '" where p = ?';
 
         $points = DB::select($query, [$pointNumber]);
@@ -118,25 +119,36 @@ class GeoJSONController extends Controller {
         return true;
     }
 
+    // only allows (, ), commas, and integers
+    private function noSQLInjectionInPointValues($pointValuesStr) {
+        for ($i = 0; $i < strlen($pointValuesStr); $i++){
+            $ch = $pointValuesStr[$i];
+            if ($ch != "(" && $ch != ")" && $ch != "," && !is_numeric($ch)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function getPoints() {
+        $area = Input::get("area");
         $points = Input::get("points");
+        if (!$this-> noSQLInjectionInPointValues($points)) {
+            abort(400, 'Invalid point values.');
+            return NULL;
+        }
+
         $minIndex = Input::get("arrayMinIndex");
         $maxIndex = Input::get("arrayMaxIndex");
-        $returnDisplacements = Input::get("getDisplacements") === "true" ? true : false;
+        $subtractReference = Input::get("referenceDisplacements");
 
         try {
             $json = [];
-
             $json["displacements"] = [];
             $decimal_dates = NULL;
             $string_dates = NULL;
 
-            $parameters = explode("/", $points);
-            $area = $parameters[0];
-            $offset = count($parameters) - 2;
-            $pointsArray = array_slice($parameters, 1, $offset);
-
-            $pointsArrayLen = count($pointsArray);
             $permissionController = new PermissionsController();
             $queryToFilterAreas = $permissionController->getAndQueryForFindingPermittedAreas(Auth::id());
             $query = 'SELECT decimaldates, stringdates, id FROM area WHERE area.unavco_name = ?';
@@ -146,7 +158,7 @@ class GeoJSONController extends Controller {
             $dateInfos = DB::select($query, $preparedValues);
 
             // no dateinfos means either area wasn't found or user doesn't have permission for this area.
-            if (count($dateInfos) == 0 || !$this->arrayAllInts($pointsArray)) {
+            if (count($dateInfos) == 0) {
                 return response()->json(["Error Getting Points"]);
             }
 
@@ -160,45 +172,32 @@ class GeoJSONController extends Controller {
             $decimal_dates = $this->arrayFormatter->PHPToPostgresArrayString($phpDecimalDates);
 
             $query = NULL;
-            if ($returnDisplacements) {
-                $query = "SELECT displacements FROM (SELECT unnest(d) AS displacements FROM (";
+            $preparedValues = [];
+            if ($subtractReference != "null") {
+                $reference_displacements = Input::get("referenceDisplacements");
+                $query = "SELECT regr_slope(displacements - reference_displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest(?::double precision[]) AS dates, unnest(?::double precision[]) as reference_displacements, point FROM (";
+                array_push($preparedValues, $decimal_dates);
+                array_push($preparedValues, $reference_displacements);
             } else {
-                // return velocities
-                $query = "SELECT regr_slope(displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest('" . $decimal_dates . "'::double precision[]) AS dates, groupNumber FROM (";
+                $query = "SELECT regr_slope(displacements, dates) FROM (SELECT unnest(d) AS displacements, unnest(?::double precision[]) AS dates, point FROM (";
+                array_push($preparedValues, $decimal_dates);
             }
-            $query .= "WITH points(point) AS (VALUES";
-
-            for ($i = 0; $i < $pointsArrayLen - 1; $i++) {
-                $curPointNum = $pointsArray[$i];
-                $query = $query . "(" . $curPointNum . "),";
-            }
+            $query .= "WITH points(point) AS (VALUES" . $points;
 
             // postgres doesn't used 0 based indexing...sigh
             $minIndex++;
             $maxIndex++;
             // add last ANY values without comma. it fails when this last value is a ? prepared value... something about not being able to compare to text... investigate but i have no idea.
+            // $tableID doesn't have to be prepared or checked because it's received from the DB
             $tableID = $dateInfos[0]->id;
-            $curPointNum = $pointsArray[$i];
-            if ($returnDisplacements) {
-                $query .= '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], ROW_NUMBER() OVER() AS groupNumber FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point) ORDER BY p ASC) AS displacements) AS z';
-            } else {
-                $query .= '(' . $curPointNum . ')) SELECT d[' . $minIndex . ':' . $maxIndex . '], ROW_NUMBER() OVER() AS groupNumber FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point) ORDER BY p ASC) AS displacements) AS z GROUP BY groupNumber ORDER BY groupNumber ASC';
-            }
+            $query .= ') SELECT d[?:?], point FROM "' . $tableID . '" INNER JOIN points p ON ("' . $tableID . '".p = p.point)) AS displacements) AS z GROUP BY point ORDER BY point ASC';
+            array_push($preparedValues, $minIndex);
+            array_push($preparedValues, $maxIndex);
 
-            $queryRes = DB::select(DB::raw($query));
+            $queryRes = DB::select($query, $preparedValues);
             $json = [];
-            if ($returnDisplacements) {
-                foreach ($phpDecimalDates as $date) {
-                    array_push($json, $date);
-                }
-
-                foreach ($queryRes as $displacement) {
-                    array_push($json, $displacement->displacements);
-                }
-            } else {
-                foreach ($queryRes as $slope) {
-                    array_push($json, $slope->regr_slope);
-                }
+            foreach ($queryRes as $slope) {
+                array_push($json, $slope->regr_slope);
             }
             $binary = pack("d*", ...$json);
 
@@ -206,7 +205,8 @@ class GeoJSONController extends Controller {
                 "Content-Type" => "application/octet-stream",
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
-            return response()->json(["Error Getting Points"]);
+            abort(400, 'Error in query');
+            return NULL;
         }
     }
 

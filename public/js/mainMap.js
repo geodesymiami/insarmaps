@@ -106,6 +106,7 @@ function MapController(loadJSONFunc) {
     }.bind(this));
     this.colorOnDisplacement = false;
     this.selectingReferencePoint = false;
+    this.removingReferencePoint = false;
     // set current coloring mode based on url
     if (urlOptions && urlOptions.startingDatasetOptions &&
         (urlOptions.startingDatasetOptions.minScale ||
@@ -361,6 +362,8 @@ function MapController(loadJSONFunc) {
         var insarLayers = this.getInsarLayers();
         insarLayers.forEach(function(layerID) {
             this.map.setLayoutProperty(layerID, "visibility", "none");
+            var layer = this.layers_.get(layerID);
+            layer["layout"]["visibility"] = "none";
         }.bind(this));
     };
 
@@ -368,6 +371,8 @@ function MapController(loadJSONFunc) {
         var insarLayers = this.getInsarLayers();
         insarLayers.forEach(function(layerID) {
             this.map.setLayoutProperty(layerID, "visibility", "visible");
+            var layer = this.layers_.get(layerID);
+            layer["layout"]["visibility"] = "visible";
         }.bind(this));
     };
 
@@ -1220,11 +1225,15 @@ function MapController(loadJSONFunc) {
     this.updateInsarPixelSize = function(size) {
         if (this.map.getSource("onTheFlyJSON")) {
             this.map.setPaintProperty("onTheFlyJSON", "circle-radius", size);
+            var layer = this.layers_.get("onTheFlyJSON");
+            layer["paint"]["circle-radius"] = size;
         }
         var insarLayers = this.getInsarLayers();
         if (insarLayers) {
             insarLayers.forEach(function(layerID) {
                 this.map.setPaintProperty(layerID, "circle-radius", size);
+                var layer = this.layers_.get(layerID);
+                layer["paint"]["circle-radius"] = size;
             }.bind(this));
         }
     };
@@ -1282,6 +1291,10 @@ function MapController(loadJSONFunc) {
         this.selectingReferencePoint = false;
     };
 
+    this.doneRemovingReferencePoint = function() {
+        this.removingReferencePoint = false;
+    };
+
     this.addReferencePointFromArea = function(area) {
         var attributesController = new AreaAttributesController(this, area);
         var oldRefLon = attributesController.getAttribute("ref_lon");
@@ -1323,7 +1336,18 @@ function MapController(loadJSONFunc) {
     this.removeReferencePoint = function() {
         if (this.map.getSource("ReferencePoint")) {
             this.removeSourceAndLayer("ReferencePoint");
-            this.selector.recolorDataset();
+
+            // TODO should the below logic just be inside FeatureSelector?
+            // would eliminate duplicate code in recolorInsarFromDates() inside
+            // GraphsController, but I feel like FeatureSelector shouldn't deal
+            // with showing insar layers unless error or user cancels recoloring
+            var selector = this.selector;
+            if (selector.fullDateRangeSelected(currentArea)  && !this.nonDefaultReferencePoint()) {
+                this.removeSourceAndLayer("onTheFlyJSON");
+                this.showInsarLayers();
+            } else {
+                this.selector.recolorDataset();
+            }
             // graphsController works in CM, not M
             var refDisplacementsCM = this.referenceDisplacements.map(function(displacement) {
                 return 100 * displacement;
@@ -1333,6 +1357,10 @@ function MapController(loadJSONFunc) {
             removeURLVar(/&refPointLat=-?\d*\.?\d*/);
             removeURLVar(/&refPointLon=-?\d*\.?\d*/);
         }
+    };
+
+    this.nonDefaultReferencePoint = function() {
+        return this.selectingReferencePoint || this.map.getSource("ReferencePoint") != null;
     };
 
     this.highResMode = function() {
@@ -1693,6 +1721,33 @@ function MapController(loadJSONFunc) {
         }
     };
 
+    this.afterDoneMoving = function() {
+        var bounds = this.map.getBounds();
+        var sw = bounds._sw.lat.toFixed(2) + ", " + bounds._sw.lng.toFixed(2);
+        var ne = bounds._ne.lat.toFixed(2) + ", " + bounds._ne.lng.toFixed(2);
+        $("#usgs-events-current-viewport").html("sw: " + sw + ", ne: " + ne);
+        this.updateOnTheFlyIfThere();
+        updateUrlState(this);
+
+        var mode = this.getCurrentMode();
+
+        if (mode === "seismicity") {
+            this.seismicityGraphsController.createCrossSectionCharts(null, null, null);
+        } else if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
+            this.loadSwathsInCurrentViewport(true);
+        }
+
+        if (!this.selector.recoloring()) {
+            if (this.selector.inSelectMode()) {
+                this.selector.disableSelectMode();
+            }
+        }
+
+        if (this.thirdPartySourcesController.midasArrows) {
+            this.thirdPartySourcesController.updateArrowLengths();
+        }
+    };
+
     this.addMapToPage = function(containerID) {
         var startingOptions = null;
         var minZoom = 0; // default as per gl js api
@@ -1841,8 +1896,6 @@ function MapController(loadJSONFunc) {
         this.map.on('zoomend', function() {
             var currentZoom = this.map.getZoom();
 
-            var mode = this.getCurrentMode();
-
             // reshow area markers once we zoom out enough
             // add a small negative epsilon to account for rounding errors...
             // example if we set an initial map zoom of 6, zoomend gets called with
@@ -1859,36 +1912,9 @@ function MapController(loadJSONFunc) {
                 }
             }
 
-            this.updateOnTheFlyIfThere();
-
-            if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled") && mode !== "seismicity") {
-                this.loadSwathsInCurrentViewport(true);
-            }
-
-            if (!this.selector.recoloring()) {
-                if (this.selector.inSelectMode()) {
-                    this.selector.disableSelectMode();
-                }
-            }
-
-            if (this.thirdPartySourcesController.midasArrows) {
-                this.thirdPartySourcesController.updateArrowLengths();
-            }
-
-            if (mode === "seismicity") {
-                this.seismicityGraphsController.createCrossSectionCharts(null, null, null);
-            }
+            this.afterDoneMoving();
 
             this.previousZoom = currentZoom;
-        }.bind(this));
-
-        this.map.on("moveend", function(e) {
-            var bounds = this.map.getBounds();
-            var sw = bounds._sw.lat.toFixed(2) + ", " + bounds._sw.lng.toFixed(2);
-            var ne = bounds._ne.lat.toFixed(2) + ", " + bounds._ne.lng.toFixed(2);
-            $("#usgs-events-current-viewport").html("sw: " + sw + ", ne: " + ne);
-            this.updateOnTheFlyIfThere();
-            updateUrlState(this);
         }.bind(this));
 
         this.map.on("dragend", function(e) {
@@ -1901,12 +1927,7 @@ function MapController(loadJSONFunc) {
             });
 
             var mode = this.getCurrentMode();
-
-            if (mode === "seismicity") {
-                this.seismicityGraphsController.createCrossSectionCharts(null, null, null);
-            } else if (this.areaSwathsLoaded() && !$("#dataset-frames-toggle-button").hasClass("toggled")) {
-                this.loadSwathsInCurrentViewport(true);
-            }
+            this.afterDoneMoving();
         }.bind(this));
     };
 

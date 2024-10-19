@@ -346,7 +346,7 @@ div.menu {
     top: 10px;
     left: 0px;
     z-index: 99;
-    max-width: 854px;
+    max-width: 80%;
 }
 
 #top-map-buttons > * {
@@ -532,7 +532,7 @@ div.menu {
 }
 
 #select-layer-button-div {
-    min-width: 173px;
+    min-width: 308px;
 }
 
 #select-layer-button-div:hover > #overlay-options-container {

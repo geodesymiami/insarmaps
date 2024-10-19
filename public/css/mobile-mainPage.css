@@ -5,8 +5,9 @@
     }
 }
 
-@media screen and (max-width: 854px) {
+@media screen and (max-width: 710px) {
     #top-map-buttons {
         max-width: 80%;
     }
 }
+

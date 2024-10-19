@@ -1230,12 +1230,14 @@ $(window).on("load", function() {
 
     $("#select-reference-point-toggle-button").on("click", function() {
         myMap.selectingReferencePoint = true;
+        myMap.removingReferencePoint = false;
         $(this).css("opacity", 0.7);
     });
 
     $("#reset-reference-point-toggle-button").on("click", function() {
-        myMap.removeReferencePoint();
         myMap.selectingReferencePoint = false;
+        myMap.removingReferencePoint = true;
+        myMap.removeReferencePoint();
         // this will show DB reference point since custom reference point is gone by now
         if (referencePointToggleButton.toggleState == ToggleStates.ON) {
             myMap.displayReferencePoint();
@@ -1269,6 +1271,7 @@ $(window).on("load", function() {
                     NUM_CHUNKS) {
                     pixelSizeSlideFunction(event, ui);
                 }
+                $(this).addClass("wasDragged");
             },
             slide: function(event, ui) {
                 // call slide only if sufficiently small amount of layers, otherwise lag
@@ -1276,6 +1279,7 @@ $(window).on("load", function() {
                     NUM_CHUNKS) {
                     pixelSizeSlideFunction(event, ui);
                 }
+                $(this).addClass("wasDragged");
             }
         });
     });
